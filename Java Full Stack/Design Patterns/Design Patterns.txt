@@ -1,0 +1,77 @@
+Design Patterns (The "How"):
+
+These are proven, documented solutions to specific structural or behavioral problems. They often implement one or more design principles in a practical way.
+
+=================================================================================================================================================================================
+Creational: Focus on object creation
+=================================================================================================================================================================================
+
+Singleton:
+
+Factory:
+The Factory Pattern defines an interface for creating an object but lets subclasses decide which class to instantiate. 
+Core Idea: You want a product, but you don't care exactly which concrete version you get—just that it follows a specific interface.
+Best Used For: Simple objects where the creation logic depends on conditions or input.
+Real World Example: Think of a Restaurant Menu. You order "Today's Special." You don't decide how it's made or what's in it; the kitchen (factory) decides which meal object to give you based on the day.
+Key Benefit: Decouples the client from concrete classes, making it easy to add new types without breaking existing code. 
+
+Abstract:
+
+Builder:
+The Builder Pattern constructs complex objects step-by-step, allowing the same process to create different representations. 
+Core Idea: You are building an object with many "moving parts" or optional parameters (avoiding the "telescoping constructor" problem where you have 10+ arguments).
+Best Used For: Objects with many configurations (e.g., an HTTP request, a custom pizza, or a complex UI widget).
+Interview Analogy: Think of a Custom Pizza Order. You tell the chef: "Start with a thin crust, add pepperoni, add extra cheese, but no olives." You are controlling the assembly process step-by-step.
+Key Benefit: Improves readability and ensures the object is always in a consistent state before it is returned
+
+Prototype:
+
+
+=================================================================================================================================================================================
+Structural: Focus on object composition and relationships 
+=================================================================================================================================================================================
+
+Adapter:
+
+
+Composite
+
+Proxy
+
+Fly Weight
+
+Facade
+
+Bridge
+
+Decorator
+
+
+=================================================================================================================================================================================
+Behavioral: Focus on communication between objects
+=================================================================================================================================================================================
+
+Template Method
+
+Mediator
+
+Chain of Responsibility
+
+Observer
+
+Strategy
+
+Command
+
+State
+
+Visitor
+
+Iterator
+
+Interpreter
+
+Memento
+
+
+

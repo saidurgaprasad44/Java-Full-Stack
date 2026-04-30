@@ -1,0 +1,13 @@
+=================================================================================================================================================================================
+=================================================================================================================================================================================
+Design Principles (The "Why"):
+=================================================================================================================================================================================
+=================================================================================================================================================================================
+
+These are foundational rules of thumb that encourage clean, maintainable, and scalable code. They are theory-based rather than code-based. 
+
+SOLID: A set of five principles (Single Responsibility, Open/Closed, etc.) focused on reducing coupling and increasing flexibility.
+
+DRY (Don’t Repeat Yourself): Aims to reduce repetition of information to avoid maintenance issues.
+
+KISS (Keep It Simple, Stupid): Encourages making code as simple as possible to ensure it remains understandable.

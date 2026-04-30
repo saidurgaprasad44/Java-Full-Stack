@@ -1,0 +1,221 @@
+
+Database:
+Database Query Languages: 	SQL, NoSQL etc.
+Database server/DBMS: 		MySQL, Oracle DB, PostgreSQL, Microsoft SQL Server, MongoDB etc.
+Database Client Tools (GUI): 	pgAdmin, Oracle SQL Developer, MySQL Workbench, etc.
+Database Shells(CUI): 		PSQL etc.
+JDBC:				JDBC, ORM, JPA, Hibernate, Spring JDBC, Spring Data JPA
+
+
+
+===================================================================================================================================================================
+===================================================================================================================================================================
+===================================================================================================================================================================
+Structure Query Language (SQL)
+===================================================================================================================================================================
+===================================================================================================================================================================
+===================================================================================================================================================================
+
+
+
+
+
+=================================================================================================================================================================== 
+Data Definition Language (DDL)
+===================================================================================================================================================================
+
+DDL:
+Used to define and manage the structure (schema) of the database itself. 
+
+CREATE: Creates new database objects like tables, views, or indexes.
+ALTER: Modifies the structure of an existing object (e.g., adding a column).
+DROP: Permanently deletes an entire database object.
+TRUNCATE: Removes all records from a table while keeping its structure intact.
+RENAME: Changes the name of a database object. 
+
+===================================================================================================================================================================
+Data Manipulation Language (DML)
+===================================================================================================================================================================
+
+Used to modify the data stored within the database tables. 
+
+INSERT: Adds new rows to a table.
+UPDATE: Modifies existing data within a table.
+DELETE: Removes specific rows from a table.
+MERGE: Combines data from multiple tables into one.
+
+===================================================================================================================================================================
+Data Query Language (DQL)
+===================================================================================================================================================================
+
+Used for fetching data from the database. It is the most frequently used category. 
+
+SELECT: Retrieves data from one or more tables.
+Example: SELECT name, age FROM students WHERE age > 18; 
+
+Clauses: Filter and organize data using WHERE, ORDER BY, LIMIT, GROUP BY, and HAVING.
+
+Functions: Use Aggregate Functions (like SUM and COUNT) and Scalar Functions (like UPPER or ROUND).
+
+Joins: The "heart" of relational databases. Learn how to combine multiple tables using INNER, LEFT, RIGHT, and FULL Joins.
+
+Subqueries & CTEs: A Subquery is a query inside another query. A Common Table Expression (CTE) uses the WITH clause to create a temporary, named result set that makes complex queries much more readable.
+
+Set Operators: Used to combine the results of two different queries.
+Examples: UNION (all unique rows), INTERSECT (only common rows), EXCEPT/MINUS (rows in the first but not the second)..
+
+Window Functions: These perform calculations across a set of rows related to the current row without "collapsing" them into a single group.
+Examples: RANK(), ROW_NUMBER(), LEAD(), LAG() (useful for comparing today’s data to yesterday’s).
+
+Views: A "virtual table" that stores a complex query. Instead of writing the same 50-line query every day, you save it as a View and just SELECT * FROM my_view.
+
+Indexing: A performance tuning technique. Adding an Index to a column is like adding an index to a book; it allows the database to find data without scanning every single row.
+
+===================================================================================================================================================================
+Data Control Language (DCL)
+===================================================================================================================================================================
+
+Used by administrators to manage security and access permissions. 
+
+GRANT: Gives specific access privileges to users.
+REVOKE: Removes previously granted permissions.
+
+===================================================================================================================================================================
+Transaction Control Language (TCL) 
+===================================================================================================================================================================
+
+Used to manage transactions to ensure data consistency and integrity. 
+
+COMMIT: Permanently saves the changes made during a transaction.
+ROLLBACK: Undoes changes that haven't been committed yet.
+SAVEPOINT: Sets a point within a transaction to which you can later roll back
+
+===================================================================================================================================================================
+Database Normalisation:
+===================================================================================================================================================================
+
+This is the "logic" of database design. It involves organizing tables to reduce redundancy (repeating data) and improve integrity. 
+1NF, 2NF, and 3NF - these are steps taken to ensure every piece of data is stored in exactly one place.
+
+1st Normal Form (1NF): The "Atomic" Rule
+
+A table is in 1NF if it meets these three criteria:
+
+Atomic Values: Each cell (intersection of row and column) must contain only one value. No lists or comma-separated strings.
+Unique Rows: Every row must be unique, usually identified by a Primary Key.
+Same Data Type: All entries in a column must be of the same type (e.g., you can't mix text and numbers in an "Age" column).
+
+The Problem: A "Non-Normalised" Table
+Imagine we are tracking students and the courses they are taking.
+
+StudentID	Name	Courses
+------------------------------------------
+101		Rahul	SQL, Python, Java
+102		Priya	SQL, C++
+
+Why this is bad:
+
+Searching is hard: If you want to find everyone taking "SQL", you have to search inside a string of text.
+Updating is risky: If Rahul drops "Python", you have to carefully edit that specific string without messing up "SQL" or "Java".
+
+The Solution: Converting to 1NF
+To fix this, we ensure every course has its own row. Now, every cell is "atomic" (indivisible).
+
+StudentID	Name	Course
+-------------------------------
+101		Rahul	SQL
+101		Rahul	Python
+101		Rahul	Java
+102		Priya	SQL
+102		Priya	C++
+
+The Result: You can now easily count courses, filter by subject, and delete a single row without affecting other data.
+
+SQL CREATE TABLE for 1NF
+
+CREATE TABLE student_courses (
+    student_id INT NOT NULL,
+    student_name VARCHAR(50),
+    course_name VARCHAR(50),
+    -- Combining ID and Course makes every row unique
+    PRIMARY KEY (student_id, course_name) 
+);
+
+
+
+2nd Normal Form (2NF): Eliminating Partial Dependency 
+
+A table is in 2NF if it meets two conditions:
+
+It is already in 1NF.
+It has no partial dependency. 
+
+What is Partial Dependency?
+This happens when a column depends on only part of a composite primary key rather than the whole thing. 
+
+The Problem in our 1NF table:
+
+Look at our student_courses table again:
+Composite Key: (student_id, course_name)
+Non-key column: student_name
+
+Does student_name depend on both the ID and the Course? No. A student’s name is determined solely by their student_id. This is a partial dependency. If Rahul takes five courses, his name is unnecessarily repeated five times, leading to redundancy. 
+
+The Solution: Decomposition
+To achieve 2NF, we split the table into two so that every column depends on its entire primary key: 
+
+Table 1 (Students): student_id (PK), student_name
+Table 2 (Enrollments): student_id (FK), course_name
+
+Now, if you update a student's name, you only have to change it in one row in the Students table, not in every row they have a course. 
+ScienceDirect.com
+
+
+3rd Normal Form (3NF) is the most common goal for standard database design. A table is in 3NF if: 
+
+It is already in 2nd Normal Form (2NF).
+It has no transitive dependencies. 
+
+What is a Transitive Dependency?
+This occurs when a non-key column depends on another non-key column, rather than directly on the primary key. In simple terms, if A → B and B → C, then A indirectly determines C. 
+
+The Problem Table (2NF but not 3NF):
+Imagine a table storing employee office locations.
+
+EmpID (PK)	EmpName	ZipCode	City
+-----------------------------------------
+101		Rahul	500001	Hyderabad
+102		Priya	500001	Hyderabad
+
+Dependency 1: EmpID determines ZipCode (The primary key tells us where they work).
+Dependency 2: ZipCode determines City (The city is actually tied to the area code, not the person). 
+Why this is bad: If 1,000 employees work in the same ZipCode, the city name "Hyderabad" is repeated 1,000 times. If the city name changes or was mistyped, you'd have to fix it in 1,000 places (an Update Anomaly).
+
+The Solution: 3NF Decomposition 
+To fix this, we move the transitively dependent column (City) into a new table where its "determinant" (ZipCode) becomes the primary key. 
+Table 1: Employees
+
+EmpID (PK)	EmpName	ZipCode (FK)
+------------------------------------
+101		Rahul	500001
+102		Priya	500001
+
+Table 2: ZipLocations
+
+ZipCode (PK)	City
+-------------------------
+500001		Hyderabad
+
+The Result: The city name is now stored exactly once. 
+===================================================================================================================================================================
+Stored Procedures & Triggers:
+===================================================================================================================================================================
+Procedures: Pre-compiled code blocks that perform specific tasks.
+Triggers: Automatic actions that fire when data changes (e.g., automatically logging a timestamp whenever a row is updated). 
+===================================================================================================================================================================
+
+
+
+
+
+

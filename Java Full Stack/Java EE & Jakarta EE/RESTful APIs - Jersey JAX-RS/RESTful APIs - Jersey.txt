@@ -1,0 +1,25 @@
+Representation State Transfer Application Programming Interface - Jersey:
+
+Java uses JAX-RS principles to implement Jersey REST APIs
+
+- REST is a standard architectural style for designing web services that allow different systems to communicate over the internet using http as the medium:
+- In REST, everything is treated as a resource (e.g., a user, a product, or a post). 
+- Identification: Each resource is identified by a unique URI (Uniform Resource Identifier), such as https://api.example.com.
+- Representation: Clients do not access the data directly; instead, they receive a representation of the resource, most commonly in JSON or XML format
+
+Push - Create - Creates a new subordinate resource
+Get - Read - Retrieves a representation of a resource
+Put - Update - Replaces an existing resource or creates one if it doesn't exist
+Patch - Update - Partially modifies an existing resource
+Delete - Delete - Removes the specified resource
+
+
+Common Status Codes:
+Servers respond with three-digit codes to indicate the outcome of a request: 
+
+- 200 OK: The request was successful.
+- 201 Created: A new resource was successfully created (typically after a POST).
+- 400 Bad Request: The request was invalid or malformed.
+- 401 Unauthorized: Authentication is required or has failed.
+- 404 Not Found: The requested resource does not exist.
+- 500 Internal Server Error: A general error occurred on the server

@@ -1,0 +1,433 @@
+Java Dynamic Web App without Spring
+
+
+Complete Java Web App (MVC without Spring):
+
+
+Use Case:
+User logs in → credentials validated from DB → admin page shows “Welcome <<username>>”
+
+
+MVC Mapping:
+Layer:		Component:
+View		login.jsp, admin.jsp, singup.jsp, success.jsp
+Controller	LoginServlet, SignupServlet
+Model		User (Entity), UserDao(Dao), UserService(Service)
+Util		DBUtil
+Config		web.xml
+
+
+Project Structure:
+ 
+MyWebApp/
+├── src/
+│   └── com/app/
+│        ├── controller/
+│        │    ├── LoginServlet.java
+│        │    └── SignupServlet.java
+│        ├── model/
+│        │    └── User.java
+│        ├── dao/
+│        │    ├── UserDao.java
+│        │    └── DBUtil.java
+│        └── service/
+│              └── UserService.java
+└── WebContent/
+     ├── login.jsp
+     ├── admin.jsp
+     ├── signup.jsp
+     ├── success.jsp
+     └── WEB-INF/
+          ├── web.xml
+          └── lib/
+               └── posgresql-xx.x.x.jar
+
+
+=======================================================================================================================================================================
+
+CONFIG (web.xml)
+
+URL → Controller mapping.
+
+
+
+<web-app>
+  <display-name>AdminUser</display-name>
+  
+  <welcome-file-list>
+    <welcome-file>login.jsp</welcome-file>
+  </welcome-file-list>
+  
+  <servlet>
+    <servlet-name>LoginServlet</servlet-name>
+    <servlet-class>com.app.controller.LoginServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>LoginServlet</servlet-name>
+    <url-pattern>/login</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>SignupServlet</servlet-name>
+    <servlet-class>com.app.controller.SignupServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>SignupServlet</servlet-name>
+    <url-pattern>/signup</url-pattern>
+  </servlet-mapping>
+  
+</web-app>
+
+
+=======================================================================================================================================================================
+
+VIEW - Frontend Page (login.jsp)
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <h2>User Login</h2>
+ 
+    <form action="login" method="post">
+        Username: <input type="text" name="username" /><br><br>
+        Password: <input type="password" name="password" /><br><br>
+        <input type="submit" value="Login" />
+    </form>
+ 
+    <p style="color:red">${errorMsg}</p>
+</body>
+</html>
+
+=======================================================================================================================================================================
+
+VIEW - Frontend Page (signup.jsp)
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Signup</title>
+</head>
+<body>
+	<h2>User Sign-up</h2>
+ 
+    <form action="signup" method="post">
+        Username: <input type="text" name="username" required/><br><br>
+        Password: <input type="password" name="password" required/><br><br>
+        Role: <input type="radio" name="role" value="admin" required/> Admin <input type="radio" name="role" value="basic" required/> Basic <br><br>
+        <input type="submit" value="Submit" />		<a href="login.jsp"> Go back to Login page</a>
+    </form>
+    
+    <p style="color:red">${errorMsg}</p>
+</body>
+</html>
+
+=======================================================================================================================================================================
+
+CONTROLLER (LoginServlet.java)
+
+
+
+package com.app.controller;
+ 
+import com.app.model.User;
+import com.app.service.UserService;
+ 
+import javax.servlet.*;
+import javax.servlet.http.*;
+import java.io.IOException;
+ 
+public class LoginServlet extends HttpServlet {
+ 
+    private UserService userService = new UserService();
+ 
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+ 
+        String username = req.getParameter("username");
+        String password = req.getParameter("password");
+ 
+        User user = userService.authenticate(username, password);
+ 
+        if (user != null) {
+            req.setAttribute("username", user.getUsername());
+            req.getRequestDispatcher("admin.jsp").forward(req, resp);
+        } else {
+            req.setAttribute("errorMsg", "Invalid username or password");
+            req.getRequestDispatcher("login.jsp").forward(req, resp);
+        }
+    }
+}
+
+
+Controller does: 
+request handling
+calls Model
+forwards View
+
+=======================================================================================================================================================================
+
+CONTROLLER (SignupServlet.java)
+
+
+
+package com.app.controller;
+
+import com.app.model.User;
+import com.app.service.UserService;
+
+import javax.servlet.*;
+import javax.servlet.http.*;
+import java.io.IOException;
+
+public class SignupServlet extends HttpServlet {
+	
+	private UserService userService = new UserService();
+	 
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+ 
+        String username = req.getParameter("username");
+        String password = req.getParameter("password");
+        String role = req.getParameter("role");
+        
+        User user = userService.addNewUser(username, password, role);
+        
+        if (user != null){
+            req.setAttribute("username", user.getUsername());
+            req.getRequestDispatcher("success.jsp").forward(req, resp);
+        } else {
+            req.setAttribute("errorMsg", "User is not added, try again");
+            req.getRequestDispatcher("signup.jsp").forward(req, resp);
+        }
+    }
+}
+
+=======================================================================================================================================================================
+
+MODEL – Entity (User.java)
+
+
+
+package com.app.model;
+ 
+public class User {
+ 
+    private int id;
+    private String username;
+    private String password;
+    private String role;
+ 
+    // Getters and setters
+}
+
+
+
+Pure data. No logic.
+
+
+=======================================================================================================================================================================
+
+MODEL – Service Layer (UserService.java)
+
+Business rules and logic live here.
+
+
+
+package com.app.service;
+
+import com.app.dao.UserDao;
+import com.app.model.User;
+ 
+public class UserService {
+	
+	private UserDao userDao = new UserDao();
+ 
+    public User authenticate(String username, String password) {
+    	
+        if (username == null || password == null) {
+            return null;
+        }
+        
+        User user = userDao.findByCredentials(username, password);
+ 
+        // business rule
+        if (user != null && "ADMIN".equalsIgnoreCase(user.getRole())) {
+            return user;
+        }
+ 
+        return null;
+    }
+    
+    public User addNewUser(String username, String password, String role) {
+    	
+    	boolean added = userDao.addUser(username, password, role);
+    	
+    	if (!added) {
+    		return null;
+    	}
+    	else {
+    		User user = userDao.findByCredentials(username, password);
+    		return user;
+    	}
+    	
+    }
+}
+
+=======================================================================================================================================================================
+
+Model – DAO (UserDao.java)
+
+Database interaction only.
+
+
+
+package com.app.dao;
+ 
+import com.app.model.User;
+import java.sql.*;
+ 
+public class UserDao {
+ 
+    public User findByCredentials(String username, String password) {
+ 
+        User user = null;
+ 
+        String sql = "SELECT * FROM Users WHERE username=? AND password=?";
+ 
+        try (Connection con = DBUtil.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+ 
+            ps.setString(1, username);
+            ps.setString(2, password);
+ 
+            ResultSet rs = ps.executeQuery();
+ 
+            if (rs.next()) {
+                user = new User();
+                user.setId(rs.getInt("id"));
+                user.setUsername(rs.getString("username"));
+                user.setRole(rs.getString("role"));
+            }
+ 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+ 
+        return user;
+    }
+    
+
+    public boolean addUser(String username, String password, String role){
+    	boolean rowInserted = false;
+    	
+    	String INSERT_SQL = 
+                "INSERT INTO Users (username, password, role) VALUES (?, ?, ?::role_type);";
+    	
+    	// Use try-with-resources to automatically close connections
+        try (Connection con = DBUtil.getConnection();
+             PreparedStatement ps = con.prepareStatement(INSERT_SQL)) {
+        
+            ps.setString(1, username);
+            ps.setString(2, password);
+            
+            // The ?::role_type in SQL handles the conversion from String to Enum
+            ps.setString(3, role); 
+
+            rowInserted = ps.executeUpdate() > 0;
+        } catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        return rowInserted;
+    } 
+}
+
+
+=======================================================================================================================================================================
+
+DB Utility (DBUtil.java)
+
+Clean DB handling.
+
+
+
+package com.app.dao;
+ 
+import java.sql.Connection;
+import java.sql.DriverManager;
+ 
+public class DBUtil {
+ 
+    public static Connection getConnection() throws Exception {
+        Class.forName("org.postgresql.Driver");
+        return DriverManager.getConnection(
+        	"jdbc:postgresql://localhost:5432/Admin_User", 
+            "postgres", 
+            "postgres"
+        );
+    }
+}
+
+=======================================================================================================================================================================
+
+VIEW – Response Page (admin.jsp)
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin</title>
+</head>
+<body>
+    <h2>Admin Page</h2>
+    <h3>Welcome ${username}</h3>
+</body>
+</html>
+
+
+=======================================================================================================================================================================
+
+VIEW – Response Page (success.jsp)
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Success</title>
+</head>
+<body>
+	<h2>Success</h2>
+    <h3>New user ${username} is added</h3>
+</body>
+</html>
+
+=======================================================================================================================================================================
+
+Database Table
+
+
+
+CREATE TYPE role_type AS ENUM ('admin', 'basic');
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50),
+    password VARCHAR(50),
+    role role_type
+);
+ 
+INSERT INTO users VALUES (1, 'Sai', 'admin123', 'ADMIN');
+
+=======================================================================================================================================================================
+
+

@@ -1,0 +1,813 @@
+Java:
+
+===============================================================================================================================================================================
+JVM vs JRE vs JDK:
+===============================================================================================================================================================================
+
+1. JVM (Java Virtual Machine)
+The execution engine that runs Java bytecode(.class). It is "virtual" because it provides a platform-independent interface that doesn't depend on the underlying hardware.
+Components: Class Loader, Interpreter, JIT Compiler, Garbage Collector.
+
+2. JRE (Java Runtime Environment)
+The deployment package that provides the minimum requirements to run a Java application. 
+JRE = JVM + Class Libraries (e.g., rt.jar) + Supporting Files
+
+3. JDK (Java Development Kit)
+The full toolkit for Java developers to create and run applications. 
+JDK = JRE + Development Tools (javac, jdb, javadoc, etc.)
+
+===============================================================================================================================================================================
+The Java Lifecycle - Code to Execution
+===============================================================================================================================================================================
+
+Source Code (.java) ----[Compiler (javac)]---> Bytecode (.class) ----[JVM (Interpreter + JIT Compiler)]---> Machine Code (0s & 1s)
+
+
+1. The Source Code is initially compiled by javac (the Front-end Compiler) into Bytecode 						-------	(Write Once)
+
+	This Bytecode is platform independent. The JVM is platform-specific, there is s JVM for windows, a JVM for Linux, MacOS etc
+
+2. Now any JVM can translate this universal Bytecode into its specific OS instructions (Machine/Native Code) 				-------	(Run Anywhere)
+
+	The JVM loads the Bytecode and uses two helpers to execute it:
+
+	Interpreter: 
+	- Immediately starts reading the bytecode line-by-line and telling the CPU what to do (Slow).
+
+	JIT Compiler: 	
+	- Unlike javac which compiles code before you run it, the JIT compiles code while the program is running (In-Time).
+	- ItWatches for "hot" parts of your code (like a loop running 1,000 times) and compiles that specific section into Native Machine Code (Fast).
+
+===============================================================================================================================================================================
+Features:
+===============================================================================================================================================================================
+
+Object-Oriented
+Platform-Independent (Write Once, Run Anywhere via JVM)
+Robust and Secure
+High-Performance (JIT Compiler)
+Multithreaded and
+Distributed Computing
+
+===============================================================================================================================================================================
+
+Advantages:
+
+Platform Independence: Write code once and run it on any platform with a Java Virtual Machine (JVM).
+Large Community and Ecosystem: Benefits from a massive community, extensive libraries, and frameworks like Spring Boot, which support rapid development and problem-solving.
+Object-Oriented: Fully supports object-oriented programming principles, making it modular and reusable.
+Robust and Secure: Includes features like garbage collection and a security model that protects against threats.
+Multithreading: Allows multiple threads of execution to run concurrently, improving performance and resource utilization.
+Backward Compatibility: Maintains compatibility with older versions, making it easier to upgrade existing applications. 
+
+
+Disadvantages:
+
+Performance: Can be slower than compiled languages like C/C++ due to the JVM overhead and the JIT compiler's interpretation step.
+High Memory Consumption: Uses more memory because of the JVM and automatic garbage collection, which can impact performance in resource-constrained environments.
+Verbose Syntax: Code can be more verbose and require more lines to accomplish a task compared to more concise languages.
+Lack of Low-Level Control: The absence of low-level pointers makes it less suitable for tasks that require direct hardware manipulation, like driver development.
+Slow Startup Time: Applications can have a slower startup time, especially for short-lived processes, due to the JVM's startup process. 
+
+===============================================================================================================================================================================
+Memory management in java:
+===============================================================================================================================================================================
+
+Java memory management is automatic, handled by the JVM
+With the crucial Garbage Collector (GC) cleaning up unused objects from the Heap, freeing developers from manual deallocation like in C/C++. 
+Focusing on main areas: 
+	- The Stack (for temporary method data) and
+	- The Heap (for objects and String literals)
+You create objects with new (Heap), while method calls/local variables use the Stack (auto-cleared)
+
+===============================================================================================================================================================================
+Data Types:
+===============================================================================================================================================================================
+
+1. Primitive Data Types (Values):
+
+These are predefined by the language and store actual values directly in memory (typically on the stack). 
+
+Type 	Size	Default (Fields)	Range / Purpose
+----------------------------------------------------------------------------------------------
+byte	8-bit	0			-128 to 127; used for memory-efficient arrays.
+short	16-bit	0			-32,768 to 32,767.
+int	32-bit	0			-2.1B to 2.1B; standard choice for integers.
+long	64-bit	0L			Use for values exceeding int range. Requires L suffix.
+float	32-bit	0.0f			~7 decimal digits precision. Requires f suffix.
+double	64-bit	0.0d			~15 decimal digits; default for decimal literals.
+char	16-bit	'\u0000'		Single Unicode character (unsigned: 0 to 65,535).
+boolean	~1-bit	false			true or false only.
+
+Key Constraints:
+No Methods: Primitives do not have methods; use Wrapper Classes (e.g., Integer) for object-based operations.
+No Null: Primitives cannot be null.
+Not for Generics: You cannot use primitives in collections (e.g., List<int> is invalid; use List<Integer>)
+
+
+
+
+2. Non-Primitive Data Types (Reference):
+
+These store memory addresses (references) of objects stored on the heap. 
+	
+String: String name="sai";
+Arrays: int[] numbers = new int[5];	int[] numbers = {1, 2, 3, 4, 5}
+Classes: Blueprint of an object
+Interfaces: 
+Enums:
+
+Default Value: Always null if uninitialized.
+Size: Not fixed; depends on the object's complexity.
+Behavior: When you assign one reference variable to another, they both point to the same object in memory. 
+
+===============================================================================================================================================================================
+Operators:
+===============================================================================================================================================================================
+
+Arithmetic: (+, -, *, /, %). Note that / on integers truncates decimal parts
+
+Unary: Operate on a single operand (++, --, !, ~).
+
+Relational: (==, !=, >, <, >=, <=).
+
+Logical: (&&, ||, !).
+
+Assignment: Simple (=) and compound (+=, -=, *=, /=, %=, etc.).
+
+Ternary: variable = (condition) ? expressionTrue : expressionFalse;
+
+Type Comparison: instanceof - checks if an object is of a specific type. 
+
+Bitwise & Shift Operators: Direct manipulation of integer bits (byte, short, int, long). 
+
+Bitwise AND (&): 1 only if both bits are 1.
+Bitwise OR (|): 1 if at least one bit is 1.	
+Bitwise XOR (^): 1 if bits are different.
+Bitwise Complement (~): Flips all bits; results in -(N+1) for any integer N.
+Left Shift (<<): Shifts bits left, fills right with 0. Effectively multiplies by 2 power n.
+Signed Right Shift (>>): Shifts bits right, preserving the sign bit (arithmetic shift).
+Unsigned Right Shift (>>>): Shifts bits right, fills left with 0 regardless of sign (logical shift). 
+
+===============================================================================================================================================================================
+Decision Making/ Conditional Statements:
+===============================================================================================================================================================================
+
+1. if-else Ladder:
+
+
+if (condition1) {
+    // code
+} else if (condition2) {
+    // code
+} else {
+    // default
+}
+
+
+
+
+2. Traditional switch:
+Constant matching with fall-through behavior
+
+switch (variable) {
+    case 1:
+        // code
+        break; // prevents fall-through
+    case 2, 3: // multiple labels (Java 7+)
+        // code
+        break;
+    default:
+        // default code
+}
+
+===============================================================================================================================================================================
+Loops:
+===============================================================================================================================================================================
+
+1. for Loop (Traditional):
+Best when the number of iterations is known.
+
+for (int i = 0; i < 10; i++) {
+    // code
+}
+
+Structure: initialization; condition; increment/decrement.
+Scope: i is local to the loop block.
+
+
+
+
+2. while Loop:
+Best when the number of iterations is unknown and depends on a condition.
+
+while (condition) {
+    // code
+    // condition must eventually become false
+}
+
+Risk: If the condition never changes, it results in an infinite loop.
+
+
+
+
+3. do-while Loop:
+Guarantees at least one execution of the block before checking the condition.
+
+do {
+    // code executes once
+} while (condition);
+
+
+
+
+4. Loop Control Statements:
+break: Exits the innermost loop immediately.
+continue: Skips the rest of the current iteration and jumps to the next one.
+Labeled Breaks/Continues: Useful for nested loops to break out of an outer loop
+
+outer: for (int i = 0; i < 5; i++) {
+    for (int j = 0; j < 5; j++) {
+        if (condition) break outer; // exits both loops
+    }
+}
+
+
+
+
+5. Enhanced for loop:
+Introduced in Java 5 for iterating over Arrays and Iterable collections (List, Set, etc.).
+
+for (String item : list) {
+    // code
+}
+
+Constraint: Cannot modify the structure of the collection (e.g., remove()) during iteration without throwing ConcurrentModificationException.
+Use an Iterator or removeIf() for that.
+
+
+
+
+
+6. Functional Iteration (Java 8+):
+forEach method, internal iteration using the Streams API and in collections.
+
+list.forEach(item -> System.out.println(item));
+
+===============================================================================================================================================================================
+Strings:
+===============================================================================================================================================================================
+
+Declare, Instantiate and Initialize:
+
+Accessing:
+str.charAt() - 
+
+String Pool:
+
+String s = "" vs String s = new String();
+
+
+===============================================================================================================================================================================
+Arrays:
+===============================================================================================================================================================================
+
+An Array is a container object that holds a fixed number of values of a single type. 
+
+
+Basic Syntax:
+There are three steps: Declare, Instantiate, and Initialize. 
+
+
+// Method 1: Declare and then Instantiate
+int[] numbers;           // Declaration
+numbers = new int[5];    // Instantiation (creates an array object with space for 5 integers)
+
+
+// Method 2: All in one line (Shorthand)
+int[] grades = {90, 85, 77, 98, 60}; 
+
+
+// Method 3: Accessing and Modifying
+numbers[0] = 10;         // Set first element to 10
+int firstVal = numbers[0]; // Retrieve the first value
+
+
+What happens when we instantiate an array:
+- it will create an object of special internal type dynamically created (by JVM) Class with a name like  [I (for int[]) or [Ljava.lang.String; (for String[]).
+- The object is allocated with a space for multiple values or references of objects
+- Every slot is initialized to the primitive's default or null (for object array)
+
+
+Primitive Array vs Object Array:
+Primitive Array: Stores raw data values (like 42 or true) directly in a contiguous memory block, initialized to type-specific defaults like 0 or false.
+	Examples: int[], double[], boolean[]....
+Object Array: Stores memory addresses (references) that point to objects elsewhere on the heap, initialized to null.
+	Examples: String[] - stores objects of String, Integer[] - can store objects of Wrapper classes, Student[] - can store objects of user defined classes......
+
+
+Finding Length:
+Arrays have a built-in property called .length. 
+
+System.out.println(grades.length);
+
+
+
+Iterating (Looping):
+You usually use a for loop or an "enhanced for-each" loop to look at every item. 
+
+for (int i = 0; i < grades.length; i++) {
+    System.out.println("Grade at index " + i + ": " + grades[i]);
+}
+
+
+
+// Enhanced for loop (easier to read)
+for (int grade : grades) {
+    System.out.println(grade);
+}
+
+
+
+Multi-dimensional Arrays
+You can also create "arrays of arrays" (like a grid or matrix). 
+
+int[][] matrix = {
+    {1, 2, 3},
+    {4, 5, 6}
+};
+System.out.println(matrix[0][1]); // Output: 2 (Row 0, Column 1)
+
+
+
+Arrays class:
+- The java.util.Arrays class is a utility class that provides ready-made static methods for manipulating arrays easily (such as searching, sorting, and comparing). 
+- Since arrays do not have many build-in methods (unlike objects like ArrayList), that's why Arrays class exists - to provide those operations
+- Since its methods are static, you don't instantiate it; you call them directly on the class
+
+
+Key Use Cases:
+
+Arrays.toString(arr): 		Returns a readable string representation of the array (e.g., [1, 2, 3]), which is essential because calling toString() directly on an array object just prints the internal class name and hashcode.
+
+Arrays.sort(arr): 		Sorts the array. For primitives, it uses a Dual-Pivot Quicksort; for objects, it uses TimSort.
+
+Arrays.asList(arr): 		Acts as a bridge between arrays and the Collections framework by wrapping an array into a List. Works only with an object array (String[] becomes List<String>); fails with Primitives, if you pass an int[], it won't create a List<Integer>. Instead, it creates a List<int[]> (a list containing one single item: the array itself)
+
+Arrays.fill(arr, value): 	Quickly assigns a specific value to every index in the array.
+
+Arrays.binarySearch(arr, key): 	Efficiently finds the index of a value (the array must be sorted first).
+
+Arrays.equals(arr1, arr2): 	Checks if two arrays have the same length and identical elements in the same order.
+
+
+===============================================================================================================================================================================
+Exception handling:
+===============================================================================================================================================================================
+
+In Java, all error and exception types are organized under a single root class, java.lang.Throwable. This root branches into two main categories: Error and Exception
+
+Error/Exception Class Hierarchy:
+
+java.lang.Throwable: The base class for all objects that can be thrown or caught.
+	java.lang.Error: Represents serious, unrecoverable system-level issues. Applications are not expected to handle these.
+	java.lang.Exception: Represents conditions that a program should typically handle or catch.
+		java.lang.RuntimeException: A special subclass of Exception that serves as the root for all "unchecked" exceptions.
+		Other subclasses: All other subclasses of Exception are "checked" exceptions
+
+
+Category 	In Developer Control?	Can be handled?		Caught By	Best Action				Example
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+Error		❌ No			❌ No			Runtime		Fix system or hardware			OutOfMemoryError, StackOverflowError
+Checked		⚠️ Partially		✅ Yes			Compiler	Implement a Plan B			IOException, SQLException
+Unchecked	✅ Yes			✅ Yes (Optional)	Runtime		Fix the bug in logic or handle it	NullPointerException, ArithmeticException
+
+
+When an exception is triggered (manually or automatically), it creates and throws a new exception object, which contains:
+	
+Class Name - e.getClass().getName()
+The Detail Message - e.getMessage()
+The Where - e.printStackTrace()
+
+Now, we need to catch and handle the thrown exception using:
+
+try{} - Defines the "danger zone" where you have code that might trigger an exception.
+catch(){} - The "safety net" that intercepts a specific exception object and executes your Plan B logic.
+finally{} - The "guaranteed cleanup" block that runs whether an exception happened or not, usually to close files or database connections.
+
+
+throw - manually triggers exception and throws Exception object, use it when there is no way an exception is triggered but you still 
+throws - it is a warning to the caller of the method saying, "Hey, this method is dangerous. You must handle the error yourself using a try-catch." (throws is only a mandatory warning for Checked Exceptions; for unchecked exceptions, handling is not mandatory)
+	
+
+
+
+Creating Custom exception example:
+
+//Creating custom checked exception by extending the class from Exception class
+//if you want to create a custom unchecked exception, extend the class from RuntimeException
+class InsufficientFundsException extends Exception {
+    
+    // Constructor that accepts a custom message
+    public InsufficientFundsException(double amountNeeded) {
+        // Pass a formatted string to the parent 'Exception' class
+        super("Transaction failed! You are short by: ₹" + amountNeeded);
+    }
+}
+
+public class CustomException {
+    private static double balance = 500.00;
+    // throws is mandatory since it is a custom checked exception
+    public static void withdraw(double amount) throws InsufficientFundsException {
+        if (amount > balance) {
+            double missing = amount - balance;
+            // Throwing our custom exception with specific data
+            throw new InsufficientFundsException(missing);
+        }
+        balance -= amount;
+        System.out.println("Withdrawal successful!");
+    }
+
+    public static void main(String[] args) {
+        // handling the custom checked exception using try-catch
+        try {
+            withdraw(750.00); 
+        } catch (InsufficientFundsException e) {
+            // This will print the custom message we built in the constructor
+            System.out.println(e); 
+        }
+    }
+}
+
+===============================================================================================================================================================================
+Object-Oriented Programming:
+===============================================================================================================================================================================
+
+Building Blocks:
+
+Class: A user-defined blueprint or template from which objects are created. It defines the state and behavior common to all objects of that type.
+Object: A basic unit of OOP and a real-world entity that is an instance of a class. It has a state (attributes) and behavior (methods).
+
+
+
+The Four Pillars of OOP:
+
+////////////////////////////////////////////////////////////
+1. Abstraction: This concept focuses on hiding complex implementation details and showing only the essential features to the user. For example, a driver knows how to use the steering wheel and brakes without needing to understand the internal mechanics of the engine.
+	Implementation: Java achieves abstraction using abstract classes and interfaces.
+
+////////////////////////////////////////////////////////////
+2. Encapsulation: This is the process of wrapping data and the methods that operate on that data into a single unit (a class) while restricting direct access to the data.
+	Implementation: It is typically achieved by declaring class variables as private and providing public getter and setter methods for controlled access
+
+////////////////////////////////////////////////////////////
+3. Inheritance: A mechanism that allows a subclass (child) to acquire the properties (fields) and behaviors (methods) of a superclass (parent). Beyond what it inherits, the child class can also define its own new properties and behaviors or override existing ones. It promotes code reusability by establishing an "is-a" relationship.
+	Implementation: Java uses the extends keyword to implement inheritance
+
+
+
+Object creation and accessing the properties/behaviors:
+When you create an object, ParentClass obj = new ChildClass();
+The Compiler checks the Reference Type (ParentClass) to see which properties and behaviors are available to call; if the method is found, the JVM then executes the specific logic defined in the Object Type (ChildClass)
+
+Scenario:
+So, when you create an object of a subclass with parent reference type, you can only access what parent class have. If the method is overridden in the child class, it would give you updated behavior when the method is called 
+
+
+
+Order of Constructor Execution in inheritance: 
+When you create an instance of a subclass, the parent class constructor is called first to ensure the base part of the object is fully initialized before the subclass adds its own data
+
+Example:
+When you run new Dog(), the sequence is as follows:
+Animal (Top Superclass) constructor executes.
+Mammal (Middle Superclass) constructor executes.
+Dog (Subclass) constructor executes
+
+
+
+Super:
+The super keyword is primarily used in three scenarios:
+ 
+To Call Parent Class Constructors: 	super invokes the parent class constructor (Default/Parameterized). It must be the first statement in the subclass constructor.
+	- Default Constructor (Implicit): Every constructor has super() by default, no need to use it. 
+	- Parameterized Constructor (Explicit): It is essential to use super(parameters) for calling parameterized constructors of the parent class.
+To Access Parent Class Methods: 	If a subclass overrides a parent method, you can still call the original parent version using super.methodName().
+To Access Parent Class Variables: 	If a subclass has a variable with the same name as a parent class variable (variable shadowing), super.variableName differentiates and accesses the parent's version
+
+////////////////////////////////////////////////////////////
+4. Polymorphism: Meaning "many forms," polymorphism allows a single action to behave differently depending on the object it is acting upon
+Types:
+	Compile-time (Static): Achieved via method overloading (multiple methods with the same name but different parameters).
+	Runtime (Dynamic): Achieved via method overriding (a subclass providing its own implementation of a parent class method).
+
+
+////////////////////////////////////////////////////////////
+Other Key Relationships: Beyond the four pillars, Java also uses several concepts to define how objects relate and interact:
+ 
+Association: A general relationship between two separate classes where objects can exist independently (e.g., a teacher and a student).
+Aggregation: A specialized "has-a" relationship where the child can exist independently of the parent (e.g., a Department has Professors).
+Composition: A strong form of aggregation where the child cannot exist without the parent (e.g., a House has Rooms; if the house is destroyed, the rooms are too).
+
+===============================================================================================================================================================================
+Modifiers:
+===============================================================================================================================================================================
+
+In Java, these keywords define the scope and behavior of variables and methods.
+
+Access Modifiers (Scope):
+These control who can "see" or use the variable or method:
+
+public: Accessible from any other class in any package.
+private: Accessible only within the class it is defined in.
+protected: Accessible within the same package and by subclasses in other packages.
+Default (no keyword): Accessible only within the same package.
+
+
+
+Non-Access Modifiers (Behavior):
+These define specific properties or logic constraints:
+
+1. static (The "Class" Keyword)
+Variables: The variable belongs to the class itself, not instances. All objects share the same copy.
+Methods: Can be called without creating an object of the class (e.g., Math.sqrt()).
+
+2. final (The "Constant" Keyword)
+Variables: Once assigned, the value cannot change (a constant).
+Methods: Cannot be overridden by a subclass.
+Classes: Cannot be inherited (extended).
+
+3. abstract (The "Template" Keyword)
+Methods: Has no body (logic). It acts as a requirement that subclasses must implement.
+Classes: Cannot be instantiated (you can't do new MyClass()). It only exists to be a parent for other classes.
+
+4. void (The "No Return" Keyword)
+Used only for methods. It tells the compiler that the method performs an action but does not return any value/data back to the caller.
+
+5. synchronized & volatile (The "Threading" Keywords)
+synchronized: Ensures a method can only be accessed by one thread at a time (prevents data corruption).
+volatile: Ensures that changes to a variable are always read directly from main memory, not a thread's local cache.
+
+===============================================================================================================================================================================
+Type Conversions:
+===============================================================================================================================================================================
+
+Type casting:
+	Primitive Casting:
+		Widening:
+		Narrowing:
+	Object Casting:
+		Up-casting:
+		Down-casting:
+
+Type promotion:
+
+Parsing(String to number types):
+	Integer.parseInt(), Double.partseDouble()
+
+String Conversion(any other type or object to String):
+	.toString()
+
+Boxing/Unboxing:
+
+
+===============================================================================================================================================================================
+Anonymous Class and Anonymous Function (Lambda Expression):
+===============================================================================================================================================================================
+
+Anonymous Class:
+
+Anonymous Function (Lambda Expression, Java8+):
+
+
+===============================================================================================================================================================================
+Wrapper classes and Generics:
+===============================================================================================================================================================================
+
+1. Wrapper Classes
+A Wrapper class "wraps" a primitive data type into an object. This allows primitives to be used where objects are required.
+Example: Collections (like ArrayList) can only store Objects, not primitives
+
+
+////////////////////////////////////////////////////////////
+2. Generics
+Generics allow you to specify the type of data that a class or method can work with using angle brackets < >. 
+
+This provides:
+- Type Safety: Errors are caught during compilation rather than at runtime.
+- No Casting: You don't have to manually cast objects when retrieving them from a collection.
+- Code Reusability: One piece of logic can be applied to many different data types
+
+Initially Collection framework was introduced without generics in java, later the generics were introduced to provide type safety
+Generics only work with Class types, does not work with primitives
+
+
+
+Without Generics:
+
+ArrayList list = new ArrayList(); 
+list.add("Hello");
+String s = list.get(0).toString(); // Casting
+
+
+
+With Generics:
+
+ArrayList<String> list = new ArrayList<>(); 
+list.add("Hello");
+String s = list.get(0); // No casting needed
+// list.add(10); // Compile-time error! (Type Safety)
+
+
+
+
+Implementing Own Generics:
+
+class Container<T> {
+	T value;
+	public void show() {
+		System.out.println(value.getClass().getName());
+	}
+}
+
+public class GenericsDemo {
+	public static void main(String[] args) {
+		Container<Integer> obj = new Container<>();
+		obj.value=10;
+		obj.show();
+	}
+}
+
+
+===============================================================================================================================================================================
+Collections:
+===============================================================================================================================================================================
+
+The Java Collections Framework is a unified architecture that provides ready-to-use data structures to store and manage groups of objects efficiently. 
+It eliminates the need for fixed-size arrays and provides standardized interfaces and classes for searching, sorting, and manipulating data.
+
+
+////////////////////////////////////////////////////////////
+1. List (Ordered Sequence)
+A List is an ordered collection that allows duplicate elements and provides index-based access. 
+
+Hierarchy:
+Collection(I) ---extended by---> List(I) ---Implemented by---> ArrayList(C)
+
+Key Feature: Maintains the insertion order of elements.
+
+Common Implementations:
+ArrayList: Best for fast random access and frequent searching by index.
+LinkedList: Better for frequent insertions and deletions at the beginning or end.
+
+Syntax:
+List<String> list = new ArrayList<>();
+
+
+
+////////////////////////////////////////////////////////////
+2. Set (Unique Elements)
+A Set is a collection that does not allow duplicate elements. 
+
+Key Feature: Used strictly when you need a collection of unique items.
+
+Common Implementations:
+HashSet: Most common; unordered and backed by a hash table for fast operations.
+TreeSet: Automatically keeps elements in a sorted order.
+LinkedHashSet: Maintains the order in which elements were added.
+
+Syntax: Set<Type> name = new HashSet<>();
+
+
+
+////////////////////////////////////////////////////////////
+4. Queue (Order of Processing)
+A Queue is designed for holding elements prior to processing, typically following the FIFO (First-In-First-Out) principle. 
+
+Key Feature: Elements are added at the back and removed from the front.
+
+Common Implementations:
+PriorityQueue: Elements are ordered based on their natural priority or a custom comparator.
+ArrayDeque: A double-ended queue that supports insertion and removal at both ends.
+
+Syntax: Queue<Type> name = new LinkedList<>();
+
+
+
+////////////////////////////////////////////////////////////
+3. Map (Key-Value Pairs)
+A Map stores data as associations between unique keys and values. 
+
+Key Feature: It is not a subtype of the Collection interface but is part of the framework. Each key maps to exactly one value.
+
+Common Implementations:
+HashMap: General-purpose; offers fast lookups but no specific order.
+TreeMap: Keeps keys in a sorted order.
+
+Syntax: Map<KeyType, ValueType> name = new HashMap<>();
+
+
+
+////////////////////////////////////////////////////////////
+EssentialFunctions:
+
+Since all major collection interfaces (List, Set, Queue) extend the root Collection<E> interface, they all share a core set of methods.
+
+1. Adding Elements
+add(E e): Adds an element. Returns true if the collection changed.
+addAll(Collection<? extends E> c): Adds all elements from another collection.
+
+2. Removing Elements
+remove(Object o): Removes a specific element if it exists.
+removeAll(Collection<?> c): Removes all elements that are also contained in the specified collection.
+removeIf(Predicate<? super E> filter): Removes all elements that meet a certain condition (very useful with Lambda expressions).
+clear(): Removes all elements, leaving the collection empty.
+
+3. Checking State
+size(): Returns the number of elements.
+isEmpty(): Returns true if there are no elements.
+contains(Object o): Checks if a specific element is present.
+containsAll(Collection<?> c): Checks if the collection contains all elements of another collection.
+
+4. Conversion & Bulk Operations
+toArray(): Converts the collection into a standard Java array (Object[]).
+iterator(): Manual looping, works with .hasNext() and .next() methods (used for manual looping and mainly used to .remove() while in loop which is not possible with enhanced for).
+stream(): Converts the collection into a Stream, allowing for modern functional-style operations like filter, map, and reduce.
+
+5. Comparison
+equals(Object o): Compares the specified object with the collection for equality.
+hashCode(): Returns the hash code value for the collection.
+
+
+Map functions:
+
+Because Map does not extend Collection, its methods are slightly different but follow a similar logic:
+
+Use put(key, value) instead of add().
+Use get(key) to retrieve data.
+Use containsKey(key) or containsValue(value) for checks.
+
+
+===============================================================================================================================================================================
+Streams API:
+===============================================================================================================================================================================
+
+1. The Core Concept
+A Stream is not a data structure. It’s a pipeline of operations that process data from a source (like a List or Set) without modifying the original source.
+Pipeline Structure: Source -> Intermediate Operations -> Terminal Operation.
+Lazy Evaluation: Intermediate operations aren't executed until a Terminal operation is called. This is a huge performance win.
+
+
+
+===============================================================================================================================================================================
+Multi-threading:
+===============================================================================================================================================================================
+
+
+
+===============================================================================================================================================================================
+File handling & Serialization:
+===============================================================================================================================================================================
+
+
+===============================================================================================================================================================================
+Closures:
+===============================================================================================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

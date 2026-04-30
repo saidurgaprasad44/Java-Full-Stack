@@ -1,0 +1,266 @@
+Technology Stack:
+Java, Servlet MVC, Tomcat, RESTful APIs (using Jersey JAX-RS), Maven, Git
+PostgreSQL (Database Server/DBMS), pgAdmin 4 (Client Tool), JDBC
+HTML, CSS, JSP, JavaScript, Bootstrap 
+
+=======================================================================================================================================================================
+Setup Java (JDK):
+
+Install JDK 1.8 (Recommended for Java EE - Jersey JAX-RS - Javax Namespace)
+
+Download:
+https://www.oracle.com/java/technologies/downloads/#java8-windows
+
+After installation, verify:
+java -version
+javac -version
+You should see version 1.8
+
+Add Environment Variable:
+JAVA_HOME = C:\Program Files\Java\jdk-1.8
+
+Add to path:
+%JAVA_HOME%\bin
+
+Verify:
+echo %JAVA_HOME%
+
+=======================================================================================================================================================================
+Setup Maven (Optional, if you want to use embedded Maven in the IDE):
+
+Download:
+https://maven.apache.org/download.cgi 
+
+Setup
+Extract zip → C:\Program Files\Apache\maven
+
+Add Environment Variable:
+MAVEN_HOME = C:\Program Files\Apache\maven
+
+Add to Path: 
+%MAVEN_HOME%\bin
+
+Verify:
+mvn -version
+You should see Java version + Maven version.
+
+=======================================================================================================================================================================
+Setup Git:
+
+Download:
+https://git-scm.com/ 
+
+Verify:
+git --version
+
+Create account in GitHub and configure  user name and user email:
+git config --global user.name "Your Name"
+git config --global user.email "your@email.com"
+
+Verify:
+git config user.name
+git config user.email
+=======================================================================================================================================================================
+Setup IDE:
+
+Eclipse IDE for Enterprise Java and Web Developers:
+
+Download:
+https://www.eclipse.org/downloads/packages/
+
+After installing, configure Java and Maven:
+
+Add Installed JRE/JDK in Eclipse:
+Window → Preferences → Java → Installed JREs
+Select JDK 1.8 manually.
+
+Then: 
+Window → Preferences → Java → Compiler → Set compliance to 1.8
+
+If not configured:
+Project build errors “Execution environment not supported”
+
+
+Configure Maven (optional, if you want to use embedded Maven in the IDE):
+Window → Preferences → Maven → Installations
+
+You will see:
+Embedded Maven (came with Eclipse)
+
+Add External Maven
+Select system Maven if installed
+
+=======================================================================================================================================================================
+Tomcat Setup:
+
+Download Tomcat:
+https://tomcat.apache.org/
+
+Use:
+Tomcat 10 (for Jakarta EE, jakarta.servlet, Servlet 5.0 / 6.0)
+Tomcat 9 (for Java EE, javax.servlet, Servlet 4.0)
+
+Extract → D:\Softwares
+
+Add Server Runtime Environment in Eclipse:
+Window > Preferences > Server > Runtime Environments --- Add installed tomcat
+
+Add installed Java8 to Tomcat:
+This step tells the tomcat to run on so and so Java
+Window > Preferences > Server > Runtime Environments --- Edit and add installed Java
+
+Create new server instance in Eclipse:
+This step will create a pointer to actual physical tomcat installation folder in your machine.
+Window > Show View > Other > Server > Servers --- Open (This will open the Servers Pane view)
+In the Servers Pane right click > New > Server > Apache > Select tomcat version (9) > Select the Server Runtime Environment > Finish
+If creating multiple servers in the IDE from a single physical tomcat on the machine, make sure to maintain unique port numbers for admin, http, ajp
+
+Change Config Location:
+Right click on the server > properties > Switch location > Apply and Save
+Double click on the server > Server Locations > User Tomcat installation --- Save
+
+Start the server:
+Without IDE:
+Go to bin\ inside Tomcat installation path and run:
+startup.bat
+
+Or
+
+From Services:
+Modify ports in server.xml (8005: shutdown, 8080: HTTP Connector, 8009: The AJP Connector port if used, 8443: SSL/HTTPS Connector port if used), modify SERVICE_NAME, DISPLAYNAME, CATALINA_BASE in service.bat (if you want to have multiple tomcats running simultaneously, optional)
+Open CMD
+Go to bin\ inside Tomcat installation path and run the command:
+service.bat install
+Open Services -> Apache Tomcat xx Tomcatx -> Start
+
+Or
+
+From IDE:
+Right Click on the server and click Start
+
+Check in the browser:
+http://localhost:8080
+
+After configuring Tomcat in Eclipse, make sure that the 'Target runtime' is properly set when you are creating a new project
+
+Deploy: Copy your .war file into:
+webapps/
+Restart tomcat
+
+=======================================================================================================================================================================
+Create Maven Project:
+
+File > New > Maven Project
+Create a simple project (skip archetype selection) - keep unchecked and click on Next
+Uncheck - Show the last version of Archetype only
+Filter with "Jersey"
+Select - jersey-quickstart-webapp 2.26-b03 with Group Id org.glassfish.jersey.archetypes and click on Next
+Give Group Id, Artifact Id of the new project
+Click on Finish
+
+Configure Java for the project:
+Right click on Project name > Properties > Java Build Path > Libraries
+Remove Existing JRE > Add Library > JRE System Library > Next > Select Alternate JRE > jdk1.8 > Finish > Apply
+Java Complier > Set compiler compliance to 1.8 > Apply
+
+Configure Tomcat for the project:
+Right click on Project name > Properties > Targeted Runtimes > Select Tomcat 9 > Apply and Close
+
+pom.xml configuration:
+Set the Source and Target to 1.8 for maven-compiler-plugin
+Uncomment the jersey-media-moxy dependency for json conversion capability
+For adding/modifying dependencies, get the required dependencies from mvnrepository:
+https://mvnrepository.com/
+=======================================================================================================================================================================
+Project Structure:
+
+
+In Dynamic Web Project (WAR packaging):
+
+project-name/
+│
+└── src/
+      └── main/
+            ├── java/
+            │     └── com/example/demo/
+            │            ├── controller
+            │            ├── service
+            │            ├── repository
+            │            └── model 
+            └── webapp/
+   		   ├── HTML, CSS, JSP, JS, images ---
+                   ├── META-INF/
+   		   └── WEB-INF/
+   			  └──web.xml
+
+
+In Maven project (WAR packaging):
+The libraries(jars / Maven dependencies) are not stored in project structure, they are stored in system .m2 maven local repository
+
+project-name/
+│
+├──src/
+│   ├── main/
+│   │     ├── java/
+│   │     │    └── com/example/demo/
+│   │     │          ├── controller
+│   │     │          ├── service
+│   │     │          ├── repository
+│   │     │          └── model
+│   │     ├── resources/   
+│   │     └── webapp/
+│   │		    ├── HTML, CSS, JSP, JS, images ---
+│   │		    └── WEB-INF/
+│   │				  └──web.xml
+│   └── test/
+│        └── java/
+│              └── com/example/demo/
+├── target/     <-- compiled files (auto-generated)
+├── pom.xml     <-- project config
+├── .gitignore
+└── mvnw / mvnw.cmd  <-- Maven wrapper
+		
+=======================================================================================================================================================================
+Database Setup:
+
+PostgreSQL
+
+Download PostgreSQL:
+https://www.postgresql.org/download/windows/
+
+Install:
+Select Components: Ensure the following are checked:
+PostgreSQL Server: The actual database.
+pgAdmin 4: The graphical interface you'll use to manage it.
+Command Line Tools: Includes psql for terminal access.
+Note: You can uncheck "Stack Builder" to keep the installation simple.
+Set Password for the superuser (postgres): Do not forget this password, as you need it to log in.
+Port & Locale: Keep the default port 5432 and the default locale unless you have a specific reason to change them.
+Finish: Click through the remaining "Next" prompts and wait for the installation to complete.
+
+
+In a Servlet based MVC application or a Jersey application, for JDBC:
+Download PostgreSQL JDBC Connection Jar:
+https://jdbc.postgresql.org/download/
+Copy and paste it in project Lib
+Add to the build path
+Restart Tomcat
+
+=======================================================================================================================================================================
+Install Postman:
+
+Download Postman: 
+https://www.postman.com/downloads/
+
+=======================================================================================================================================================================
+Git Workflow for Projects:
+
+Inside project:
+git init
+git add .
+git commit -m "Initial commit"
+
+Create repo in GitHub → then:
+git remote add origin https://github.com/username/project.git
+git push -u origin main
+

@@ -1,0 +1,87 @@
+Setup Git:
+
+Download:
+https://git-scm.com/ 
+
+Verify:
+git --version
+
+Configure GitHub username and email in your local git:
+git config --global user.name "Your Name"
+git config --global user.email "your@email.com"
+
+Verify:
+git config user.name
+git config user.email
+
+==============================================================================================================================================================
+Git Initialize:
+
+git init		: is used to initialize a new Git repository
+
+==============================================================================================================================================================
+Staging and tracking:
+The Staging Area (the Index) is a middle ground between your actual project folder and the Git repository.
+
+A tracked file is any file that Git is "aware" of. This means the file was included in your last commit or has been added to the staging area. 
+Untracked: A file exists in your folder, but Git doesn't know it exists. Changes to it are ignored.
+Tracked: Git actively monitors this file for changes. Once a file is tracked, it can be in one of three states:
+Unmodified: Matches the last commit.
+Modified: You've changed the file, but haven't staged the changes yet.
+Staged: You've used git add to prepare these specific changes for the next commit. 
+
+Adding to the index:
+git add .				: Only stages changes in your current directory and its subfolders.
+git add --all				: Stages every change in the entire repository, even if you are currently inside a deep subfolder (like src/main/java/).
+git add <file>				: Only stages changes of a specific file
+
+Unstage:
+git restore --staged .			: Restores all the files in the staging area
+git restore --staged <file>		: Restores a specific file in the staging area
+
+View:
+git status				: Standard overview of git status that includes, number of commits that the local branch is ahead of remote branch by, Changes to be committed
+git diff --name-only --staged		: To view all the staged files
+
+==============================================================================================================================================================
+Commit:
+
+git commit -m "Initial commit"		: Commits all the files from the staging area with a comment
+
+Revert:
+git revert <commit-hash>		: A new "undo" commit is added. The original "bad" commit remains in the history for reference.
+
+Reset:
+git reset --hard <commit-hash>		: Instantly resets your files and history to that commit. Warning: Any unsaved work or later commits will be lost.
+git reset --soft <commit-hash>		: Moves the branch pointer back, but keeps all the changes from the "deleted" commits in your staging area so you can re-commit them
+
+View:
+git show --name-only			: Displays the commit message and a plain list of filenames modified in the latest commit.
+git show --name-status			: Shows the list of files along with their status—A (Added), M (Modified), or D (Deleted) in the latest commit.
+git log --stat				: Provides a summary including how many lines were added or removed in each file for recent commits.
+
+==============================================================================================================================================================
+Push:
+
+git remote add <alias_name> <remote_url>			: Sets alias_name for your remote repository URL, usually "origin"
+git remote -v 							: Verify Link (You should see your GitHub URL listed)
+
+git push origin <local-branch-name>:<remote-branch-name>	: Pushes to a specific remote branch from a specific local branch
+git push -u origin master					: Pushes the code from current local branch to remote branch "master" (Prompts for login)
+
+The -u flag sets "origin master" as the default, so in the future, you only need to type git push. 
+
+==============================================================================================================================================================
+Clone:
+
+git clone <remote_url>			: Clones remote repository to local
+
+==============================================================================================================================================================
+Pull:
+
+
+
+
+
+what is commit hash
+how to get the files from a specific commit

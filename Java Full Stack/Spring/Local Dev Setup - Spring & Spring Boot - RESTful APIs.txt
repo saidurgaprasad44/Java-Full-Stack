@@ -1,0 +1,308 @@
+Technology Stack:
+Java, Spring MVC, Spring Boot, Embedded Tomcat, RESTful APIs (using Spring Boot), Maven, Git
+PostgreSQL (Database Server/DBMS), pgAdmin 4 (Client Tool), Spring Data JPA (Hibernate)
+HTML, CSS, JSP, JavaScript, Bootstrap 
+
+=======================================================================================================================================================================
+Setup Java (JDK):
+
+Install JDK 17 (Recommended for Spring Boot 3+)
+
+Download:
+https://www.oracle.com/java/technologies/downloads/#java17-windows
+
+After installation, verify:
+java -version
+javac -version
+You should see version 17
+
+Add Environment Variable:
+JAVA_HOME = C:\Program Files\Java\jdk-17
+
+Add to path:
+%JAVA_HOME%\bin
+
+Verify:
+echo %JAVA_HOME%
+
+=======================================================================================================================================================================
+Setup Maven (Optional, if you want to use embedded Maven in the IDE):
+
+Download:
+https://maven.apache.org/download.cgi 
+
+Setup
+Extract zip → C:\Program Files\Apache\maven
+
+Add Environment Variable:
+MAVEN_HOME = C:\Program Files\Apache\maven
+
+Add to Path: 
+%MAVEN_HOME%\bin
+
+Verify:
+mvn -version
+You should see Java version + Maven version.
+
+=======================================================================================================================================================================
+Setup Git:
+
+Download:
+https://git-scm.com/ 
+
+Verify:
+git --version
+
+Create account in GitHub and configure  user name and user email:
+git config --global user.name "Your Name"
+git config --global user.email "your@email.com"
+
+Verify:
+git config user.name
+git config user.email
+=======================================================================================================================================================================
+Setup IDE:
+
+Spring Tools for Eclipse:
+
+Download:
+https://spring.io/tools#eclipse
+
+After installing configure Java and Maven:
+
+Add Installed JRE/JDK in STS:
+Window → Preferences → Java → Installed JREs
+Select JDK 17 manually.
+
+Then: 
+Window → Preferences → Java → Compiler → Set compliance to 17
+
+If not configured:
+Project build errors “Execution environment not supported”
+
+
+Configure Maven:
+Window → Preferences → Maven → Installations
+
+You will see:
+Embedded Maven (came with STS)
+
+OR Add External Maven
+Select system Maven if installed
+
+Add Eclipse EE and web developer tools:
+To be able to work with web projects without spring,
+STS does not have Web developer tools by default to work with Dynamic Web Project
+Also includes html, jsp, xml, css editors.
+Help -> Eclipse Marketplace - look for Eclipse Enterprise Java and Web Developer Tools
+
+=======================================================================================================================================================================
+Tomcat Setup:
+
+If Using Spring Boot:
+No need to install Tomcat separately
+Spring Boot has embedded Tomcat
+
+Run project:
+mvn spring-boot:run
+OR run main class in IDE.
+Then the app runs at:
+http://localhost:8080
+
+
+If Using Traditional Spring MVC (WAR file):
+Then you must install Tomcat manually:
+
+Download Tomcat:
+https://tomcat.apache.org/
+
+Use:
+Tomcat 10 (for Spring 6.x, Spring Boot 3.x and above)
+Tomcat 9 (for Spring 5.x, Spring Boot 2.x and earlier)
+
+Extract → D:\Softwares
+
+Add Server Runtime Environment in STS:
+Window > Preferences > Server > Runtime Environments --- Add installed tomcat
+
+Add installed Java17 to Tomcat:
+Window > Preferences > Server > Runtime Environments --- Edit and add installed Java
+
+Create new server instance in STS:
+This step will create a pointer to actual physical tomcat installation folder in your machine.
+Window > Show View > Other > Server > Servers --- Open (This will open the Servers Pane view)
+In the Servers Pane right click > New > Server > Apache > Select tomcat version (9) > Select the Server Runtime Environment > Finish
+If creating multiple servers in the IDE from a single physical tomcat on the machine, make sure to maintain unique port numbers for admin, http, ajp
+
+Change Config Location:
+Right click on the server > properties > Switch location > Apply and Save
+Double click on the server > Server Locations > User Tomcat installation --- Save
+
+Start the server:
+Without IDE:
+Go to bin\ inside Tomcat installation path and run:
+startup.bat
+
+Or
+
+From Services:
+Modify ports in server.xml (8005: shutdown, 8080: HTTP Connector, 8009: The AJP Connector port if used, 8443: SSL/HTTPS Connector port if used), modify SERVICE_NAME, DISPLAYNAME, CATALINA_BASE in service.bat (if you want to have multiple tomcats running simultaneously, optional)
+Open CMD
+Go to bin\ inside Tomcat installation path and run the command:
+service.bat install
+Open Services -> Apache Tomcat xx Tomcatx -> Start
+
+Or
+
+From IDE:
+Right Click on the server and click Start
+
+Check in the browser:
+http://localhost:8080
+
+After configuring Tomcat in STS, make sure that the 'Target runtime' is properly set when you are creating a new project
+
+Deploy: Copy your .war file into:
+webapps/
+Restart tomcat
+
+=======================================================================================================================================================================
+Create Spring Boot Project (Using Maven):
+
+Spring Initializr (Easy Way): 
+https://start.spring.io/ 
+
+Select
+Project: Maven
+Language: Java
+Spring Boot: 3.x
+Java: 17
+
+Dependencies:
+Spring Web
+Spring Data JPA
+MySQL Driver (if using DB)
+Lombok (optional)
+Spring Security (if needed)
+
+Group: com.example
+Artifact: demo
+Name: demo
+Description: Demo project for Spring Boot
+Package name: com.example.demo
+Packaging: Jar
+Configuration: Properties
+
+Download → Extract → Open in IDE
+
+=======================================================================================================================================================================
+Project Structure:
+
+In Spring MVC - Maven Project (Traditional - WAR Project):
+The libraries(jars / Maven dependencies) are not stored in project structure, they are stored in system .m2 maven local repository
+
+project-name/
+│
+├──src/
+│   ├── main/
+│   │     ├── java/
+│   │     │    └── com/example/demo/
+│   │     │          ├── controller
+│   │     │          ├── service
+│   │     │          ├── repository
+│   │     │          └── model
+│   │     ├── resources/   
+│   │     └── webapp/
+│   │		    ├── HTML, CSS, JSP, JS, images ---
+│   │		    └── WEB-INF/
+│   │				  └──web.xml
+│   └── test/
+│        └── java/
+│              └── com/example/demo/
+├── target/     <-- compiled files (auto-generated)
+├── pom.xml     <-- project config
+├── .gitignore
+└── mvnw / mvnw.cmd  <-- Maven wrapper
+
+
+In Spring Boot (Modern Way - Default JAR Packaging with embedded Tomcat):
+
+project-name/
+│
+├── src/
+│    ├── main/
+│    │    ├── java/
+│    │    │     └── com/example/demo/
+│    │    │           ├── controller/
+│    │    │           ├── service/
+│    │    │           ├── repository/
+│    │    │           ├── model/
+│    │    │           └── DemoApplication.java  <-- main class
+│    │    │
+│    │    └── resources/
+│    │          ├── application.properties
+│    │          ├── static/
+│    │          ├── templates/   <-- Thymeleaf
+│    │          └── application.yml (optional)
+│    │
+│    └── test/
+│         └── java/
+│               └── com/example/demo/
+│
+├── target/     <-- compiled files (auto-generated)
+├── pom.xml     <-- project config
+├── .gitignore
+└── mvnw / mvnw.cmd  <-- Maven wrapper
+		  
+		
+=======================================================================================================================================================================
+Database Setup:
+
+PostgreSQL
+
+Download PostgreSQL:
+https://www.postgresql.org/download/windows/
+
+Install:
+Select Components: Ensure the following are checked:
+PostgreSQL Server: The actual database.
+pgAdmin 4: The graphical interface you'll use to manage it.
+Command Line Tools: Includes psql for terminal access.
+Note: You can uncheck "Stack Builder" to keep the installation simple.
+Set Password for the superuser (postgres): Do not forget this password, as you need it to log in.
+Port & Locale: Keep the default port 5432 and the default locale unless you have a specific reason to change them.
+Finish: Click through the remaining "Next" prompts and wait for the installation to complete.
+
+
+In a spring boot application, for Spring Data JPA:
+Add below properties to application.properties file
+
+# PostgreSQL connection settings
+spring.datasource.url=jdbc:postgresql://localhost:5432/db_name
+spring.datasource.username=postgres
+spring.datasource.password=your_postgres_password
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# Hibernate / JPA settings
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+=======================================================================================================================================================================
+Install Postman:
+
+Download Postman: 
+https://www.postman.com/downloads/
+
+=======================================================================================================================================================================
+Git Workflow for Projects:
+
+Inside project:
+git init
+git add .
+git commit -m "Initial commit"
+
+Create repo in GitHub → then:
+git remote add origin https://github.com/username/project.git
+git push -u origin main
+

@@ -1,0 +1,347 @@
+=============================================================================================================================================================================
+Spring Framework and Spring Boot:
+=============================================================================================================================================================================
+
+Note: We are only learning Console based/Stand alone applications here... Not Web applications...
+
+Core Concept 		- Inversion of Control (IoC):
+It is a design principle where the control of objects or portions of a program is transferred to a container or framework
+Goal: To achieve Loose Coupling between components.
+
+The Brain/Manager 	- Spring IoC Container: The engine that implements IoC in Spring. It is responsible for instantiating, configuring, and assembling objects (called Beans) 
+	- Bean Factory: The basic version of the container (Lazy Loading)
+	- Application Context: The advanced version of the container (Eager Loading). It is the interface that represents the IoC container (Modern approach to initialise the container).
+
+The Instructions 	- Configuration Types
+How you tell the IoC Container which Beans to create and how to connect them.
+	- Spring XML Configuration: Traditional method using .xml files.
+	- Spring Annotations Configuration: Using markers like @Component and @Autowired directly on classes.
+	- Spring Java Configuration: Modern method using @Configuration classes and @Bean methods.
+
+The Delivery 		- Dependency Injection (Loose Coupling): 
+It is a design pattern where an object's required resources (its dependencies) are "given" to it by an external source rather than the object creating them itself
+
+=============================================================================================================================================================================
+Why Dependency Injection is important? explain with an example scenario.
+=============================================================================================================================================================================
+
+Most objects in software need other objects to do their work. For example: a Car needs an Engine. 
+
+Without DI (Tight Coupling): The Car class contains code like engine = new Engine(). This means the car is "stuck" with that specific engine.
+In this scenario, the Car class is responsible for creating its own Engine. It "owns" the creation process. 
+
+// The dependency
+class Engine {
+    void start() { System.out.println("Engine started!"); }
+}
+
+
+// The dependent class
+class Car {
+    private Engine engine;
+
+    public Car() {
+        // PROBLEM: Car is "glued" to this specific Engine class
+        this.engine = new Engine(); 
+    }
+
+    public void drive() {
+        engine.start();
+        System.out.println("Driving...");
+    }
+}
+
+The Drawback Scenario:
+Imagine your company decides to launch an Electric Car. 
+
+The Issue: Because the Car class specifically says new Engine(), you cannot give it an ElectricEngine without changing the code inside the Car class itself.
+Maintenance Nightmare: If you had 50 different vehicle types all creating their own Engine internally, you would have to manually update all 50 classes just to change the engine type.
+Testing Difficulty: You can't easily test the Car in isolation because you can't swap the real engine for a "Mock" or "Fake" engine during unit tests. 
+
+=============================================================================================================================================================================
+
+With DI (Loose Coupling): The Car class simply says "I need an engine," and something else (like the Spring Framework) provides it through a constructor or a setter method.
+Here, we use an Interface to define what an engine does, and the Car receives its engine from the outside.
+
+// Define an Abstraction
+interface Engine {
+    void start();
+}
+
+// Different Implementations
+class GasEngine implements Engine {
+    public void start() { System.out.println("Gas engine Vroom!"); }
+}
+
+class ElectricEngine implements Engine {
+    public void start() { System.out.println("Electric engine Hummm..."); }
+}
+
+
+// The Car class (Independent)
+class Car {
+    private Engine engine;
+
+    // SUCCESS: Engine is "injected" via the constructor; can be done with a setter too
+    public Car(Engine engine) {
+        this.engine = engine;
+    }
+
+    public void drive() {
+        engine.start();
+        System.out.println("Driving...");
+    }
+}
+
+
+You can now create a gas car (new Car(new GasEngine())) or an electric car (new Car(new ElectricEngine())) without ever touching the Car class code.
+
+=============================================================================================================================================================================
+
+The above example is explained with plain Java (not Spring). To achieve the same using Spring, we need to: 
+- Initialize the container
+- Instruct it and 
+- Deliver the objects
+
+=============================================================================================================================================================================
+Initialize the container:
+=============================================================================================================================================================================
+
+To initialize the Spring IoC container, you typically use an implementation of the ApplicationContext interface. The method you choose depends on whether you are using a standalone application or a web application, and how your configuration is defined (XML, Java, or Annotations). 
+
+1. Standalone Applications >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+For standalone applications, you manually instantiate the container in your main method using one of the following classes:
+
+	- AnnotationConfigApplicationContext: Used for Java-based or Annotation-based configurations.
+ApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+
+	- ClassPathXmlApplicationContext: Loads XML configuration files located in the project's classpath.
+ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
+
+	- FileSystemXmlApplicationContext: Similar to ClassPathXmlApplicationContext, but loads XML files from any location in the file system.
+ApplicationContext context = new FileSystemXmlApplicationContext("C:/config/beans.xml");
+ 
+2. Spring Boot >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+In Spring Boot, the initialization is handled for you by the SpringApplication.run() method. It automatically detects the type of application (web or standalone) and creates the appropriate ApplicationContext. 
+
+@SpringBootApplication
+public class MyApplication {
+    public static void main(String[] args) {
+        ApplicationContext context = SpringApplication.run(MyApplication.class, args);
+    }
+}
+
+3. Spring Web >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+In Spring web environments, the container is often initialized automatically during server startup:
+WebApplicationContext: A specialized version for web apps.
+Automatic Loading: Typically configured in web.xml using the ContextLoaderListener or programmatically via WebApplicationInitializer for annotation-based setups. 
+
+=============================================================================================================================================================================
+The Instructions - Spring XML Configuration:
+=============================================================================================================================================================================
+
+You define your objects (Beans) and their relationships in a centralized .xml file
+
+An XML configuration file usually starts with a standard header and uses the <beans> root element. Each object is defined using a <bean> tag.
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bean configuration definition -->
+<beans xmlns="http://www.springframework.org"
+       xmlns:xsi="http://www.w3.org"
+       xsi:schemaLocation="http://www.springframework.org
+       http://www.springframework.org/spring-beans.xsd">
+
+    <!-- Dependency Injection via XML -->
+    <bean id="myCar" class="com.example.Car">
+        <!-- Setter Injection 
+        <property name="engine" ref="myEngine" />
+	-->
+	<!-- Constructor Injection
+	<constructor-arg ref="myEngine" />
+	-->
+    </bean>
+
+    <!-- Defining a simple Bean -->
+    <bean id="myEngine" class="com.example.GasEngine" />
+
+</beans>
+
+for Bean configuration definition, search for "spring 6 bean configuration xml"
+
+=============================================================================================================================================================================
+Deliver the Objects - Spring XML configuration
+=============================================================================================================================================================================
+
+1. XML Constructor Injection (Recommended) >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+Dependencies are provided as arguments to the class constructor. 
+Best For: Mandatory dependencies.
+
+It uses the <constructor-arg> tag. This passes the Engine object into the Car constructor.
+
+<bean id="myCar" class="com.example.Car">
+    <constructor-arg ref="myEngine" />
+</bean>
+<bean id="myEngine" class="com.example.GasEngine" />
+
+2. Setter Injection >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+Dependencies are injected through public setter methods after the object is instantiated. 
+Best For: Optional dependencies or dependencies that might need to be changed later.
+
+It uses the <property> tag. This calls the setEngine() method in your Car class
+name: The name of the field/setter.
+ref: The id of the bean you want to inject
+
+<bean id="myCar" class="com.example.Car">
+        <property name="engine" ref="myEngine" />
+</bean>
+<bean id="myEngine" class="com.example.GasEngine" />
+
+
+Now you can get the object(bean) of Car class as below and spring will inject the Engine type bean to the Car bean;
+
+ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
+Car car = Context.getBean(Car.class)
+
+=============================================================================================================================================================================
+Plugging and Unplugging dependencies - Spring XML Configuration:
+=============================================================================================================================================================================
+
+If you have two or more classes implementing the parent interface, We can plug and unplug dependencies by configuring required beans and by autowiring
+
+
+Option A: Configuring required beans >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+By Configuring only the required bean of each class type
+
+
+Option B: The Default Choice autowire="byType" and primary="true" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+When you use autowire="byName", it will look for the bean with primary="true" to inject.
+
+<bean id="myCar" class="com.example.Car" autowire="byType">
+</bean>
+<bean id="gas" class="com.example.GasEngine" primary="true"/>
+<bean id="electric" class="com.example.ElectricEngine" />
+
+
+Option C: Using autowire="byName" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+When you use autowire="byName", it will look for the setter method's name and inject if it matches.
+
+<bean id="myCar" class="com.example.Car" autowire="byName">
+</bean>
+<bean id="gas" class="com.example.GasEngine" />
+<bean id="electric" class="com.example.ElectricEngine" />
+
+Note: autowiring can only be used for setter injection
+
+=============================================================================================================================================================================
+The Instructions - Spring Annotations Configuration:
+=============================================================================================================================================================================
+
+Using @Component annotation we can easily create beans for which ever classes it is placed on
+
+=============================================================================================================================================================================
+Deliver the Objects - Spring Annotations configuration
+=============================================================================================================================================================================
+
+1. Constructor Injection (Recommended) >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+private Engine engine;
+
+public Car(Engine engine) {
+    this.engine = engine;
+}
+
+2. Setter Injection >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+While using setter injection, we need to use @Autowired annotation on top of the setter method
+
+private Engine engine;
+
+@Autowired
+public void Car(Engine engine) {
+    this.engine = engine;
+}
+
+3. Field Injection
+Dependencies are injected directly into private fields using the @Autowired annotation, bypassing constructors and setters. 
+
+@Autowired
+private Engine engine;
+
+Drawback: It makes unit testing difficult because you cannot easily inject mock dependencies without using reflection or a Spring container. 
+
+=============================================================================================================================================================================
+Plugging and Unplugging dependencies - Spring Annotations Configuration:
+=============================================================================================================================================================================
+
+If you have two or more classes implementing the parent interface, We can plug and unplug dependencies using @Component, @Primary, @Qualifier("objectName")
+
+
+Option A: Using @Component >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+@Component annotation will create the bean for which ever class it is placed on
+
+To Unplug: Remove the @Component annotation from the old class.
+To Plug: Add @Component to the new class and ensure it implements the required Interface. Spring will automatically find it and inject it into the Car.
+
+
+Option B: The Default Choice (@Primary) >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+Mark one class as the "go-to" implementation.
+
+@Component
+@Primary  // This "plugs in" the ElectricEngine by default
+public class ElectricEngine implements Engine {
+    public void start() { System.out.println("Electric engine Hummm..."); }
+}
+
+@Component
+public class GasEngine implements Engine {
+    public void start() { System.out.println("Gas engine Vroom!"); }
+}
+
+
+Option C: The Specific Choice (@Qualifier) >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+If you want a specific car to use a specific engine, you "unplug" the default and "plug" in your choice at the injection point.
+
+@Component
+public class Car {
+    private final Engine engine;
+
+    public Car(@Qualifier("gasEngine") Engine engine) { // Specifically plugs in GasEngine
+        this.engine = engine;
+    }
+}
+
+OR
+
+@Component
+public class Car {
+    @Qualifier("gasEngine")
+    private Engine engine;
+}
+
+=============================================================================================================================================================================
+The Instructions - Spring Java Configuration:
+=============================================================================================================================================================================
+
+
+We are not learning this..............
+
+
+
+
+
+
+

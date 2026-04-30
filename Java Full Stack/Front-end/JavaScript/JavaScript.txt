@@ -1,0 +1,546 @@
+====================================================================================================================================================================
+Variables:*****************
+====================================================================================================================================================================
+
+1. let (The Modern Standard): Use this for values that will change later. It’s "block-scoped," meaning it only lives inside the {} where you created it
+Syntax: let variableName = value;
+Example: let score = 10;
+
+2. const (The Fixed Choice): Use this for values that should not change.
+Syntax: const variableName = value;
+const pi = 3.14;
+
+====================================================================================================================================================================
+Data Types - Primitives (value) ****************
+====================================================================================================================================================================
+These hold a single, specific value.
+
+1. Number: Any kind of number (integers or decimals).
+let age = 25;
+let price = 19.99;
+
+2. String: Text wrapped in quotes.
+const name = "Alice";
+
+3. Boolean:
+let isOnline = true;
+
+4. Null: An intentional "empty" or "nothing" value.
+let result = null;
+
+5. Undefined: A variable that has been declared but has no value yet.
+let score; // value is undefined
+
+6. Symbol
+
+====================================================================================================================================================================
+Operators:
+====================================================================================================================================================================
+1. Arithmetic Operators (The Calculator):
++ (Add), - (Subtract), * (Multiply), / (Divide), % (Remainder/Modulo)
+
+2. Assignment Operators (The Storage):
+= : Simple assignment.
++= or -= : Update and Assign
+
+3. Comparison Operators (The Logic):
+=== : Strict Equal. Checks if the value and the type are the same. (Always use this!) Ex: 4 === "4" is false.
+==: Checks only if the value is same. Ex: 4 === "4" is true.
+!== : Strict Not Equal.
+> , < , >= , <=
+
+4. Logical Operators (The Decision Makers):
+&& (AND), || (OR), ! (NOT)
+
+====================================================================================================================================================================
+Conditional Statement:
+====================================================================================================================================================================
+1. if, else if, and else
+
+if (condition1) {
+  // Runs if condition1 is true
+} else if (condition2) {
+  // Runs if condition1 is false AND condition2 is true
+} else {
+  // Runs if all above are false
+}
+
+
+2. switch:
+
+let fruit = "Apple";
+switch (fruit) {
+  case "Banana":
+    console.log("Yellow fruit");
+    break;
+  case "Apple":
+    console.log("Red fruit"); // This runs
+    break;
+  default:
+    console.log("Unknown fruit");
+}
+
+
+3. Ternary Operator (The One-Liner)
+
+let age = 20;
+let message = (age >= 18) ? "Adult" : "Minor";
+console.log(message); // "Adult"
+
+====================================================================================================================================================================
+Loops:
+====================================================================================================================================================================
+1. for Loop (The "Counted" Loop):
+Use this when you know exactly how many times you want the code to run.
+
+for (let i = 1; i <= 3; i++) {
+  console.log("Count:", i); // Logs: 1, 2, 3
+}
+
+
+2. while Loop (The "Conditional" Loop):
+Use this when the loop should run only as long as a condition is true.
+
+let i = 1;
+while (i <= 3) {
+  console.log("Number:", i);
+  i++; // Important: update the variable to avoid an infinite loop
+}
+
+
+3. do...while Loop (The "At Least Once" Loop) 
+
+let i = 5;
+do {
+  console.log("This runs once even if 5 > 10");
+  i++;
+} while (i < 10);
+
+====================================================================================================================================================================
+Datatypes - Non-Primitives (Reference) **************************
+====================================================================================================================================================================
+These are like "containers" that can hold many values at once.
+
+1. Arrays: A numbered list of items.
+
+let colors = ["red", "green", "blue"];
+
+Accessing: colors[0] (Gets the first item).
+Length: colors.length // 3
+
+In JavaScript, an array is heterogeneous
+const mixedArray = [
+  "Hello",    // String
+  42,         // Number
+  true,       // Boolean
+  { id: 1 },  // Object
+  [1, 2, 3]   // Another Array
+];
+
+
+Looping through an array:
+
+for...of (The Modern Favorite):
+
+for (const color of colors) {
+  console.log(color); // Logs: red, green, blue
+}
+
+
+.forEach() (The Functional Method):
+
+colors.forEach((color, index) => {
+  console.log(`${index}: ${color}`); // Logs: 0: red, 1: green...
+});
+
+====================================================================================================================================================================
+2. Objects: A collection of "key-value" pairs (like a mini-database for one item).
+
+let user = { 
+  name: "Alice", 
+  age: 25,
+  height: 179
+};
+
+Accessing: user.name (Dot notation) or user["name"] (Bracket notation).
+Updating: user.age = 28;
+Delete: delete user.height;
+
+Complex Object: Objects inside an object
+let dev = {
+  name: "Alice", 
+  age: 25,
+  laptop: {
+     cpu: '17',
+     ram: 4,
+     brand: 'Asus'
+  }
+};
+
+Accessing: dev.laptop.ram
+
+Looping through keys in objects:
+for (let key in dev){
+	console.log(key, dev[key])
+}
+
+====================================================================================================================================================================
+Functions:*******************************
+====================================================================================================================================================================
+
+1. Function Declaration (The Classic):
+
+function greet(userName) {
+  return `Hello, ${userName}!`;
+}
+console.log(greet("Alex")); 
+
+
+2. Function Expression (The Variable Style):
+- Also called Anonymous Function since it does not have any name.
+- The variable is used as the function here.
+
+const add = function(a, b) {
+  return a + b;
+};
+console.log(add(5, 6))
+
+Use Case:
+Object Methods: Use them as methods if you need 'this' to refer to the object itself
+
+
+3. Arrow Functions (The Modern Shorthand):
+Introduced in ES6, these are shorter and cleaner. They are great for quick one-liners and are very popular in modern development.
+
+let greet = (x, y) => {
+	console.log(`${x} ${y}`);
+	a="Bye bye World";
+	return a;
+};
+console.log(greet("Hello","World"));
+
+When you have only one expression/statement, you can skip curly braces {} and the return statement:
+
+const multiply = (x, y) => x * y; // Auto-returns if no {}
+console.log(multiply(5, 2)); // 10
+
+
+Functions in objects:
+
+let laptop = {
+	cpu: 'i9',
+	brand: 'Asus',
+
+	getConfig: function(storage){
+		let ram = 16;
+		console.log(`CPU: ${this.cpu}, RAM: ${ram}, Storage: ${storage}, Brand: ${this.brand}`);  //this keyword is used to represent the current object
+	}
+};	
+
+laptop.getConfig(1048);
+
+
+4. Constructor functions:
+- A Constructor function is like a Blueprint. It is like a Class in Object oriented programming languages.
+- If you need to create 100 "User" objects, you don't want to type them all out manually. You use a constructor to "stamp" them out.
+- It is a regular function used to initialize new objects.
+- By convention, it always starts with a Capital Letter to tell other developers that it is a constructor function and to use new keyword with this.
+
+function Person(name, age){
+	this.name=name;
+	this.age=age;
+	this.intro = function(){
+		console.log(`Hi, I'm ${this.name}`)
+	};
+};
+
+const user1 = new Person("Sai", 27);
+const user2 = new Person("Vaishu", 26);
+
+====================================================================================================================================================================
+Array methods:
+====================================================================================================================================================================
+
+1. Adding & Removing Elements
+These methods change the original array by adding or taking away items from the ends. 
+
+push(): Adds one or more elements to the end.
+Syntax: array.push(element)
+
+pop(): Removes the last element and returns it.
+Syntax: array.pop()
+
+unshift(): Adds elements to the beginning.
+Syntax: array.unshift(element)
+
+shift(): Removes the first element and returns it.
+Syntax: array.shift() 
+
+2. Searching & Finding
+Use these to check if an item exists or to grab a specific piece of data. 
+
+indexOf(): Returns the index (position) of the first occurrence of a value, or -1 if not found.
+Syntax: array.indexOf(value)
+
+includes(): Returns true or false if the array contains a specific value.
+Syntax: array.includes(value)
+
+find(): Returns the first element that passes a specific test (condition).
+Syntax: array.find(element => condition) 
+
+3. Transforming (Modern Iteration)
+These create new arrays or values based on the original data without changing it (non-mutating). 
+
+map(): Creates a new array by applying a function to every element.
+Example: Double every number in a list.
+Syntax: array.map(element => newElement)
+
+filter(): Creates a new array containing only the elements that pass a test.
+Syntax: array.filter(element => condition)
+
+reduce(): Runs a function for each element to "boil down" the entire array into a single value (like a sum).
+Syntax: array.reduce((accumulator, current) => accumulator + current, initialValue) 
+
+4. Utility & Formatting
+
+sort(): Sorts elements in place (alphabetically by default).
+Syntax: array.sort()
+
+join(): Combines all elements into a string, separated by whatever you choose.
+Syntax: array.join("-")
+
+slice(): "Cuts out" a portion of the array and returns it as a new array without changing the original.
+Syntax: array.slice(startIndex, endIndex)
+
+====================================================================================================================================================================
+Destructuring:***********************
+====================================================================================================================================================================
+- Destructuring is a shortcut that lets you unpack values from arrays or properties from objects directly into their own variables
+- It doesn't modify the original data; it just copies the pieces you need
+
+1. Object Destructuring
+Instead of writing const name = user.name multiple times, you can grab everything in one line using curly braces {}. 
+
+Basic Syntax: { keyName } = object
+Renaming: Use a colon : to give the variable a different name.
+Default Values: Use = to set a fallback if a property is missing. 
+
+
+const user = { name: "Alex", age: 25 };
+// Basic unpacking + Renaming 'age' to 'userAge'
+const { name, age: userAge, country = "India" } = user;
+
+console.log(name);    // "Alex"
+console.log(userAge); // 25
+console.log(country); // "India" (default used)
+
+
+
+Common Use Case:
+Function Parameters: Unpack an object immediately when it's passed into a function.
+
+function greet({ name }) {
+  console.log(`Hello, ${name}!`);
+}
+greet({ name: "Sam", id: 101 }); // Only 'name' is pulled out
+
+
+
+2. Array Destructuring
+Unlike objects, arrays are destructured based on their position using square brackets []. 
+
+Skipping Items: Use a comma , to skip over an element you don't want.
+Rest Operator (...): Collects the remaining items into a new array. 
+
+
+const colors = ["red", "green", "blue", "yellow"];
+// Grab 1st, skip 2nd, grab 3rd, and put the rest in 'others'
+const [first, , third, ...others] = colors;
+
+console.log(first);  // "red"
+console.log(third);  // "blue"
+console.log(others); // ["yellow"]
+
+
+Common Use Case:
+Swapping Variables: Swap two values in one line without a "temporary" variable.
+
+let a = 1, b = 2;
+[a, b] = [b, a]; // a is now 2, b is now 1
+
+====================================================================================================================================================================
+Document Object Model (DOM):************
+====================================================================================================================================================================
+
+- The DOM is a programming interface for web documents
+- It represents an HTML page as a tree of objects, allowing JavaScript to "talk" to the HTML. 
+- When a browser loads a page, it creates this model so you can dynamically change the structure, style, and content
+
+
+1. Selecting Elements
+Before you can change something, you have to find it. 
+
+getElementById(): Finds a single element by its unique ID.
+Syntax: document.getElementById("myId")
+
+querySelector(): Finds the first element that matches a CSS selector (like .class or #id).
+Syntax: document.querySelector(".my-class")
+
+querySelectorAll(): Finds all matching elements and returns a static NodeList.
+Syntax: document.querySelectorAll("p") 
+
+
+2. Manipulating Content & Style
+Once selected, you can modify the element's properties. 
+
+textContent: Sets or returns the plain text inside an element.
+Syntax: element.textContent = "Hello!"
+
+innerHTML: Sets or returns the HTML content (including tags).
+Syntax: element.innerHTML = "<b>Bold Text</b>"
+
+style: Directly changes inline CSS.
+Syntax: element.style.color = "blue" (Note: Use camelCase like backgroundColor).
+
+classList: The best way to manage classes using add(), remove(), or toggle().
+Syntax: element.classList.toggle("active") 
+
+
+3. Creating & Removing Elements
+You can build parts of the page entirely with code. 
+
+createElement(): Creates a new HTML tag in memory.
+
+appendChild(): Adds a node as the last child of a parent.
+
+remove(): Deletes the element from the page. 
+
+const newDiv = document.createElement("div");
+newDiv.textContent = "I'm new here!";
+document.body.appendChild(newDiv); // Now it appears on the page
+Use code with caution.
+
+
+4. Event Listeners
+This makes your page interactive by "listening" for user actions. 
+
+addEventListener(): Attaches a function to run when a specific event happens.
+Syntax: element.addEventListener("event", function)
+
+Common Events: "click", "submit", "keydown", "mouseover". 
+
+const btn = document.querySelector("#myBtn");
+btn.addEventListener("click", () => {
+  alert("Button clicked!");
+});
+
+====================================================================================================================================================================
+Spread and Rest Operators:***********************
+====================================================================================================================================================================
+
+The Spread and Rest operators use the exact same syntax—three dots ...—but they do opposite things. Think of Spread as "unpacking" and Rest as "gathering." 
+
+1. Spread Operator:
+
+The Concept: It "spreads" or unpacks the contents of an array or object into individual elements. Use it when you want to copy or merge data. 
+Syntax (Arrays): [...array]
+Syntax (Objects): {...object} 
+
+Common Uses:
+Copying an array: const copy = [...original]; (Changes to copy won't affect original).
+Merging arrays: const combined = [...arr1, ...arr2];
+Merging objects: const newUser = { ...user, status: "active" }; (Updates or adds properties). 
+
+
+const fruits = ["apple", "banana"];
+const moreFruits = ["mango", ...fruits, "orange"]; 
+console.log(moreFruits); // ["mango", "apple", "banana", "orange"]
+
+
+2. Rest Operator:
+
+The Concept: It "gathers" multiple individual elements into a single array. It is usually found in function parameters or destructuring. 
+Rule: It must always be the last element in the list. 
+
+Common Uses:
+Function arguments: Handling an unknown number of inputs.
+
+// In a function: Gathers all numbers into an array called 'numbers'
+function sumAll(...numbers) {
+  return numbers.reduce((sum, num) => sum + num, 0);
+}
+console.log(sumAll(1, 2, 3, 4)); // 10
+
+
+Destructuring: Collecting the "leftover" items. 
+
+// In destructuring:
+const [topScore, ...others] = [100, 85, 70, 50];
+console.log(others); // [85, 70, 50]
+
+====================================================================================================================================================================
+Asynchronous JavaScript:***********************************
+====================================================================================================================================================================
+Callbacks:
+
+learn///////////
+
+Promises:
+
+learn/////////////////
+
+async/await:
+
+learn properly///////////
+
+In modern JavaScript, you primarily use the Fetch API to receive data from a backend. It is built directly into the browser and works using Promises. 
+While you can use .then() chains, the most "modern" and readable way is using async/await.
+
+1. Using fetch() with async/await 
+This is the standard approach. You "await" the request, then "await" the conversion of that request into JSON. 
+The Syntax:
+
+async function getData() {
+  try {
+    // 1. Send the request
+    const response = await fetch('https://api.example.com/data');
+
+    // 2. Check if the response is okay (status 200-299)
+    if (!response.ok) {
+      throw new Error("HTTP error! status: " + response.status);
+    }
+
+    // 3. Parse the body as JSON
+    const data = await response.json();
+    
+    console.log(data); // Handle your data here
+  } catch (error) {
+    console.error("Could not fetch data:", error);
+  }
+}
+
+getData();
+
+
+2. Why two await keywords?
+First await fetch(...): Waits for the server to respond with headers (status code, type, etc.). At this point, the actual data (the body) might still be streaming in.
+Second await response.json(): Waits for the entire data body to finish downloading and converts it into a usable JavaScript object. 
+
+
+3. Using Axios (Popular Alternative)
+Many developers use a library called Axios because it simplifies the process by automatically converting the response to JSON and having better error handling. 
+
+The Syntax:
+// No need for a second .json() step
+const response = await axios.get('https://api.example.com/data');
+console.log(response.data); 
+
+
+/////////////////////learn properly and add more about asynchronous javascript/////////////////////////
+
+
+
+
+
+
+

@@ -1,0 +1,58 @@
+=======================================================================================================================================================================
+Spring JDBC (built on JDBC):
+=======================================================================================================================================================================
+
+
+
+
+
+=======================================================================================================================================================================
+Spring Data JPA (built on Hibernate):
+=======================================================================================================================================================================
+
+Dependencies:>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+- Add the below dependencies in pom.xml
+- Spring Boot Starter JPA dependency
+- Preferred database (mySQL, PostgreSQL, Oracle, Microsoft SQL, MangoDB..) driver dependency
+- Get the dependencies from:
+  https://mvnrepository.com/
+
+Configuration:>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+- Add the below configuration in src/main/resources/application.properties
+
+spring.datasource.url=<url>
+spring.datasource.username=<username>
+spring.datasource.password=<password>
+spring.datasource.driver-class-name=<db-driver>
+
+Annotations:>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+@Entity:
+- Add the annotation on the model class on which we are implementing the repository for
+- This tells JPA to look for the table name inside the database "spring.datasource.url", so make sure that the model class name matches the table name
+- If you want to specify the table name which is different from the model class name (ex: Product.class), use @Entity(name="ProductEntity") or @Table(name="ProductEntity").  
+
+@Id
+- Add this annotation on the attribute that acts as the primary key of the relation.
+
+@Repository
+- Add this annotation on the Repository interface
+- It will add extra features, but works even without it.
+
+Classes/Interfaces:>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+In Spring Data JPA, we can implement the entity repository interface extending the in-built interface "CrudRepository" which has all the required CRUD methods by default.
+
+interface ProductRepository extends CrudRepository<Product, Integer>{
+}
+
+Product - The Entity class
+Integer - Type of the primary key
+
+CRUD Methods:>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+Some important CRUD methods are:
+
+findAll() - 	SELECT * FROM <Table>
+findById() - 	SELECT * FROM <Table> Where ID = <ID>
+save() - 	INSERT INTO <Table> (<column names>) VALUES (<values>) or 
+deleteById() - 	DELETE FROM <Table> WHERE id = <ID>

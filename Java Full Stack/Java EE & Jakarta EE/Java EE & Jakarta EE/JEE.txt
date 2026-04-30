@@ -1,0 +1,19 @@
+JEE is a collection of specifications (APIs) designed to help developers build large-scale, multi-tiered, and secure network applications.
+
+What’s inside "JEE"?
+
+Servlets & JSP: For handling HTTP requests and building web pages.
+JPA (Java Persistence API): For connecting Java objects to databases.
+EJB (Enterprise JavaBeans): For managing business logic and transactions.
+JMS (Java Message Service): For communication between different software components.
+CDI (Contexts and Dependency Injection): For managing the lifecycle of components.
+
+Jakarta EE is the successor to Java EE, the new name for the collection of specifications for enterprise Java applications. The transition from Java EE to Jakarta EE involved a change in ownership, governance, and a mandatory namespace change from javax.* to jakarta.* in the APIs.
+
+Java EE:
+Primarily designed for traditional, monolithic enterprise applications
+
+Jakarta EE:
+Modern, cloud-native focus with specifications designed for microservices and faster release cycles
+
+It is servlet based web development, while spring is also built on top of servlets.

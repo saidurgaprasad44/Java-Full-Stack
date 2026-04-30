@@ -1,0 +1,48 @@
+Spring: 
+Spring Framework is the most popular application development framework of Java. 
+The main feature of the Spring Framework is dependency Injection or Inversion of Control (IoC). 
+With the help of Spring Framework, we can develop a loosely coupled application. 
+It is better to use if application type or characteristics are purely defined.
+
+Spring Boot: 
+Spring Boot is a module of Spring Framework. 
+It allows us to build a stand-alone application with minimal or zero configurations. 
+It is better to use if we want to develop a simple Spring-based application or RESTful services.
+Spring Boot makes it easy to quickly bootstrap and start developing a Spring-based application. 
+It avoids a lot of boilerplate code. 
+It hides a lot of complexity behind the scene so that the developer can quickly get started and develop Spring-based applications easily
+
+Spring MVC: 
+Spring MVC is a Web MVC Framework for building web applications. 
+It contains a lot of configuration files for various capabilities. 
+It is an HTTP oriented web application development framework.
+
+=========================================================================================================================================================================
+Spring in older vs modern applications:
+=========================================================================================================================================================================
+
+In older Spring applications, both front end and back end resides on the same server and it is in the same application. In modern applications the applications are designed in such a way that we have two separate applications for front end and back end which communicate with each other.
+
+Older Spring applications:
+The client sends the http request and the server(Servlet) sends both the layout(html, jsp) and the data to the client.
+Using Spring Web MVC, we can handle all the controller requests that are marked with @Controller with the help of the Spring Front Controller
+HTML, CSS, JavaScript are used for the front end development.
+
+Modern applications (Decoupled Applications):
+The servlet only sends the data to the client in the form of JSON/XML called REST APIs.
+In Spring Boot RESTful APIs, the Spring Front Controller handles all the REST controller requests that are marked with @RestController 
+ReactJS(JavaScript) or AngularJS(TypeScript) are used for the front end application
+
+=========================================================================================================================================================================
+Spring Core - Spring Boot - Spring MVC - Spring RESTful APIs:
+=========================================================================================================================================================================
+
+Spring core has fundamental concepts like IoC, Dependency Injection etc.,
+
+Spring MVC implements the Model-View-Controller design pattern with the help of Dispatcher Servlet (The Front Controller) and using all the Spring Core basic features.
+
+Spring Boot RESTful APIs is built on top of Spring MVC to implement RESTful APIs with the help of its own annotations like @RestController
+
+Spring Boot is a "helper" that auto-configures Spring Web MVC so you don't have to write XML or complex configuration files.
+
+=========================================================================================================================================================================

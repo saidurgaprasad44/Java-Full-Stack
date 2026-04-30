@@ -1,0 +1,38 @@
+Java Full Stack Developer
+
+Core Java:
+Basic Syntax: 		Variables, Data types, Operators
+OOP Concepts: 		Class, Object, Inheritance, Polymorphism, Abstraction, Encapsulation
+Exception Handling: 	try-catch-finally, throw, throws
+Collections Framework: 	List, Set, Map, Queue, Stream API
+Multi-threading: 	Threads, Runnable, Synchronization
+I/O Streams: 		File handling, Serialization
+JVM, JRE, JDK:		Memory management, Garbage collection
+Fundamentals of Memory: Stack, Heap, Class loader
+Basic Networking: 	Sockets basics
+
+Advanced Java:
+Web Technologies: 	HTML, CSS, Servlets, JSP, JavaScript, Bootstrap, ReactJS, AngularJS
+Frameworks: 		Spring, Spring Web MVC, Spring Boot, Spring Security, Log4J, Junit
+Web Services/APIs: 	Jersey JAX-RS, Spring Boot RESTful APIs, Postman
+Database Connection: 	JDBC, Hibernate, Spring JDBC, Spring Data JPA (on Hibernate)
+Build & Deployment: 	Apache Ant(build.xml), Apache Maven(pom.xml), Gradle(script based), Docker, Kubernetes, Kafka
+Servers: 		Tomcat, WebLogic
+Cloud:	 		Spring Cloud, Azure Cloud, AWS
+Microservices:
+
+Other Techs and tools:
+Project structuring and packaging types: war, jar, ear
+Deployment descriptors: web.xml, ejb-jar.xml, application.xml
+Version control: 	Git & GitHub
+Ticket & Project Management tool: ServiceNow & Azure DevOps
+Operating System: 	Windows, Linux
+Database Layer:		PostgreSQL, Oracle DB, pgAdmin 4, Oracle SQL Developer
+
+Progress:
+New: 			ReactJS, Unit Testing, Log4J, Azure Cloud, Docker, Bootstrap, AngularJS, Spring Security, 
+Partial Knowledge: 	Hibernate
+Polish: 		Core Java, Servlets, JSP, SQL and JDBC, Linux, ServiceNow, Azure DevOps, web.xml, Ant, Maven, Git, Restful APIs - Jersey & Spring Boot, Spring Web MVC Spring, Spring Boot, Spring Data JPA, JavaScript
+Mastered: 		HTML, CSS, Tomcat,
+
+			Experienced Java Full Stack Developer with 5 years in building and enhancing enterprise applications across both backend and UI layers. Strong in Java, Spring MVC, JSP/Servlets, JDBC, SQL, and UI technologies like HTML, CSS, and JavaScript. Skilled in RCA, debugging, and resolving production issues with a focus on stability and performance. Effective in Agile Scrum environments and known for quickly understanding complex systems and delivering reliable solutions.

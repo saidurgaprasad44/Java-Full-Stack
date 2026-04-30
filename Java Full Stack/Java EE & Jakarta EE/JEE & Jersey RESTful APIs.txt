@@ -1,0 +1,68 @@
+=========================================================================================================================================================================
+Older JEE vs Modern JEE:
+=========================================================================================================================================================================
+
+In older legacy applications, both front end and back end resides on the same server and it is in the same application. In modern applications the applications are designed in such a way that we have two separate applications for front end and back end which communicate with each other.
+
+Legacy applications:
+The client sends the http request and the server(Servlet) sends both the layout(html, jsp) and the data to the client.
+To achieve this we use Servlet based dynamic web projects to send the layouts and data
+Wweb.xml configuration handles all the http requests
+HTML, CSS, JavaScript(for interactive page, optional) are used for the front end development.
+
+Modern applications(decoupled applications):
+The servlet only sends the data to the client in the form of JSON/XML called REST APIs.
+To achieve this, we use Java RESTful APIs (JAX-RS) implementations like Jersey
+JavaScript libraries like ReactJS(JavaScript), AngularJS(TypeScript) are used to develope the front end application
+
+=========================================================================================================================================================================
+Servlets/JSP:
+=========================================================================================================================================================================
+
+1. Servlets vs. JSPs (Logic vs. Design):
+- While they do the same thing under the hood, they have different roles in the MVC Architecture: 
+Servlets (The Controller): These are pure Java classes. They are great for processing logic, like checking a database or validating a login. They "control" the flow of the application.
+JSPs (The View): These are HTML files with small "bits" of Java code inside them. They are best for designing the page.
+Note: When you run a JSP, the container actually translates it into a Servlet automatically. Every JSP is just a Servlet in disguise. 
+
+2. The Web Container (The Engine)
+- The Web Container (or Servlet Container), like Apache Tomcat, is the environment where your Servlets and JSPs "live". It manages everything for you so you don't have to write low-level networking code. 
+Routing: It reads your configuration (like @WebServlet annotations or web.xml) to decide which Servlet should handle which URL. 
+
+3. Request/Response Cycle (The Conversation)
+- It starts everytime when a user clicks a link or submits a form. The Web Container creates these two objects and passes them to your Servlet.
+HttpServletRequest (Incoming): Contains user-sent data like form inputs, URL parameters, cookies, and headers.
+HttpServletResponse (Outgoing): Used by the developer to set the content type (HTML/JSON) and write the data sent back to the browser.
+Lifespan & Memory: Extremely short. Once the response reaches the browser, the cycle ends and the server "forgets" everything. A new request starts a completely fresh cycle.
+
+4. Session Cycle (The Memory)
+- Since HTTP is "stateless," the server uses HttpSession to remember users across multiple pages.
+- Mechanism: The container assigns a unique Session ID (stored in a browser cookie) to link requests to a specific user.
+Lifespan: Long-term. It persists through many request cycles until the user logs out, closes the browser, or the session times out (e.g., 30 minutes of inactivity).
+Memory: Acts as a private "locker" in the server's RAM to store persistent data like login status or shopping carts.
+
+=========================================================================================================================================================================
+RequestDispatcher().forward() vs response.sendRedirect():
+=========================================================================================================================================================================
+
+RequestDispatcher().forward(): Once the request is sent to the server, the server simply tells another servlet to finish the job. The browser is never informed; it thinks the original Servlet handled everything 
+
+Type: Server-side redirect.
+Request Object: Reuses the same request and response objects.
+Scope: Only works within the same web application
+
+response.sendRedirect(): : The server sends a 302 Redirect status code back to the browser with a new location. The browser then automatically makes a second, completely separate request to that new URL
+
+Type: Client-side redirect.
+Request Object: Creates a brand new request; old data is lost.
+Scope: Can redirect to any URL (external sites, different servers).
+	
+
+
+
+
+
+
+
+
+	
