@@ -265,7 +265,9 @@ str.charAt() -
 
 String Pool:
 
-String s = "" vs String s = new String();
+String s = "" vs String s = new String():
+
+Key functions to work with Strings:
 
 
 ===============================================================================================================================================================================
@@ -353,6 +355,8 @@ Arrays.toString(arr): 		Returns a readable string representation of the array (e
 Arrays.sort(arr): 		Sorts the array. For primitives, it uses a Dual-Pivot Quicksort; for objects, it uses TimSort.
 
 Arrays.asList(arr): 		Acts as a bridge between arrays and the Collections framework by wrapping an array into a List. Works only with an object array (String[] becomes List<String>); fails with Primitives, if you pass an int[], it won't create a List<Integer>. Instead, it creates a List<int[]> (a list containing one single item: the array itself)
+
+Arrays.stream(arr):		A static utility method that creates a stream from an array. While it performs the same conceptual task as list.stream(), they are not the same method and behave differently depending on the data type. If you pass a primitive array, it returns a primitive stream (like IntStream); If you pass an object array (like String[] or Integer[]), it returns a generic Stream<T>
 
 Arrays.fill(arr, value): 	Quickly assigns a specific value to every index in the array.
 
@@ -513,18 +517,22 @@ Composition: A strong form of aggregation where the child cannot exist without t
 Modifiers:
 ===============================================================================================================================================================================
 
-In Java, these keywords define the scope and behavior of variables and methods.
+In Java, these keywords define the scope and behavior of Classes, Variables and Methods.
 
 Access Modifiers (Scope):
-These control who can "see" or use the variable or method:
+These control who can "see" or use the class or variable or method:
 
+For classes, you can only use either public or default:
+public: The class is accessible by any other class
+default (no keyword): The class is only accessible by classes in the same package. This is used when you don't specify a modifier
+
+For attributes, methods and constructors, use one of the following:
 public: Accessible from any other class in any package.
 private: Accessible only within the class it is defined in.
 protected: Accessible within the same package and by subclasses in other packages.
 Default (no keyword): Accessible only within the same package.
 
-
-
+////////////////////////////////////////////////////////////
 Non-Access Modifiers (Behavior):
 These define specific properties or logic constraints:
 
@@ -547,38 +555,6 @@ Used only for methods. It tells the compiler that the method performs an action 
 5. synchronized & volatile (The "Threading" Keywords)
 synchronized: Ensures a method can only be accessed by one thread at a time (prevents data corruption).
 volatile: Ensures that changes to a variable are always read directly from main memory, not a thread's local cache.
-
-===============================================================================================================================================================================
-Type Conversions:
-===============================================================================================================================================================================
-
-Type casting:
-	Primitive Casting:
-		Widening:
-		Narrowing:
-	Object Casting:
-		Up-casting:
-		Down-casting:
-
-Type promotion:
-
-Parsing(String to number types):
-	Integer.parseInt(), Double.partseDouble()
-
-String Conversion(any other type or object to String):
-	.toString()
-
-Boxing/Unboxing:
-
-
-===============================================================================================================================================================================
-Anonymous Class and Anonymous Function (Lambda Expression):
-===============================================================================================================================================================================
-
-Anonymous Class:
-
-Anonymous Function (Lambda Expression, Java8+):
-
 
 ===============================================================================================================================================================================
 Wrapper classes and Generics:
@@ -638,6 +614,123 @@ public class GenericsDemo {
 	}
 }
 
+===============================================================================================================================================================================
+Type Conversions:
+===============================================================================================================================================================================
+
+Type casting:
+
+	Primitive Casting:
+		Widening:
+		Narrowing:
+
+	Object Casting:
+		Up-casting:
+		Down-casting:
+
+////////////////////////////////////////////////////////////
+
+Type promotion:
+
+////////////////////////////////////////////////////////////
+
+Parsing(String to number types):
+	Integer.parseInt(), Double.partseDouble()
+
+////////////////////////////////////////////////////////////
+
+String Conversion(any other type or object to String):
+	.toString()
+
+////////////////////////////////////////////////////////////
+
+Boxing/Unboxing:
+Converting from primitives to wrapper objects and vice versa.
+
+	Autoboxing(Implicit): Occurs when a primitive is passed where a wrapper object is expected
+
+		Ex 1: 	Integer n = 10; // Autoboxing: int 10 becomes Integer.valueOf(10)
+
+		Ex 2: 	List<Integer> list = new ArrayList<>();
+			list.add(10); // Autoboxing: int 10 becomes Integer.valueOf(10)
+
+	Unboxing(Implicit): Occurs when a wrapper object is used where a primitive is expected.
+
+		Ex:	Integer wrapper = 20;
+			int primitive = wrapper; // Unboxing: wrapper.intValue() is called automatically
+
+===============================================================================================================================================================================
+Anonymous Class and Anonymous Function (Lambda Expression):
+===============================================================================================================================================================================
+
+Anonymous Class overriding methods from other class: A class without a name that is defined and instantiated overriding the methods from other classes.
+
+Anonymous Class from an Interface(The verbose way): A class without a name that is defined and instantiated in a single expression. It can implement interfaces with any number of methods.
+
+
+Implementation Example: Here, MultiActionHandler is an interface with three abstract methods
+
+MultiActionHandler myButton = new MultiActionHandler() {
+	@Override
+	public void onClick() {
+	        System.out.println("Single click detected.");
+        }
+
+        @Override
+        public void onDoubleClick() {
+        	System.out.println("Double click detected.");
+        }
+
+        @Override
+        public void onLongPress() {
+                System.out.println("Long press detected.");
+        }
+};
+
+// 3. Testing the methods
+myButton.onClick();
+myButton.onLongPress();
+myButton.onLongPress();
+
+////////////////////////////////////////////////////////////
+
+Lambda Expression (Java8+): A concise "anonymous function." that only works with Functional Interfaces (interfaces with exactly one abstract method)
+
+Implementation Examples: Here, Runnable is a Functional Interface with only one method named run()
+
+Abstract method with an input(s), multiple statements and returns a result:
+Runnable r = (a, b) -> {
+	System.out.print("The sum is: ");
+	return a+b;
+};
+System.out.println(r.run(10, 20));
+
+Abstract method with no input and returns a result:
+Runnable r = () -> "Hello world"; //When you have only one expression/statement, you can skip curly braces {} and return, it will auto return
+r.run();
+
+
+Key Functional Interfaces: Java provides a set of built-in interfaces in java.util.function to handle common logic
+
+Predicate
+	Purpose: Takes one input and returns a boolean. Used for filtering/testing.
+	Method: boolean test(T t);
+	Example: Predicate<String> isEmpty = s -> s.isEmpty();
+
+Function<T, R>
+	Purpose: Takes one input of type T and returns a result of type R. Used for transforming data.
+	Method: R apply(T t);
+	Example: Function<String, Integer> stringLength = s -> s.length();
+
+Consumer
+	Purpose: Takes an input but returns nothing (void). Used for actions like printing.
+	Method: void accept(T t);
+	Example: Consumer<String> printer = s -> System.out.println(s);
+
+Supplier
+	Purpose: Takes no input but returns a value. Used for lazy generation.
+	Method: T get();
+	Example: Supplier<Double> randomNum = () -> Math.random();
 
 ===============================================================================================================================================================================
 Collections:
@@ -645,7 +738,7 @@ Collections:
 
 The Java Collections Framework is a unified architecture that provides ready-to-use data structures to store and manage groups of objects efficiently. 
 It eliminates the need for fixed-size arrays and provides standardized interfaces and classes for searching, sorting, and manipulating data.
-
+Collections only work with Object types, not primitives
 
 ////////////////////////////////////////////////////////////
 1. List (Ordered Sequence)
@@ -703,6 +796,7 @@ Key Feature: It is not a subtype of the Collection interface but is part of the 
 Common Implementations:
 HashMap: General-purpose; offers fast lookups but no specific order.
 TreeMap: Keeps keys in a sorted order.
+LinkedHashMap: Stores key-value pairs with unique keys
 
 Syntax: Map<KeyType, ValueType> name = new HashMap<>();
 
@@ -752,10 +846,23 @@ Use containsKey(key) or containsValue(value) for checks.
 Streams API:
 ===============================================================================================================================================================================
 
-1. The Core Concept
-A Stream is not a data structure. It’s a pipeline of operations that process data from a source (like a List or Set) without modifying the original source.
+A Stream is not a data structure. It’s a pipeline of operations that process data from a source (like a List or Set or array) without modifying the original source.
+
 Pipeline Structure: Source -> Intermediate Operations -> Terminal Operation.
+
 Lazy Evaluation: Intermediate operations aren't executed until a Terminal operation is called. This is a huge performance win.
+
+Primitive Streams:
+	IntStream: For int values.
+	LongStream: For long values.
+	DoubleStream: For double values. 
+Note: Java does not have specialized streams for other primitives like boolean, char, byte, or short. For those, you typically use a standard Stream with their wrapper classes
+
+Object Streams:
+	
+===============================================================================================================================================================================
+I/O Streams:
+===============================================================================================================================================================================
 
 
 
@@ -770,17 +877,28 @@ File handling & Serialization:
 ===============================================================================================================================================================================
 
 
+
 ===============================================================================================================================================================================
 Closures:
 ===============================================================================================================================================================================
 
 
 
+===============================================================================================================================================================================
+RegEx:
+===============================================================================================================================================================================
 
 
 
+===============================================================================================================================================================================
+Enums:
+===============================================================================================================================================================================
 
 
+
+===============================================================================================================================================================================
+Annotations:
+===============================================================================================================================================================================
 
 
 

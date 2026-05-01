@@ -17,7 +17,7 @@ git config user.email
 ==============================================================================================================================================================
 Git Initialize:
 
-git init		: is used to initialize a new Git repository
+git init		: used to initialize a new Git repository
 
 ==============================================================================================================================================================
 Staging and tracking:
@@ -67,6 +67,7 @@ git remote add <alias_name> <remote_url>			: Sets alias_name for your remote rep
 git remote -v 							: Verify Link (You should see your GitHub URL listed)
 
 git push origin <local-branch-name>:<remote-branch-name>	: Pushes to a specific remote branch from a specific local branch
+git push origin master						: when you don't specify <local-branch-name>, it will take current local branch as the source.
 git push -u origin master					: Pushes the code from current local branch to remote branch "master" (Prompts for login)
 
 The -u flag sets "origin master" as the default, so in the future, you only need to type git push. 
