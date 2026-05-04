@@ -12,14 +12,15 @@ Fundamentals of Memory: Stack, Heap, Class loader
 Basic Networking: 	Sockets basics
 
 Advanced Java:
-Web Technologies: 	HTML, CSS, Servlets, JSP, JavaScript, Bootstrap, ReactJS, AngularJS
+Web Technologies: 	HTML, CSS, Bootstrap, Servlets, JSP, JavaScript, ReactJS, AngularJS
 Frameworks: 		Spring, Spring Web MVC, Spring Boot, Spring Security, Log4J, Junit
 Web Services/APIs: 	Jersey JAX-RS, Spring Boot RESTful APIs, Postman
 Database Connection: 	JDBC, Hibernate, Spring JDBC, Spring Data JPA (on Hibernate)
 Build & Deployment: 	Apache Ant(build.xml), Apache Maven(pom.xml), Gradle(script based), Docker, Kubernetes, Kafka
 Servers: 		Tomcat, WebLogic
-Cloud:	 		Spring Cloud, Azure Cloud, AWS
-Microservices:
+Cloud & Infrastructure:	Spring Cloud, Azure Cloud, AWS
+Infrastructure:		Microservices
+Security & IAM:		Authentication(JWT, OAuth2), Authorization, Web Security (CORS, CSRF)
 
 Other Techs and tools:
 Project structuring and packaging types: war, jar, ear
@@ -30,7 +31,7 @@ Operating System: 	Windows, Linux
 Database Layer:		PostgreSQL, Oracle DB, pgAdmin 4, Oracle SQL Developer
 
 Progress:
-New: 			ReactJS, Unit Testing, Log4J, Azure Cloud, Docker, Bootstrap, AngularJS, Spring Security, 
+New: 			ReactJS, Unit Testing, Microservices, Spring Security, Log4J, Azure Cloud, Docker, Bootstrap, AngularJS,  
 Partial Knowledge: 	Hibernate
 Polish: 		Core Java, Servlets, JSP, SQL and JDBC, Linux, ServiceNow, Azure DevOps, web.xml, Ant, Maven, Git, Restful APIs - Jersey & Spring Boot, Spring Web MVC Spring, Spring Boot, Spring Data JPA, JavaScript
 Mastered: 		HTML, CSS, Tomcat,

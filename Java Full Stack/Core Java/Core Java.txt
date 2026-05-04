@@ -17,7 +17,7 @@ The full toolkit for Java developers to create and run applications.
 JDK = JRE + Development Tools (javac, jdb, javadoc, etc.)
 
 ===============================================================================================================================================================================
-The Java Lifecycle - Code to Execution
+The Java Lifecycle - Code to Execution:
 ===============================================================================================================================================================================
 
 Source Code (.java) ----[Compiler (javac)]---> Bytecode (.class) ----[JVM (Interpreter + JIT Compiler)]---> Machine Code (0s & 1s)
@@ -254,21 +254,6 @@ forEach method, internal iteration using the Streams API and in collections.
 
 list.forEach(item -> System.out.println(item));
 
-===============================================================================================================================================================================
-Strings:
-===============================================================================================================================================================================
-
-Declare, Instantiate and Initialize:
-
-Accessing:
-str.charAt() - 
-
-String Pool:
-
-String s = "" vs String s = new String():
-
-Key functions to work with Strings:
-
 
 ===============================================================================================================================================================================
 Arrays:
@@ -363,7 +348,6 @@ Arrays.fill(arr, value): 	Quickly assigns a specific value to every index in the
 Arrays.binarySearch(arr, key): 	Efficiently finds the index of a value (the array must be sorted first).
 
 Arrays.equals(arr1, arr2): 	Checks if two arrays have the same length and identical elements in the same order.
-
 
 ===============================================================================================================================================================================
 Exception handling:
@@ -512,6 +496,84 @@ Other Key Relationships: Beyond the four pillars, Java also uses several concept
 Association: A general relationship between two separate classes where objects can exist independently (e.g., a teacher and a student).
 Aggregation: A specialized "has-a" relationship where the child can exist independently of the parent (e.g., a Department has Professors).
 Composition: A strong form of aggregation where the child cannot exist without the parent (e.g., a House has Rooms; if the house is destroyed, the rooms are too).
+
+===============================================================================================================================================================================
+Strings:
+===============================================================================================================================================================================
+In Java, a String is an object that represents a sequence of characters. 
+Unlike primitive types, strings are immutable, meaning once a String object is created, its data cannot be changed.
+
+
+Declare, Instantiate and Initialize: 
+There are two primary ways to create a String object in Java:
+
+	String Literal: 
+		- Example: String str = "Java"; // Declared and initialized using a literal
+		- The most common way. It uses the String Pool for memory efficiency.
+		- If "Java" already exists in the pool, the new reference points to the existing object.
+		
+	Using the new Keyword: 
+		- Example: String s = new String("Java"); // Explicit instantiation
+		- This forces the creation of a new object in the standard heap memory, even if "Java" already exists in the pool.
+		- Less efficient; creates redundant objects.
+	
+	Example: 
+		String s1 = "Hello";
+		String s2 = "Hello";
+		String s3 = new String("Hello");
+
+		System.out.println(s1 == s2); // true (same reference in pool)
+		System.out.println(s1 == s3); // false (different objects in memory)
+
+
+
+Adding Numbers and Strings:
+	If you add two numbers, the result will be a number; If you add two strings, the result will be a string concatenation.
+	However, if you add a number and a string, the result will be a string concatenation.
+
+	Example:
+		String x = "10";
+		int y = 20;
+		String z = x + y;  // z will be 1020 (a String)
+
+
+
+Key methods to work with Strings:
+	Java provides a rich String class API. Here are the most essential methods:
+
+Method				Description						Example
+--------------------------------------------------------------------------------------------------------
+length()			Returns the number of characters.			"Hi".length() → 2
+concat(String s)		Appends a string to the end.				"A".concat("B") → "AB"
+equals(Object o)		Compares content (case-sensitive).			"A".equals("a") → false
+equalsIgnoreCase()		Compares content(case-insensitive).			"A".equalsIgnoreCase("a") → true
+toUpperCase() / toLowerCase()	Converts the casing of the string.			"hi".toUpperCase() → "HI"
+substring(int start, int end)	Returns a part of the string.				"Hello".substring(0, 2) → "He"
+contains(CharSequence s)	Checks if a sequence exists.				"Java".contains("av") → true
+trim()				Removes leading and trailing spaces.			"  hi  ".trim() → "hi"
+replace(old, new)		Replaces characters or sequences.			"bat".replace('b', 'c') → "cat"
+charAt()			Returns the char at the given index			"saivaishu".charAt(1) → 'a'
+indexOf()			Returns the index of the first occurance of a char	"saivaishu".indexOf('a') → 1
+toCharArray()			Returns a char array					"sai".toCharArray() → {'s','a','i'}		
+
+
+
+Special Characters:
+	The backslash (\) escape character turns special characters into string characters:
+
+Escape character	Result		Description
+----------------------------------------------------
+\'			'		Single quote
+\"			"		Double quote
+\\			\		Backslash
+\n					New Line	
+\t					Tab	
+\b					Backspace	
+\r					Carriage Return	
+\f					Form Feed
+
+Example: String txt = "We are the so-called \"Vikings\" from the north.";
+
 
 ===============================================================================================================================================================================
 Modifiers:
@@ -803,7 +865,7 @@ Syntax: Map<KeyType, ValueType> name = new HashMap<>();
 
 
 ////////////////////////////////////////////////////////////
-EssentialFunctions:
+Essential Functions:
 
 Since all major collection interfaces (List, Set, Queue) extend the root Collection<E> interface, they all share a core set of methods.
 
@@ -846,19 +908,100 @@ Use containsKey(key) or containsValue(value) for checks.
 Streams API:
 ===============================================================================================================================================================================
 
-A Stream is not a data structure. It’s a pipeline of operations that process data from a source (like a List or Set or array) without modifying the original source.
+A Stream is not a data structure. It’s a pipeline of operations that processes data from a source (like a Collection or array or other streams) without modifying the original source.
 
-Pipeline Structure: Source -> Intermediate Operations -> Terminal Operation.
+Pipeline Structure: 	Source -> Intermediate Operations -> Terminal Operation.
+
+Source: 			The origin of the data (Collections, Arrays, other streams etc.,)
+Intermediate Operations: 	Transform the stream into another stream; these are "lazy" and don't run until the end.
+Terminal Operation: 		Produces a result or side-effect; once called, the stream is consumed and cannot be reused
 
 Lazy Evaluation: Intermediate operations aren't executed until a Terminal operation is called. This is a huge performance win.
 
-Primitive Streams:
-	IntStream: For int values.
-	LongStream: For long values.
-	DoubleStream: For double values. 
+////////////////////////////////////////////////////////////
+Regular Streams (object streams):
+
+Stream Sources (Initiation):
+Ways to create a stream or fetch it from data structures
+
+- From Values: 
+	Stream.of("A", "B", "C")
+- From Collections: 	
+	list.stream()
+	set.stream()
+- From Maps:
+	map.keySet().stream() 		: Stream of keys
+	map.values().stream() 		: Stream of values
+	map.entrySet().stream() 	: Stream of Key-Value pairs
+- From Arrays:
+	Arrays.stream(ObjectArray) 	: Creates an Object Stream
+- From Primitive Streams - Bulk boxing (primitive stream -> object stream):
+	boxed()				: Converts IntStream to Stream<Integer>.
+	mapToObj(i -> new Object(i))	: Converts primitives into custom Objects.
+
+	
+Intermediate Operations (The Filters & Transformers):
+
+filter(Predicate) 	:Keeps only elements that match a condition (e.g., n -> n > 10).
+map(Function) 		:Transforms each element into something else (e.g., converting a list of Strings to Uppercase).
+sorted() 		:Sorts the elements in natural order (or use a custom Comparator).
+flatMap(Function)	:"Flattens" a stream of collections into a single stream of elements.
+distinct() 		:Removes duplicate elements based on equals().
+limit(n) 		:Truncates the stream to only show the first n elements.
+peek(Consumer)		:Used for debugging; performs an action without changing the stream.
+
+
+Terminal Operations (The Result Makers):
+
+collect(Collectors.to....()) 	:Gathers the final results into a List, Set, or Map - Ex: collect(Collectors.toList()).
+forEach(Consumer) 		:Performs an action for each element (e.g., System.out::println).
+reduce() 			:Combines all elements into a single result (like summing numbers).
+count() 			:Returns the total number of elements in the stream as a long.anyMatch / allMatch : Returns a boolean if elements match a specific condition.
+anyMatch / allMatch / noneMatch	:Returns a boolean based on a condition.
+findFirst() / findAny()		:Returns an Optional containing an element from the stream.
+
+////////////////////////////////////////////////////////////
+Primitive Streams (IntStream, LongStream, DoubleStream):
+
+Till now, we have only seen streams that work with object, i.e., Integer, String, Student, etc., 
+Java also supports primitive streams, that work with numbers like int, long, double etc., these are specialized for performance to avoid boxing/unboxing overhead.
+
 Note: Java does not have specialized streams for other primitives like boolean, char, byte, or short. For those, you typically use a standard Stream with their wrapper classes
 
-Object Streams:
+
+Stream Sources (Initiation):
+
+- From Values: 
+	IntStream.of(1, 2, 3)
+- From Arrays:
+	Arrays.stream(primitiveArray) 	: Automatically creates an IntStream, LongStream, or DoubleStream
+- From Ranges: 
+	IntStream.range(1, 5) 		: (1 to 4)
+	IntStream.rangeClosed(1, 5) 	: (1 to 5)
+- From object streams - Bulk Unboxing (Object Stream → Primitive Stream):
+	mapToInt(obj -> primitive)	: Returns an IntStream.
+	mapToLong(obj -> primitive)	: Returns a LongStream.
+	mapToDouble(obj -> primitive)	: Returns a DoubleStream.
+	flatMapToInt()			: Flattens nested objects into a single IntStream.
+
+
+Intermediate Operations (Work on both Regular & Primitive):
+Same functional use as Regular Streams: filter, map, distinct, sorted, limit.
+
+
+Specialized Terminal Operations (Math only):
+
+sum() 				:Returns the total sum as a primitive.
+average() 			:Returns an OptionalDouble since a stream might be empty.
+min() / max()			:Returns an OptionalInt (or Long/Double)
+summaryStatistics() 		:A "mega-method" that returns the count, sum, min, average, and max all at once
+
+
+===============================================================================================================================================================================
+File handling & Serialization:
+===============================================================================================================================================================================
+
+
 	
 ===============================================================================================================================================================================
 I/O Streams:
@@ -868,18 +1011,6 @@ I/O Streams:
 
 ===============================================================================================================================================================================
 Multi-threading:
-===============================================================================================================================================================================
-
-
-
-===============================================================================================================================================================================
-File handling & Serialization:
-===============================================================================================================================================================================
-
-
-
-===============================================================================================================================================================================
-Closures:
 ===============================================================================================================================================================================
 
 
@@ -898,6 +1029,12 @@ Enums:
 
 ===============================================================================================================================================================================
 Annotations:
+===============================================================================================================================================================================
+
+
+
+===============================================================================================================================================================================
+Closures:
 ===============================================================================================================================================================================
 
 

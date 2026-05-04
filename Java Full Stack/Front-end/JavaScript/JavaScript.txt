@@ -369,72 +369,6 @@ let a = 1, b = 2;
 [a, b] = [b, a]; // a is now 2, b is now 1
 
 ====================================================================================================================================================================
-Document Object Model (DOM):************
-====================================================================================================================================================================
-
-- The DOM is a programming interface for web documents
-- It represents an HTML page as a tree of objects, allowing JavaScript to "talk" to the HTML. 
-- When a browser loads a page, it creates this model so you can dynamically change the structure, style, and content
-
-
-1. Selecting Elements
-Before you can change something, you have to find it. 
-
-getElementById(): Finds a single element by its unique ID.
-Syntax: document.getElementById("myId")
-
-querySelector(): Finds the first element that matches a CSS selector (like .class or #id).
-Syntax: document.querySelector(".my-class")
-
-querySelectorAll(): Finds all matching elements and returns a static NodeList.
-Syntax: document.querySelectorAll("p") 
-
-
-2. Manipulating Content & Style
-Once selected, you can modify the element's properties. 
-
-textContent: Sets or returns the plain text inside an element.
-Syntax: element.textContent = "Hello!"
-
-innerHTML: Sets or returns the HTML content (including tags).
-Syntax: element.innerHTML = "<b>Bold Text</b>"
-
-style: Directly changes inline CSS.
-Syntax: element.style.color = "blue" (Note: Use camelCase like backgroundColor).
-
-classList: The best way to manage classes using add(), remove(), or toggle().
-Syntax: element.classList.toggle("active") 
-
-
-3. Creating & Removing Elements
-You can build parts of the page entirely with code. 
-
-createElement(): Creates a new HTML tag in memory.
-
-appendChild(): Adds a node as the last child of a parent.
-
-remove(): Deletes the element from the page. 
-
-const newDiv = document.createElement("div");
-newDiv.textContent = "I'm new here!";
-document.body.appendChild(newDiv); // Now it appears on the page
-Use code with caution.
-
-
-4. Event Listeners
-This makes your page interactive by "listening" for user actions. 
-
-addEventListener(): Attaches a function to run when a specific event happens.
-Syntax: element.addEventListener("event", function)
-
-Common Events: "click", "submit", "keydown", "mouseover". 
-
-const btn = document.querySelector("#myBtn");
-btn.addEventListener("click", () => {
-  alert("Button clicked!");
-});
-
-====================================================================================================================================================================
 Spread and Rest Operators:***********************
 ====================================================================================================================================================================
 
@@ -477,6 +411,123 @@ Destructuring: Collecting the "leftover" items.
 // In destructuring:
 const [topScore, ...others] = [100, 85, 70, 50];
 console.log(others); // [85, 70, 50]
+
+
+====================================================================================================================================================================
+Document Object Model (DOM):************
+====================================================================================================================================================================
+
+- The DOM is a programming interface for web documents
+- It represents an HTML page as a tree of objects, allowing JavaScript to "talk" to the HTML. 
+- When a browser loads a page, it creates this model so you can dynamically change the structure, style, and content
+
+
+Example HTML Page:
+
+<html lang = "en">
+	<head>
+		<title>DOM Tree Structure</title>
+	</head>
+	
+	<body>
+		<h1 id = "main-title">Welcome to the DOM</h1>
+		<div class = "container">
+			<p class = "divParagraph">This is a paragraph</p>
+			<ul class "items-container">
+				<li id = "item1" class = "item">First</li>
+				<li id = "item2" class = "item">Second</li>
+				<li id = "item3" class = "item">Third</li>
+			</ul>
+		</div>	
+	</body>
+</html>
+
+
+DOM Tree Structure:
+
+html
+│
+├── head
+│	 └── title
+│
+└── body
+     ├── h1
+     └── div
+          ├── p
+          └── ul		
+               ├── li
+               ├── li
+               └── li
+
+
+
+1. Selecting/accessing Elements
+Before you can change something, you have to find it. 
+
+getElementById()	: Finds a single element by its unique ID.
+Syntax: document.getElementById("myId")
+
+querySelector()		: Finds the first element that matches a CSS selector (like .class or #id).
+Syntax: document.querySelector(".my-class")
+
+querySelectorAll()	: Finds all matching elements and returns a static NodeList.
+Syntax: document.querySelectorAll("p") 
+
+
+2. Manipulating Content & Style
+Once selected, you can modify the element's properties. 
+
+textContent	: Sets or returns the plain text inside an element.
+Syntax: element.textContent = "Hello!"
+
+innerHTML	: Sets or returns the HTML content (including tags).
+Syntax: element.innerHTML = "<b>Bold Text</b>"
+
+style		: Directly changes inline CSS.
+Syntax: element.style.color = "blue" (Note: Use camelCase like backgroundColor).
+
+classList	: The best way to manage classes using add(), remove(), or toggle().
+Syntax: element.classList.toggle("active") 
+
+
+3. Creating & Removing Elements
+You can build parts of the page entirely with code. 
+
+createElement()		: Creates a new HTML tag in memory.
+appendChild()		: Adds a node as the last child of a parent.
+remove()		: Deletes the element from the page. 
+
+const newDiv = document.createElement("div");
+newDiv.textContent = "I'm new here!";
+document.body.appendChild(newDiv); // Now it appears on the page
+
+	
+
+Events:
+	Mouse Events: click, dblclick, mouseenter, mouseleave.
+	Keyboard Events: keydown, keyup.
+	Form Events: submit (essential for preventing page refreshes via e.preventDefault()), change, input.
+
+
+
+Event handlers:
+These are properties assigned directly to an element.
+
+const btn = document.querySelector("#item1");
+btn.onclick = () => { console.log("Clicked!"); };
+
+
+
+Event Listeners:
+This makes your page interactive by "listening" for user actions. 
+
+addEventListener(): Attaches a function to run when a specific event happens.
+Syntax: element.addEventListener("event", function)
+
+const btn = document.querySelector("#myBtn");
+btn.addEventListener("click", () => {
+  alert("Button clicked!");
+});
 
 ====================================================================================================================================================================
 Asynchronous JavaScript:***********************************

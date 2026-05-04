@@ -1,0 +1,16 @@
+In a decoupled setup, applications usually function as follows:
+
+Backend (Java)		: Often built using Spring Boot, it acts as a data provider. It connects to a database and exposes "endpoints" (URLs) that return data, usually in JSON format.
+Frontend (React)	: Runs in the user's browser. It makes asynchronous HTTP requests to those Java endpoints to fetch or send data.
+
+
+
+Key Steps for Integration:
+
+Expose REST APIs in Java			: Use Spring Boot’s @RestController to create endpoints. For example, a @GetMapping("/api/users") would return a list of users.
+
+Enable CORS (Cross-Origin Resource Sharing)	: Because your React app (usually on port 3000) and Java app (usually on port 8080) run on different ports, the browser will block requests by default. You must configure Java to allow requests from your React origin using the @CrossOrigin annotation.
+
+Fetch Data in React				: Use libraries like Axios or the built-in Fetch API inside a useEffect hook to call your Java backend.
+
+Manage State					: Once the data is received from Java, you store it in React's State (useState) so it can be rendered in your components.

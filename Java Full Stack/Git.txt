@@ -1,4 +1,6 @@
+==============================================================================================================================================================
 Setup Git:
+==============================================================================================================================================================
 
 Download:
 https://git-scm.com/ 
@@ -16,19 +18,23 @@ git config user.email
 
 ==============================================================================================================================================================
 Git Initialize:
+==============================================================================================================================================================
 
 git init		: used to initialize a new Git repository
 
 ==============================================================================================================================================================
 Staging and tracking:
+==============================================================================================================================================================
 The Staging Area (the Index) is a middle ground between your actual project folder and the Git repository.
 
-A tracked file is any file that Git is "aware" of. This means the file was included in your last commit or has been added to the staging area. 
-Untracked: A file exists in your folder, but Git doesn't know it exists. Changes to it are ignored.
-Tracked: Git actively monitors this file for changes. Once a file is tracked, it can be in one of three states:
-Unmodified: Matches the last commit.
-Modified: You've changed the file, but haven't staged the changes yet.
-Staged: You've used git add to prepare these specific changes for the next commit. 
+Tracking: Git starts tracking files/folders that are added to the staging area at least once
+
+ 
+Untracked: 	An untracked file exists in your folder, but Git doesn't know it exists. Changes to it are ignored.
+Tracked: 	Git actively monitors this file for changes. Once a file is tracked, it can be in one of three states:
+		Unmodified: 	Matches the last commit.
+		Modified: 	You've changed the file, but haven't staged the changes yet.
+		Staged: 	You've used git add to prepare these specific changes for the next commit. 
 
 Adding to the index:
 git add .				: Only stages changes in your current directory and its subfolders.
@@ -45,6 +51,7 @@ git diff --name-only --staged		: To view all the staged files
 
 ==============================================================================================================================================================
 Commit:
+==============================================================================================================================================================
 
 git commit -m "Initial commit"		: Commits all the files from the staging area with a comment
 
@@ -62,6 +69,7 @@ git log --stat				: Provides a summary including how many lines were added or re
 
 ==============================================================================================================================================================
 Push:
+==============================================================================================================================================================
 
 git remote add <alias_name> <remote_url>			: Sets alias_name for your remote repository URL, usually "origin"
 git remote -v 							: Verify Link (You should see your GitHub URL listed)
@@ -74,15 +82,50 @@ The -u flag sets "origin master" as the default, so in the future, you only need
 
 ==============================================================================================================================================================
 Clone:
+==============================================================================================================================================================
 
 git clone <remote_url>			: Clones remote repository to local
 
 ==============================================================================================================================================================
 Pull:
+==============================================================================================================================================================
 
+git fetch 				: Downloads all new data from the remote repository but does not merge it into your local work. It’s a "safe" way to see what others have done before you commit to merging.
+git pull origin <branch> 		: Combines git fetch and git merge in one step. It downloads the remote data and instantly tries to update your current local branch.
+git pull --rebase origin <branch> 	: Fetches the remote changes and then re-applies your local commits on top of them. This avoids "merge commits" and keeps the history linear and clean.
 
+==============================================================================================================================================================
+Branching:
+==============================================================================================================================================================
 
+git branch 			: Lists all local branches. (The current branch is highlighted with an asterisk).
+git branch <branch-name> 	: Creates a new branch at your current commit.
+git checkout <branch-name> 	: Switches from your current branch to the specified one.
+git checkout -b <branch-name> 	: Shortcut to create a new branch and switch to it immediately.
+git merge <branch-name> 	: Merges the specified branch into your current branch (e.g., if you are on main, run git merge feature-login to bring those changes in).
+git branch -d <branch-name> 	: Deletes a branch (only if it has been merged). Use -D to force delete unmerged work.
 
+==============================================================================================================================================================
+Stashing (The "Save for Later" shelf):
+==============================================================================================================================================================
+
+git stash 	: Temporarily shelves (hides) your uncommitted changes so you can have a "clean" working directory (useful if you need to switch branches quickly without committing half-finished work).
+git stash list 	: Shows all your stashed changes.
+git stash pop 	: Takes the most recent stash and applies it back to your current branch, then removes it from the stash list.
+git stash apply : Applies the stash but keeps it in the list for later use.
+
+==============================================================================================================================================================
+Inspection & Cleanup:
+==============================================================================================================================================================
+
+git log --oneline --graph --all : Provides a visual, bird's-eye view of all branches and how they connect/diverge.
+git clean -fd 			: Removes all untracked files and directories from your local folder. Warning: This cannot be undone.
+
+==============================================================================================================================================================
 
 what is commit hash
 how to get the files from a specific commit
+
+
+
+
