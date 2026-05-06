@@ -1,7 +1,10 @@
 Download Node.js and install:
 https://nodejs.org/en/download/current
 
-https://github.com/nodejs/node-gyp#on-windows - for Node.js dependency
+
+Check installation:
+node -v
+npm -v
 
 
 
