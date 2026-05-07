@@ -1,3 +1,5 @@
+
+
 React is an open-source JavaScript library developed by Meta (formerly Facebook) used for building interactive and dynamic user interfaces (UI), primarily for single-page applications.
 
 ====================================================================================================================================================================
@@ -60,6 +62,23 @@ Props (Properties)	:Used to pass data from a parent component to a child compone
 State			:An internal data store that belongs to a component. When state changes, the component re-renders to reflect the new data.
 Hooks			:Functions that let you "hook into" React features from functional components.
 	useState: Manages local state within a component.
+		- should import { useState } from "react"; to the component
+		- should be the first line of the component
 	useEffect: Handles side effects like data fetching, subscriptions, or manual DOM changes.
 	useRef: 
+
+Conditional Rendering:
+	- It means showing different UI based on a condition (if/else).
+	- In React, you can use:
+		- JavaScript if/else
+		- ternary  (? :)
+		- logical AND (&&)
+	to decide what to render.
+
+
+
+
+
+
+
 
