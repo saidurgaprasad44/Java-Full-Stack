@@ -474,14 +474,22 @@ querySelectorAll()	: Finds all matching elements and returns a static NodeList.
 Syntax: document.querySelectorAll("p") 
 
 
-2. Manipulating Content & Style
-Once selected, you can modify the element's properties. 
+2. Manipulating Content & Attributes
+Once selected, you can change the "inside" of an element or its metadata. 
 
 textContent	: Sets or returns the plain text inside an element.
 Syntax: element.textContent = "Hello!"
 
 innerHTML	: Sets or returns the HTML content (including tags).
 Syntax: element.innerHTML = "<b>Bold Text</b>"
+
+setAttribute() / getAttribute(): Modifies or retrieves attributes like src, href, or id
+
+value		: Specifically used to get or set data in form inputs.
+
+
+3. Modifying Styles & Classes
+You can change the visual appearance of elements dynamically.
 
 style		: Directly changes inline CSS.
 Syntax: element.style.color = "blue" (Note: Use camelCase like backgroundColor).
@@ -490,11 +498,12 @@ classList	: The best way to manage classes using add(), remove(), or toggle().
 Syntax: element.classList.toggle("active") 
 
 
-3. Creating & Removing Elements
+4. Creating & Removing Elements
 You can build parts of the page entirely with code. 
 
 createElement()		: Creates a new HTML tag in memory.
 appendChild()		: Adds a node as the last child of a parent.
+prepend()		: Adds a node as the first child.
 remove()		: Deletes the element from the page. 
 
 const newDiv = document.createElement("div");
