@@ -1,0 +1,31 @@
+DevOps is a set of cultural philosophies, practices, and tools that combines software development (Dev) and IT operations (Ops). Its primary goal is to shorten the systems development lifecycle and provide high-quality software through continuous delivery.
+
+Instead of development and operations teams working in "silos," they work together as a single team across the entire application lifecycle, from development and testing to deployment and monitoring.
+
+
+
+
+Core DevOps Principles:
+
+Automation		: Automating manual, repetitive tasks like code integration, testing, and deployment to increase speed and reduce human error.
+Collaboration		: Breaking down barriers between teams to promote shared responsibility and effective communication.
+Continuous Improvement	: Constantly analyzing performance metrics and user feedback to optimize release times and software quality.
+Shared Ownership	: Both developers and operations staff are jointly accountable for the end-to-end success of a product.
+
+
+
+
+
+Key DevOps Tools by Category
+The "DevOps lifecycle" consists of various stages, each supported by specific types of tools:
+
+Lifecycle Stage		Purpose	Popular 					Tools
+----------------------------------------------------------------------------------------------------------------
+Plan			Project management and collaboration			Jira, Trello, Slack
+Code			Version control and source code management		Git, GitHub, GitLab, Bitbucket
+Build			Automating package creation				Maven, Gradle, Ant
+Test			Automated functional and performance testing		Selenium, JUnit, JMeter
+Release/Deploy		Orchestration and CI/CD automation			Jenkins, CircleCI, Argo CD
+Configure		Infrastructure as Code (IaC) and server state		Terraform, Ansible, Chef, Puppet
+Operate			Containerization and orchestration			Docker, Kubernetes
+Monitor			Observability and real-time alerts			Prometheus, Grafana, ELK Stack

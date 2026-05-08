@@ -68,7 +68,7 @@ A render is triggered in two cases:
 			- React follows a "depth-first" traversal. It will drill down into the first child, then that child's children, and so on, until it reaches a "leaf" node.
 			- Once a branch is fully explored, React moves to the next sibling at the same level and repeats the process.
 			
-	Re-renders	: When a component's state or props change, React "queues" a render for that component and its children.
+	Re-renders	: When a component's state or props change, React re-renders that component and its children.
 
 
 2. The Render Phase (Calculation)
@@ -81,14 +81,15 @@ In this phase, React calculates what needs to change. It is a pure calculation a
 
 3. The Commit Phase (Applying Changes)
 Once React knows what changed, it applies those specific updates to the browser
-Selective Updates	: Instead of re-creating the entire DOM tree, React only modifies the specific nodes that changed (e.g., updating one <h1> text while leaving an <input> untouched).
-Renderer Role		: The ReactDOM library acts as the "waiter" that takes these calculated changes and surgically inserts them into the browser's DOM.
+
+	Selective Updates	: Instead of re-creating the entire DOM tree, React only modifies the specific nodes that changed (e.g., updating one <h1> text while leaving an <input> untouched).
+	Renderer Role		: The ReactDOM library acts as the "waiter" that takes these calculated changes and surgically inserts them into the browser's DOM.
 
 ====================================================================================================================================================================
 Managing Data
 ====================================================================================================================================================================
 
-Props (Properties)	:Used to pass data from a parent component to a child component called Props drilling. Props are read-only (immutable) from the child's perspective.
+Props (Properties)	:Used to pass data from a parent component to a child component. Props are read-only (immutable) from the child's perspective.
 
 	
 Hooks			:Functions that let you "hook into" React features from functional components. These should be defined at the first line of the component.	
@@ -108,6 +109,9 @@ Conditional Rendering:
 		- ternary  (? :)
 		- logical AND (&&)
 	to decide what to render.
+
+Two-way Binding:
+
 
 ====================================================================================================================================================================
 Advanced Features for Production Apps
