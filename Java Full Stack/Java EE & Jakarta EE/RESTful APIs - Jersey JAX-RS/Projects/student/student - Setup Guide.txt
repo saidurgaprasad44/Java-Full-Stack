@@ -1,7 +1,0 @@
-Clone the repo from GitHub - https://github.com/saidurgaprasad44/Student.git
-
-Recommended IDE - Eclipse EE...
-
-Supported Tomcat Version - 9
-
-Java Version - 8
