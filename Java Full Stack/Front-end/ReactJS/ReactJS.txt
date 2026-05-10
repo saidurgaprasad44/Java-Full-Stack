@@ -65,7 +65,7 @@ How React renders components to the DOM:
 A render is triggered in two cases:
 
 	Initial Render	- When the application first starts, React recursively renders the entire component tree starting from the root by calling the ReactDOM.createRoot.
-			- React follows a "depth-first" traversal. It will drill down into the first child, then that child's children, and so on, until it reaches a "leaf" node.
+			- React follows a "depth-first" traversal. It will drill down by mounting the first child, then that child's children, and so on, until it reaches a "leaf" node.
 			- Once a branch is fully explored, React moves to the next sibling at the same level and repeats the process.
 			
 	Re-renders	: When a component's state or props change, React re-renders that component and its children.
@@ -89,17 +89,42 @@ Once React knows what changed, it applies those specific updates to the browser
 Managing Data
 ====================================================================================================================================================================
 
-Props (Properties)	:Used to pass data from a parent component to a child component. Props are read-only (immutable) from the child's perspective.
+Props (Properties): Used to pass data from a parent component to a child component called props drilling. Props are read-only (immutable) from the child's perspective.
 
 	
-Hooks			:Functions that let you "hook into" React features from functional components. These should be defined at the first line of the component.	
+Hooks: Functions that let you "hook into" React features from functional components. These should be defined at the first line of the component.
+	
 	useState: 
 		State:	A state is an internal data store that belongs to a component. Every time the state changes, the component re-renders to reflect the new data.
 		- It Manages local state within a component.
 		- should import { useState } from "react"; to the component
-		Example: const [likes, SetLikes] = useState(10); 
+		- Example:
+			import { useState } from "react" 
+			const [likes, SetLikes] = useState(10); 
+			const handleLike = () => {	
+				setLikes(likes + 1); // When state updates and react triggers re-render
+			};
 
-	useEffect: It Handles side effects like API data fetching, subscriptions, or manual DOM changes.
+	useEffect: 
+		- Used to handle side effects—tasks that happen outside the normal render cycle, like fetching data, manual DOM changes, or setting up subscriptions
+		- Runs when the component renders/re-renders
+		- It takes two arguments 1 - an arrow function and 2 - a dependent array
+		- Example:
+
+			import { useEffect } from "react";
+
+			useEffect(() => {
+				// Your code here (runs after render)
+				
+				return () => {
+    					// Optional: Cleanup code (runs before component unmounts)
+				};
+			}, [dependencies]); // Only re-runs if these values change
+
+		- Case 1: [] (Empty array): Runs only once (on mount).
+		- Case 2: [state/data]: Runs on mount and every time state/data changes.
+		- Case 3: No array: Runs after every render.
+			
 	useRef: 
 
 Conditional Rendering:
@@ -116,7 +141,11 @@ Two-way Binding:
 ====================================================================================================================================================================
 Advanced Features for Production Apps
 ====================================================================================================================================================================
-Routing: Use React Router to enable navigation between different views in a single-page application (SPA) without reloading the page.
+Routing: 
+React is a Single Page Application (SPA), it loads only one html page(index.html) and updates the view dynamically.
+React Router enables the navigation between different views without reloading the page.
+
+
 API Integration: Use the built-in fetch API or libraries like Axios to interact with backends and display real-time data.
 Performance Optimization:
 	Memoization: Use React.memo, useMemo, and useCallback to prevent unnecessary re-renders.
@@ -129,6 +158,7 @@ Important Architectural Patterns
 ====================================================================================================================================================================
 
 Folder Structure: Organizing code by features (e.g., /features/auth, /features/products) is preferred over grouping by technical type (e.g., /components, /hooks) as applications grow.
+
 Container/Presentational Pattern: Separating "Smart" components (handling logic/data fetching) from "Dumb" components (purely visual rendering) improves reusability.
 
 

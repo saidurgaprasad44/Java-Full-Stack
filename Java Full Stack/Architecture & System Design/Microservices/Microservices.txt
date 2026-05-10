@@ -1,0 +1,29 @@
+Monolithic Application vs Microservices:
+
+Advantages and Disadvantages of Microservices:
+
+Advantages:
+	Team Dependencies
+	Scalability
+
+Disadvantages:
+
+
+	
+Inter-service communication
+
+Spring Cloud Eureka
+
+API Gateway
+
+Feign Client
+
+Config Server
+
+Circuit Breaker
+
+Docker
+
+Kafka
+
+Kubernetes

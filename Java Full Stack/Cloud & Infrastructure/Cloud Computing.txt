@@ -1,0 +1,73 @@
+Cloud Ready vs Cloud Native:
+
+
+
+
+On-Premises:
+
+below are handled by cloud users:
+	Functions
+	Application
+	Run time and Containers
+	Operating Systems and management tools
+	Networking, storage and servers
+	Data center
+====================================================================================================================================================================
+IaaS:
+
+below are handled by cloud users:
+	Functions
+	Application
+	Run time and Containers
+	Operating Systems and management tools
+
+below are handled and provided by cloud as a service:
+	Networking, storage and servers
+	Data center
+====================================================================================================================================================================
+CaaS:
+
+below are handled by cloud users:
+	Functions
+	Application
+	Run time and Containers
+
+below are handled and provided by cloud as a service:
+	Operating Systems and management tools
+	Networking, storage and servers
+	Data center
+====================================================================================================================================================================
+PaaS
+
+below are handled by cloud users:
+	Functions
+	Application
+
+below are handled and provided by cloud as a service:
+	Run time and Containers
+	Operating Systems and management tools
+	Networking, storage and servers
+	Data center
+====================================================================================================================================================================
+FaaS
+
+below are handled by cloud users:
+	Functions
+
+below are handled and provided by cloud as a service:
+	Application
+	Run time and Containers
+	Operating Systems and management tools
+	Networking, storage and servers
+	Data center
+====================================================================================================================================================================
+SaaS
+
+below are handled and provided by cloud as a service:
+Functions
+Application
+Run time and Containers
+Operating Systems and management tools
+Networking, storage and servers
+Data center
+====================================================================================================================================================================

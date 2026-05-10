@@ -420,7 +420,7 @@ Database Table
 CREATE TYPE role_type AS ENUM ('admin', 'basic');
 
 CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     username VARCHAR(50),
     password VARCHAR(50),
     role role_type

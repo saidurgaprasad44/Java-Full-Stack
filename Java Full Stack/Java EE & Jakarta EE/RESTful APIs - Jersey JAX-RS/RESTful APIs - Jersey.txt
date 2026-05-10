@@ -7,15 +7,17 @@ Java uses JAX-RS principles to implement Jersey REST APIs
 - Identification: Each resource is identified by a unique URI (Uniform Resource Identifier), such as https://api.example.com.
 - Representation: Clients do not access the data directly; instead, they receive a representation of the resource, most commonly in JSON or XML format
 
-Push - Create - Creates a new subordinate resource
+
+CRUD operations and their corresponding REST methods:
+
+Post - Create - Creates a new subordinate resource
 Get - Read - Retrieves a representation of a resource
 Put - Update - Replaces an existing resource or creates one if it doesn't exist
 Patch - Update - Partially modifies an existing resource
 Delete - Delete - Removes the specified resource
 
 
-Common Status Codes:
-Servers respond with three-digit codes to indicate the outcome of a request: 
+Common Status Codes:	Servers respond with three-digit codes to indicate the outcome of a request: 
 
 - 200 OK: The request was successful.
 - 201 Created: A new resource was successfully created (typically after a POST).
@@ -23,3 +25,144 @@ Servers respond with three-digit codes to indicate the outcome of a request:
 - 401 Unauthorized: Authentication is required or has failed.
 - 404 Not Found: The requested resource does not exist.
 - 500 Internal Server Error: A general error occurred on the server
+
+===============================================================================================================================================================================
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Jersey Implementation >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+===============================================================================================================================================================================
+web.xml
+===============================================================================================================================================================================
+The web.xml routes all the https requests matching the url-pattern /webapi/* to ServletContainer which then searches for the responses/logic under the specified package "com.webApiApp.student" and its sub packages by matching the URL with the @path("students").
+
+
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+    <servlet>
+        <servlet-name>Jersey Web Application</servlet-name>
+        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+        <init-param>
+            <param-name>jersey.config.server.provider.packages</param-name>
+            <param-value>com.webApiApp.student</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Jersey Web Application</servlet-name>
+        <url-pattern>/webapi/*</url-pattern>
+    </servlet-mapping>
+</web-app>
+
+===============================================================================================================================================================================
+Package Structure:
+===============================================================================================================================================================================
+
+com.example.api.resources		: Contains your JAX-RS resource classes with @Path.
+com.example.api.service			: Contains business logic.
+com.example.api.dao (or repository)	: Data access code.
+com.example.api.model			: Entities and data objects.
+com.example.api.config			: Your ResourceConfig setup
+
+===============================================================================================================================================================================
+Resource package:
+===============================================================================================================================================================================
+In the Resource package (the web layer) of a Jersey application, annotations are used to define how Java methods map to HTTP requests.
+
+1. Routing & Mapping Annotations:
+These define where your API lives and what "actions" it can perform.
+
+	@Path("/your-path")	: Defines the URI path for a class or method. It can be applied at the class level (root path) or method level (sub-path).
+	@GET			: For fetching data.
+	@POST			: For creating new data.
+	@PUT			: For updating existing data.
+	@DELETE			: For removing data.
+
+
+
+2. Content Negotiation Annotations:
+These define the format of the data being sent or received (e.g., JSON, XML, Plain Text).
+
+	@Produces(MediaType.APPLICATION_JSON): Specifies the format of the response sent to the client.
+	@Consumes(MediaType.APPLICATION_JSON): Specifies the format of the request body expected from the client.
+
+
+
+3. Parameter Injection Annotations:
+These "pull" data out of the incoming request and inject them into your method arguments.
+
+	@PathParam("id")		: Extracts values directly from the URI path (e.g., /users/{id}).
+	@QueryParam("search")		: Extracts values from the URL query string (e.g., ?search=java).
+	@HeaderParam("User-Agent")	: Extracts values from HTTP headers.
+	@Context			: Injects special web-related objects like UriInfo or HttpServletRequest.
+
+
+
+Example Snippet:
+
+public class OrderResource {
+
+    @GET
+    @Path("/{orderId}") // Full path: /orders/123
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getOrderDetails(@PathParam("orderId") String id) {
+        // Logic to fetch order using 'id'
+        return Response.ok(new Order(id, "Pizza")).build();
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createOrder(Order newOrder) {
+        // Jersey automatically converts JSON body into 'newOrder' object (deserializing)
+        return Response.status(Response.Status.CREATED).entity(newOrder).build();
+    }
+}
+
+===============================================================================================================================================================================
+Service Package:
+===============================================================================================================================================================================
+
+Business Logic Hub: This is where you perform calculations, filter data, check permissions, and handle complex "if/then" rules.
+
+===============================================================================================================================================================================
+DAO / Repository Layer:
+===============================================================================================================================================================================
+
+A DAO is "table-centric." You usually create one DAO for every database table. It contains the raw logic to perform CRUD (Create, Read, Update, Delete) operations.
+
+===============================================================================================================================================================================
+Model Layer:
+===============================================================================================================================================================================
+Purpose: This is the version of the object you send over the network (JSON).
+
+Serialization: Jersey uses libraries like Jackson or Moxy to turn these Java objects into JSON. For this to work, your models must have:
+	- A public no-argument constructor.
+	- Getters and Setters for all fields.
+
+Common Annotations:
+	@XmlRootElement			: Used for XML serialization
+	@JsonProperty("user_name")	: Changes the name of the field in the JSON output.
+	@JsonIgnore			: Prevents a field from being sent in the JSON (great for sensitive data).
+	@NotNull / @Size		: Used for validating input data.
+
+===============================================================================================================================================================================
+Application Config:
+===============================================================================================================================================================================
+
+To tell Jersey where your resources are, you use a class that extends ResourceConfig or Application.
+
+Responsibility: Registering resource packages and features (like JSON support).java@ApplicationPath("/api")
+
+Example snippet:
+
+public class MyConfig extends ResourceConfig {
+    public MyConfig() {
+        packages("com.example.rest.resources"); // Scans this package for @Path
+    }
+}
+
+===============================================================================================================================================================================
+
+Tip: Uncomment the Moxy dependency in pom.xml for JSON serialization:
+
+<dependency>
+	<groupId>org.glassfish.jersey.media</groupId>
+	<artifactId>jersey-media-moxy</artifactId>
+</dependency>

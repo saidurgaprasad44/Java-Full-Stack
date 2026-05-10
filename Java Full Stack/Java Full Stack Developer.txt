@@ -19,8 +19,8 @@ Database Connection: 	JDBC, Hibernate, Spring JDBC, Spring Data JPA (on Hibernat
 Build & Deployment: 	Apache Ant(build.xml), Apache Maven(pom.xml), Gradle(script based), Docker, Kubernetes, Kafka
 Servers: 		Tomcat, WebLogic
 Cloud & Infrastructure:	Spring Cloud, Azure Cloud, AWS
-Infrastructure:		Microservices
 Security & IAM:		Authentication(JWT, OAuth2), Authorization, Web Security (CORS, CSRF)
+Architecture:		Microservices
 
 Other Techs and tools:
 Project structuring and packaging types: war, jar, ear

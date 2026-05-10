@@ -1,0 +1,15 @@
+Java Backend Application using Maven for REST API CRUD
+
+
+
+MVC Mapping:
+Layer:		Component:
+Resources	Student.java
+Service		StudentService.java
+DAO		StudentDao.java, DBUtil.java
+Model		Student.java
+Config		web.xml, pom.xml
+
+
+
+

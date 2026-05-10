@@ -1,0 +1,88 @@
+number primitive - object			: autoboxing and unboxing
+
+number primitive - String			: String.valueOf() to convert from any primitive to String and Parsing methods like Integer.parseInt() from String to primitives
+
+number primitive - primitive array		: NA
+
+number primitive - object array			: NA
+
+number primitive - Collection<>			: we cannot covert, but we can create a collection with single element 
+
+number primitive - primitive stream		: NA
+
+number primitive - object stream		: NA
+
+
+
+object - string					: String.valueOf() and toString() to convert any object to String
+
+object - primitive array			: NA
+
+object - object array				: we cannot covert, but we can create an object array with single object
+	
+object - Collection<>				: NA
+
+object - primitive stream			: NA
+
+object - object stream				: NA
+
+
+
+String - primitive array			: String.toCharArray()
+
+String - object array				: 
+
+String - Collection<>
+
+String - primitive stream
+
+String - object stream
+
+
+
+primitive array - object array			: 
+
+primitive array - Collection<>			: List<WrapperClass> l = Arrays.asList(arr);
+
+primitive array - primitive stream		: 
+
+primitive array - object stream
+
+
+
+object array - Collection<>
+
+object array - primitive stream
+
+object array - object stream
+
+
+
+Collection<> - primitive stream
+
+Collection<> - object stream
+
+
+
+primitive stream - object stream
+
+
+
+
+
+
+
+
+
+
+
+
+number primitive
+non number primitive
+object
+String
+primitive array
+object array
+Collection
+primitive stream
+object stream
