@@ -122,9 +122,43 @@ git log --oneline --graph --all : Provides a visual, bird's-eye view of all bran
 git clean -fd 			: Removes all untracked files and directories from your local folder. Warning: This cannot be undone.
 
 ==============================================================================================================================================================
+Git in Eclipse/STS:
+==============================================================================================================================================================
+Eclipse comes with a built-in plugin called EGit.
 
+
+Setup your Identity	: Go to Window > Preferences > Team > Git > Configuration and add your user.name and user.email.
+
+Initialize a Project	: Right-click your project folder in the Package Explorer, select Team > Share Project..., choose Git, and click Create... to initialize a local repository.
+
+The Git Staging View	: This is your main workspace. Open it via Window > Show View > Other... > Git > Git Staging.
+	Stage	: Drag files from "Unstaged Changes" to "Staged Changes" (or click the ++ icon).
+	Commit	: Enter a message and click Commit (local) or Commit and Push (to GitHub).
+
+Clone a Repository	: Use File > Import... > Git > Projects from Git > Clone URI and paste your GitHub repository link
+
+==============================================================================================================================================================
+Git in Visual Studio Code:
+==============================================================================================================================================================
+VS Code has built-in Git support that is very visual and easy to use.
+
+
+Initialize a Repository	: Open your project folder (File > Open Folder...). Click the Source Control icon (the branching icon) on the left sidebar (or press Ctrl+Shift+G) and select Initialize Repository.
+
+Stage and Commit:
+	- Changed files appear in the Source Control view. Click the + (plus) icon next to a file to "Stage" it.
+	- Type your commit message in the text box at the top and click the Commit button (checkmark icon).
+
+Clone a Repository	: Press Ctrl+Shift+P to open the Command Palette, type Git: Clone, and paste your repository URL.
+
+Push/Pull		: After committing, click the Sync Changes button or use the three dots (...) menu in the Source Control view to push your work to a remote server like GitHub
+
+==============================================================================================================================================================
 what is commit hash
 how to get the files from a specific commit
+
+
+
 
 
 

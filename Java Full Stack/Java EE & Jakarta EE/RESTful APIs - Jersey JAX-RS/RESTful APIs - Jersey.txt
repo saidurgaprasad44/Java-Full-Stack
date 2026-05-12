@@ -8,7 +8,7 @@ Java uses JAX-RS principles to implement Jersey REST APIs
 - Representation: Clients do not access the data directly; instead, they receive a representation of the resource, most commonly in JSON or XML format
 
 
-CRUD operations and their corresponding REST methods:
+CRUD operations and their respective REST methods:
 
 Post - Create - Creates a new subordinate resource
 Get - Read - Retrieves a representation of a resource
