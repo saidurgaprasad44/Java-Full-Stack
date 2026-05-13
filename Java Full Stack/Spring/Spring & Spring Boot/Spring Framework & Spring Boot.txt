@@ -2,8 +2,6 @@
 Spring Framework and Spring Boot:
 =============================================================================================================================================================================
 
-Note: We are only learning Console based/Stand alone applications here... Not Web applications...
-
 Core Concept 		- Inversion of Control (IoC):
 It is a design principle where the control of objects or portions of a program is transferred to a container or framework
 Goal: To achieve Loose Coupling between components.

@@ -17,15 +17,32 @@ Dependencies:>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 - Get the dependencies from:
   https://mvnrepository.com/
 
-Configuration:>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-- Add the below configuration in src/main/resources/application.properties
+=======================================================================================================================================================================
+Configuration (application.properties or application.yml):
+=======================================================================================================================================================================
 
+# 1. Driver and database configuration
 spring.datasource.url=<url>
 spring.datasource.username=<username>
 spring.datasource.password=<password>
 spring.datasource.driver-class-name=<db-driver>
 
-Annotations:>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# 2. DDL Auto Strategy: Controls automatic table generation
+# options: none, validate, update, create, create-drop
+# WARNING: Use 'update' or 'none' for production. 'create' deletes existing data on restart!
+spring.jpa.hibernate.ddl-auto=update
+
+# 3. SQL Logging: Prints exact SQL statements execution to the console logs
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+# 4. Database Dialect: Optimizes queries for specific underlying database engines
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+
+=======================================================================================================================================================================
+Annotations
+=======================================================================================================================================================================
+
 @Entity:
 - Add the annotation on the model class on which we are implementing the repository for
 - This tells JPA to look for the table name inside the database "spring.datasource.url", so make sure that the model class name matches the table name
@@ -38,7 +55,9 @@ Annotations:>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 - Add this annotation on the Repository interface
 - It will add extra features, but works even without it.
 
-Classes/Interfaces:>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+=======================================================================================================================================================================
+Classes/Interfaces
+=======================================================================================================================================================================
 
 In Spring Data JPA, we can implement the entity repository interface extending the in-built interface "CrudRepository" which has all the required CRUD methods by default.
 
@@ -48,7 +67,18 @@ interface ProductRepository extends CrudRepository<Product, Integer>{
 Product - The Entity class
 Integer - Type of the primary key
 
-CRUD Methods:>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+While CrudRepository covers basic CRUD, JpaRepository is preferred in production. It extends ListCrudRepository and PagingAndSortingRepository
+
+public interface ProductRepository extends JpaRepository<Product, Integer> {
+    // Inherits all CRUD methods plus pagination, sorting, and batch deletion.
+}
+
+Key Advantage: Methods like findAll() return a List<T> directly, removing the need to cast an Iterable<T> returned by CrudRepository.
+
+=======================================================================================================================================================================
+CRUD Methods
+=======================================================================================================================================================================
 
 Some important CRUD methods are:
 
@@ -56,3 +86,84 @@ findAll() - 	SELECT * FROM <Table>
 findById() - 	SELECT * FROM <Table> Where ID = <ID>
 save() - 	INSERT INTO <Table> (<column names>) VALUES (<values>) or 
 deleteById() - 	DELETE FROM <Table> WHERE id = <ID>
+
+=======================================================================================================================================================================
+Advanced Query Mechanisms
+=======================================================================================================================================================================
+Apart from basic CRUD operations JPA supports advanced querying like
+
+
+1. Derived Query Methods (Query Creation by Method Name):
+
+Spring Data JPA parses method names to generate SQL queries (SELECT) automatically. You do not write any implementation code.
+
+
+public interface ProductRepository extends JpaRepository<Product, Integer> {
+
+    // SELECT * FROM products WHERE name = ?
+    List<Product> findByName(String name);
+
+    // SELECT * FROM products WHERE price > ? AND category = ?
+    List<Product> findByPriceGreaterThanAndCategory(Double price, String category);
+
+    // SELECT * FROM products WHERE name LIKE %?%
+    List<Product> findByNameContaining(String keyword);
+}
+
+
+
+2. Manual Queries with @Query (JPQL & Native SQL):
+
+When method names become too long or complex, use the @Query annotation.
+
+	JPQL (Java Persistence Query Language)	: Queries run against Java Entities and properties, not DB tables and columns.
+	Native SQL				: Pure SQL queries running directly against your specific database engine.
+
+
+public interface ProductRepository extends JpaRepository<Product, Integer> {
+
+    // JPQL Example (Uses Entity Class name 'Product' and property 'price')
+    @Query("SELECT p FROM Product p WHERE p.price BETWEEN :min AND :max")
+    List<Product> findProductsInPriceRange(@Param("min") Double min, @Param("max") Double max);
+
+    // Native SQL Example (Uses real DB table 'products' and column 'is_active')
+    @Query(value = "SELECT * FROM products WHERE is_active = 1", nativeQuery = true)
+    List<Product> findAllActiveProductsNative();
+}
+
+
+
+3. Modifying Queries
+
+For queries that change data (UPDATE or DELETE), you must add the @Modifying and @Transactional annotations.
+
+
+@Repository
+public interface ProductRepository extends JpaRepository<Product, Integer> {
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Product p SET p.price = p.price * 1.1 WHERE p.category = :category")
+    int increasePriceForCategory(@Param("category") String category);
+}
+
+=======================================================================================================================================================================
+Pagination and Sorting
+=======================================================================================================================================================================
+
+Loading thousands of records crashes applications. Use Pageable and Sort to request data chunks safely.
+
+
+@GetMapping("/products")
+public Page<Product> getProducts(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "price") String sortBy) {
+            
+    // Create a page request configuration object
+    Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).ascending());
+    
+    return productRepository.findAll(pageable); // Returns metadata (total pages, total items) + content
+}
+
+=======================================================================================================================================================================

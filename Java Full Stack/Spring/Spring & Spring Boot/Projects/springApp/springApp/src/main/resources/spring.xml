@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="dev" class="com.example.springApp.Developer" autowire="byName">
+    	<!--Constructor injection 
+    	<constructor-arg ref="com"/> -->
+    	<!--Setter injection 
+    	<property name="comp" ref="desk"/>-->
+    </bean>
+
+    
+    <bean id="comp" class="com.example.springApp.Laptop" />
+    <bean id="desk" class="com.example.springApp.Desktop" />
+
+</beans>

@@ -1,3 +1,230 @@
-Rest APIs:
+Core Architecture:
+
+Spring Boot eliminates the need for external servlet containers and web.xml deployment descriptors. It utilizes an embedded server (typically Apache Tomcat) and handles configuration purely through Java code, annotations, and properties files
+
+===============================================================================================================================================================================
+Application Entry Point:
+===============================================================================================================================================================================
+
+Instead of mapping individual servlets, a single bootstrap class initializes the entire application context and triggers automatic component scanning.
+
+@SpringBootApplication 
+// Combines @Configuration, @EnableAutoConfiguration, and @ComponentScan.
+// Scans com.example.api and all its sub-packages for Spring components.
+public class ApiApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(ApiApplication.class, args);
+    }
+}
+
+===============================================================================================================================================================================
+Application Configuration (application.properties or application.yml)
+===============================================================================================================================================================================
+
+Replaces web.xml configuration patterns like context paths and custom servlet mappings.
 
 
+properties:
+
+# Defines the context path (Equivalent to Jersey's url-pattern /webapi/*)
+server.servlet.context-path=/webapi
+
+# Defines the server port (Default is 8080)
+server.port=8080
+
+===============================================================================================================================================================================
+Package Structure
+===============================================================================================================================================================================
+
+Spring Boot promotes an architectural layout grouped by technical concerns or domain features. Component scanning implicitly registers classes marked with specialized stereotypes.
+
+com.example.api.controller 	: Contains your REST controllers (Web Layer).
+com.example.api.service 	: Contains business logic classes.
+com.example.api.repository 	: Data access repositories (replaces DAO).
+com.example.api.model 		: Entities, DTOs, and data objects.
+com.example.api.config 		: Custom bean configurations.
+
+===============================================================================================================================================================================
+Controller Layer (Web Layer)
+===============================================================================================================================================================================
+
+Annotations in Spring MVC map incoming HTTP requests directly to managed Java methods.
+
+1. Routing & Mapping Annotations:
+
+@RestController 	: Combines @Controller and @ResponseBody. Tells Spring that every method returns its response payload directly as JSON/XML rather than rendering a HTML view.
+@RequestMapping("/path"): Defines the base URI path at the class level.
+@GetMapping 		: Handlers for fetching data (HTTP GET).
+@PostMapping 		: Handlers for creating data (HTTP POST).
+@PutMapping 		: Handlers for updating data (HTTP PUT).
+@DeleteMapping 		: Handlers for deleting data (HTTP DELETE).
+
+2. Content NegotiationSpring Boot relies on implicit content negotiation via the spring-boot-starter-web package.
+
+Default Behavior	: Produces and consumes application/json automatically using the underlying Jackson processor.
+Explicit Mapping	: If customization is needed, attributes can be added directly to the mapping annotations: 
+	@GetMapping(produces = "application/json") or 
+	@PostMapping(consumes = "application/json").
+
+3. Parameter Injection Annotations
+
+@PathVariable("id") 		: Extracts values directly from the URI path (Jersey: @PathParam).
+@RequestParam("search") 	: Extracts values from the URL query parameters (Jersey: @QueryParam).
+@RequestHeader("User-Agent") 	: Extracts values from HTTP headers (Jersey: @HeaderParam).
+@RequestBody 			: Binds the incoming HTTP request body to a domain object (Jersey: Implicit conversion).
+
+
+
+Controller Implementation Code Snippet:
+
+javapackage com.example.api.controller;
+
+import com.example.api.model.Order;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/orders")
+public class OrderController {
+
+    @GetMapping("/{orderId}") // Full path: /webapi/orders/123
+    public ResponseEntity<Order> getOrderDetails(@PathVariable("orderId") String id) {
+        Order order = new Order(id, "Pizza");
+        
+        // ResponseEntity controls headers, status codes, and the body response.
+        return ResponseEntity.ok(order); // Returns HTTP 200 OK
+    }
+
+    @PostMapping
+    public ResponseEntity<Order> createOrder(@RequestBody Order newOrder) {
+        // Spring Boot automatically deserializes JSON body into the 'newOrder' object.
+        return new ResponseEntity<>(newOrder, HttpStatus.CREATED); // Returns HTTP 201
+    }
+}
+
+===============================================================================================================================================================================
+Service Layer
+===============================================================================================================================================================================
+
+Business Logic Hub: Classes in this layer execute operations, compute rules, evaluate permissions, and manage transactions. They bridge the Controller and Repository layers.
+
+
+package com.example.api.service;
+
+import org.springframework.stereotype.Service;
+
+@Service // Marks this class as a Spring-managed business service bean
+public class OrderService {
+    // Core business logic methods go here
+}
+
+===============================================================================================================================================================================
+Repository Layer (Data Access Layer)
+===============================================================================================================================================================================
+
+Spring Boot swaps out traditional "table-centric" DAOs for Spring Data Repositories. This abstract layer handles generic database operations automatically without requiring explicit SQL query writing.
+
+
+javapackage com.example.api.repository;
+
+import com.example.api.model.Order;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository // Marks the interface as a Spring Data access component
+public interface OrderRepository extends JpaRepository<Order, String> {
+    // Standard CRUD operations (save, findById, delete, etc.) are built-in automatically.
+
+    public List<Order> findByCatetory(String category); //customized simple query
+}
+
+===============================================================================================================================================================================
+Model Layer
+===============================================================================================================================================================================
+
+Purpose
+
+Represents database tables (Entities) or Data Transfer Objects (DTOs) sent over the network.
+
+Serialization Rules
+Spring Boot utilizes Jackson by default. Your objects require:
+	A default no-argument constructor.
+	Standard getter and setter methods.
+
+Common Annotations
+
+@JsonProperty("user_name") 	: Directs Jackson to map a target variable to a custom field name in the final JSON schema.
+@JsonIgnore 			: Strips fields from serialization (e.g., hiding passwords or internal system IDs).
+@NotNull / @Size 		: Enforces structure validations on parameters when paired with @Valid inside the Controller layer.
+
+
+
+package com.example.api.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
+
+public class Order {
+    
+    private String id;
+    
+    @NotNull(message = "Item name cannot be null")
+    @JsonProperty("item_name")
+    private String itemName;
+
+    @JsonIgnore
+    private String internalTrackingCode;
+
+    // Constructors
+    public Order() {}
+    
+    public Order(String id, String itemName) {
+        this.id = id;
+        this.itemName = itemName;
+    }
+
+    // Getters and Setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+
+    public String getItemName() { return itemName; }
+    public void setItemName(String itemName) { this.itemName = itemName; }
+
+    public String getInternalTrackingCode() { return internalTrackingCode; }
+    public void setInternalTrackingCode(String internalTrackingCode) { this.internalTrackingCode = internalTrackingCode; }
+}
+
+
+===============================================================================================================================================================================
+ResponseEntity (Handling http Status Codes)
+===============================================================================================================================================================================
+
+ResponseEntity<T> represents the complete HTTP response. It allows you to configure the HTTP Status Code, HTTP Headers, and the Response Body explicitly.
+
+Key Features
+	- Type Safety: Uses generics (<T>) to define the exact body payload type.
+	- Fluent Builder API: Provides static helper methods (.ok(), .badRequest(), .status()) to construct responses cleanly.
+	- Dynamic Outcomes: Allows a single endpoint method to return different types of data payloads based on conditional logic.
+
+
+@GetMapping("/custom/{id}")
+public ResponseEntity<User> getUser(@PathVariable Long id) {
+    if (!database.exists(id)) {
+        // Return 404 Not Found with no body
+        return ResponseEntity.notFound().build(); 
+    }
+    
+    User user = database.find(id);
+    
+    // Customizing HTTP Headers along with 200 OK status
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("X-Custom-Header", "ServerProcessed");
+
+    return ResponseEntity.status(HttpStatus.OK)
+            .headers(headers)
+            .body(user);
+}
+
+===============================================================================================================================================================================
