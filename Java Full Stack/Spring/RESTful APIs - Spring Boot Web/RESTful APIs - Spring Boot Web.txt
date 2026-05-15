@@ -59,7 +59,9 @@ Annotations in Spring MVC map incoming HTTP requests directly to managed Java me
 @PutMapping 		: Handlers for updating data (HTTP PUT).
 @DeleteMapping 		: Handlers for deleting data (HTTP DELETE).
 
-2. Content NegotiationSpring Boot relies on implicit content negotiation via the spring-boot-starter-web package.
+2. Content Negotiation: 
+
+Spring Boot relies on implicit content negotiation via the spring-boot-starter-web package.
 
 Default Behavior	: Produces and consumes application/json automatically using the underlying Jackson processor.
 Explicit Mapping	: If customization is needed, attributes can be added directly to the mapping annotations: 
