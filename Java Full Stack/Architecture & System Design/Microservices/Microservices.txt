@@ -8,25 +8,117 @@ Advantages:
 
 Disadvantages:
 
+===============================================================================================================================================================================
+Inter-service communication:
+===============================================================================================================================================================================
+
+The mechanism allowing independently deployed microservices to talk and share data with one another.
+
+Primary Types:
+	Synchronous	: Request/response model where a service waits for an immediate answer (e.g., via HTTP REST or gRPC).
+	Asynchronous	: Non-blocking communication where services exchange events via a message broker (e.g., Kafka or RabbitMQ).
+
+===============================================================================================================================================================================
+API Gateway:
+===============================================================================================================================================================================
+
+A single, reverse-proxy entry point ("the front door") that intercepts all incoming traffic from external clients and routes it downstream.
+
+Core Functions:
+	Request Routing		: Maps external client requests to internal microservice instances.
+	Cross-Cutting Concerns	: Centralizes authentication (JWT checking), rate limiting, logging, and SSL termination.
+
+Common Tool: Spring Cloud Gateway
+
+===============================================================================================================================================================================
+Feign Client:
+===============================================================================================================================================================================
+
+- A declarative HTTP client tool engineered for simplified internal, service-to-service synchronous communication
+- Eliminates boilerplate code like RestTemplate. It automatically maps network communication directly onto standard Java interfaces
+
+Example:
+
+@FeignClient(name = "payment-service") // Binds directly to the service name registered in Eureka
+public interface PaymentClient {
+    @GetMapping("/payments/{id}")
+    PaymentResponse getPayment(@PathVariable("id") Long id);
+}
+
+===============================================================================================================================================================================
+Service Registry:
+===============================================================================================================================================================================
+
+- A dynamic central database that stores the live network coordinates (IP addresses, ports, and health statuses) of every active microservice instance.
+- Every service instance announces its birth to this registry and regularly transmits "heartbeat" signals to prove it remains operational
+
+===============================================================================================================================================================================
+Service Discovery:
+===============================================================================================================================================================================
+
+- The automated, real-time architectural process where a service queries the Service Registry to detect the location of another target service.
+- The calling service queries the registry directly, fetches a list of working IPs, and decides which instance to hit.
+
+===============================================================================================================================================================================
+Eureka:
+===============================================================================================================================================================================
+Netflix Eureka:
+- An open-source, battle-tested tool built by Netflix that provides a complete client-server framework for registry and discovery.
+
+Components:
+- Eureka Server: The actual central registry database application.
+- Eureka Client: An embedded library inside individual microservices that handles automatic registration and pulls down cache maps of the server database.
+
+Spring Cloud Eureka:
+- The official Spring Framework integration wrapper built around Netflix Eureka.
+- Simplifies setup into standard Spring Boot patterns using annotations like @EnableEurekaServer (on the registry app) or dependencies like spring-cloud-starter-netflix-eureka-client.
+
+===============================================================================================================================================================================
+Spring Cloud LoadBalancer:
+===============================================================================================================================================================================
+
+- A modern, client-side load-balancing library that executes routing logic to distribute internal network traffic across multiple service instances.
+- It functions as the logic engine working under the hood of both the API Gateway and Feign Clients.
+
+How It Operates:
+- Feign Client or the API Gateway requests an instance map from Eureka.
+- Spring Cloud LoadBalancer applies an algorithmic pattern (like Round Robin or Random selection) to choose a single IP from the collection.
+- The request is dispatched directly to that chosen healthy instance.
+
+===============================================================================================================================================================================
+Distributed Config & Config Server:
+===============================================================================================================================================================================
 
 
 
-	
-Inter-service communication
 
-Spring Cloud Eureka
 
-API Gateway
+===============================================================================================================================================================================
+Circuit Breaker:
+===============================================================================================================================================================================
 
-Feign Client
- - Automatic load balances without any configuration or setup or code
 
-Config Server
 
-Circuit Breaker
 
-Docker
 
-Kafka
 
-Kubernetes
+===============================================================================================================================================================================
+Docker:
+===============================================================================================================================================================================
+
+
+
+
+
+===============================================================================================================================================================================
+Kafka:
+===============================================================================================================================================================================
+
+
+
+
+
+
+===============================================================================================================================================================================
+Kubernetes:
+===============================================================================================================================================================================

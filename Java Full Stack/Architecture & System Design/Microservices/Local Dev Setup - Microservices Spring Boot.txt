@@ -1,0 +1,13 @@
+
+IDE - STS, IntelliJ
+
+creating and running Multiple instances for eureka microservices testing:
+
+During Development (On your laptop): Keep one project folder in STS. Use Duplicate Configurations (or a random port server.port=0) to spin up multiple instances on your laptop to test Eureka.
+During Deployment (On actual servers): Keep one Git codebase. Compile it into one generic JAR file, and let your deployment scripts copy that single JAR to different servers
+
+
+
+
+Database - PostgreSQL
+
