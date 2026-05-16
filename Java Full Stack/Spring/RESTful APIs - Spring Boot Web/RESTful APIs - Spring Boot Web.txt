@@ -71,10 +71,20 @@ Explicit Mapping	: If customization is needed, attributes can be added directly 
 3. Parameter Injection Annotations
 
 @PathVariable("id") 		: Extracts values directly from the URI path (Jersey: @PathParam).
+	Best Use	: Identifying a specific, unique resource.
+	URL Syntax	: https://api.com/12
+		
 @RequestParam("search") 	: Extracts values from the URL query parameters (Jersey: @QueryParam).
-@RequestHeader("User-Agent") 	: Extracts values from HTTP headers (Jersey: @HeaderParam).
-@RequestBody 			: Binds the incoming HTTP request body to a domain object (Jersey: Implicit conversion).
+	Best Use	: Filtering, sorting, pagination, or optional fields.
+	URL Syntax	: https://api.com?param1=value1&param2=value2
 
+@RequestHeader("User-Agent") 	: Extracts values from HTTP headers (Jersey: @HeaderParam).
+	Best Use	: Authentication tokens, API keys, client types, or content preferences.
+	URL Syntax	: https://api.com (Data is hidden as metadata in the request header).
+
+@RequestBody 			: Binds the incoming HTTP request body to a domain object (Jersey: Implicit conversion).
+	Best Use	: Creating or updating complex data objects via POST, PUT, or PATCH.
+	URL Syntax	: https://api.com (Data is hidden inside the request body).
 
 
 Controller Implementation Code Snippet:

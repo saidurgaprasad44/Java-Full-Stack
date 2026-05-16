@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.demo.quiz.model.Quiz;
-import com.demo.quiz.model.Reponse;
+import com.demo.quiz.model.Response;
 import com.demo.quiz.repo.QuestionRepo;
 import com.demo.quiz.repo.QuizRepo;
 import com.demo.quiz.model.QuestionWrapper;
@@ -56,7 +56,7 @@ public class QuizService {
 		return new ResponseEntity<>(questionsForUser, HttpStatus.OK);
 	}
 
-	public ResponseEntity<Integer> calculateResult(int id, List<Reponse> responses) {
+	public ResponseEntity<Integer> calculateResult(int id, List<Response> responses) {
 		List<Question> questions = quizRepo.findById(id).get().getQuestions();
 		
 		int score=0;

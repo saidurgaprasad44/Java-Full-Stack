@@ -9,6 +9,8 @@ Advantages:
 Disadvantages:
 
 
+
+
 	
 Inter-service communication
 
@@ -17,6 +19,7 @@ Spring Cloud Eureka
 API Gateway
 
 Feign Client
+ - Automatic load balances without any configuration or setup or code
 
 Config Server
 

@@ -1,10 +1,10 @@
 package com.demo.quiz.model;
 
-public class Reponse {
+public class Response {
 	private int id;
 	private String response;
 	
-	public Reponse(int id, String response) {
+	public Response(int id, String response) {
 		super();
 		this.id = id;
 		this.response = response;
@@ -20,7 +20,7 @@ public class Reponse {
 
 	@Override
 	public String toString() {
-		return "Reponse [id=" + id + ", response=" + response + "]";
+		return "Response [id=" + id + ", response=" + response + "]";
 	}
 	
 	

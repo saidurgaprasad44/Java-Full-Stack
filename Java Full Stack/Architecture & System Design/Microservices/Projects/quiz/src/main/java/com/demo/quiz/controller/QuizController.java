@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.demo.quiz.model.QuestionWrapper;
-import com.demo.quiz.model.Reponse;
+import com.demo.quiz.model.Response;
 import com.demo.quiz.service.QuizService;
 
 @RestController
@@ -37,7 +37,7 @@ public class QuizController {
 	}
 	
 	@PostMapping("submit/{id}")
-	public ResponseEntity<Integer> submitResponse(@PathVariable int id, @RequestBody List<Reponse> responses){
+	public ResponseEntity<Integer> submitResponse(@PathVariable int id, @RequestBody List<Response> responses){
 		return quizService.calculateResult(id, responses);
 	}
 	

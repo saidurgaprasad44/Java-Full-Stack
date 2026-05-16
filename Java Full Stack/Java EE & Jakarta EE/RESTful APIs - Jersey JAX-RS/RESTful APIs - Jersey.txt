@@ -2,39 +2,6 @@ Representation State Transfer Application Programming Interface - Jersey:
 
 Java uses JAX-RS principles to implement Jersey REST APIs
 
-- REST is a standard architectural style for designing web services that allow different systems to communicate over the internet using http as the medium:
-- In REST, everything is treated as a resource (e.g., a user, a product, or a post). 
-- Identification: Each resource is identified by a unique URI (Uniform Resource Identifier), such as https://api.example.com.
-- Representation: Clients do not access the data directly; instead, they receive a representation of the resource, most commonly in JSON or XML format
-
-
-CRUD operations and their respective REST methods:
-
-Post - Create - Creates a new subordinate resource
-Get - Read - Retrieves a representation of a resource
-Put - Update - Replaces an existing resource or creates one if it doesn't exist
-Patch - Update - Partially modifies an existing resource
-Delete - Delete - Removes the specified resource
-
-
-HTTP Response Status Codes:	Servers respond with three-digit codes to indicate the outcome of a request: 
-
-Informational responses - (100 - 199)
-Successful responses	- (200 - 299)
-Redirection messages	- (300 - 399)
-Client error responses	- (400 - 499)
-Server error responses	- (500 - 599)
-
-
-Some common Status Codes:
-
-- 200 OK: The request was successful.
-- 201 Created: A new resource was successfully created (typically after a POST).
-- 400 Bad Request: The request was invalid or malformed.
-- 401 Unauthorized: Authentication is required or has failed.
-- 404 Not Found: The requested resource does not exist.
-- 500 Internal Server Error: A general error occurred on the server
-
 ===============================================================================================================================================================================
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Jersey Implementation >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ===============================================================================================================================================================================
@@ -97,8 +64,17 @@ These define the format of the data being sent or received (e.g., JSON, XML, Pla
 These "pull" data out of the incoming request and inject them into your method arguments.
 
 	@PathParam("id")		: Extracts values directly from the URI path (e.g., /users/{id}).
+		Best Use	: Identifying a specific, unique resource.
+		URL Syntax	: https://api.com/12
+
 	@QueryParam("search")		: Extracts values from the URL query string (e.g., ?search=java).
-	@HeaderParam("User-Agent")	: Extracts values from HTTP headers.
+		Best Use	: Filtering, sorting, pagination, or optional fields.
+		URL Syntax	: https://api.com?param1=value1&param2=value2
+
+	@HeaderParam("User-Agent")	: Extracts metadata from HTTP request headers.
+		Best Use	: Authentication tokens, API keys, client types, or content preferences.
+		URL Syntax	: https://api.com (Data is hidden as metadata in the request header).
+
 	@Context			: Injects special web-related objects like UriInfo or HttpServletRequest.
 
 
