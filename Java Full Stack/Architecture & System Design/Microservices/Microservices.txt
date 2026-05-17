@@ -9,6 +9,20 @@ Advantages:
 Disadvantages:
 
 ===============================================================================================================================================================================
+Spring Cloud:
+===============================================================================================================================================================================
+
+- Spring Cloud is a powerful framework that extends Spring Boot to simplify the development of distributed and microservices-based applications. 
+- It provides ready-to-use tools to quickly solve common challenges in cloud architecture, such as:
+
+Service Discovery
+Centralized Configuration
+API Gateway
+Load Balancing
+Resilience & Fault Tolerance
+Event-Driven Messaging
+
+===============================================================================================================================================================================
 Inter-service communication:
 ===============================================================================================================================================================================
 
@@ -36,8 +50,9 @@ Feign Client:
 
 - A declarative HTTP client tool engineered for simplified internal, service-to-service synchronous communication
 - Eliminates boilerplate code like RestTemplate. It automatically maps network communication directly onto standard Java interfaces
+- Add the method declarations that are required to be called from another service to the current service in the Feign Interface
 
-Example:
+Snippet:
 
 @FeignClient(name = "payment-service") // Binds directly to the service name registered in Eureka
 public interface PaymentClient {
@@ -45,33 +60,99 @@ public interface PaymentClient {
     PaymentResponse getPayment(@PathVariable("id") Long id);
 }
 
+
+- Add @EnableFeignClient on the application main class
+
+Snippet:
+
+@SpringBootApplication
+@EnableFeignClients
+public class QuizServiceApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(QuizServiceApplication.class, args);
+	}
+}
+
+
+Maven dependencies:
+
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-starter-openfeign</artifactId>
+</dependency>
+
 ===============================================================================================================================================================================
-Service Registry:
+Service Registry & Service Discovery with Eureka Server/Client:
 ===============================================================================================================================================================================
 
+////////////////////////////////////////////////////////////
+Service Registry:
 - A dynamic central database that stores the live network coordinates (IP addresses, ports, and health statuses) of every active microservice instance.
 - Every service instance announces its birth to this registry and regularly transmits "heartbeat" signals to prove it remains operational
 
-===============================================================================================================================================================================
+////////////////////////////////////////////////////////////
 Service Discovery:
-===============================================================================================================================================================================
-
 - The automated, real-time architectural process where a service queries the Service Registry to detect the location of another target service.
 - The calling service queries the registry directly, fetches a list of working IPs, and decides which instance to hit.
 
-===============================================================================================================================================================================
-Eureka:
-===============================================================================================================================================================================
-Netflix Eureka:
-- An open-source, battle-tested tool built by Netflix that provides a complete client-server framework for registry and discovery.
+Maven dependencies for the services that need to be discovered by other services:
+
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+</dependency>
+
+////////////////////////////////////////////////////////////
+Spring Cloud Eureka:
+- Eureka is an open-source, battle-tested tool built by Netflix that provides a complete client-server framework for registry and discovery.
+- Spring Cloud Eureka is the official Spring Framework integration wrapper built around Netflix Eureka.
+- Simplifies setup into standard Spring Boot patterns using annotations like @EnableEurekaServer (on the registry app) or dependencies like spring-cloud-starter-netflix-eureka-client.
 
 Components:
 - Eureka Server: The actual central registry database application.
 - Eureka Client: An embedded library inside individual microservices that handles automatic registration and pulls down cache maps of the server database.
 
-Spring Cloud Eureka:
-- The official Spring Framework integration wrapper built around Netflix Eureka.
-- Simplifies setup into standard Spring Boot patterns using annotations like @EnableEurekaServer (on the registry app) or dependencies like spring-cloud-starter-netflix-eureka-client.
+- All the services need to be registered in Eureka server
+- To setup a Eureka server, create a separate spring boot project and add the below configurations in application.properties:
+
+
+Properties:
+
+spring.application.name=quiz-app-service-registry
+server.port=8761
+
+#specify the domain of the eureka server
+eureka.instance.hostname=localhost
+#to prevent the eureka server from registering itself as a client
+eureka.client.register-with-eureka=false
+#To stop the discovery of eureka server
+eureka.client.fetch-registry=false
+
+- Add the @EnableEurekaServer annotation at the Eureka server application's main class
+
+
+Snippet:
+
+@SpringBootApplication
+@EnableEurekaServer
+public class QuizAppServiceRegistryApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(QuizAppServiceRegistryApplication.class, args);
+	}
+
+}
+
+
+Maven Dependencies:
+
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+</dependency>
+
+
 
 ===============================================================================================================================================================================
 Spring Cloud LoadBalancer:
