@@ -137,20 +137,54 @@ Conditional Rendering:
 
 Two-way Binding:
 
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+====================================================================================================================================================================
+								Advanced Features for Production Apps
+====================================================================================================================================================================
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
 
 ====================================================================================================================================================================
-Advanced Features for Production Apps
-====================================================================================================================================================================
 Routing: 
+====================================================================================================================================================================
 React is a Single Page Application (SPA), it loads only one html page(index.html) and updates the view dynamically.
 React Router enables the navigation between different views without reloading the page.
 
 
-API Integration: Use the built-in fetch API or libraries like Axios to interact with backends and display real-time data.
+
+
+
+====================================================================================================================================================================
+API Integration: Asynchronous APIs
+====================================================================================================================================================================
+
+Browser's built-in Fetch API:
+Use the built-in fetch API or libraries like Axios to interact with backends and display real-time data.
+
+Axios Libraries:
+
+
+
+
+
+====================================================================================================================================================================
 Performance Optimization:
-	Memoization: Use React.memo, useMemo, and useCallback to prevent unnecessary re-renders.
-	Code Splitting & Lazy Loading: Load only the necessary code for the initial page, loading other parts on demand using React.lazy and Suspense.
-Error Boundaries: Use special components to catch JavaScript errors in their child component tree and display a fallback UI rather than crashing the whole app
+====================================================================================================================================================================
+
+Memoization			: Use React.memo, useMemo, and useCallback to prevent unnecessary re-renders.
+Code Splitting & Lazy Loading	: Load only the necessary code for the initial page, loading other parts on demand using React.lazy and Suspense.
+Error Boundaries		: Use special components to catch JavaScript errors in their child component tree and display a fallback UI rather than crashing the whole app
+
+
+
+
+
+
 
 
 ====================================================================================================================================================================
