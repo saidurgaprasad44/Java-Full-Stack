@@ -17,7 +17,7 @@ public class CustomException {
     public static void withdraw(double amount) throws InsufficientFundsException {
         if (amount > balance) {
             double missing = amount - balance;
-            // Throwing our custom exception with specific data
+            // Throwing our custom exception with user data
             throw new InsufficientFundsException(missing);
         }
         balance -= amount;

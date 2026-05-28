@@ -31,7 +31,7 @@ class AllTypes<T> { //T can be of any class type
 class NumberTypes<T extends Number> { //restricting T to be of only Number and its descendants i.e., Integer, Float etc.
 	
 	
-	public void demoAllNumberMethod(ArrayList<? extends T> a) { //restricting ? to be of only T class types that extend T and its descendants i.e., Integer, Float etc.
+	public void demoAllNumberMethod(ArrayList<? extends T> a) { //restricting ? to be of only T class types and its descendants i.e., Integer, Float etc.
 
 	}
 }

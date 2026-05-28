@@ -16,11 +16,11 @@ Web Technologies: 	HTML, CSS, Bootstrap, Servlets, JSP, JavaScript, ReactJS, Ang
 Frameworks: 		Spring, Spring Web, Spring Boot, Spring Security, Spring Cloud, Log4J, Junit
 Web Services/APIs: 	Jersey, Spring Boot RESTful APIs, Postman
 Database Connection: 	JDBC, Hibernate, Spring JDBC, Spring Data JPA (on Hibernate)
-DevOps & Tools: 	Apache Ant(build.xml), Apache Maven(pom.xml), Gradle(script based), CI/CD Pipeline, Docker, Kubernetes, Kafka
+DevOps & Tools: 	Apache Ant(build.xml), Apache Maven(pom.xml), Gradle(script based), CI/CD Pipeline, Docker, Kubernetes
 Servers: 		Tomcat, WebLogic
 Cloud & Infrastructure:	Azure Cloud, AWS
 Security & IAM:		Spring Security Authentication(JWT, OAuth2), Authorization, Web Security (CORS, CSRF)
-Microservices:		Microservices Architecture, Spring Cloud, Service Discovery (Eureka), API Gateway, Distributed Config, RESTful Web Services (Spring REST & Jersey)
+Microservices:		Microservices Architecture, Spring Cloud, Service Discovery (Eureka), API Gateway, Distributed Config, RESTful Web Services (Spring REST & Jersey), Kafka
 
 Other Techs and tools:
 Project structuring and packaging types: war, jar, ear
@@ -31,7 +31,7 @@ Operating System: 	Windows, Linux
 Database Layer:		PostgreSQL, Oracle DB, pgAdmin 4, Oracle SQL Developer
 
 Progress:
-New: 			Spring Security, Unit Testing, Docker, Kubernetes, Log4J, Azure Cloud, Bootstrap, AngularJS,  
+New: 			Kafka, Spring Security, Unit Testing, Docker, Kubernetes, Log4J, Azure Cloud, Bootstrap, AngularJS,  
 Partial Knowledge: 	Hibernate,
 Polish: 		Core Java, SQL and JDBC, Linux, ServiceNow, Azure DevOps, web.xml, Ant, Maven, Git, Restful APIs - Jersey & Spring REST, Spring, Spring Boot, Spring Web, Spring Data JPA, JavaScript, ReactJS, Microservices,
 Mastered: 		HTML, CSS, Tomcat, Servlets, JSP,

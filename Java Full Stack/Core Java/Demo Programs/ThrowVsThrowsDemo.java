@@ -20,10 +20,17 @@ public class ThrowVsThrowsDemo {
 
     public static void main(String[] args) {
         try {
+
             checkAge(); // Calling the method that warned us
-        } catch (NumberFormatException | IOException e) {
-            // Handling the manual exception we 'threw'
-            System.out.println("Caught an exception: " + e.getMessage());
+
+        } catch (NumberFormatException | IOException | ArithmeticException e) {
+
+       	    // Handling the checked input exception            
+            System.out.println("Input error: " + e.getMessage());
+    	} catch (ArithmeticException e) {
+
+	    // Handling the manual exception we 'threw'
+            System.out.println("Age restriction error: " + e.getMessage());
         }
     }
 }
