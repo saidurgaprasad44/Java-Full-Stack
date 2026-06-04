@@ -40,7 +40,7 @@ spring.jpa.properties.hibernate.format_sql=true
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
 
 =======================================================================================================================================================================
-Annotations
+Important Annotations
 =======================================================================================================================================================================
 
 @Entity:
@@ -59,7 +59,7 @@ Annotations
 Classes/Interfaces
 =======================================================================================================================================================================
 
-In Spring Data JPA, we can implement the entity repository interface extending the in-built interface "CrudRepository" which has all the required CRUD methods by default.
+In Spring Data JPA, we can implement the entity repository interface extending the in-built interface "CrudRepository" and "JpaRepository"  which have all the required CRUD methods by default.
 
 interface ProductRepository extends CrudRepository<Product, Integer>{
 }

@@ -7,7 +7,14 @@ Design Principles (The "Why"):
 These are foundational rules of thumb that encourage clean, maintainable, and scalable code. They are theory-based rather than code-based. 
 
 SOLID: A set of five principles (Single Responsibility, Open/Closed, etc.) focused on reducing coupling and increasing flexibility.
+Single Responsibility Principle	: A single class serving a single responsibility rather than multiple
+Open/Closed Principle		: Open to extension, closed to modification
+Liskov Substitution Principle	: Inherit classes only when its needed making sure the superclass can be replaceable by the subclass
+Interface Segregation Principle	: The dependency of one class to another class should depend on the smallest possible interface. Create smallest possible interfaces each has a specific group 				  of methods that serve a purpose
+Dependency Inversion Principle	: Depend on interfaces/abstract classes rather than concrete classes.
 
+
+ 
 DRY (Don’t Repeat Yourself): Aims to reduce repetition of information to avoid maintenance issues.
 
 KISS (Keep It Simple, Stupid): Encourages making code as simple as possible to ensure it remains understandable.

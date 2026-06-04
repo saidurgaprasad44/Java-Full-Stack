@@ -150,8 +150,8 @@ A table is in 2NF if it meets two conditions:
 It is already in 1NF.
 It has no partial dependency. 
 
-What is Partial Dependency?
-This happens when a column depends on only part of a composite primary key rather than the whole thing. 
+Partial Dependency:
+This happens when a column depends only on a part of a composite primary key rather than the whole thing. 
 
 The Problem in our 1NF table:
 
@@ -168,7 +168,6 @@ Table 1 (Students): student_id (PK), student_name
 Table 2 (Enrollments): student_id (FK), course_name
 
 Now, if you update a student's name, you only have to change it in one row in the Students table, not in every row they have a course. 
-ScienceDirect.com
 
 
 3rd Normal Form (3NF) is the most common goal for standard database design. A table is in 3NF if: 
