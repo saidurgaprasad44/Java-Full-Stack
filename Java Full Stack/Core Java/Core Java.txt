@@ -557,7 +557,10 @@ trim()				Removes leading and trailing spaces.			"  hi  ".trim() → "hi"
 replace(old, new)		Replaces characters or sequences.			"bat".replace('b', 'c') → "cat"
 charAt()			Returns the char at the given index			"saivaishu".charAt(1) → 'a'
 indexOf()			Returns the index of the first occurance of a char	"saivaishu".indexOf('a') → 1
-toCharArray()			Returns a char array					"sai".toCharArray() → {'s','a','i'}		
+toCharArray()			Returns a char array					"sai".toCharArray() → {'s','a','i'}
+compareTo()			Returns 0 If s1 and s2 are exactly identical, 		"Apple".compareTo("Apple") -> Output: 0
+				<0 if s1 comes before s2 and 				"Apple".compareTo("Banana") -> Output: -1  (65 - 66) -> Apple comes before Banana
+				>0 if s1 comes after s2 alphabetically			"Cat".compareTo("car") -> Output: 2  (116 - 114) -> Cat comes after Car
 
 
 
@@ -725,28 +728,27 @@ Converting from primitives to wrapper objects and vice versa.
 			int primitive = wrapper; // Unboxing: wrapper.intValue() is called automatically
 
 ===============================================================================================================================================================================
-Anonymous Class and Anonymous Function (Lambda Expression):
+Anonymous Class and Lambda Expression:
 ===============================================================================================================================================================================
 
-Anonymous Class overriding methods from other class: A class without a name that is defined and instantiated overriding the methods from other classes.
+Anonymous Class from another class: A class without a name that is defined and instantiated extending another class by overriding any number of its concrete methods in a single expression. It contains both creating the object and overriding the methods 
+Key Feature: It simultaneously creates the object and overrides the desired methods.
 
-Anonymous Class from an Interface(The verbose way): A class without a name that is defined and instantiated in a single expression. It can implement interfaces with any number of methods.
+Anonymous Class from an Interface: A class without a name that is defined and instantiated implementing an interface by defining all the abstract methods in a single expression. It contains both creating the object and defining the abstract methods
+Key Feature: It simultaneously creates the object and provides the concrete logic for the abstract methods.
 
 
-Implementation Example: Here, MultiActionHandler is an interface with three abstract methods
+Implementation Example: Here, MultiActionHandler is an interface/class with three abstract/concrete methods
 
-MultiActionHandler myButton = new MultiActionHandler() {
-	@Override
+MultiActionHandler myButton = new MultiActionHandler() {  // Defining (or) overriding method(s) while creating an instance of an interface (or) class
 	public void onClick() {
 	        System.out.println("Single click detected.");
         }
 
-        @Override
         public void onDoubleClick() {
         	System.out.println("Double click detected.");
         }
 
-        @Override
         public void onLongPress() {
                 System.out.println("Long press detected.");
         }
@@ -759,11 +761,13 @@ myButton.onLongPress();
 
 ////////////////////////////////////////////////////////////
 
-Lambda Expression (Java8+): A concise "anonymous function." that only works with Functional Interfaces (interfaces with exactly one abstract method)
+Lambda Expression (Java8+): An anonymous function that is defined and instantiated implementing a Functional Interface by defining its single abstract method in a highly concise, single expression.
+Key Feature: It simultaneously creates the object and provides the concrete logic for the abstract methods.
+
 
 Implementation Examples: Here, Runnable is a Functional Interface with only one abstract method named run()
 
-Abstract method with an input(s), multiple statements and returns a result:
+1. Abstract method with an input(s), multiple statements and returns a result:
 
 Runnable r = (a, b) -> {
 	System.out.print("The sum is: ");
@@ -771,9 +775,11 @@ Runnable r = (a, b) -> {
 };
 System.out.println(r.run(10, 20));
 
-Abstract method with no input and returns a result:
+2. Abstract method with no input and returns a result:
+
 Runnable r = () -> "Hello world"; //When you have only one expression/statement, you can skip curly braces {} and return, it will auto return the value
 r.run();
+
 
 
 Key Functional Interfaces: Java provides a set of built-in interfaces in java.util.function to handle common logic
@@ -781,7 +787,7 @@ Key Functional Interfaces: Java provides a set of built-in interfaces in java.ut
 Predicate
 	Purpose: Takes one input and returns a boolean. Used for filtering/testing.
 	Method: boolean test(T t);
-	Example: Predicate<String> isEmpty = s -> s.isEmpty();
+	Example: Predicate<String> isStringEmpty = s -> s.isEmpty();
 
 Function<T, R>
 	Purpose: Takes one input of type T and returns a result of type R. Used for transforming data.
@@ -845,8 +851,12 @@ Syntax: Set<Type> name = new HashSet<>();
 
 
 ////////////////////////////////////////////////////////////
-4. Queue (Order of Processing)
+3. Queue (Order of Processing)
 A Queue is designed for holding elements prior to processing, typically following the FIFO (First-In-First-Out) principle. 
+
+Common Implementations:
+PriorityQueue: Elements are ordered based on their natural priority or a custom comparator.
+ArrayDeque: A double-ended queue that supports insertion and removal at both ends.
 
 Hierarchy:
 Collection(I) ------> Queue(I) ------> Deque(I) ------> ArrayDeque(C)
@@ -855,16 +865,12 @@ Collection(I) ------> Deque(I) ------> LinkedList(C)
 
 Key Feature: Elements are added at the back and removed from the front.
 
-Common Implementations:
-PriorityQueue: Elements are ordered based on their natural priority or a custom comparator.
-ArrayDeque: A double-ended queue that supports insertion and removal at both ends.
-
 Syntax: Queue<Type> name = new LinkedList<>();
 
 
 
 ////////////////////////////////////////////////////////////
-3. Map (Key-Value Pairs)
+4. Map (Key-Value Pairs)
 A Map stores data as associations between unique keys and values. 
 
 Common Implementations:
@@ -888,40 +894,49 @@ Essential Functions:
 
 Since all major collection interfaces (List, Set, Queue) extend the root Collection<E> interface, they all share a core set of methods.
 
-1. Adding Elements
+1. Adding Elements:
 add(E e)				: Adds an element. Returns true if the collection changed.
 addAll(Collection<? extends E> c)	: Adds all elements from another collection.
 
-2. Removing Elements
+2. Removing Elements:
 remove(Object o)			: Removes a specific element if it exists.
 removeAll(Collection<?> c)		: Removes all elements that are also contained in the specified collection.
 removeIf(Predicate<? super E> filter)	: Removes all elements that meet a certain condition (very useful with Lambda expressions).
 clear()					: Removes all elements, leaving the collection empty.
 
-3. Checking State
+3. Checking State:
 size()					: Returns the number of elements.
 isEmpty()				: Returns true if there are no elements.
 contains(Object o)			: Checks if a specific element is present.
 containsAll(Collection<?> c)		: Checks if the collection contains all elements of another collection.
 
-4. Conversion & Bulk Operations
+4. Conversion & Bulk Operations:
 toArray()				: Converts the collection into a standard Java array (Object[]).
 iterator()				: Manual looping, works with .hasNext() and .next() methods (used for manual looping and mainly used to .remove() while in loop which is not possible with enhanced for).
 stream()				: Converts the collection into a Stream, allowing for modern functional-style operations like filter, map, and reduce.
 
-5. Comparison
+5. Comparison:
 equals(Object o)			: Compares the specified object with the collection for equality.
 hashCode()				: Returns the hash code value for the collection.
 
+6. Queue/Dequeue functions:	
+poll()					: Retrieves and removes the head of a queue; returns null if the queue is empty.
 
-Map functions:
-
+7. Map functions:
 Because Map does not extend Collection, its methods are slightly different but follow a similar logic:
+put(key, value) 			: adds a key-value pair to the map.
+get(key) 				: to retrieve data.
+containsKey(key) / containsValue(value)	: for checks.
+getOrDefault(key, default) 		: Returns the value of the key, or the default value if the key is missing.
+merge(key, value, BiFunction) 		: Combines an existing map key-value with a new value using a remapping function
 
-Use put(key, value) instead of add().
-Use get(key) to retrieve data.
-Use containsKey(key) or containsValue(value) for checks.
-
+8. Sorting & Custom Ordering (Comparable & Comparator):
+Comparable Interface (compareTo(Object o))		: Defines the natural ordering of a class. The class itself must implement this interface.
+Comparator Interface (compare(Object o1, Object o2))	: Defines custom sorting logic. It is separate from the class, allowing multiple different sorting behaviors.
+Key Syntax Examples:
+Using Lambda (Modern Java)		: list.sort((a, b) -> a.compareTo(b));
+Reversing Natural Order			: list.sort(Comparator.reverseOrder());
+Sorting objects by a specific property	: list.sort(Comparator.comparing(User::getAge));
 
 ===============================================================================================================================================================================
 Streams API:
@@ -951,7 +966,7 @@ Ways to create a stream or fetch it from data structures
 - From Maps:
 	map.keySet().stream() 		: Stream of keys
 	map.values().stream() 		: Stream of values
-	map.entrySet().stream() 	: Stream of Key-Value pairs
+	map.entrySet().stream() 	: Stream of Key-Value pairs (entrySet() breaks the map into Set<Map.Entry>)
 - From Arrays:
 	Arrays.stream(ObjectArray) 	: Creates an Object Stream
 - From Primitive Streams - Bulk boxing (primitive stream -> object stream):
@@ -972,12 +987,14 @@ peek(Consumer)		:Used for debugging; performs an action without changing the str
 
 Terminal Operations (The Result Makers):
 
-collect(Collectors.to....()) 	:Gathers the final results into a List, Set, or Map - Ex: collect(Collectors.toList()).
-forEach(Consumer) 		:Performs an action for each element (e.g., System.out::println).
-reduce() 			:Combines all elements into a single result (like summing numbers).
-count() 			:Returns the total number of elements in the stream as a long.anyMatch / allMatch : Returns a boolean if elements match a specific condition.
-anyMatch / allMatch / noneMatch	:Returns a boolean based on a condition.
-findFirst() / findAny()		:Returns an Optional containing an element from the stream.
+collect(Collectors.to....()) 			:Gathers the final results into a List, Set, or Map - Ex: collect(Collectors.toList()).
+collect(Collectors.groupingBy(Function))	:Groups data into a Map based on a classifying property
+collect(Collectors.partitioningBy(Predicate)) 	:Specialized grouping that splits data into a Map<Boolean, List> based on a true/false condition.
+forEach(Consumer) 				:Performs an action for each element (e.g., System.out::println).
+reduce() 					:Combines all elements into a single result (like summing numbers).
+count() 					:Returns the total number of elements in the stream as a long.
+anyMatch / allMatch / noneMatch			:Returns a boolean based on a condition.
+findFirst() / findAny()				:Returns an Optional containing an element from the stream.
 
 ////////////////////////////////////////////////////////////
 Primitive Streams (IntStream, LongStream, DoubleStream):

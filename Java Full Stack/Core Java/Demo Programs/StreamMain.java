@@ -3,7 +3,6 @@ package javaPrograms;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class StreamMain {
 
@@ -17,7 +16,7 @@ public class StreamMain {
 			.toList();
 		System.out.println(names1);
 		List<Integer> nums2 = new ArrayList<>();
-		
+		System.out.println(nums2);
 	}
 
 }
