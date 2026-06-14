@@ -624,6 +624,9 @@ Used only for methods. It tells the compiler that the method performs an action 
 synchronized: Ensures a method can only be accessed by one thread at a time (prevents data corruption).
 volatile: Ensures that changes to a variable are always read directly from main memory, not a thread's local cache.
 
+6. default (for methods with bodies in interfaces)
+Methods: : Allowed developers to add method implementations inside interfaces using the default keyword without breaking existing implementing classes.
+
 ===============================================================================================================================================================================
 Wrapper classes and Generics:
 ===============================================================================================================================================================================
@@ -931,8 +934,35 @@ getOrDefault(key, default) 		: Returns the value of the key, or the default valu
 merge(key, value, BiFunction) 		: Combines an existing map key-value with a new value using a remapping function
 
 8. Sorting & Custom Ordering (Comparable & Comparator):
-Comparable Interface (compareTo(Object o))		: Defines the natural ordering of a class. The class itself must implement this interface.
-Comparator Interface (compare(Object o1, Object o2))	: Defines custom sorting logic. It is separate from the class, allowing multiple different sorting behaviors.
+Collections.sort(list)	: Naturally sorts based on the compareTo from Comparable<T>
+.sort(Comparator<T>)	: Sorts the Collection based on the Comparator object given.
+
+Comparable Interface (compareTo(Object o)): Defines the natural ordering of a class. The class itself must implement this interface.
+
+
+Comparator Functional Interface (compare(Object o1, Object o2)): Defines custom sorting logic. It is separate from the class, allowing multiple different sorting behaviors.
+
+Here are the most important static factory methods and default methods inside the Java Comparator interface:
+
+	1. Key Extractors (Building the First Comparator): These static methods are your starting points. They tell Java which field to look at to start sorting.
+		Comparator.comparing()		: Sorts by an Object field (like String, LocalDate, or a custom class).
+		Comparator.comparingInt()	: Highly optimized; prevents boxing when sorting by primitive int fields (e.g., age, id).
+		Comparator.comparingLong()	: Optimized for primitive long fields (e.g., timestamp).
+		Comparator.comparingDouble()	: Optimized for primitive double fields (e.g., price, weight).
+	2. Tie-Breakers (Chaining Multi-Level Sorts): These default methods allow you to string multiple criteria together if the previous step results in a tie.
+		thenComparing()		: The primary tie-breaker for object-based fields.
+		thenComparingInt()	: Tie-breaker specifically for primitive int fields.
+		thenComparingLong()	: Tie-breaker specifically for primitive long fields.
+		thenComparingDouble()	: Tie-breaker specifically for primitive double fields.
+	3. Order Modifiers (Reversing Direction): These methods change the direction of your sort.
+		reversed()			: Flips the entire sorting order from ascending to descending (or vice versa).
+		Comparator.reverseOrder()	: A standalone static method that creates a basic descending comparator for natural ordering.
+		Comparator.naturalOrder()	: Creates a basic ascending comparator for natural ordering (like A-to-Z or lowest-to-highest numbers)
+	4. Null Handlers (Preventing NullPointerException): If your dataset contains null values, sorting it normally will crash your application. These methods safely position null elements.
+		Comparator.nullsFirst()	: Places all null values at the very beginning of the sorted list.
+		Comparator.nullsLast()	: Places all null values at the very end of the sorted list.
+
+	
 Key Syntax Examples:
 Using Lambda (Modern Java)		: list.sort((a, b) -> a.compareTo(b));
 Reversing Natural Order			: list.sort(Comparator.reverseOrder());
@@ -1031,6 +1061,11 @@ sum() 				:Returns the total sum as a primitive.
 average() 			:Returns an OptionalDouble since a stream might be empty.
 min() / max()			:Returns an OptionalInt (or Long/Double)
 summaryStatistics() 		:A "mega-method" that returns the count, sum, min, average, and max all at once
+
+
+Collectors:
+
+complete the notes///////////////////////////
 
 
 ===============================================================================================================================================================================

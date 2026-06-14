@@ -5,7 +5,7 @@ import java.util.*;
 // ============================================================================
 // DOMAIN MODEL CLASS
 // ============================================================================
-class Product {
+class Product{
     private String name;
     private String category;
     private double price;
@@ -23,16 +23,19 @@ class Product {
     public double getPrice() { return price; }
     public double getRating() { return rating; }
 
-    @Override
-    public String toString() {
-        return String.format("%s[%s, $%.2f, ⭐%.1f]", name, category, price, rating);
-    }
+	@Override
+	public String toString() {
+		return "Product [name=" + name + ", category=" + category + ", price=" + price + ", rating=" + rating + "]";
+	}
+
+    
+
 }
 
 // ============================================================================
 // MAIN APPLICATION FILE
 // ============================================================================
-public class CollectionsComparableAndComparatorDemo {
+public class CollectionsWithComparatorDemo {
 
     public static void main(String[] args) {
         // Sample Data Source
@@ -43,14 +46,21 @@ public class CollectionsComparableAndComparatorDemo {
             new Product("Blender", "Appliances", 80.00, 4.5),
             new Product("Headphones", "Electronics", 150.00, 4.8)
         );
-
+        
         System.out.println("==================================================");
         System.out.println("MASTERING COMPARATORS (ORDERING LOGIC)");
         System.out.println("==================================================");
 
         // 1. Modern Lambda Comparator (Sorting by Price Ascending)
         System.out.println("\n1. Sorted by Price (Low to High):");
-        products.sort(Comparator.comparingDouble(Product::getPrice));
+        Comparator<Product> priceComparator = new Comparator<>() {
+        	public int compare(Product product1, Product product2){
+        		return Double.compare(product1.getPrice(), product2.getPrice());
+        	}
+        };
+        products.sort(priceComparator);
+        //The above is equivalent to
+        //products.sort(Comparator.comparingDouble(Product::getPrice));
         products.forEach(product -> System.out.println(product));
 
         // 2. Reversing a Comparator (Sorting by Price Descending)

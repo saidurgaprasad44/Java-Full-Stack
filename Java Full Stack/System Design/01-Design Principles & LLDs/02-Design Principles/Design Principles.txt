@@ -17,4 +17,6 @@ Dependency Inversion Principle	: Depend on interfaces/abstract classes rather th
  
 DRY (Don’t Repeat Yourself): Aims to reduce repetition of information to avoid maintenance issues.
 
+YAGNI: 
+
 KISS (Keep It Simple, Stupid): Encourages making code as simple as possible to ensure it remains understandable.

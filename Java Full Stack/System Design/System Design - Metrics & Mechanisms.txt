@@ -1,0 +1,93 @@
+System Design Master Matrix: Metrics & Mechanisms
+
+===============================================================================================================================================================================
+
+## 1. Performance (Latency & Throughput)
+* **The Metric:** How fast the system responds (**Latency**, measured in $p99$ ms) and how much work it can execute simultaneously (**Throughput**, measured in Requests Per Second).
+* **The Goal:** Maximize speed and processing capacity under heavy usage.
+
+### 🛠️ Implementing Mechanisms
+* **Tiered Caching:** 
+  * *Browser Cache:* Stores assets directly on the user's device.
+  * *CDN Cache:* Stores static/dynamic data at the network edge close to users.
+  * *Application/DB Cache:* Uses in-memory stores (Redis) to cache heavy query results.
+* **Database Indexing:** Creates lookup paths (e.g., B-Trees) to prevent slow, expensive full-table disk scans.
+* **Connection Pooling:** Maintains pre-opened database connections to eliminate TCP handshake latency on every request.
+* **Batch Processing:** Groups data to process it in bulk, optimizing data throughput for non-real-time tasks.
+* **Code Quality & DSA (LLD):** Applying optimal algorithms and data structures to reduce CPU cycles and execution times.
+
+===============================================================================================================================================================================
+
+## 2. Scalability & Elasticity
+* **The Metric:** **Scalability** is the capacity to handle growth. **Elasticity** is the ability to automatically scale up or down based on real-time traffic spikes.
+* **The Goal:** Ensure the system expands seamlessly without manual human intervention.
+
+### 🛠️ Implementing Mechanisms
+* **Horizontal Scaling & Load Balancing:** Spreads incoming web traffic evenly across multiple identical server instances.
+* **Stateless Services:** Ensuring application servers don't store user session state locally, allowing any server to handle any incoming request seamlessly.
+* **Database Sharding:** Horizontally partitioning large database tables across separate physical machines using a shard key.
+* **Asynchronous Processing:** Using message brokers to decouple workflows so background workers can scale independently.
+
+===============================================================================================================================================================================
+
+## 3. Reliability (Availability, Resilience, & Fault Tolerance)
+* **The Metric:** **Availability** is uptime percentage (e.g., 99.99%). **Resilience** is how it recovers. **Fault Tolerance** is surviving hardware/software failures.
+* **The Goal:** Build a system with no single point of failure that heals itself automatically.
+
+### 🛠️ Implementing Mechanisms
+* **Redundancy & Replication:** Keeping multiple synchronous or asynchronous copies of data across different physical zones.
+* **Read Replicas:** Shifting heavy read volumes away from the primary write database to separate read-only instances.
+* **Defensive Traffic Control:** Implements **Rate Limiting** to prevent abuse and **Timeouts** to stop threads from hanging.
+* **Circuit Breakers & Fallbacks:** Trips a broken dependency path immediately, returning a graceful fallback response instead of failing the whole request chain.
+* **Retries with Exponential Backoff:** Retries temporary network blips with randomized incremental waiting delays to avoid overwhelming target services.
+* **Health Checks & Automatic Recovery:** Orchestrators (like Kubernetes) constantly ping instances and spin up fresh replacements automatically if an instance stops responding.
+
+===============================================================================================================================================================================
+
+## 4. Observability
+* **The Metric:** The clarity with which you can diagnose internal errors based on external indicators (Logs, Metrics, Traces).
+* **The Goal:** Spot anomalies and capture data corruption before it impacts users.
+
+### 🛠️ Implementing Mechanisms
+* **Distributed Tracing & Central Logging:** Tracking requests across microservices via trace IDs and indexing structured JSON logs.
+* **Metrics & Corruption Detection:** Gathering system telemetry to calculate error rates, combined with checksums to detect data corruption during transit.
+
+===============================================================================================================================================================================
+
+## 5. Security (Authentication & Authorization)
+* **The Metric:** System immunity to unauthorized breaches and malicious attacks.
+* **The Goal:** Secure data at rest, in transit, and enforce strict user privacy bounds.
+
+### 🛠️ Implementing Mechanisms
+* **Authentication & Authorization:** Verifying identity (AuthN) and evaluating permissions/roles (AuthZ via RBAC/ABAC).
+* **Encryption:** Obfuscating data using industry-standard cryptography algorithms both on-disk and over the wire (TLS).
+
+===============================================================================================================================================================================
+
+## 6. Data Consistency & Durability
+* **The Metric:** **Consistency** ensures data is uniform across all nodes. **Durability** guarantees that once a write is acknowledged, it will never be permanently lost.
+* **The Goal:** Maintain perfectly accurate records across a distributed system.
+
+### 🛠️ Implementing Mechanisms
+* **Quorum Consensuses:** Requiring a strict majority of nodes to acknowledge reads/writes before confirming a transaction.
+* **Idempotency Keys:** Ensuring a duplicated network retry does not cause a duplicate record or double-charge a user.
+
+===============================================================================================================================================================================
+
+## 7. Maintainability & Low Coupling
+* **The Metric:** How easily code can be modified, tested, and expanded. Measured by deployment frequency and low inter-dependency (**Coupling**).
+* **The Goal:** Keep separate engineering teams unblocked and move quickly.
+
+### 🛠️ Implementing Mechanisms
+* **Microservices:** Breaking down a monolith into loose, decoupled domains that talk over clean network protocols.
+* **Automated Testing & Documentation:** Running CI/CD test suites and keeping architecture specifications current to prevent regressions.
+
+===============================================================================================================================================================================
+
+## 8. Cost Efficiency
+* **The Metric:** Monthly financial infrastructure cost relative to system volume and computing resource usage.
+* **The Goal:** Run an optimized, high-throughput system at the lowest possible price point.
+
+### 🛠️ Implementing Mechanisms
+* **Auto-Scaling & Serverless Compute:** Tearing down idle compute capacity automatically during low-traffic periods.
+* **Tiered Cold/Hot Storage:** Moving old records to cheaper object storage layers over time.

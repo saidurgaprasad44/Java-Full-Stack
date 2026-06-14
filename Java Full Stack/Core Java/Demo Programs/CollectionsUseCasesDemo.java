@@ -49,7 +49,7 @@ class SupportTicket implements Comparable<SupportTicket> {
 //MAIN APPLICATION FILE
 //============================================================================
 
-public class CollectionUseCasesDemo {
+public class CollectionsUseCasesDemo {
 
  public static void main(String[] args) {
      System.out.println("========== USE CASE 1: E-COMMERCE SHOPPING CART (LIST & ITERATOR) ==========\n");
