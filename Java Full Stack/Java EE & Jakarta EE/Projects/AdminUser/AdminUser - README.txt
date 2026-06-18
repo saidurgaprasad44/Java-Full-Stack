@@ -1,7 +1,7 @@
 Java Dynamic Web App without Spring
 
 
-Complete Java Web App (MVC without Spring):
+Complete Java Web App (MVC using servlet/JSP):
 
 
 Use Case:

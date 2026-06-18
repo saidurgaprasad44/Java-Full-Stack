@@ -4,71 +4,6 @@
 - Representation: Clients do not access the data directly; instead, they receive a representation of the resource, most commonly in JSON or XML format
 
 ===============================================================================================================================================================================
-The Anatomy of an HTTP Request:
-===============================================================================================================================================================================
-
-[ REQUEST LINE ]  	->  	POST   /users/42/files?format=json HTTP/1.1
-                      		└───┘└─────┘└───┘└───────┘ └─────┘
-                       		Method   Path  PathVar   Query     Version
-
-[ REQUEST HEADERS ]     ->  	Host: ://example.com
-                      		Content-Type: application/json
-                      		Authorization: Bearer xyz123
-
-[ REQUEST BODY ]  	->  	{
-                        		"filename": "invoice.pdf",
-                        		"size": 2048
-                      		}
-
-
-
-1. The Request Line:
-
-Before the parameters, every request must start with a single line containing two crucial pieces of metadata:
-
-	- The HTTP Method : The verb telling the server what action to perform (GET, POST, PUT, DELETE).
-	- The HTTP Version: Tells the server which version of the web protocol the browser is using (e.g., HTTP/1.1 or HTTP/2)
-
-
-
-
-2. The Address Components (Where & Who)
-
-Path Parameters
-
-- What they are: Variables embedded directly into the structural hierarchy of the URL path.
-- Purpose: Used to identify a specific resource or asset.
-- Example URL: /users/89/orders/5
-- Behind the scenes: The server maps /users/{userId}/orders/{orderId}. Here, 89 and 5 are the path parameters telling the server exactly whose order to open.
-
-Query Parameters
-
-- What they are: Key-value pairs appended to the very end of a URL, starting after a question mark ? and separated by ampersands &.
-- Purpose: Used to sort, filter, search, or paginate data without changing the core resource you are looking at.
-- Example URL: /products?category=shoes&color=blue&page=2
-- Behind the scenes: You are still at the /products page, but the server filters the database to only return blue shoes from page 2.
-
-
-
-
-3. Headers (The Metadata)
-- What they are: A list of background key-value pairs that provide extra context about the request, the browser, or the data being sent.
-- Purpose: They act like the shipping label on a package. They don't contain the product, but they tell the delivery person how to handle it.
-- Common Examples:
-	Content-Type: application/json – Tells the server, "The data inside my body is written in JSON format."
-	Authorization: Bearer token123 – Passes your login key or security passport to prove who you are.
-	User-Agent: Mozilla/5.0... – Tells the server what browser and operating system you are using.
-
-
-
-
-4. The Body (The Payload)
-- What it is: The raw data or "cargo" carried by the request.
-- Purpose: Used to transmit heavy or sensitive data to the server. It is completely independent of the URL structure.
-- Format: It can be raw text, a JSON object, XML, HTML, or binary data (like an image file or PDF).
-- Usage: Used heavily in POST, PUT, and PATCH. It is empty or ignored in standard GET and DELETE requests.
-
-===============================================================================================================================================================================
 CRUD operations:
 ===============================================================================================================================================================================
 
@@ -113,29 +48,6 @@ The Target		: The browser sends a request targeting a specific resource URL (e.g
 The Payload		: This request typically has no body. The identity of the item is entirely in the URL.
 The Server Action	: The server locates item 42 and wipes it from the database.
 The Response		: The server sends back a success status (like 200 OK or 204 No Content). If you send the request again, the server returns 404 Not Found because the item is already gone.
-
-
-===============================================================================================================================================================================
-HTTP Response Status Codes: 
-===============================================================================================================================================================================
-
-Servers respond with three-digit codes to indicate the outcome of a request:
-
-Informational responses - (100 - 199)
-Successful responses	- (200 - 299)
-Redirection messages	- (300 - 399)
-Client error responses	- (400 - 499)
-Server error responses	- (500 - 599)
-
-
-Some common Status Codes:
-
-- 200 OK: The request was successful.
-- 201 Created: A new resource was successfully created (typically after a POST).
-- 400 Bad Request: The request was invalid or malformed.
-- 401 Unauthorized: Authentication is required or has failed.
-- 404 Not Found: The requested resource does not exist.
-- 500 Internal Server Error: A general error occurred on the server
 
 ===============================================================================================================================================================================
 Implementation of RESTful APIs:

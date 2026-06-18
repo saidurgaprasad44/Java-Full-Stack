@@ -1,21 +1,4 @@
 =========================================================================================================================================================================
-Older JEE vs Modern JEE:
-=========================================================================================================================================================================
-
-In older legacy applications, both front end and back end resides on the same server and it is in the same application. In modern applications the applications are designed in such a way that we have two separate applications for front end and back end which communicate with each other.
-
-Legacy applications:
-The client sends the http request and the server(Servlet) sends both the layout(html, jsp) and the data to the client.
-To achieve this we use Servlet based dynamic web projects to send the layouts and data
-Wweb.xml configuration handles all the http requests
-HTML, CSS, JavaScript(for interactive page, optional) are used for the front end development.
-
-Modern applications(decoupled applications):
-The servlet only sends the data to the client in the form of JSON/XML called REST APIs.
-To achieve this, we use Java RESTful APIs (JAX-RS) implementations like Jersey
-JavaScript libraries like ReactJS(JavaScript), AngularJS(TypeScript) are used to develope the front end application
-
-=========================================================================================================================================================================
 Servlets/JSP:
 =========================================================================================================================================================================
 
@@ -56,13 +39,4 @@ response.sendRedirect(): : The server sends a 302 Redirect status code back to t
 Type: Client-side redirect.
 Request Object: Creates a brand new request; old data is lost.
 Scope: Can redirect to any URL (external sites, different servers).
-	
-
-
-
-
-
-
-
-
 	

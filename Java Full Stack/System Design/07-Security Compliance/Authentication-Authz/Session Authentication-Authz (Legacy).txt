@@ -1,0 +1,826 @@
+# Basic Authentication Notes
+
+===============================================================================================================================================================================
+## Why Do We Need Authentication?
+===============================================================================================================================================================================
+
+Consider the following APIs:
+
+--http--------------------------------
+POST /login
+GET  /profile
+GET  /admin/reports
+--------------------------------------
+
+When a user logs in, the application must remember:
+
+* Who the user is
+* Whether the user is authenticated
+* What roles the user has
+
+Without this information, every request would look like a completely new request.
+
+
+
+===============================================================================================================================================================================
+## What Does "HTTP is Stateless" Mean?
+===============================================================================================================================================================================
+
+A **state** is information about previous interactions.
+
+Example state:
+
+--text--------------------------------
+User: Sai
+Logged In: Yes
+Role: ADMIN
+--------------------------------------
+
+HTTP itself does not remember previous requests.
+
+Example:
+
+Request 1:
+
+--http--------------------------------
+POST /login
+--------------------------------------
+
+Request 2:
+
+--http--------------------------------
+GET /profile
+--------------------------------------
+
+When Request 2 arrives, HTTP does not automatically know:
+
+--text--------------------------------
+This is Sai
+This user logged in earlier
+This user is an ADMIN
+--------------------------------------
+
+Every request is independent.
+
+Therefore:
+
+--text--------------------------------
+HTTP is stateless
+--------------------------------------
+
+Meaning:
+
+> HTTP does not remember previous requests by itself.
+
+
+
+===============================================================================================================================================================================
+## How Is User State Maintained?
+===============================================================================================================================================================================
+
+Traditional applications use:
+
+--text--------------------------------
+Session + Cookie
+--------------------------------------
+
+Flow:
+
+--text--------------------------------
+User Login
+    ↓
+Server Creates Session
+    ↓
+Session ID Generated
+    ↓
+Browser Stores Session ID
+    ↓
+Browser Sends Session ID With Every Request
+    ↓
+Server Finds Session
+    ↓
+User Recognized
+--------------------------------------
+
+
+
+===============================================================================================================================================================================
+## What Is a Session?
+===============================================================================================================================================================================
+
+A session is a server-side object that stores information about a logged-in user.
+
+Example:
+
+--java--------------------------------
+{
+    sessionId : "ABC123",
+    username  : "sai",
+    role      : "ADMIN"
+}
+--------------------------------------
+
+The session allows the server to remember the user between requests.
+
+
+
+===============================================================================================================================================================================
+## What Is HttpSession?
+===============================================================================================================================================================================
+
+In Java web applications, sessions are represented by:
+
+--java--------------------------------
+HttpSession
+--------------------------------------
+
+Package:
+
+--java--------------------------------
+jakarta.servlet.http.HttpSession
+--------------------------------------
+
+It is provided by the Servlet API and managed automatically by Tomcat/Spring.
+
+Example:
+
+--java--------------------------------
+HttpSession session =
+        request.getSession();
+--------------------------------------
+
+If a session already exists:
+
+--text--------------------------------
+Existing session returned
+--------------------------------------
+
+If no session exists:
+
+--text--------------------------------
+New session created
+--------------------------------------
+
+
+
+===============================================================================================================================================================================
+## Is HttpSession a Map?
+===============================================================================================================================================================================
+
+Not exactly.
+
+However, it behaves similarly to a Map.
+
+Example:
+
+--java--------------------------------
+session.setAttribute(
+    "username",
+    "sai"
+);
+--------------------------------------
+
+Later:
+
+--java--------------------------------
+String username =
+    (String) session.getAttribute(
+        "username"
+    );
+--------------------------------------
+
+Conceptually:
+
+--java--------------------------------
+Map<String,Object>
+--------------------------------------
+
+Internal structure:
+
+--java--------------------------------
+{
+    "username" : "sai",
+    "role" : "ADMIN",
+    "userId" : 101
+}
+--------------------------------------
+
+
+
+===============================================================================================================================================================================
+## Important HttpSession Methods
+===============================================================================================================================================================================
+
+--java--------------------------------
+public interface HttpSession {
+
+    String getId();
+
+    Object getAttribute(
+            String name);
+
+    void setAttribute(
+            String name,
+            Object value);
+
+    void removeAttribute(
+            String name);
+
+    void invalidate();
+
+    long getCreationTime();
+
+    long getLastAccessedTime();
+}
+--------------------------------------
+
+Commonly used methods:
+
+--java--------------------------------
+getAttribute()
+setAttribute()
+invalidate()
+getId()
+--------------------------------------
+
+
+
+===============================================================================================================================================================================
+## Where Is Session Data Stored?
+===============================================================================================================================================================================
+
+By default:
+
+--text--------------------------------
+Server Memory (JVM Memory)
+--------------------------------------
+
+Conceptually:
+
+--java--------------------------------
+Map<String,HttpSession>
+--------------------------------------
+
+Example:
+
+--java--------------------------------
+{
+    "ABC123" -> Session1,
+    "XYZ999" -> Session2
+}
+--------------------------------------
+
+Managed internally by Tomcat.
+
+
+
+===============================================================================================================================================================================
+## What Is Stored In The Browser?
+===============================================================================================================================================================================
+
+Only the Session ID.
+
+Example:
+
+--text--------------------------------
+ABC123
+--------------------------------------
+
+The browser does NOT store:
+
+--text--------------------------------
+Username
+Roles
+Permissions
+--------------------------------------
+
+Actual user information remains on the server.
+
+
+
+===============================================================================================================================================================================
+## How Does Browser Receive Session ID?
+===============================================================================================================================================================================
+
+Developer writes:
+
+--java--------------------------------
+request.getSession();
+--------------------------------------
+
+Tomcat creates:
+
+--text--------------------------------
+ABC123
+--------------------------------------
+
+Tomcat automatically adds:
+
+--http--------------------------------
+Set-Cookie:
+JSESSIONID=ABC123
+--------------------------------------
+
+to the response header.
+
+Developer does not write this code.
+
+Tomcat handles it automatically.
+
+
+
+===============================================================================================================================================================================
+## How Does Browser Send Session ID Back?
+===============================================================================================================================================================================
+
+Browser stores:
+
+--http--------------------------------
+JSESSIONID=ABC123
+--------------------------------------
+
+For future requests:
+
+--http--------------------------------
+GET /profile
+
+Cookie:
+JSESSIONID=ABC123
+--------------------------------------
+
+Browser automatically sends the cookie.
+
+No additional coding is required.
+
+
+
+# Session Expiration
+
+Sessions do not live forever.
+
+Example configuration:
+
+--properties--------------------------
+server.servlet.session.timeout=30m
+--------------------------------------
+
+Meaning:
+
+--text--------------------------------
+30 minutes of inactivity
+--------------------------------------
+
+After timeout:
+
+--java--------------------------------
+session.invalidate();
+--------------------------------------
+
+Session is removed.
+
+User must login again.
+
+
+
+===============================================================================================================================================================================
+## Role-Based Access Control
+===============================================================================================================================================================================
+
+Suppose there are two roles:
+
+--text--------------------------------
+USER
+ADMIN
+--------------------------------------
+
+Permissions:
+
+| API            | USER | ADMIN |
+| -- 		 | - 	| -- 	|
+| /profile       | Yes  | Yes   |
+| /admin/reports | No   | Yes   |
+
+
+
+===============================================================================================================================================================================
+## Example Session Data
+===============================================================================================================================================================================
+
+Normal User:
+
+--java--------------------------------
+{
+    username : "sai",
+    role : "USER"
+}
+--------------------------------------
+
+Admin User:
+
+--java--------------------------------
+{
+    username : "john",
+    role : "ADMIN"
+}
+--------------------------------------
+
+
+
+===============================================================================================================================================================================
+## Example Login API
+===============================================================================================================================================================================
+
+In a real application, credentials and roles are typically validated using a database, LDAP, identity provider, or another authentication system.
+
+The example below focuses only on session creation after successful authentication.
+
+--java--------------------------------
+@PostMapping("/login")
+public String login(
+        @RequestBody LoginRequest request,
+        HttpServletRequest httpRequest) {
+
+    User authenticatedUser =
+            authenticationService
+                    .authenticate(
+                            request.getUsername(),
+                            request.getPassword());
+
+    if(authenticatedUser == null) {
+        return "Invalid Credentials";
+    }
+
+    HttpSession session =
+            httpRequest.getSession();
+
+    session.setAttribute(
+            "userId",
+            authenticatedUser.getId()
+    );
+
+    session.setAttribute(
+            "username",
+            authenticatedUser.getUsername()
+    );
+
+    session.setAttribute(
+            "role",
+            authenticatedUser.getRole()
+    );
+
+    return "Login Successful";
+}
+--------------------------------------
+
+Example authenticated user returned by the authentication layer:
+
+--java--------------------------------
+{
+    id : 101,
+    username : "sai",
+    role : "USER"
+}
+--------------------------------------
+
+or
+
+--java--------------------------------
+{
+    id : 1,
+    username : "john",
+    role : "ADMIN"
+}
+--------------------------------------
+
+Notice that the login API does not assume every authenticated user is a normal user. The user's actual role is retrieved from the authentication system and stored in the session.
+
+
+
+===============================================================================================================================================================================
+## Service API 1 (Accessible By USER And ADMIN)
+===============================================================================================================================================================================
+
+--java--------------------------------
+@GetMapping("/profile")
+public String profile(
+        HttpSession session) {
+
+    String username =
+            (String) session.getAttribute(
+                    "username");
+
+    if(username == null) {
+        return "Please Login";
+    }
+
+    return "Welcome " + username;
+}
+--------------------------------------
+
+Allowed:
+
+--text--------------------------------
+USER
+ADMIN
+--------------------------------------
+
+
+
+===============================================================================================================================================================================
+## Service API 2 (Accessible Only By ADMIN)
+===============================================================================================================================================================================
+
+--java--------------------------------
+@GetMapping("/admin/reports")
+public String reports(
+        HttpSession session) {
+
+    String role =
+            (String) session.getAttribute(
+                    "role");
+
+    if(role == null) {
+        return "Please Login";
+    }
+
+    if(!role.equals("ADMIN")) {
+        return "Access Denied";
+    }
+
+    return "Sensitive Admin Reports";
+}
+--------------------------------------
+
+Allowed:
+
+--text--------------------------------
+ADMIN only
+--------------------------------------
+
+
+
+===============================================================================================================================================================================
+## Complete Request Flow
+===============================================================================================================================================================================
+
+#Login
+
+Request:
+
+--http--------------------------------
+POST /login
+--------------------------------------
+
+Response:
+
+--http--------------------------------
+Set-Cookie:
+JSESSIONID=ABC123
+--------------------------------------
+
+Session Created:
+
+--java--------------------------------
+{
+    userId : 101,
+    username : "sai",
+    role : "USER"
+}
+--------------------------------------
+
+or
+
+--java--------------------------------
+{
+    userId : 1,
+    username : "john",
+    role : "ADMIN"
+}
+--------------------------------------
+
+
+
+#Access Profile
+
+Request:
+
+--http--------------------------------
+GET /profile
+
+Cookie:
+JSESSIONID=ABC123
+--------------------------------------
+
+Server:
+
+--text--------------------------------
+Find Session
+--------------------------------------
+
+Session:
+
+--java--------------------------------
+{
+    userId : 101,
+    username : "sai",
+    role : "USER"
+}
+--------------------------------------
+
+Response:
+
+--text--------------------------------
+Welcome sai
+--------------------------------------
+
+
+
+#Access Admin Reports
+
+Request:
+
+--http--------------------------------
+GET /admin/reports
+
+Cookie:
+JSESSIONID=ABC123
+--------------------------------------
+
+Server:
+
+--text--------------------------------
+Find Session
+--------------------------------------
+
+Role:
+
+--text--------------------------------
+USER
+--------------------------------------
+
+Response:
+
+--text--------------------------------
+Access Denied
+--------------------------------------
+
+If the role stored in the session is:
+
+--text--------------------------------
+ADMIN
+--------------------------------------
+
+Response:
+
+--text--------------------------------
+Sensitive Admin Reports
+--------------------------------------
+
+
+
+===============================================================================================================================================================================
+## Problems With Session Authentication In Microservices
+===============================================================================================================================================================================
+
+Architecture:
+
+--text--------------------------------
+Load Balancer
+      |
+ -
+ |              |
+Server A     Server B
+--------------------------------------
+
+User logs in through:
+
+--text--------------------------------
+Server A
+--------------------------------------
+
+Session stored in:
+
+--text--------------------------------
+Server A Memory
+--------------------------------------
+
+Next request reaches:
+
+--text--------------------------------
+Server B
+--------------------------------------
+
+Server B cannot find the session.
+
+User appears logged out.
+
+This is known as:
+
+--text--------------------------------
+Session Affinity Problem
+--------------------------------------
+
+or
+
+--text--------------------------------
+Sticky Session Problem
+--------------------------------------
+
+
+
+===============================================================================================================================================================================
+## Solutions
+===============================================================================================================================================================================
+
+Option 1:
+
+--text--------------------------------
+Sticky Sessions
+--------------------------------------
+
+Always send the user to the same server.
+
+Problems:
+
+--text--------------------------------
+Poor scalability
+Session lost if server crashes
+--------------------------------------
+
+
+
+Option 2:
+
+--text--------------------------------
+Shared Session Storage
+--------------------------------------
+
+Store sessions in:
+
+--text--------------------------------
+Redis
+Database
+Distributed Cache
+--------------------------------------
+
+Architecture:
+
+--text--------------------------------
+Load Balancer
+      |
+ -
+ |              |
+Server A     Server B
+       |
+      Redis
+--------------------------------------
+
+Both servers access the same session data.
+
+
+
+===============================================================================================================================================================================
+## Key Interview Points
+===============================================================================================================================================================================
+
+### What is a Session?
+
+Server-side storage for authenticated user information.
+
+### What is HttpSession?
+
+Java representation of a user's session.
+
+### Where is session stored?
+
+Usually JVM memory.
+
+### What is stored in browser?
+
+Only Session ID.
+
+### How is session identified?
+
+Using JSESSIONID cookie.
+
+### How does browser receive JSESSIONID?
+
+Tomcat automatically sends Set-Cookie header.
+
+### How does browser send it back?
+
+Browser automatically includes Cookie header.
+
+### Why is HTTP stateless?
+
+HTTP does not remember previous requests.
+
+### Why are sessions needed?
+
+To maintain user state across requests.
+
+### Why are sessions difficult in microservices?
+
+Session data is stored on individual servers, causing synchronization and scalability issues.
+
+===============================================================================================================================================================================

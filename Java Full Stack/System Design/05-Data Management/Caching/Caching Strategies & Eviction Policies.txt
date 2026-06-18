@@ -1,0 +1,226 @@
+Read Strategies:
+
+Read strategies:
+
+cache aside:
+
+db <- app -> cache
+
+flow:
+app asks cache for data
+if cache hit, cache returns data
+if cache miss, app asks db, db returns data to app, app updates cache
+
+Pros and Cons:
+
+Where is this strategy used in real world?:
+
+Combined with write strategies:
+Write through
+write around
+write back
+
+
+===============================================================================================================================================================================
+cache aside + write through
+
+
+read:
+
+app asks cache for data
+
+if cache hit, cache returns data
+
+if cache miss, app asks db, db returns data to app, app updates cache
+
+data consistency?: Yes
+
+
+write:
+
+app writes to DB
+
+app updates cache
+
+return success
+
+data consistency?: Yes. Because, if cache update fails, when a read request comes, since there is no data in cache (cache miss), app reads the data from db 
+
+
+update:
+
+app updates a record in db
+
+app removes(invalidation) and updates cache
+
+data consistency?: Yes. Because, if cache update fails, when a read request comes, since the cache had already been removed, app reads the data from db
+
+
+delete:
+
+app deletes a record in db
+
+app removes cache
+
+data consistency?: Yes. Because, when a read request comes, since there is no data in cache (cache miss), app reads the data from db
+
+NOTE: 
+cache aside + write through is uncommon, because the textbook definition is
+read: app -> cache --miss-> db
+write: app -> cache -> db 
+here, the ownership is split; application controls reads, cache controls writes; 
+
+however sometimes engineers say "we use cache aside and write-through updates" what they really mean is
+read: app -> cache --miss-> db
+write: app -> db -> cache update 
+this is not true write through, the cache is not writing to the db, the application is writing to both.
+
+this is more accurately, cache aside + explicit cache update.
+===============================================================================================================================================================================
+cache aside + write around
+
+
+read:
+
+app asks cache for data
+
+if cache hit, cache returns data
+
+if cache miss, app asks db, db returns data to app, app updates cache
+
+data consistency?: Yes
+
+
+write:
+
+app writes to DB
+
+return success
+
+data consistency?: Yes. Because, when a read request comes, since there is no data in cache (cache miss), app reads the data from db 
+
+
+update:
+
+app updates a record in db
+
+data consistency?: Not immediately, but eventually consistent. Because, when a read request comes, it is a cache hit, cache returns stale data until cache expires (TTL)
+
+
+delete:
+
+app deletes a record in db
+
+data consistency?: Not immediately, but eventually consistent. Because, when a read request comes, it is a cache hit, cache returns stale data until cache expires (TTL)
+
+===============================================================================================================================================================================
+
+read through:
+
+app -> cache -> db
+
+flow:
+app asks cache for data
+if cache hit, cache returns data
+if cache miss, cache asks db, db returns data to cache, cache updates itself, cache returns data to app
+
+Pros and Cons:
+first read is slow if app writes to db directly without cache invalidation/update.
+
+Where is this strategy used in real world?:
+
+Combined with write strategies:
+Write through
+write around
+write back
+
+===============================================================================================================================================================================
+read through + write through
+
+
+read:
+
+app asks cache for data
+
+if cache hit, cache returns data
+
+if cache miss, cache asks db, db returns data to cache, cache updates itself, cache returns data to app
+
+data consistency?: Yes
+
+
+write:
+
+app puts cache
+
+cache writes to db (using a persistence layer with tools like hazelcast)
+
+return success
+
+data consistency?: Yes. Because, when a read request comes, since there is no data in cache (cache miss), app reads the data from db 
+
+
+update:
+
+app updates cache
+
+cache writes to db (using a persistence layer with tools like hazelcast)
+
+data consistency?: 
+
+
+delete:
+
+app deletes a record in db
+
+cache deletes in db (using a persistence layer like hazelcast)
+
+data consistency?: 
+
+
+===============================================================================================================================================================================
+read through + write around
+
+
+read:
+
+app asks cache for data
+
+if cache hit, cache returns data
+
+if cache miss, cache asks db, db returns data to cache, cache updates itself, cache returns data to app
+
+data consistency?: Yes
+
+
+write:
+
+app writes to DB
+
+return success
+
+data consistency?: Yes. Because, when a read request comes, since there is no data in cache (cache miss), app reads the data from db 
+
+
+update:
+
+app updates a record in db
+
+data consistency?: Not immediately, but eventually consistent. Because, when a read request comes, it is a cache hit, cache returns stale data until cache expires (TTL)
+
+
+delete:
+
+app deletes a record in db
+
+data consistency?: Not immediately, but eventually consistent. Because, when a read request comes, it is a cache hit, cache returns stale data until cache expires (TTL)
+
+===============================================================================================================================================================================
+Write Strategies:
+
+Write through
+Even after write, the immediate first read along with the subsequent reads are fast; suitable for applications with instant reads after writes 
+
+Write around
+
+Write back (Write behind)
