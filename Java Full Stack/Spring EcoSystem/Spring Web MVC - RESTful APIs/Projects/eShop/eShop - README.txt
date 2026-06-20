@@ -1,4 +1,4 @@
-Spring Web App implementing REST CRUD, Spring Data JPA
+Spring Boot Web App implementing REST CRUD, Spring Data JPA
 
 
 
