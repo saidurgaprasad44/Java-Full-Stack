@@ -1,26 +1,11 @@
 =============================================================================================================================================================================
-Spring Framework and Spring Boot:
+Spring:
 =============================================================================================================================================================================
 
-Core Concept 		- Inversion of Control (IoC):
-It is a design principle where the control of objects or portions of a program is transferred to a container or framework
-Goal: To achieve Loose Coupling between components.
-
-The Brain/Manager 	- Spring IoC Container: The engine that implements IoC in Spring. It is responsible for instantiating, configuring, and assembling objects (called Beans) 
-	- Bean Factory: The basic version of the container (Lazy Loading)
-	- Application Context: The advanced version of the container (Eager Loading). It is the interface that represents the IoC container (Modern approach to initialise the container).
-
-The Instructions 	- Configuration Types
-How you tell the IoC Container which Beans to create and how to connect them.
-	- Spring XML Configuration: Traditional method using .xml files.
-	- Spring Annotations Configuration: Using markers like @Component and @Autowired directly on classes.
-	- Spring Java Configuration: Modern method using @Configuration classes and @Bean methods.
-
-The Delivery 		- Dependency Injection (Loose Coupling): 
-It is a design pattern where an object's required resources (its dependencies) are "given" to it by an external source rather than the object creating them itself
+Goal: To achieve Loose Coupling between components using Dependency Injection.
 
 =============================================================================================================================================================================
-Why Dependency Injection is important? explain with an example scenario.
+Why Dependency Injection is important?
 =============================================================================================================================================================================
 
 Most objects in software need other objects to do their work. For example: a Car needs an Engine. 
@@ -94,12 +79,42 @@ class Car {
 
 You can now create a gas car (new Car(new GasEngine())) or an electric car (new Car(new ElectricEngine())) without ever touching the Car class code.
 
+Here, we didn't eliminate dependency completely, because when we changed from new GasEngine() to new ElectricEngine(), we still made Java code changes and we still need to recompile the business logic.
+
 =============================================================================================================================================================================
 
-The above example is explained with plain Java (not Spring). To achieve the same using Spring, we need to: 
-- Initialize the container
-- Instruct it and 
-- Deliver the objects
+The above example is written in plain Java (not Spring); Then why do we need Spring? Because,
+
+Without Spring, you decide:
+- When objects are created
+- In what order
+- How dependencies are passed
+- Whether they are singleton or not
+- When they are destroyed
+
+With Spring, you just configure (xml/Java/annotation) what a class needs, now Spring helps you achieve DI automating the bean lifecycle management:
+
+Bean Lifecycle Management:
+1. Discover beans
+2. Create BeanDefinitions
+3. Instantiate beans
+4. Inject dependencies
+5. Run lifecycle callbacks
+6. Store beans in container
+7. Return beans when requested
+
+The Brain/Manager - Spring IoC Container: The engine that implements IoC in Spring. It is responsible for instantiating, configuring, and assembling objects (called Beans) 
+	- Bean Factory: The basic version of the container (Lazy Loading)
+	- Application Context: The advanced version of the container (Eager Loading). It is the interface that represents the IoC container (Modern approach to initialise the container).
+
+The Instructions 	- Configuration Types
+How you tell the IoC Container which Beans to create and how to connect them.
+	- Spring XML Configuration: Traditional method using .xml files.
+	- Spring Annotations Configuration: Using markers like @Component and @Autowired directly on classes.
+	- Spring Java Configuration: Modern method using @Configuration classes and @Bean methods.
+
+The Delivery 		- Dependency Injection (Loose Coupling): 
+It is a design pattern where an object's required resources (its dependencies) are "given" to it by an external source rather than the object creating them itself
 
 =============================================================================================================================================================================
 Initialize the container:
@@ -335,7 +350,20 @@ The Instructions - Spring Java Configuration:
 =============================================================================================================================================================================
 
 
-We are not learning this..............
+
+
+
+=============================================================================================================================================================================
+Spring Boot:
+=============================================================================================================================================================================
+
+Introduced "Opinionated" Auto-Configuration
+Before Spring Boot, if you wanted to connect a database, you had to manually configure a DataSource bean, an EntityManagerFactory, a TransactionManager, and a Connection Pool.
+Spring Boot uses Auto-Configuration. It looks at the libraries (JARs) you have added to your project and guesses what you want to do:
+•	If it sees the h2 database library on your classpath, it automatically configures an in-memory database connection for you.
+•	If it sees spring-boot-starter-web, it automatically configures Spring MVC, the DispatcherServlet, and JSON jackson mappers.
+•	You write zero configuration code to get started
+
 
 
 

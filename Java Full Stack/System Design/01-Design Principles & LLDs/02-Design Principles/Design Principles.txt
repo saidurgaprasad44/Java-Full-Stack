@@ -1,22 +1,156 @@
-=================================================================================================================================================================================
-=================================================================================================================================================================================
-Design Principles (The "Why"):
-=================================================================================================================================================================================
-=================================================================================================================================================================================
 
-These are foundational rules of thumb that encourage clean, maintainable, and scalable code. They are theory-based rather than code-based. 
+Design Principles (The "Why"): These are foundational rules of thumb that encourage clean, maintainable, and scalable code. They are theory-based rather than code-based. 
 
+
+
+=================================================================================================================================================================================
+=================================================================================================================================================================================
 SOLID: A set of five principles (Single Responsibility, Open/Closed, etc.) focused on reducing coupling and increasing flexibility.
-Single Responsibility Principle	: A single class serving a single responsibility rather than multiple
-Open/Closed Principle		: Open to extension, closed to modification
-Liskov Substitution Principle	: Inherit classes only when its needed making sure the superclass can be replaceable by the subclass
-Interface Segregation Principle	: The dependency of one class to another class should depend on the smallest possible interface. Create smallest possible interfaces each has a specific group 				  of methods that serve a purpose
-Dependency Inversion Principle	: Depend on interfaces/abstract classes rather than concrete classes.
+=================================================================================================================================================================================
+=================================================================================================================================================================================
+Single Responsibility Principle	: A class should have only one reason to change. It should do exactly one job.
 
 
- 
+Bad: A User class that handles user data and saves it to a database.
+Good: Separate the concerns into two distinct classes.
+
+
+// Handles only user data
+class User {
+    private String name;
+    // getter and setter
+}
+
+// Handles only database operations
+class UserRepository {
+    public void save(User user) {
+        // SQL code to save user
+    }
+}
+
+=================================================================================================================================================================================
+Open/Closed Principle		: Software entities should be open for extension, but closed for modification. You should add new functionality by adding new code, not by rewriting old, tested code.
+
+
+Bad: Using if-else blocks inside a method to handle new payment types.
+Good: Use interfaces and polymorphism.
+
+
+// Open for extension via implementation
+interface PaymentMethod {
+    void process(double amount);
+}
+
+class CreditCardPayment implements PaymentMethod {
+    public void process(double amount) { /* Process card */ }
+}
+
+class PaypalPayment implements PaymentMethod {
+    public void process(double amount) { /* Process paypal */ }
+}
+
+// Closed for modification
+class PaymentProcessor {
+    public void charge(PaymentMethod method, double amount) {
+        method.process(amount);
+    }
+}
+
+=================================================================================================================================================================================
+Liskov Substitution Principle	: Derived classes must be completely substitutable for their base classes. A subclass should never break the functionality or expectations of the parent class.
+
+
+Bad: A Ostrich class extending Bird, but throwing an exception in the fly() method because ostriches cannot fly.
+Good: Separate behaviors so you do not force improper inheritances.
+
+interface Bird {
+    void eat();
+}
+
+interface FlyingBird extends Bird {
+    void fly();
+}
+
+class Sparrow implements FlyingBird {
+    public void eat() { /* eat seeds */ }
+    public void fly() { /* fly high */ }
+}
+
+class Ostrich implements Bird {
+    public void eat() { /* eat insects */ }
+}
+
+=================================================================================================================================================================================
+Interface Segregation Principle	: Clients should not be forced to depend on interfaces they do not use. It is better to have many small, specific interfaces than one massive, generic one
+
+
+Bad: A Worker interface with work() and cook() methods, forcing a Robot class to implement cook().
+Good: Split the interface into smaller pieces.
+
+interface Workable {
+    void work();
+}
+
+interface Cookable {
+    void cook();
+}
+
+// Robot only implements what it needs
+class Robot implements Workable {
+    public void work() { /* assembling parts */ }
+}
+
+class Human implements Workable, Cookable {
+    public void work() { /* office work */ }
+    public void cook() { /* making lunch */ }
+}
+
+=================================================================================================================================================================================
+Dependency Inversion Principle	: High-level modules should not depend on low-level modules. Both should depend on abstractions. Do not hardcode tight dependencies between classes.
+
+
+
+Bad: A Car class directly instantiating a specific V8Engine class inside its constructor.
+Good: Pass an interface into the constructor (Dependency Injection).
+
+
+interface Engine {
+    void start();
+}
+
+class V8Engine implements Engine {
+    public void start() { /* Vroom */ }
+}
+
+class Car {
+    private Engine engine;
+
+    // Car depends on the Abstraction (Engine), not the concrete class
+    public Car(Engine engine) {
+        this.engine = engine;
+    }
+
+    public void drive() {
+        engine.start();
+    }
+}
+
+=================================================================================================================================================================================
+================================================================================================================================================================================= 
 DRY (Don’t Repeat Yourself): Aims to reduce repetition of information to avoid maintenance issues.
+=================================================================================================================================================================================
+=================================================================================================================================================================================
 
+
+=================================================================================================================================================================================
+=================================================================================================================================================================================
 YAGNI: 
+=================================================================================================================================================================================
+=================================================================================================================================================================================
 
+
+=================================================================================================================================================================================
+=================================================================================================================================================================================
 KISS (Keep It Simple, Stupid): Encourages making code as simple as possible to ensure it remains understandable.
+=================================================================================================================================================================================
+=================================================================================================================================================================================

@@ -1,3 +1,7 @@
+=========================================================================================================================================================================
+Java Enterprise Edition vs Jakarta Enterprise Edition:
+=========================================================================================================================================================================
+
 JEE is a collection of specifications (APIs) designed to help developers build large-scale, multi-tiered, and secure network applications.
 
 What’s inside "JEE"?
@@ -22,17 +26,24 @@ It is servlet based web development, while spring is also built on top of servle
 Older vs Modern Web Applications:
 =========================================================================================================================================================================
 
-In older legacy applications, both front end and back end resides on the same server and it is in the same application (MVC pattern). In modern applications the applications are designed in such a way that we have two separate applications for front end and back end which communicate with each other.
+In older legacy applications, both front end and back end resides on the same server and it is in the same application (Literal MVC pattern). In modern applications the applications are designed in such a way that we have two separate applications for front end and back end which communicate with each other.
 
-Legacy applications (MVC Pattern):
+Legacy applications (Literal MVC Pattern/Server-side rendering/Monolithic):
 The client sends the http request and the server(Servlet) sends both the layout(html, jsp) and the data to the client.
 To achieve this we use Servlet based dynamic web projects to send the layouts and data
-Wweb.xml configuration handles all the http requests
+web.xml configuration handles all the http requests
 HTML, CSS, JavaScript(for interactive page, optional) are used for the front end development.
 
-Modern applications (decoupled applications):
+
+Modern applications (Decoupled applications/Client-side rendering):
 The servlet only sends the data to the client in the form of JSON/XML called REST APIs.
 To achieve this, we use Java RESTful APIs (JAX-RS) implementations like Jersey
-JavaScript libraries like ReactJS(JavaScript), AngularJS(TypeScript) are used to develop the front end application
+JavaScript libraries like ReactJS(JavaScript), AngularJS(TypeScript) are used to develop the front end application.
+JSPs Strictly Forbidden in Client-Side Rendering; You do not use JSPs in a decoupled React application.
+	- Why JSPs are not used: JSPs are designed to mix Java code with HTML on the server side to compile a web page before sending it to the browser.
+	- The CSR Replacement: In a CSR model, React acts as your entire user interface. Your frontend server serves static HTML, CSS, and compiled JavaScript files directly to the browser. React then requests raw data (JSON) from Spring. Since the backend no longer handles UI rendering, JSPs become completely obsolete.
+Servlets implicitly Present Under the Hood; While you will never write a Servlet manually in a modern Spring Boot app, Servlets are still actively running in the background.
+	- Why Servlets are still there: Spring Web MVC is built entirely on top of the Java Servlet API. Every request coming from your React frontend to your Spring backend is caught by a special, central servlet called the DispatcherServlet. 
+	- What they do in CSR: Instead of routing requests to a JSP file, the DispatcherServlet routes the request to your @RestController. It passes the JSON payload to your Java methods and returns the Java objects back to the React app as JSON responses. 
 
 =========================================================================================================================================================================

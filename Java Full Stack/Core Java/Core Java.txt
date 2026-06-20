@@ -1109,28 +1109,135 @@ Closures:
 ===============================================================================================================================================================================
 
 
+===============================================================================================================================================================================
+Java 8 Features:
+===============================================================================================================================================================================
+
+1. Default and Static methods in interfaces:
+It allows adding new methods to interfaces without breaking existing implementation classes.
 
 
+2. Date and Time API:
+Old java.util.Date was mutable and not thread-safe. The new API is immutable and thread-safe
 
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+public class DateTimeDemo {
+    public static void main(String[] args) {
+        LocalDate today = LocalDate.now();
+        LocalDateTime now = LocalDateTime.now();
+        
+        System.out.println("Today: " + today);
+        System.out.println("Formatted: " + now.format(DateTimeFormatter.ISO_DATE_TIME));
+    }
+}
 
 
+===============================================================================================================================================================================
+Java 11 Features:
+===============================================================================================================================================================================
+
+1. Local Variable Syntax for Lambda Parameters (var)
+Enhances var (introduced in Java 10) by allowing you to apply annotations to local variables inside lambda expressions
+
+List<String> names = List.of("Alice", "Bob", "Charlie");
+// Using 'var' inside lambda lets you add annotations like (@Nonnull var x)
+names.forEach((var name) -> System.out.println(name.toUpperCase()));
 
 
+2. New String and File Methods
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.io.IOException;
+
+public class Java11StringFileDemo {
+    public static void main(String[] args) throws IOException {
+        // String Methods
+        String text = "  Java 11  ";
+        System.out.println(text.isBlank());    // false
+        System.out.println(text.strip());      // "Java 11" (Unicode-aware trim)
+        System.out.println("Go!".repeat(3));   // "Go!Go!Go!"
+
+        // File Methods: Write and read strings in one line
+        Path path = Files.writeString(Files.createTempFile("demo", ".txt"), "Hello Java 11");
+        String fileContent = Files.readString(path);
+        System.out.println(fileContent);
+    }
+}
+
+===============================================================================================================================================================================
+Java 17 Features:
+===============================================================================================================================================================================
+
+1. Records
+Eliminates boilerplate for POJOs/DTOs. Automatically generates getters, equals(), hashCode(), and toString(). Records are immutable.
 
 
+// One line defines the class, fields, constructor, getters, equals, and hashCode!
+record Employee(int id, String name, double salary) {}
+
+public class RecordDemo {
+    public static void main(String[] args) {
+        Employee emp = new Employee(101, "John Doe", 75000);
+        
+        System.out.println(emp.name()); // Built-in getter (no 'get' prefix)
+        System.out.println(emp);        // Built-in clean toString()
+    }
+}
 
 
+2. Sealed Classes
+Restricts which other classes or interfaces may extend or implement them. Great for domain modeling and security.
 
 
+// Only Circle and Square can extend Shape
+sealed class Shape permits Circle, Square {}
+
+final class Circle extends Shape { double radius; }
+final class Square extends Shape { double side; }
+
+// class Triangle extends Shape {} // Compilation Error
 
 
+3. Switch Expressions and Pattern Matching (Preview in 17, Finalized later)
+Allows switch to return values safely without break statements, and inspects object types directly.
+
+public class SwitchDemo {
+    public static void main(String[] args) {
+        Object obj = "Hello Interviewer";
+
+        // Pattern matching with switch expression
+        String result = switch (obj) {
+            case Integer i -> "It's an integer: " + i;
+            case String s  -> "It's a string of length: " + s.length();
+            default        -> "Unknown type";
+        };
+        
+        System.out.println(result);
+    }
+}
 
 
+4. Text Blocks
+Solves the nightmare of escaping JSON, XML, or SQL strings across multiple lines.
 
-
-
-
+public class TextBlockDemo {
+    public static void main(String[] args) {
+        // Multi-line string without '+' or '\n'
+        String json = """
+                {
+                    "name": "Alex",
+                    "role": "Developer",
+                    "status": "Hired"
+                }
+                """;
+        System.out.println(json);
+    }
+}
 
 
 
