@@ -92,10 +92,10 @@ Without Spring, you decide:
 - Whether they are singleton or not
 - When they are destroyed
 
-With Spring, you just configure (xml/Java/annotation) what a class needs, now Spring helps you achieve DI automating the bean lifecycle management:
+With Spring, you just configure (xml/annotation/java) what a class needs, now Spring helps you DI automating the bean lifecycle management:
 
 Bean Lifecycle Management:
-1. Discover beans
+1. Discover beans (xml/annotations/java) 
 2. Create BeanDefinitions
 3. Instantiate beans
 4. Inject dependencies

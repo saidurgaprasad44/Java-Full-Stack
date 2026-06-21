@@ -13,13 +13,12 @@ Basic Networking: 	Sockets basics
 
 Advanced Java:
 Web Technologies: 	HTML, CSS, Bootstrap, Servlets, JSP, JavaScript, ReactJS, AngularJS
-Frameworks: 		Spring, Spring Web, Spring Boot, Spring Security, Spring Cloud, Log4J, Junit
+Frameworks: 		Spring, Spring Web, Spring Boot, JDBC, Hibernate, Spring JDBC, Spring Data JPA, Spring Security, Spring Cloud, Log4J, Junit
 Web Services/APIs: 	Jersey, Spring Boot RESTful APIs, Postman
-Database Connection: 	JDBC, Hibernate, Spring JDBC, Spring Data JPA (on Hibernate)
 DevOps & Tools: 	Apache Ant(build.xml), Apache Maven(pom.xml), Gradle(script based), CI/CD Pipeline, Docker, Kubernetes
 Servers: 		Tomcat, WebLogic
 Cloud & Infrastructure:	Azure Cloud, AWS
-Security & IAM:		Spring Security Authentication(JWT, OAuth2), Authorization, Web Security (CORS, CSRF)
+Security & IAM:		Authentication(JWT, OAuth2), Authorization, Web Security (CORS, CSRF)
 Microservices:		Microservices Architecture, Spring Cloud, Service Discovery (Eureka), API Gateway, Distributed Config, RESTful Web Services (Spring REST & Jersey), Kafka
 
 Other Techs and tools:
