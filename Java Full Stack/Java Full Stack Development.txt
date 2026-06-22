@@ -1,4 +1,4 @@
-Java Full Stack Developer
+Java Full Stack
 
 Core Java:
 Basic Syntax: 		Variables, Data types, Operators
@@ -10,24 +10,26 @@ I/O Streams: 		File handling, Serialization
 JVM, JRE, JDK:		Memory management, Garbage collection
 Fundamentals of Memory: Stack, Heap, Class loader
 Basic Networking: 	Sockets basics
+DSA:			
 
 Advanced Java:
 Web Technologies: 	HTML, CSS, Bootstrap, Servlets, JSP, JavaScript, ReactJS, AngularJS
 Frameworks: 		Spring, Spring Web, Spring Boot, JDBC, Hibernate, Spring JDBC, Spring Data JPA, Spring Security, Spring Cloud, Log4J, Junit
 Web Services/APIs: 	Jersey, Spring Boot RESTful APIs, Postman
-DevOps & Tools: 	Apache Ant(build.xml), Apache Maven(pom.xml), Gradle(script based), CI/CD Pipeline, Docker, Kubernetes
+Database:		PostgreSQL, Oracle DB, pgAdmin 4, Oracle SQL Developer, SQL
+DevOps & Tools: 	Apache Ant(build.xml), Apache Maven(pom.xml), Gradle(script based), Azure DevOps - CICD Pipeline, Git, Repos & Branches, GitHub, Docker, Kubernetes, 
 Servers: 		Tomcat, WebLogic
 Cloud & Infrastructure:	Azure Cloud, AWS
 Security & IAM:		Authentication(JWT, OAuth2), Authorization, Web Security (CORS, CSRF)
-Microservices:		Microservices Architecture, Spring Cloud, Service Discovery (Eureka), API Gateway, Distributed Config, RESTful Web Services (Spring REST & Jersey), Kafka
-
-Other Techs and tools:
-Project structuring and packaging types: war, jar, ear
-Deployment descriptors: web.xml, ejb-jar.xml, application.xml
-Version control: 	Git & GitHub
+Microservices:		Microservices Architecture, Spring Cloud, Service Discovery (Eureka), API Gateway, Distributed Config, RESTful Web Services, Kafka, Redis caching
+AI:			LLMs, RAG system, 
 Ticket & Project Management tool: ServiceNow & Azure DevOps
-Operating System: 	Windows, Linux
-Database Layer:		PostgreSQL, Oracle DB, pgAdmin 4, Oracle SQL Developer
+Operating System: 	Windows, Linux	
+
+
+
+
+
 
 Progress:
 New: 			Kafka, Spring Security, Unit Testing, Docker, Kubernetes, Log4J, Azure Cloud, Bootstrap, AngularJS,  
@@ -35,4 +37,16 @@ Partial Knowledge: 	Hibernate,
 Polish: 		Core Java, SQL and JDBC, Linux, ServiceNow, Azure DevOps, web.xml, Ant, Maven, Git, Restful APIs - Jersey & Spring REST, Spring, Spring Boot, Spring Web, Spring Data JPA, JavaScript, ReactJS, Microservices,
 Mastered: 		HTML, CSS, Tomcat, Servlets, JSP,
 
-			Experienced Java Full Stack Developer with 5 years in building and enhancing enterprise applications across both backend and UI layers. Strong in Java, Spring MVC, JSP/Servlets, JDBC, SQL, and UI technologies like HTML, CSS, and JavaScript. Skilled in RCA, debugging, and resolving production issues with a focus on stability and performance. Effective in Agile Scrum environments and known for quickly understanding complex systems and delivering reliable solutions.
+
+
+
+Java EE 		- servlets, jsps, jdbc, hibernate jsp, transaction manager, 
+Spring 			- dependency injection in plain java, object lifecycle in plain java (example: jdbc), dependency injection using spring ioc container, beanfactory, appicationcontext, xml vs annotation vs java configuration for bean definitions, bean lifecycle, bean scopes, AC features like AOP etc. 
+Spring Boot 		- optionated auto configuration (example: jee mvc, spring mvc), overriding autoconfiguration, customized autoconfiguration
+sql 			- querying, update/insert/delete, joins, table relationships, indexing, transactions, 
+spring data jpa 	- @transactional, jdbc template, bean lifecycle for spring jpa, spring vs spring boot data jpa, 
+auth and authz 		- request and response anatomy, http statelessness, sessions , sessionid, httponly cookies, state management, jwt anatomy, session id (statefull) vs token (stataless), CORS, CSRF, token in localstorage vs httponly cookies, workflow of basic auth vs token authentication, access token vs refresh tokens, filters, spring security, 
+microservices 		- api gateway, load balancer, microservices, inter service communication, service discovery, open feign, event driven message queueing, 
+react 			- hooks (useEffect, useState, useRef etc), state management in react, routing, api integration
+system design concepts 	- sharding, partitions, rate limiting, caching, 
+DSA			- 

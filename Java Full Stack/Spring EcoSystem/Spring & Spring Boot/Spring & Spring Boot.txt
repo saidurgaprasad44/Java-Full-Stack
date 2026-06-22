@@ -103,6 +103,19 @@ Bean Lifecycle Management:
 6. Store beans in container
 7. Return beans when requested
 
+
+BeanDefinition
+
+Name:
+studentService
+Class:
+StudentService
+Scope:
+singleton
+Dependencies:
+studentRepository
+
+
 The Brain/Manager - Spring IoC Container: The engine that implements IoC in Spring. It is responsible for instantiating, configuring, and assembling objects (called Beans) 
 	- Bean Factory: The basic version of the container (Lazy Loading)
 	- Application Context: The advanced version of the container (Eager Loading). It is the interface that represents the IoC container (Modern approach to initialise the container).
