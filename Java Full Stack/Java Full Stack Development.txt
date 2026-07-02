@@ -40,13 +40,15 @@ Mastered: 		HTML, CSS, Tomcat, Servlets, JSP,
 
 
 
-Java EE 		- servlets, jsps, jdbc, hibernate jsp, transaction manager, 
+Java EE 		- servlets, jsps, jdbc, hibernate orm and jsp, transaction manager, java 8/11/17 features
 Spring 			- dependency injection in plain java, object lifecycle in plain java (example: jdbc), dependency injection using spring ioc container, beanfactory, appicationcontext, xml vs annotation vs java configuration for bean definitions, bean lifecycle, bean scopes, AC features like AOP etc. 
 Spring Boot 		- optionated auto configuration (example: jee mvc, spring mvc), overriding autoconfiguration, customized autoconfiguration
+auth and authz 		- request and response anatomy, http statelessness, sessions , sessionid, httponly cookies, state management, jwt anatomy, session id (statefull) vs token (stataless), CORS, CSRF, token in localstorage vs httponly cookies, workflow of basic auth vs token authentication, access token vs refresh tokens, filters, spring security, 
+microservices 		- api gateway, load balancer, microservices, inter service communication, service discovery, open feign, event driven message queueing, saga pattern
+system design concepts 	- sharding, partitions, rate limiting, caching, indexing, 
 sql 			- querying, update/insert/delete, joins, table relationships, indexing, transactions, 
 spring data jpa 	- @transactional, jdbc template, bean lifecycle for spring jpa, spring vs spring boot data jpa, 
-auth and authz 		- request and response anatomy, http statelessness, sessions , sessionid, httponly cookies, state management, jwt anatomy, session id (statefull) vs token (stataless), CORS, CSRF, token in localstorage vs httponly cookies, workflow of basic auth vs token authentication, access token vs refresh tokens, filters, spring security, 
-microservices 		- api gateway, load balancer, microservices, inter service communication, service discovery, open feign, event driven message queueing, 
+Design principles & patterns- SOLID, KISS, DRY, creational, structural, behavioral, microservices patterns, 
+DSA			- string, array, collections and map, linked list, queues, 
+JavaScript		- state management, asynchronous javascript, api integration
 react 			- hooks (useEffect, useState, useRef etc), state management in react, routing, api integration
-system design concepts 	- sharding, partitions, rate limiting, caching, 
-DSA			- 
