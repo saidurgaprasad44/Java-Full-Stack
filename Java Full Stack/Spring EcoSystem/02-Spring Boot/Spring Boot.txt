@@ -247,7 +247,7 @@ By Configuring only the required bean of each class type
 
 Option B: The Default Choice autowire="byType" and primary="true" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-When you use autowire="byName", it will look for the bean with primary="true" to inject.
+When you use autowire="byType", it will look for the bean with primary="true" to inject.
 
 <bean id="myCar" class="com.example.Car" autowire="byType">
 </bean>

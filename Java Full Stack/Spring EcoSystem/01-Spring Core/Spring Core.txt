@@ -1,0 +1,670 @@
+=============================================================================================================================================================================
+Spring
+=============================================================================================================================================================================
+
+Goal:
+Achieve Loose Coupling between components using Dependency Injection (DI).
+
+Spring did NOT invent Dependency Injection.
+Dependency Injection already existed in Plain Java.
+
+Spring simply automates Dependency Injection and Bean Lifecycle Management.
+
+=============================================================================================================================================================================
+What is a Dependency? and why Dependency Injection is Important?
+=============================================================================================================================================================================
+
+A dependency is an object that another object needs to perform its work.
+
+Example:
+
+UserService
+      │
+      ▼
+UserRepository
+      │
+      ▼
+Database
+
+
+Here,
+- UserRepository is a dependency of UserService.
+- Database is a dependency of UserRepository.
+
+=============================================================================================================================================================================
+
+Without DI (Tight Coupling), every class creates its own dependencies:
+
+class Engine {
+    void start() {
+        System.out.println("Engine Started");
+    }
+}
+
+class Car {
+    private Engine engine;
+    public Car() {
+        // Car creates its own dependency
+        engine = new Engine();
+
+    }
+    public void drive() {
+
+        engine.start();
+        System.out.println("Driving...");
+    }
+}
+
+
+Problems:
+
+- Car is tightly coupled with Engine.
+- Replacing Engine with ElectricEngine requires modifying Car.
+- Testing becomes difficult because Engine cannot be replaced with a FakeEngine.
+- Car has two responsibilities:
+	- Driving
+	- Creating Engine
+
+This violates the Single Responsibility Principle (SRP) from SOLID.
+
+=============================================================================================================================================================================
+
+With DI (Loose Coupling), instead of creating the dependency, receive it from outside:
+
+interface Engine {
+    void start();
+}
+
+class PetrolEngine implements Engine {
+    public void start() {
+        System.out.println("Petrol Engine Started");
+    }
+}
+
+class ElectricEngine implements Engine {
+    public void start() {
+        System.out.println("Electric Engine Started");
+    }
+}
+
+class Car {
+    private Engine engine;
+    public Car(Engine engine) {
+        this.engine = engine;
+    }
+    public void drive() {
+        engine.start();
+        System.out.println("Driving...");
+    }
+}
+
+
+
+Plugging:
+Engine engine = new PetrolEngine();
+Car car = new Car(engine);
+car.drive();
+
+
+Unplugging (change):
+Engine engine = new ElectricEngine();
+Car car = new Car(engine);
+car.drive();
+
+
+Now,
+Plugging and unplugging require changing only the Main class.
+The Car class remains unchanged.
+This is called Loose Coupling.
+
+
+Here, we achieved DI with plain Java (not Spring); Then why do we need Spring?
+
+=============================================================================================================================================================================
+Why Spring?
+=============================================================================================================================================================================
+
+Imagine an application with only 3 classes.
+
+Database
+    ↓
+Repository
+    ↓
+Service
+
+Easy to manage.
+
+
+Now imagine an enterprise application.
+
+Database
+    ↓
+100 Repositories
+    ↓
+150 Services
+    ↓
+50 Controllers
+    ↓
+Security
+    ↓
+Cache
+    ↓
+Messaging
+    ↓
+...
+
+
+Now you have to manually:
+
+- Create every object.
+- Inject every dependency.
+- Decide the order of creation.
+- Manage singleton objects.
+- Initialize resources.
+- Destroy resources.
+
+This quickly becomes difficult.
+
+------------------------------------------------------------
+Spring's Solution
+
+
+Instead of writing:
+
+Database database = new Database();
+Repository repository = new Repository(database);
+Service service = new Service(repository);
+
+You simply tell Spring (configure):
+
+- Which classes are Beans.
+- What dependencies they need.
+
+Spring automatically:
+
+1. Discovers Beans.
+2. Creates BeanDefinitions.
+3. Instantiates Beans.
+4. Injects Dependencies.
+5. Runs Bean Lifecycle.
+6. Stores Beans in the IoC Container.
+7. Destroys Beans when the application stops.
+
+In short, Spring handles Dependency Injection (DI) and automates the bean lifecycle.
+
+=============================================================================================================================================================================
+What is Inversion of Control (IoC)?
+=============================================================================================================================================================================
+
+The control of object creation is transferred to Spring.
+This principle is called Inversion of Control (IoC).
+
+=============================================================================================================================================================================
+IoC vs Dependency Injection
+=============================================================================================================================================================================
+
+Inversion of Control (IoC)
+
+- A Design Principle.
+- Means transferring the control of object creation and lifecycle management to another system.
+
+------------------------------------------------------------
+
+Dependency Injection (DI)
+
+- A Design Technique.
+- Means providing dependencies from outside instead of creating them inside the class.
+
+------------------------------------------------------------
+
+Relationship:
+
+DI is the technique used to achieve IoC
+
+=============================================================================================================================================================================
+What is Spring IoC Container?
+=============================================================================================================================================================================
+
+The Spring IoC container is the core engine of the Spring Framework.
+It acts as a centralized factory responsible for creating, configuring, wiring, and managing the entire lifecycle of application objects (known as Beans).
+
+
+Types: 
+
+- BeanFactory (The Core):
+The most basic container interface.
+Uses Lazy Loading (creates (instantiates and injects) objects only when you explicitly ask for them via getBean()).
+Ideal for lightweight applications like mobile devices or low-resource environments.
+
+- ApplicationContext (The Advanced Standard):
+A direct subsystem of BeanFactory that includes all its features.
+Uses Eager Loading (creates all singleton objects immediately upon application startup).
+Adds enterprise features like internationalisation (i18n), event publishing, and seamless AOP (Aspect-Oriented Programming) integration.
+
+=============================================================================================================================================================================
+What is Spring Configuration?
+=============================================================================================================================================================================
+
+In Spring framework, configuration refers to the blueprint, setup instructions, and metadata that tell the Spring IoC (Inversion of Control) container how to instantiate, assemble, and manage application objects (called Beans)
+
+Every new version of Spring reduced the amount of configuration required while keeping the same IoC Container and Dependency Injection mechanism.
+
+=============================================================================================================================================================================
+Spring 1.x (BeanFactory + XML configuration)
+=============================================================================================================================================================================
+
+Goal: Move object creation and dependency injection from Java code to the Spring IoC Container.
+
+
+Application Starts
+↓
+BeanFactory
+↓
+Read XML
+↓
+Create BeanDefinitions
+↓
+Store BeanDefinitions
+↓
+Application Ready
+↓
+getBean() runs
+↓
+Instantiate Bean
+↓
+Resolve constructor/property references
+↓
+Inject Dependencies
+↓
+Return Bean
+
+------------------------------------------------------------
+
+BeanDefinition:
+
+{
+  "beanName": "customService",
+  "beanClassName": "com.example.MyService",
+  "scope": "singleton",
+  "isAbstract": false,
+  "isLazyInit": false,
+  "primary": false,
+  "factoryBeanName": null,
+  "factoryMethodName": null,
+  "constructorArguments": {},
+  "propertyValues": {
+    "message": "Hello World!"
+  },
+  "dependsOn": [],
+  "initMethodName": "init",
+  "destroyMethodName": "cleanup"
+}
+
+------------------------------------------------------------
+
+Bean Configuration:
+
+<bean id="database"
+      class="com.demo.Database"/>
+
+<bean id="repository"
+      class="com.demo.Repository">
+    <constructor-arg ref="database"/>
+</bean>
+
+<bean id="service"
+      class="com.demo.Service">
+    <constructor-arg ref="repository"/>
+</bean>
+
+------------------------------------------------------------
+
+Dependency Injection:
+
+Constructor injection 	- <constructor-arg>
+
+Setter injection 	- <property>
+
+------------------------------------------------------------
+
+Plugging and Unplugging 
+
+
+
+
+
+
+
+------------------------------------------------------------
+
+Creating the container:
+
+BeanFactory factory =
+        new XmlBeanFactory(
+            new ClassPathResource("beans.xml"));
+
+------------------------------------------------------------
+
+Getting a Bean:
+
+Service service =
+        factory.getBean(Service.class);
+
+In real Spring MVC applications, you almost never call getBean() yourself. Spring calls it internally when it needs a Controller, Service, Repository, etc.
+
+------------------------------------------------------------
+
+Advantages
+
+- No manual object creation.
+- Dependency Injection automated.
+- Bean lifecycle managed by Spring.
+
+------------------------------------------------------------
+
+Problems
+
+- Large XML files.
+- Difficult to maintain.
+- XML became repetitive.
+
+=============================================================================================================================================================================
+Spring 2.x (ApplicationContext + XML configuration)
+=============================================================================================================================================================================
+
+Goal: Improve BeanFactory with enterprise features and better startup performance.
+
+
+Application Starts
+↓
+ApplicationContext
+↓
+Read XML
+↓
+Create BeanDefinitions
+↓
+Instantiate Beans
+↓
+Resolve constructor/property references
+↓
+Inject Dependencies
+↓
+Store Beans
+↓
+Application Ready
+↓
+getBean()
+↓
+Return Existing Bean
+
+
+------------------------------------------------------------
+
+Bean configuration and DI:
+
+Exactly same as Spring 1.x
+
+------------------------------------------------------------
+
+Plugging and Unplugging 
+
+
+
+
+
+
+
+------------------------------------------------------------
+
+Creating the Container:
+
+ApplicationContext context =
+        new ClassPathXmlApplicationContext("beans.xml");
+
+------------------------------------------------------------
+
+Getting a Bean:
+
+Service service =
+        context.getBean(Service.class);
+
+Note: In real Spring MVC applications, you almost never call getBean() yourself. Spring calls it internally when it needs a Controller, Service, Repository, etc.
+
+------------------------------------------------------------
+
+Advantages over BeanFactory
+
+Eager initialization of singleton beans.
+Internationalization (i18n).
+Event publishing.
+Better enterprise support.
+
+------------------------------------------------------------
+
+Problem
+
+Still too much XML.
+
+Spring wanted to reduce XML further.
+
+=============================================================================================================================================================================
+Spring 2.5 (AC + Annotations)
+=============================================================================================================================================================================
+
+Goal: Reduce XML by allowing Spring to discover beans automatically with the help of annotations.
+
+
+Application starts
+↓
+ApplicationContext
+↓
+Reads XML
+↓
+Reads component-scan package
+↓
+Scans package
+↓
+Finds @Component, @Controller, @Service, @Repository classes
+↓
+Creates BeanDefinitions
+↓
+Instantiates Beans
+↓
+Injects @Autowired dependencies
+↓
+Stores Beans
+↓
+Application Ready
+↓
+getBean()
+↓
+Return Existing Bean
+
+
+------------------------------------------------------------
+
+Bean Creation: No need to define every bean manually, simply use
+
+- @Component
+- @Service
+- @Repository
+- @Controller
+
+@Repository
+public class UserRepository {
+}
+
+@Service
+public class UserService {
+    @Autowired
+    private UserRepository repository;
+}
+
+------------------------------------------------------------
+
+Dependency Injection:
+
+- Field and Setter injection with @Autowired
+- Constructor injection
+
+------------------------------------------------------------
+
+Plugging and Unplugging 
+
+
+
+
+
+
+
+------------------------------------------------------------
+
+XML Configuration only for component package scanning:
+<context:component-scan base-package="com.demo"/>
+
+------------------------------------------------------------
+
+Creating the Container & Getting a Bean:
+
+Same as spring 2
+
+------------------------------------------------------------
+
+Advantages
+
+- Much less XML.
+- Faster development.
+- Easier maintenance.
+
+------------------------------------------------------------
+
+Problem
+
+XML still exists.
+
+Spring wanted to remove XML completely.
+
+=============================================================================================================================================================================
+Spring 3.x (Java Configuration)
+=============================================================================================================================================================================
+
+Goal: Replace XML with Java Configuration.
+
+Spring 3.x introduced Java-based configuration as an alternative to XML. Bean discovery can still happen through @ComponentScan, while @Bean methods are used to register beans that you define manually (often third-party classes). In real-world Spring applications, it's very common to use both together
+
+
+Application starts
+↓
+ApplicationContext
+↓
+Reads @Configuration class
+↓
+Processes @Bean methods
+↓
+Creates BeanDefinitions
+↓
+Scans @Component classes
+↓
+Creates BeanDefinitions
+↓
+Instantiates Beans
+↓
+Injects Dependencies
+↓
+Stores Beans
+↓
+Application Ready
+↓
+getBean()
+↓
+Return Existing Bean
+
+
+------------------------------------------------------------
+
+Bean Configuration:
+
+- @Configuration
+- @Bean
+- @ComponentScan
+
+
+public class UserService {
+
+    private UserRepository repository;
+
+    public UserService(UserRepository repository) {
+        this.repository = repository;
+    }
+}
+
+public class UserRepository {
+
+    private Database database;
+
+    public UserRepository(Database database) {
+        this.database = database;
+    }
+}
+
+public class Database {
+
+}
+
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public Database database() {
+        return new Database();
+    }
+
+    @Bean
+    public UserRepository repository() {
+        return new UserRepository(database());
+    }
+
+    @Bean
+    public UserService service() {
+	return new UserService(repository());
+    }
+
+}
+
+------------------------------------------------------------
+Dependency Injection:
+
+Only Constructor Injection and Setter Injection are possible with Java configuration. 
+However in spring 3, we can do field injection using ComponentScan and annotations also
+
+------------------------------------------------------------
+
+Plugging and Unplugging 
+
+
+
+
+
+
+
+------------------------------------------------------------
+
+Creating the Container
+
+ApplicationContext context =
+        new AnnotationConfigApplicationContext(AppConfig.class);
+
+------------------------------------------------------------
+
+Getting a Bean:
+
+Same for all ApplicationContext Container
+
+------------------------------------------------------------
+
+Advantages
+
+- No XML.
+- Type-safe configuration.
+- Easier refactoring.
+- Uses normal Java instead of XML.

@@ -198,7 +198,7 @@ Download → Extract → Open in IDE
 =======================================================================================================================================================================
 Project Structure:
 
-In Spring MVC - Maven Project (Traditional - WAR Project):
+In Spring Core MVC - Maven Project (Traditional - WAR Project):
 The libraries(jars / Maven dependencies) are not stored in project structure, they are stored in system .m2 maven local repository
 
 project-name/
@@ -233,10 +233,20 @@ project-name/
 │    ├── main/
 │    │    ├── java/
 │    │    │     └── com/example/demo/
-│    │    │           ├── controller/
-│    │    │           ├── service/
-│    │    │           ├── repository/
-│    │    │           ├── model/
+│    │    │           ├── config/
+│    │    │           │	└── AppConfig.java
+│    │    │           ├── exception/
+│    │    │           │	└── GlobalExceptionHandler.java
+│    │    │           ├── common/
+│    │    │           │	└──	 ResponseUtil.java
+│    │    │           ├── user/
+│    │    │           │	├── controller/
+│    │    │           │	├── service/
+│    │    │           │	├── repository/
+│    │    │           │	└── model/
+│    │    │           ├── order/				  <-- Same Structure
+│    │    │           ├── payment/				  <-- Same Structure
+│    │    │           ├── ....
 │    │    │           └── DemoApplication.java  <-- main class
 │    │    │
 │    │    └── resources/
@@ -249,8 +259,8 @@ project-name/
 │         └── java/
 │               └── com/example/demo/
 │
-├── target/     <-- compiled files (auto-generated)
-├── pom.xml     <-- project config
+├── target/          <-- compiled files (auto-generated)
+├── pom.xml          <-- project config
 ├── .gitignore
 └── mvnw / mvnw.cmd  <-- Maven wrapper
 		  
