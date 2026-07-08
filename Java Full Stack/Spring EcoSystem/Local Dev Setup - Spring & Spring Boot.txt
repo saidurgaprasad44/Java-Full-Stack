@@ -197,35 +197,236 @@ Download → Extract → Open in IDE
 
 =======================================================================================================================================================================
 Project Structure:
+=======================================================================================================================================================================
 
-In Spring Core MVC - Maven Project (Traditional - WAR Project):
-The libraries(jars / Maven dependencies) are not stored in project structure, they are stored in system .m2 maven local repository
+In Spring core (non boot), we need to write manual configuration for the dependencies like MVC, Tomcat, JPA/Hibernate etc
 
-project-name/
+
+
+Spring Core - Non Web App (console/desktop/stand alone) - JAR (no web server like tomcat)
+
+How to create: Create a standard Maven project. Add spring-context. In your main method, manually bootstrap the Spring environment using AnnotationConfigApplicationContext.
+
+spring-console-jar/
+├── src/
+│    └── main/
+│         ├── java/
+│         │    └── com/example/spring/
+│         │          ├── config/
+│         │          │    └── AppConfig.java    <-- @Configuration, @ComponentScan
+│         │          ├── service/
+│         │          └── MainApplication.java   <-- Manually loads AppConfig.class
+│         └── resources/
 │
-├──src/
-│   ├── main/
-│   │     ├── java/
-│   │     │    └── com/example/demo/
-│   │     │          ├── controller
-│   │     │          ├── service
-│   │     │          ├── repository
-│   │     │          └── model
-│   │     ├── resources/   
-│   │     └── webapp/
-│   │		    ├── HTML, CSS, JSP, JS, images ---
-│   │		    └── WEB-INF/
-│   │				  └──web.xml
-│   └── test/
-│        └── java/
-│              └── com/example/demo/
-├── target/     <-- compiled files (auto-generated)
-├── pom.xml     <-- project config
-├── .gitignore
-└── mvnw / mvnw.cmd  <-- Maven wrapper
+├── target/     		<-- compiled files (auto-generated)
+├── pom.xml            <-- project config
+└── .gitignore
 
 
-In Spring Boot (Modern Way - Default JAR Packaging with embedded Tomcat):
+
+
+Spring Core - Server-Side Rendering (html/css/jsp/thymeleaf) - WAR (external tomcat)
+
+How to create: Add spring-webmvc. Implement WebApplicationInitializer to code-configure your DispatcherServlet. JSPs require the webapp/WEB-INF structure. Thymeleaf can reside either in webapp or resources.
+
+spring-ssr-war/
+├── src/
+│    └── main/
+│         ├── java/
+│         │    └── com/example/spring/
+│         │          ├── config/
+│         │          │    ├── WebConfig.java     <-- ViewResolver configuration
+│         │          │    └── WebAppInitializer.java <-- Replaces web.xml
+│         │          └── controller/
+│         ├── resources/
+│         └── webapp/
+│              └── WEB-INF/
+│                   └── views/
+│                        └── index.jsp          <-- Target for InternalResourceViewResolver
+│
+├── target/     		<-- compiled files (auto-generated)
+├── pom.xml            <-- packaging: war
+└── .gitignore
+
+
+
+
+Spring Core - Server-Side Rendering (thymeleaf/Freemarker/mustache) - JAR (embedded tomcat)
+
+How to create: Set packaging to jar. Add spring-webmvc and tomcat-embed-core. Write code in your main method to instantiate a new org.apache.catalina.startup.Tomcat instance, add your Spring context, and bind it to a port. Templates are loaded directly from your classpath resources/.
+
+spring-ssr-embedded-jar/
+├── src/
+│    └── main/
+│         ├── java/
+│         │    └── com/example/spring/
+│         │          ├── config/
+│         │          │    └── WebConfig.java    <-- Configures ThymeleafViewResolver
+│         │          ├── controller/
+│         │          └── StandaloneApp.java     <-- Contains custom manual Tomcat initialization
+│         └── resources/
+│              └── templates/                   <-- Thymeleaf templates processed from classpath
+│                   └── home.html
+│
+├── target/     		<-- compiled files (auto-generated)
+├── pom.xml            <-- packaging: jar
+└── .gitignore
+
+
+
+
+Spring - REST APIs - WAR (external tomcat)
+
+How to create: Set packaging to war. Configure DispatcherServlet programmatically. Return serialisable domain objects marked with @RestController or @ResponseBody.
+
+spring-rest-war/
+├── src/
+│    └── main/
+│         ├── java/
+│         │    └── com/example/spring/
+│         │          ├── config/
+│         │          │    ├── WebConfig.java
+│         │          │    └── WebAppInitializer.java
+│         │          └── user/
+│         │               ├── controller/       <-- @RestController Endpoints
+│         │               └── model/
+│         ├── resources/
+│         └── webapp/
+│              └── WEB-INF/                     <-- Empty or minimal, needed for valid WAR construction
+│
+├── target/     		<-- compiled files (auto-generated)
+├── pom.xml            <-- packaging: war
+└── .gitignore
+
+
+
+
+Spring Core — REST APIs — JAR (Embedded Tomcat)
+
+How to create: Same execution as project #7, but without the template files or HTML rendering configurations. The programmatically launched embedded Tomcat handles incoming requests and serialises Java POJOs directly to JSON.
+
+spring-rest-embedded-jar/
+├── src/
+│    └── main/
+│         ├── java/
+│         │    └── com/example/spring/
+│         │          ├── config/
+│         │          ├── product/
+│         │          │    ├── controller/
+│         │          │    └── model/
+│         │          └── EmbeddedTomcatLauncher.java <-- Setup code for Tomcat instance
+│         └── resources/
+│
+├── target/     		<-- compiled files (auto-generated)
+├── pom.xml            <-- packaging: jar
+└── .gitignore
+
+
+
+///////////////////////////////////////////////////////////////////
+
+Spring boot removed all the configuration logic for the dependencies and added optional auto-configuration feature
+
+
+Spring Boot - Non Web App (console/desktop/stand alone) - JAR (no web server like tomcat)
+
+How to create: Use Spring Initializr (start.spring.io), select standard Java, and do not add the "Spring Web" starter. Implement CommandLineRunner to execute code immediately after startup.
+
+springboot-console-jar/
+├── src/
+│    └── main/
+│         ├── java/
+│         │    └── com/example/boot/
+│         │          ├── service/
+│         │          └── BootConsoleApplication.java <-- Implements CommandLineRunner
+│         └── resources/
+│              └── application.properties       <-- spring.main.web-application-type=none
+│
+├── target/     		<-- compiled files (auto-generated)
+├── pom.xml            <-- packaging: jar
+└── .gitignore
+
+
+
+
+Spring Boot - Server-Side Rendering (html/css/jsp/thymeleaf) - WAR (external tomcat)
+
+How to create: Add spring-boot-starter-web. Change packaging to war. Ensure your main class extends SpringBootServletInitializer. JSPs must go into the src/main/webapp folder because they cannot be compiled from inside a Spring Boot JAR classpath.
+
+springboot-jsp-war/
+├── src/
+│    └── main/
+│         ├── java/
+│         │    └── com/example/boot/
+│         │          ├── ServletInitializer.java <-- Overrides configure() method
+│         │          ├── BootApplication.java    <-- Main method
+│         │          └── controller/
+│         ├── resources/
+│         │    └── application.properties       <-- spring.mvc.view.prefix=/WEB-INF/jsp/
+│         └── webapp/
+│              └── WEB-INF/
+│                   └── jsp/
+│                        └── welcome.jsp
+│
+├── target/     		<-- compiled files (auto-generated)
+├── pom.xml            <-- packaging: war
+└── .gitignore
+
+
+
+
+Spring Boot - Server-Side Rendering (thymeleaf/Freemarker/mustache) - JAR (embedded tomcat)
+
+How to create: Add spring-boot-starter-web and spring-boot-starter-thymeleaf. Keep packaging as jar. Spring Boot auto-configures Tomcat and hooks it directly into the templates/ folder structure.
+
+springboot-ssr-jar/
+├── src/
+│    └── main/
+│         ├── java/
+│         │    └── com/example/boot/
+│         │          ├── controller/            <-- Returns template string names
+│         │          └── BootSsrApplication.java
+│         └── resources/
+│              ├── static/                      <-- CSS, JavaScript, Images
+│              ├── templates/                   <-- HTML view layout (Thymeleaf)
+│              │    └── profile.html
+│              └── application.properties
+│
+├── target/     		<-- compiled files (auto-generated)
+├── pom.xml            <-- packaging: jar
+└── .gitignore
+
+
+
+
+Spring Boot - REST APIs - WAR (external tomcat)
+
+How to create: Add spring-boot-starter-web, set packaging to war, configure SpringBootServletInitializer. This allows you to hand over routing responsibilities to an IT-managed standalone app server cluster.
+
+springboot-rest-war/
+├── src/
+│    └── main/
+│         ├── java/
+│         │    └── com/example/boot/
+│         │          ├── ServletInitializer.java
+│         │          ├── BootRestApplication.java
+│         │          └── api/
+│         │               ├── controller/       <-- Returns raw JSON data
+│         │               └── dto/
+│         ├── resources/
+│         └── webapp/                           <-- Empty, required placeholder for maven-war-plugin
+│
+├── target/     		<-- compiled files (auto-generated)
+├── pom.xml            <-- packaging: war
+└── .gitignore
+
+
+
+
+
+Spring Boot - REST APIs - JAR (embedded tomcat)
+
+How to create: The modern baseline configuration for Cloud/Microservice design. Add spring-boot-starter-web, compile directly into an executable flat JAR file, and spin it up using standard container virtualization like Docker.
 
 project-name/
 │
@@ -264,7 +465,7 @@ project-name/
 ├── .gitignore
 └── mvnw / mvnw.cmd  <-- Maven wrapper
 		  
-		
+
 =======================================================================================================================================================================
 Database Setup:
 

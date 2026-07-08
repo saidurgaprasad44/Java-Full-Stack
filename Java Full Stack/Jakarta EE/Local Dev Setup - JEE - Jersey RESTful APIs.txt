@@ -175,6 +175,17 @@ https://mvnrepository.com/
 Project Structure:
 
 
+
+
+JSE - Non Web App (console/desktop/stand alone) - JAR (no web server like tomcat)
+Jakarta EE - Server-Side Rendering (html/css/jsp/jsf) - WAR (external tomcat)
+Jakarta EE - REST APIs - WAR (external tomcat)
+
+
+
+
+
+
 In Dynamic Web Project (WAR packaging):
 
 project-name/
