@@ -167,7 +167,42 @@ webapps/
 Restart tomcat
 
 =======================================================================================================================================================================
-Create Spring Boot Project (Using Maven):
+Create Maven Project:
+
+
+maven-archetype-quickstart -> Use this archetype for all JAR packaged applications (No server/Embedded server)
+
+File > New > Maven Project
+Create a simple project (skip archetype selection) - keep unchecked and click on Next
+Select - maven-archetype-quickstart
+Give Group Id, Artifact Id of the new project
+Click on Finish
+
+Configure Java for the project
+
+Add required dependencies in pom.xml
+
+
+///////////////////////////////////////////////////////////////////
+
+maven-archetype-webapp -> Use this archetype for all traditional WAR packaged applications (External server)
+
+File > New > Maven Project
+Create a simple project (skip archetype selection) - keep unchecked and click on Next
+Select - maven-archetype-webapp 
+Give Group Id, Artifact Id of the new project
+Click on Finish
+
+Configure Java for the project
+
+Configure Tomcat for the project
+
+Add required dependencies in pom.xml
+
+
+///////////////////////////////////////////////////////////////////
+
+Spring Initializr (Web tool/API) -> Use this tool for all Spring Boot applications
 
 Spring Initializr (Easy Way): 
 https://start.spring.io/ 
@@ -201,7 +236,7 @@ Project Structure:
 
 In Spring core (non boot), we need to write manual configuration for the dependencies like MVC, Tomcat, JPA/Hibernate etc
 
-Dependencies required:
+Dependencies required for Spring Core:
 "spring-context"
 "spring-webmvc"
 
@@ -283,7 +318,7 @@ spring-ssr-embedded-jar/
 
 
 
-Spring - REST APIs - WAR (external tomcat)
+Spring Core - REST APIs - WAR (external tomcat)
 
 How to create: Add "spring-webmvc". Set packaging to war. Configure DispatcherServlet programmatically. Return serialisable domain objects marked with @RestController or @ResponseBody.
 
@@ -337,7 +372,7 @@ spring-rest-embedded-jar/
 
 Spring boot removed all the configuration logic for the dependencies and added optional auto-configuration feature
 
-Required Dependencies:
+Required Dependencies for Spring Boot:
 
 "spring-boot-starter-Webmvc"
 "spring-boot-starter"

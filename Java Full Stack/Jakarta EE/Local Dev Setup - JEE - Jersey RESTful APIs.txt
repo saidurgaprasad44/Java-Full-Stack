@@ -150,6 +150,37 @@ Restart tomcat
 =======================================================================================================================================================================
 Create Maven Project:
 
+
+maven-archetype-quickstart -> Use this archetype for all JAR packaged applications (No server/Embedded server)
+
+File > New > Maven Project
+Create a simple project (skip archetype selection) - keep unchecked and click on Next
+Select - maven-archetype-quickstart
+Give Group Id, Artifact Id of the new project
+Click on Finish
+
+Configure Java for the project
+
+
+///////////////////////////////////////////////////////////////////
+
+maven-archetype-webapp -> Use this archetype for all traditional WAR packaged SSR applications (External server)
+
+File > New > Maven Project
+Create a simple project (skip archetype selection) - keep unchecked and click on Next
+Select - maven-archetype-webapp 
+Give Group Id, Artifact Id of the new project
+Click on Finish
+
+Configure Java for the project
+
+Configure Tomcat for the project
+
+
+///////////////////////////////////////////////////////////////////
+
+jersey-quickstart-webapp -> User this archetype for WAR packaged REST applications (External server)
+
 File > New > Maven Project
 Create a simple project (skip archetype selection) - keep unchecked and click on Next
 Uncheck - Show the last version of Archetype only
@@ -171,6 +202,7 @@ Set the Source and Target to 1.8 for maven-compiler-plugin
 Uncomment the jersey-media-moxy dependency for json conversion capability
 For adding/modifying dependencies, get the required dependencies from mvnrepository:
 https://mvnrepository.com/
+
 =======================================================================================================================================================================
 Project Structure:
 =======================================================================================================================================================================

@@ -304,16 +304,13 @@ BeanDefinition:
 
 Bean Configuration:
 
-<bean id="database"
-      class="com.demo.Database"/>
+<bean id="database" class="com.demo.Database"/>
 
-<bean id="repository"
-      class="com.demo.Repository">
+<bean id="repository" class="com.demo.Repository">
     <constructor-arg ref="database"/>
 </bean>
 
-<bean id="service"
-      class="com.demo.Service">
+<bean id="service" class="com.demo.Service">
     <constructor-arg ref="repository"/>
 </bean>
 
@@ -321,13 +318,18 @@ Bean Configuration:
 
 Dependency Injection:
 
-Constructor injection 	- <constructor-arg>
+Constructor injection:
+	- <constructor-arg ref="beanref">
+	- The Spring container inspects the target class to find a constructor whose parameter types and order match the provided arguments. It instantiates the bean and injects the dependencies simultaneously during object creation, throwing an ambiguous constructor error if multiple matches exist.
 
-Setter injection 	- <property>
+
+Setter injection:	
+	- <property name="propertyName" ref="beanref">
+	- The Spring container converts the name attribute value to match Java Bean naming conventions. It capitalizes the first letter of the name, prefixes it with "set", and looks for that exact method (e.g., engine becomes setEngine). If the method name does not match this convention, Spring throws a BeanCreationException
 
 ------------------------------------------------------------
 
-Plugging and Unplugging 
+Plugging and Unplugging:
 
 
 
