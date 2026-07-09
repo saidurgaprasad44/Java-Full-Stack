@@ -173,63 +173,88 @@ For adding/modifying dependencies, get the required dependencies from mvnreposit
 https://mvnrepository.com/
 =======================================================================================================================================================================
 Project Structure:
+=======================================================================================================================================================================
+
+
+In Maven project, the libraries(jars / Maven dependencies) are not stored in project structure, they are stored in system .m2 maven local repository
+
 
 
 
 
 JSE - Non Web App (console/desktop/stand alone) - JAR (no web server like tomcat)
+
+How to create: Create a standard Maven project. Do not add any web dependencies. Compile using standard Java classes with a public static void main method.
+
+jse-console-app/
+│
+├── src/
+│    └── main/
+│         ├── java/
+│         │    └── com/example/jse/
+│         │          └── MainApplication.java  <-- Entry point
+│         └── resources/                        <-- Config, logs, or static assets
+├── pom.xml                                     <-- packaging: jar (default)
+└── .gitignore
+
+
+
+
 Jakarta EE - Server-Side Rendering (html/css/jsp/jsf) - WAR (external tomcat)
+
+How to create: Create a Maven project with <packaging>war</packaging>. Include jakarta.servlet-api and jakarta.faces-api (if using JSF) with <scope>provided</scope>. JSPs/JSFs are stored inside the webapp folder.
+
+jakarta-ssr-war/
+│
+├── src/
+│    └── main/
+│         ├── java/
+│         │    └── com/example/ee/
+│         │          ├── controller/            <-- Servlets or JSF Backing Beans
+│         │          └── model/
+│         ├── resources/
+│         └── webapp/                           <-- Required folder for WAR setup
+│              ├── WEB-INF/
+│              │    ├── web.xml                 <-- Servlet/Deployment descriptor
+│              │    └── faces-config.xml        <-- Only if using JSF
+│              ├── pages/
+│              │    └── index.jsp               <-- JSP file
+│              └── views/
+│                   └── dashboard.xhtml         <-- JSF (Facelets) file
+│
+├── target/     <-- compiled files (auto-generated)
+├── pom.xml     <-- packaging: war
+└── .gitignore
+
+
+
+
 Jakarta EE - REST APIs - WAR (external tomcat)
 
+How to create: Similar to the SSR WAR project, but instead of web pages, you configure a JAX-RS application path using @ApplicationPath and build REST resource endpoints.
 
-
-
-
-
-In Dynamic Web Project (WAR packaging):
-
-project-name/
+jakarta-rest-war/
 │
-└── src/
-      └── main/
-            ├── java/
-            │     └── com/example/demo/
-            │            ├── controller
-            │            ├── service
-            │            ├── repository
-            │            └── model 
-            └── webapp/
-   		   ├── HTML, CSS, JSP, JS, images ---
-                   ├── META-INF/
-   		   └── WEB-INF/
-   			  └──web.xml
-
-
-In Maven project (WAR packaging):
-The libraries(jars / Maven dependencies) are not stored in project structure, they are stored in system .m2 maven local repository
-
-project-name/
+├── src/
+│    └── main/
+│         ├── java/
+│         │    └── com/example/ee/
+│         │          ├── RestApplication.java   <-- Extends jakarta.ws.rs.core.Application
+│         │          ├── user/
+│         │          │    ├── controller/       <-- JAX-RS Resources (@Path, @GET)
+│         │          │    ├── service
+│         │          │    ├── repository
+│         │          │    └── model/
+│         │          └── config/
+│         ├── resources/
+│         └── webapp/
+│              └── WEB-INF/
+│                   └── web.xml                 <-- Minimal web.xml mapping
 │
-├──src/
-│   ├── main/
-│   │     ├── java/
-│   │     │    └── com/example/demo/
-│   │     │          ├── controller
-│   │     │          ├── service
-│   │     │          ├── repository
-│   │     │          └── model
-│   │     ├── resources/   
-│   │     └── webapp/
-│   │		    ├── HTML, CSS, JSP, JS, images ---
-│   │		    └── WEB-INF/
-│   │				  └──web.xml
-│   └── test/
-│        └── java/
-│              └── com/example/demo/
 ├── target/     <-- compiled files (auto-generated)
-├── pom.xml     <-- project config
-├── .gitignore
-└── mvnw / mvnw.cmd  <-- Maven wrapper
+├── pom.xml     <-- packaging: war
+└── .gitignore
+
 		
 =======================================================================================================================================================================
 Database Setup:
