@@ -319,12 +319,12 @@ Bean Configuration:
 Dependency Injection:
 
 Constructor injection:
-	- <constructor-arg ref="beanref">
+	- <constructor-arg ref="beanRef">
 	- The Spring container inspects the target class to find a constructor whose parameter types and order match the provided arguments. It instantiates the bean and injects the dependencies simultaneously during object creation, throwing an ambiguous constructor error if multiple matches exist.
 
 
 Setter injection:	
-	- <property name="propertyName" ref="beanref">
+	- <property name="propertyName" ref="beanRef">
 	- The Spring container converts the name attribute value to match Java Bean naming conventions. It capitalizes the first letter of the name, prefixes it with "set", and looks for that exact method (e.g., engine becomes setEngine). If the method name does not match this convention, Spring throws a BeanCreationException
 
 ------------------------------------------------------------
@@ -427,8 +427,7 @@ ApplicationContext context =
 
 Getting a Bean:
 
-Service service =
-        context.getBean(Service.class);
+Service service = context.getBean(Service.class);
 
 Note: In real Spring MVC applications, you almost never call getBean() yourself. Spring calls it internally when it needs a Controller, Service, Repository, etc.
 
@@ -518,15 +517,23 @@ Plugging and Unplugging
 
 
 
-
 ------------------------------------------------------------
 
-XML Configuration only for component package scanning:
+Creating the Container and configuring Component Scan:
+
+ApplicationContext context = new AnnotationConfigApplicationContext("com.example.myapp"); //Container creation and Component scan in one line 
+	
+			(or)
+
+ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml"); //Component Scan in beans.xml
+
+
+XML Configuration for component package scanning:
 <context:component-scan base-package="com.demo"/>
 
 ------------------------------------------------------------
 
-Creating the Container & Getting a Bean:
+Getting a Bean:
 
 Same as spring 2
 

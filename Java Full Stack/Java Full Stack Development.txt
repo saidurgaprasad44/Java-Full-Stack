@@ -41,13 +41,12 @@ Mastered: 		HTML, CSS, Tomcat, Servlets, JSP,
 
 Backend:
 
-Spring 			- dependency injection in plain java, object lifecycle in plain java (example: jdbc), dependency injection using spring ioc container, beanfactory, appicationcontext, xml vs annotation vs java configuration for bean definitions, bean lifecycle, bean scopes, AC features like AOP etc. 
-Spring Boot 		- optionated auto configuration (example: jee mvc, spring mvc), overriding autoconfiguration, customized autoconfiguration
-(stataless), CORS, CSRF, token in localstorage vs httponly cookies, workflow of basic auth vs token authentication, access token vs refresh tokens, filters, spring security, 
+Spring 			- dependency injection in plain java, object lifecycle in plain java (example: jdbc), dependency injection using spring ioc container, beanfactory, appicationcontext, xml vs annotation vs java configuration for bean definitions, bean lifecycle, bean scopes, proxies, AOP. Spring WebMVC and manual configuration
+Spring Boot 		- optionated auto configuration (example: jee mvc vs spring mvc), overriding autoconfiguration, customized autoconfiguration
 jdbc and hibernate/jsp	- jdbc steps, manual object table mapping and transaction management, ORM, JSP/hibernate and transaction management
 spring jdbc & data jpa 	- Spring jdbc, jdbc template, @transactional, bean lifecycle for spring data jpa, configuration for spring data jpa in spring vs spring boot 
 servlets & jsps		- 
-auth and authz 		- request and response anatomy, http statelessness, sessions , sessionid, httponly cookies, state management, jwt anatomy, session id (statefull) vs token 
+auth and authz 		- request and response anatomy, http statelessness, sessions , sessionid, httponly cookies, state management, jwt anatomy, session id (statefull) vs token (stataless), CORS, CSRF, token in localstorage vs httponly cookies, workflow of basic auth vs token authentication, access token vs refresh tokens, filters, spring security, 
 caching			- redis, read through and write through techniques, TTL, eviction policies
 event driven queueing	- kafka message queues
 microservices 		- api gateway, load balancer, microservices, inter service communication, service discovery, open feign
