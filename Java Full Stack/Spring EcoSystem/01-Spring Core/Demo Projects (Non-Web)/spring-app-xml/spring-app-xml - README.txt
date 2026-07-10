@@ -1,8 +1,9 @@
-Project Name - springApp
+Project Name - spring-app-xml
 Build tool - Maven
-Framework - Spring Core (version: ?)
-Java version - jdk17
+Framework - Spring Core (version: 7.0.7)
+Bean configuration type used - xml
+Java version - JavaSE-17
 Application type - Non Web App (console/desktop/stand alone) 
-Packaging - JAR 
 Web server/container - no web server like tomcat or websphere
+Packaging - JAR
 Recommended IDE - Spring tools for Eclipse

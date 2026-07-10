@@ -60,6 +60,7 @@ git config --global user.email "your@email.com"
 Verify:
 git config user.name
 git config user.email
+
 =======================================================================================================================================================================
 Setup IDE:
 
@@ -216,16 +217,16 @@ Java: 17
 Dependencies:
 Spring Web
 Spring Data JPA
-MySQL Driver (if using DB)
+MySQL Driver
 Lombok (optional)
-Spring Security (if needed)
+Spring Security
 
-Group: com.example
-Artifact: demo
-Name: demo
+Group: com.demo
+Artifact: springboot-restapi
+Name: springboot-restapi
 Description: Demo project for Spring Boot
-Package name: com.example.demo
-Packaging: Jar
+Package name: com.demo.springboot_restapi
+Packaging: Jar or War
 Configuration: Properties
 
 Download → Extract → Open in IDE

@@ -231,15 +231,27 @@ It acts as a centralized factory responsible for creating, configuring, wiring, 
 
 Types: 
 
-- BeanFactory (The Core):
-The most basic container interface.
-Uses Lazy Loading (creates (instantiates and injects) objects only when you explicitly ask for them via getBean()).
-Ideal for lightweight applications like mobile devices or low-resource environments.
+1. BeanFactory (The Core):
+- The most basic container interface.
+- Uses Lazy Loading (creates (instantiates and injects) objects only when you explicitly ask for them via getBean()).
+- Ideal for lightweight applications like mobile devices or low-resource environments.
 
-- ApplicationContext (The Advanced Standard):
-A direct subsystem of BeanFactory that includes all its features.
-Uses Eager Loading (creates all singleton objects immediately upon application startup).
-Adds enterprise features like internationalisation (i18n), event publishing, and seamless AOP (Aspect-Oriented Programming) integration.
+
+
+
+2. ApplicationContext (The Advanced Standard):
+- A direct subsystem of BeanFactory that includes all its features.
+- Uses Eager Loading (creates all singleton objects immediately upon application startup).
+- Adds enterprise features like internationalisation (i18n), event publishing, and seamless AOP (Aspect-Oriented Programming) integration.
+
+All implementations of ApplicationContext Interface:
+- ClassPathXmlApplicationContext		- for Standalone Java	- XML file on Classpath
+- FileSystemXmlApplicationContext		- for Standalone Java	- XML file on Local disk
+- XmlWebApplicationContext			- for Web Application	- XML file under web folder
+- AnnotationConfigApplicationContext		- for Standalone Java	- @Configuration Classes / Scans
+- AnnotationConfigWebApplicationContext		- for Web Application	- @Configuration Classes
+
+
 
 =============================================================================================================================================================================
 What is Spring Configuration?
@@ -318,39 +330,84 @@ Bean Configuration:
 
 Dependency Injection:
 
+
+
 Constructor injection:
 	- <constructor-arg ref="beanRef">
 	- The Spring container inspects the target class to find a constructor whose parameter types and order match the provided arguments. It instantiates the bean and injects the dependencies simultaneously during object creation, throwing an ambiguous constructor error if multiple matches exist.
 
 
+
+
 Setter injection:	
-	- <property name="propertyName" ref="beanRef">
+	- <property name="propertyNameThatMatchesTheSetterMethod" ref="beanRef">
 	- The Spring container converts the name attribute value to match Java Bean naming conventions. It capitalizes the first letter of the name, prefixes it with "set", and looks for that exact method (e.g., engine becomes setEngine). If the method name does not match this convention, Spring throws a BeanCreationException
+
+
+
+
+Autowiring:
+	- While Constructor and Setter injections are the manual configurations, XML autowiring tells the Spring container to look at your Java classes and automatically figure out dependencies. This eliminates the need to explicitly write <property> or <constructor-arg> tags.
+	- Autowire byName: When you set autowire="byName", Spring looks at the setter method name (or property field name) in your class. It then searches the XML file for a <bean> with an id that matches exactly. 
+
+	Example: 
+	public class Car {
+    		private Engine subaruEngine; // Field name
+    
+    		// Spring looks for a bean id matching this property name: "subaruEngine"
+    		public void setSubaruEngine(Engine engine) { 
+        		this.subaruEngine = engine; 
+    		}
+	}
+
+	<!-- The ID matches the setter property name perfectly -->
+	<bean id="subaruEngine" class="com.example.Engine" />
+
+	<!-- No <property> tag needed -->
+	<bean id="myCar" class="com.example.Car" autowire="byName" />
+
+
+	- Autowire byType: When you set autowire="byType", Spring ignores the bean IDs. Instead, it looks at the data type required by the setter method and searches the XML file for a bean of that exact class or interface type. If multiple beans of same type are there, use primary = "true"
+	
+	Example:
+	public class Car {
+    		private Engine engine;
+    
+    		// Spring looks for any bean in the XML that is an instance of "Engine"
+    		public void setEngine(Engine engine) { 
+        		this.engine = engine; 
+    		}
+	}
+
+	<!-- The ID does not matter; only the class type matters -->
+	<bean id="anyRandomId" class="com.example.Engine" />
+
+	<!-- No <property> tag needed -->
+	<bean id="myCar" class="com.example.Car" autowire="byType" />
+
+
+	- Note: autowiring only works with a setter method
+
 
 ------------------------------------------------------------
 
 Plugging and Unplugging:
 
-
-
-
-
-
+Constructor or Setter Injection	: Replace the bean reference in constructor-arg/property tag with the target bean reference
+Autowire byName			: Change the ID of your target bean in the XML file to match the setter method name/field name of the host class
+Autowire byType			: Place the primary="true" in the target bean tag
 
 ------------------------------------------------------------
 
 Creating the container:
 
-BeanFactory factory =
-        new XmlBeanFactory(
-            new ClassPathResource("beans.xml"));
+BeanFactory factory = new XmlBeanFactory(new ClassPathResource("beans.xml")); // beans are defined in beans.xml
 
 ------------------------------------------------------------
 
 Getting a Bean:
 
-Service service =
-        factory.getBean(Service.class);
+Service service = factory.getBean(Service.class);
 
 In real Spring MVC applications, you almost never call getBean() yourself. Spring calls it internally when it needs a Controller, Service, Repository, etc.
 
@@ -408,20 +465,15 @@ Exactly same as Spring 1.x
 
 ------------------------------------------------------------
 
-Plugging and Unplugging 
+Plugging and Unplugging:
 
-
-
-
-
-
+same as BeanFactory xml configuration
 
 ------------------------------------------------------------
 
 Creating the Container:
 
-ApplicationContext context =
-        new ClassPathXmlApplicationContext("beans.xml");
+ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml"); // beans are defined in beans.xml
 
 ------------------------------------------------------------
 
@@ -644,7 +696,7 @@ public class AppConfig {
 Dependency Injection:
 
 Only Constructor Injection and Setter Injection are possible with Java configuration. 
-However in spring 3, we can do field injection using ComponentScan and annotations also
+However in spring 3, we can do field injection using @Autowired also, if the config class has @ComponentScan
 
 ------------------------------------------------------------
 
@@ -660,8 +712,7 @@ Plugging and Unplugging
 
 Creating the Container
 
-ApplicationContext context =
-        new AnnotationConfigApplicationContext(AppConfig.class);
+ApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class); //If the config class also has @ComponentScan, we can use @Component, @Service..,
 
 ------------------------------------------------------------
 

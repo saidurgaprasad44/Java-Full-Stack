@@ -41,7 +41,7 @@ Mastered: 		HTML, CSS, Tomcat, Servlets, JSP,
 
 Backend:
 
-Spring 			- dependency injection in plain java, object lifecycle in plain java (example: jdbc), dependency injection using spring ioc container, beanfactory, appicationcontext, xml vs annotation vs java configuration for bean definitions, bean lifecycle, bean scopes, proxies, AOP. Spring WebMVC and manual configuration
+Spring 			- dependency injection in plain java, object lifecycle in plain java (example: jdbc), dependency injection using spring ioc container, beanfactory, appicationcontext, xml vs annotation vs java configuration for bean definitions, bean lifecycle in spring, bean scopes, proxies, AOP. Spring WebMVC and its manual configuration
 Spring Boot 		- optionated auto configuration (example: jee mvc vs spring mvc), overriding autoconfiguration, customized autoconfiguration
 jdbc and hibernate/jsp	- jdbc steps, manual object table mapping and transaction management, ORM, JSP/hibernate and transaction management
 spring jdbc & data jpa 	- Spring jdbc, jdbc template, @transactional, bean lifecycle for spring data jpa, configuration for spring data jpa in spring vs spring boot 
