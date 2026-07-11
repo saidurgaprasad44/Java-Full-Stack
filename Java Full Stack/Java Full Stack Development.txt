@@ -54,9 +54,9 @@ microservices patterns	- saga pattern
 system design concepts 	- sharding, partitions, rate limiting, indexing, 
 Design principles/patterns- SOLID, KISS, DRY, creational, structural, behavioral, 
 DSA			- string, array, collections and map, linked list, queues, 
-Java	 		- java 8/11/17 features, exception handling, global exception handling, multi-threading, Junit, logging framework
+Java	 		- java 8/11/17 features, exception handling, global exception handling, multi-threading,
 sql 			- querying, update/insert/delete, joins, table relationships, indexing, transactions, aggregations, order of writing and execution, 
-
+SDLC			- planning, requirement analysis(functional and non-functional), design, implementation, testing (Junit, integration, etc.,), deployment, maintenance (logging framework,) 
 
 Frontend:
 
