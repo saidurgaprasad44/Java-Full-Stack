@@ -1,9 +1,12 @@
-System Design Master Matrix: Metrics & Mechanisms
+System Design: Quality Attributes & Mechanisms
+
+Quality Attributes define the non-functional requirements of a software system
+While Mechanisms are the specific engineering techniques and patterns implemented to achieve them.
 
 ===============================================================================================================================================================================
 
 ## 1. Performance (Latency & Throughput)
-* **The Metric:** How fast the system responds (**Latency**, measured in $p99$ ms) and how much work it can execute simultaneously (**Throughput**, measured in Requests Per Second).
+* **The Quality Attribute:** How fast the system responds (**Latency**, measured in $p99$ ms) and how much work it can execute simultaneously (**Throughput**, measured in Requests Per Second).
 * **The Goal:** Maximize speed and processing capacity under heavy usage.
 
 ### 🛠️ Implementing Mechanisms
@@ -19,7 +22,7 @@ System Design Master Matrix: Metrics & Mechanisms
 ===============================================================================================================================================================================
 
 ## 2. Scalability & Elasticity
-* **The Metric:** **Scalability** is the capacity to handle growth. **Elasticity** is the ability to automatically scale up or down based on real-time traffic spikes.
+* **The Quality Attribute:** **Scalability** is the capacity to handle growth. **Elasticity** is the ability to automatically scale up or down based on real-time traffic spikes.
 * **The Goal:** Ensure the system expands seamlessly without manual human intervention.
 
 ### 🛠️ Implementing Mechanisms
@@ -31,7 +34,7 @@ System Design Master Matrix: Metrics & Mechanisms
 ===============================================================================================================================================================================
 
 ## 3. Reliability (Availability, Resilience, & Fault Tolerance)
-* **The Metric:** **Availability** is uptime percentage (e.g., 99.99%). **Resilience** is how it recovers. **Fault Tolerance** is surviving hardware/software failures.
+* **The Quality Attribute:** **Availability** is uptime percentage (e.g., 99.99%). **Resilience** is how it recovers. **Fault Tolerance** is surviving hardware/software failures.
 * **The Goal:** Build a system with no single point of failure that heals itself automatically.
 
 ### 🛠️ Implementing Mechanisms
@@ -45,7 +48,7 @@ System Design Master Matrix: Metrics & Mechanisms
 ===============================================================================================================================================================================
 
 ## 4. Observability
-* **The Metric:** The clarity with which you can diagnose internal errors based on external indicators (Logs, Metrics, Traces).
+* **The Quality Attribute:** The clarity with which you can diagnose internal errors based on external indicators (Logs, Metrics, Traces).
 * **The Goal:** Spot anomalies and capture data corruption before it impacts users.
 
 ### 🛠️ Implementing Mechanisms
@@ -55,7 +58,7 @@ System Design Master Matrix: Metrics & Mechanisms
 ===============================================================================================================================================================================
 
 ## 5. Security (Authentication & Authorization)
-* **The Metric:** System immunity to unauthorized breaches and malicious attacks.
+* **The Quality Attribute:** System immunity to unauthorized breaches and malicious attacks.
 * **The Goal:** Secure data at rest, in transit, and enforce strict user privacy bounds.
 
 ### 🛠️ Implementing Mechanisms
@@ -65,7 +68,7 @@ System Design Master Matrix: Metrics & Mechanisms
 ===============================================================================================================================================================================
 
 ## 6. Data Consistency & Durability
-* **The Metric:** **Consistency** ensures data is uniform across all nodes. **Durability** guarantees that once a write is acknowledged, it will never be permanently lost.
+* **The Quality Attribute:** **Consistency** ensures data is uniform across all nodes. **Durability** guarantees that once a write is acknowledged, it will never be permanently lost.
 * **The Goal:** Maintain perfectly accurate records across a distributed system.
 
 ### 🛠️ Implementing Mechanisms
@@ -75,7 +78,7 @@ System Design Master Matrix: Metrics & Mechanisms
 ===============================================================================================================================================================================
 
 ## 7. Maintainability & Low Coupling
-* **The Metric:** How easily code can be modified, tested, and expanded. Measured by deployment frequency and low inter-dependency (**Coupling**).
+* **The Quality Attribute:** How easily code can be modified, tested, and expanded. Measured by deployment frequency and low inter-dependency (**Coupling**).
 * **The Goal:** Keep separate engineering teams unblocked and move quickly.
 
 ### 🛠️ Implementing Mechanisms
@@ -85,9 +88,15 @@ System Design Master Matrix: Metrics & Mechanisms
 ===============================================================================================================================================================================
 
 ## 8. Cost Efficiency
-* **The Metric:** Monthly financial infrastructure cost relative to system volume and computing resource usage.
+* **The Quality Attribute:** Monthly financial infrastructure cost relative to system volume and computing resource usage.
 * **The Goal:** Run an optimized, high-throughput system at the lowest possible price point.
 
 ### 🛠️ Implementing Mechanisms
 * **Auto-Scaling & Serverless Compute:** Tearing down idle compute capacity automatically during low-traffic periods.
 * **Tiered Cold/Hot Storage:** Moving old records to cheaper object storage layers over time.
+
+===============================================================================================================================================================================
+
+Trade-offs
+
+

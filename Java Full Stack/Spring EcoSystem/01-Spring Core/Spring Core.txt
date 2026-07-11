@@ -228,6 +228,7 @@ What is Spring IoC Container?
 The Spring IoC container is the core engine of the Spring Framework.
 It acts as a centralized factory responsible for creating, configuring, wiring, and managing the entire lifecycle of application objects (known as Beans).
 
+------------------------------------------------------------
 
 Types: 
 
@@ -236,8 +237,7 @@ Types:
 - Uses Lazy Loading (creates (instantiates and injects) objects only when you explicitly ask for them via getBean()).
 - Ideal for lightweight applications like mobile devices or low-resource environments.
 
-
-
+------------------------------------------------------------
 
 2. ApplicationContext (The Advanced Standard):
 - A direct subsystem of BeanFactory that includes all its features.
@@ -250,7 +250,6 @@ All implementations of ApplicationContext Interface:
 - XmlWebApplicationContext			- for Web Application	- XML file under web folder
 - AnnotationConfigApplicationContext		- for Standalone Java	- @Configuration Classes / Scans
 - AnnotationConfigWebApplicationContext		- for Web Application	- @Configuration Classes
-
 
 
 =============================================================================================================================================================================
@@ -347,7 +346,7 @@ Setter injection:
 
 
 Autowiring:
-	- While Constructor and Setter injections are the manual configurations, XML autowiring tells the Spring container to look at your Java classes and automatically figure out dependencies. This eliminates the need to explicitly write <property> or <constructor-arg> tags.
+	- While Constructor and Setter injections are the manual configurations for wiring (injection), because we are explicitly instructing which bean to inject using <constructor-arg> and <property> tags, XML autowiring tells the Spring container to look at your Java classes and automatically figure out dependencies. This eliminates the need to explicitly write <property> or <constructor-arg> tags.
 	- Autowire byName: When you set autowire="byName", Spring looks at the setter method name (or property field name) in your class. It then searches the XML file for a <bean> with an id that matches exactly. 
 
 	Example: 
@@ -386,7 +385,7 @@ Autowiring:
 	<bean id="myCar" class="com.example.Car" autowire="byType" />
 
 
-	- Note: autowiring only works with a setter method
+	- Note: autowiring only works with setter methods
 
 
 ------------------------------------------------------------
@@ -395,7 +394,7 @@ Plugging and Unplugging:
 
 Constructor or Setter Injection	: Replace the bean reference in constructor-arg/property tag with the target bean reference
 Autowire byName			: Change the ID of your target bean in the XML file to match the setter method name/field name of the host class
-Autowire byType			: Place the primary="true" in the target bean tag
+Autowire byType			: When you have multiple beans with matching type, place the primary="true" in the target bean tag
 
 ------------------------------------------------------------
 
@@ -557,17 +556,47 @@ public class UserService {
 
 Dependency Injection:
 
-- Field and Setter injection with @Autowired
-- Constructor injection
+- With annotation-based configuration, Spring automatically discovers the required beans and injects them.
+- Unlike XML configuration, you do not manually specify the wiring using <constructor-arg> or <property>. Instead, Spring determines the dependencies from your classes (using constructors, setters, or @Autowired).
+- Types: Field injection, Constructor injection (recommended) and Setter injection
+- By default, every Spring bean created using @Component, @Service, @Repository or @Controller is assigned a bean name
+- The default bean name is the class name with the first letter in lowercase. Example: UserService -> userService, DatabaseConnection -> databaseConnection
+- By default @Autowired performs Dependency Injection by TYPE.
+
+Example:
+
+@Autowired
+private Database database;
+
+Spring looks for a bean whose type is Database.
+
+
+- Case 1: Only one bean of type Database exists ---> Spring injects it automatically
+- Case 2: Multiple beans of type Database exist ---> If one bean is marked with @Primary, Spring injects that bean.
+- Case 3: If no @Primary exists ---> you can specify the required bean using @Qualifier
+
+Example:
+
+@Autowired
+@Qualifier("oracleDatabase")
+private Database database;
+
+Spring injects the bean whose name is "oracleDatabase".
+
+
+- Case 4: If multiple beans exist and neither @Primary nor @Qualifier is provided ---> Spring throws: NoUniqueBeanDefinitionException
+- @Primary is placed on the Bean; @Qualifier is placed where the dependency is injected.
 
 ------------------------------------------------------------
 
-Plugging and Unplugging 
+Plugging and Unplugging:
 
 
-
-
-
+Constructor Injection    : Replace the implementation passed to the constructor, or mark the required implementation with @Primary / specify it using @Qualifier.
+Setter Injection         : Replace the implementation passed to the setter, or mark the required implementation with @Primary / specify it using @Qualifier.
+Field Injection          : Mark the required implementation with @Primary or specify it using @Qualifier.
+@Primary                 : Place @Primary on the preferred bean implementation.
+@Qualifier               : Place @Qualifier("beanName") at the injection point to inject a specific bean.
 
 ------------------------------------------------------------
 
@@ -669,7 +698,6 @@ public class UserRepository {
 }
 
 public class Database {
-
 }
 
 @Configuration
@@ -689,7 +717,6 @@ public class AppConfig {
     public UserService service() {
 	return new UserService(repository());
     }
-
 }
 
 ------------------------------------------------------------
@@ -710,7 +737,7 @@ Plugging and Unplugging
 
 ------------------------------------------------------------
 
-Creating the Container
+Creating the Container:
 
 ApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class); //If the config class also has @ComponentScan, we can use @Component, @Service..,
 
@@ -722,7 +749,7 @@ Same for all ApplicationContext Container
 
 ------------------------------------------------------------
 
-Advantages
+Advantages:
 
 - No XML.
 - Type-safe configuration.
