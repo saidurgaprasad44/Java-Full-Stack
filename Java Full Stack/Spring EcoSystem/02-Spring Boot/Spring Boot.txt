@@ -264,7 +264,7 @@ When you use autowire="byName", it will look for the setter method's name and in
 <bean id="gas" class="com.example.GasEngine" />
 <bean id="electric" class="com.example.ElectricEngine" />
 
-Note: autowiring can only be used for setter injection
+Option D: Using autowire="constructor" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 =============================================================================================================================================================================
 The Instructions - Spring Annotations Configuration:

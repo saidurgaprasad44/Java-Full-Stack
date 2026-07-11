@@ -462,7 +462,7 @@ When you create an object, ParentClass obj = new ChildClass();
 The Compiler checks the Reference Type (ParentClass) to see which properties and behaviors are available to call; if the method is found, the JVM then executes the specific logic defined in the Object Type (ChildClass)
 
 Scenario:
-So, when you create an object of a subclass with parent reference type, you can only access what parent class have. If the method is overridden in the child class, it would give you updated behavior when the method is called 
+So, when you create an object of a subclass with parent reference type, you can only access what parent class have. If the method in parent class is overridden in the child class, it would give you updated behavior when the method is called 
 
 
 

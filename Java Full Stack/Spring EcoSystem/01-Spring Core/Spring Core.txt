@@ -329,6 +329,7 @@ Bean Configuration:
 
 Dependency Injection:
 
+	- Every bean is defined and identified with id or name; id and name are same only difference is that using name we can give a bean multiple aliases (names) enclosed in double quotes separated by commas.
 
 
 Constructor injection:
@@ -337,11 +338,9 @@ Constructor injection:
 
 
 
-
 Setter injection:	
 	- <property name="propertyNameThatMatchesTheSetterMethod" ref="beanRef">
 	- The Spring container converts the name attribute value to match Java Bean naming conventions. It capitalizes the first letter of the name, prefixes it with "set", and looks for that exact method (e.g., engine becomes setEngine). If the method name does not match this convention, Spring throws a BeanCreationException
-
 
 
 
@@ -385,7 +384,23 @@ Autowiring:
 	<bean id="myCar" class="com.example.Car" autowire="byType" />
 
 
-	- Note: autowiring only works with setter methods
+	- Autowire constructor: When you set autowire="constructor", Spring looks at the data type required by the constructor method and searches the XML file for a bean of that class or interface type. If multiple beans of same type are there, use primary = "true"
+
+	Example:
+	public class Car {
+    		private Engine engine;
+    
+    		// Spring looks for any bean in the XML that is an instance of "Engine"
+    		public Car(Engine engine) { 
+        		this.engine = engine; 
+    		}
+	}
+
+	<!-- The ID does not matter; only the class type matters -->
+	<bean id="anyRandomId" class="com.example.Engine" />
+
+	<!-- No <property> tag needed -->
+	<bean id="myCar" class="com.example.Car" autowire="constructor" />
 
 
 ------------------------------------------------------------
@@ -395,6 +410,7 @@ Plugging and Unplugging:
 Constructor or Setter Injection	: Replace the bean reference in constructor-arg/property tag with the target bean reference
 Autowire byName			: Change the ID of your target bean in the XML file to match the setter method name/field name of the host class
 Autowire byType			: When you have multiple beans with matching type, place the primary="true" in the target bean tag
+Autowire constructor		: When you have multiple beans with matching type, place the primary="true" in the target bean tag
 
 ------------------------------------------------------------
 
@@ -720,14 +736,15 @@ public class AppConfig {
 }
 
 ------------------------------------------------------------
+
 Dependency Injection:
 
-Only Constructor Injection and Setter Injection are possible with Java configuration. 
+Only Constructor Injection and Setter Injection are possible with Java configuration 
 However in spring 3, we can do field injection using @Autowired also, if the config class has @ComponentScan
 
 ------------------------------------------------------------
 
-Plugging and Unplugging 
+Plugging and Unplugging:
 
 
 
