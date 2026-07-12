@@ -11,7 +11,7 @@ public class App {
         
         Car car = (Car) context.getBean("car");
 //        Car car = (Car) xmlContext.getBean("car");      
-        System.out.println("this is spring-app-annotatin project...");
+        System.out.println("this is spring-app-annotation project...");
         car.drive();
         car.specs();
         ((AnnotationConfigApplicationContext)context).close();

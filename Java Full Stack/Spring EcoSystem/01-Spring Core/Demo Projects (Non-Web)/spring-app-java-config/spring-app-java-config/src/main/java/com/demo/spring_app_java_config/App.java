@@ -8,7 +8,8 @@ public class App {
         ApplicationContext context = new AnnotationConfigApplicationContext(Config.class);
         
 
-        Developer dev = (Developer)context.getBean("developerOnDesktop");
+        Developer dev = (Developer)context.getBean("developerWithLaptopForConstructor");
+        System.out.println("this is spring-app-java-config project...");
         dev.build();
         dev.skillSet();
         

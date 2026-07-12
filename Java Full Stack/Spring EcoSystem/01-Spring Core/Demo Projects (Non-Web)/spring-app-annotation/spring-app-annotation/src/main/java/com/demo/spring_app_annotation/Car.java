@@ -11,15 +11,21 @@ public class Car {
 //	@Qualifier("favoriteEngine") // by name
 	private Engine engine;
 	
-//	public Car(Engine engine) { //constructor injection
+//	@Autowired
+//	public Car(@Qualifier("favoriteEngine") Engine engine) { //constructor injection
 //		this.engine = engine;
 //	}
+	
+	public Car() {
+		
+	}
 	
 	@Qualifier("favoriteEngine")
 	@Autowired
 	public void setEngine(Engine engine) { //setter injection
 		this.engine = engine;
 	}
+
 	
 	public void drive() {
 		engine.start();

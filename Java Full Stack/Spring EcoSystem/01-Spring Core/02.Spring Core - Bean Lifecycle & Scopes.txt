@@ -1,0 +1,745 @@
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+										Bean Lifecycle
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+
+Goal:
+
+To understand how the Spring IoC Container creates, initializes, manages and destroys every bean.
+
+=============================================================================================================================================================================
+Why Bean Lifecycle is important?
+=============================================================================================================================================================================
+
+Creating an object is only one part of its life; Most objects require additional work before they are ready to be used.
+
+For example:
+
+- A Database bean may need to establish a database connection.
+- A MailService may need to load SMTP configurations.
+- A CacheManager may need to load cache entries.
+- A REST Client may need to initialize HTTP connections.
+
+Similarly, before the application shuts down, these resources must be released properly.
+
+Without lifecycle management, developers would need to manually initialize and destroy every object.
+
+Spring automates this entire process.
+
+Every Spring Bean goes through the following phases:
+
+1. Create BeanDefinition
+2. Instantiate Bean
+3. Inject Dependencies
+4. Aware Callbacks
+5. BeanPostProcessor (Before Initialization)
+6. @PostConstruct
+7. BeanPostProcessor (After Initialization)
+8. Bean Ready
+9. Bean Used
+10. @PreDestroy
+11. Destroy Bean
+
+Spring automatically manages all these phases.
+
+=============================================================================================================================================================================
+1. Create BeanDefinition
+=============================================================================================================================================================================
+
+The first step is NOT creating the object.
+
+Spring first creates a BeanDefinition.
+
+A BeanDefinition is simply metadata (instructions) describing how to create the bean, not actual object
+
+It contains information like:
+
+- Bean Name
+- Bean Class
+- Scope (Singleton, Prototype, etc.)
+- Constructor Information
+- Property Information
+- Initialization Method
+- Destroy Method
+- Lazy/Eager Initialization
+- Other Bean Metadata
+
+Example:
+
+Bean Name      : userService
+Class          : com.demo.UserService
+Scope          : singleton
+Dependencies   : UserRepository
+
+At this stage, No object exists yet. Spring is only collecting information about every bean.
+
+=============================================================================================================================================================================
+2. Instantiate Bean
+=============================================================================================================================================================================
+
+Using the BeanDefinition, Spring now creates the actual Java object.
+
+Example:
+
+UserService service = new UserService();
+
+Now, the object exists in JVM memory. However, Dependencies are NOT injected yet. The bean is not ready for use.
+
+=============================================================================================================================================================================
+3. Inject Dependencies
+=============================================================================================================================================================================
+
+After creating the object, Spring injects all required dependencies.
+
+Example:
+
+public class UserService {
+
+    private UserRepository repository;
+    public UserService(UserRepository repository){
+        this.repository = repository;
+    }
+
+}
+
+
+Spring creates:
+
+UserRepository
+↓
+Injects it into
+↓
+UserService
+
+
+Now the bean has everything it needs.
+
+=============================================================================================================================================================================
+4. Aware Callbacks
+=============================================================================================================================================================================
+
+If the bean implements one of Spring's *Aware interfaces, Spring provides information about itself.
+
+Examples:
+
+BeanNameAware
+BeanFactoryAware
+ApplicationContextAware
+EnvironmentAware
+ResourceLoaderAware
+
+These callbacks allow a bean to know about the Spring container.
+
+Example:
+
+public class UserService implements BeanNameAware {
+
+    @Override
+    public void setBeanName(String beanName){
+        System.out.println(beanName);
+    }
+
+}
+
+Output: userService
+
+=============================================================================================================================================================================
+5. BeanPostProcessor (Before Initialization)
+=============================================================================================================================================================================
+
+Spring now gives every BeanPostProcessor a chance to modify the bean before initialization.
+
+Method executed:
+
+postProcessBeforeInitialization()
+
+Typical uses:
+
+- Validate bean configuration
+- Inject additional values
+- Modify bean properties
+- Custom framework logic
+
+Normally, application developers rarely implement BeanPostProcessor. Spring uses it internally.
+
+=============================================================================================================================================================================
+6. @PostConstruct
+=============================================================================================================================================================================
+
+Now Spring executes the bean's initialization logic.
+
+Example:
+
+@PostConstruct
+public void init(){
+
+    database.connect();
+
+}
+
+Typical uses:
+
+- Open Database Connections
+- Load Configuration
+- Initialize Cache
+- Read Files
+- Create Thread Pools
+
+After this step, the bean has completed its own initialization.
+
+=============================================================================================================================================================================
+7. BeanPostProcessor (After Initialization)
+=============================================================================================================================================================================
+
+Spring again gives every BeanPostProcessor a chance to modify the bean.
+
+Method executed:
+
+postProcessAfterInitialization()
+
+This is where Spring usually creates proxies.
+
+Examples:
+
+- @Transactional
+- @Async
+- Spring Security
+- AOP
+- Caching
+
+The original bean may now be wrapped inside a proxy object.
+
+=============================================================================================================================================================================
+8. Bean Ready
+=============================================================================================================================================================================
+
+The bean is now fully initialized.
+
+It is stored inside the IoC Container.
+
+The application can now use it.
+
+Singleton beans remain inside the container until the application shuts down.
+
+=============================================================================================================================================================================
+9. Bean Used
+=============================================================================================================================================================================
+
+Whenever the application needs the bean, Spring returns it from the IoC Container.
+
+Example:
+
+@RestController
+↓
+UserService
+↓
+UserRepository
+↓
+Database
+
+The same Singleton bean is reused for every request.
+
+=============================================================================================================================================================================
+10. @PreDestroy
+=============================================================================================================================================================================
+
+When the application is shutting down, Spring executes methods annotated with @PreDestroy.
+
+Example:
+
+@PreDestroy
+public void cleanup(){
+
+    database.close();
+
+}
+
+
+Typical uses:
+
+- Close Database Connections
+- Stop Threads
+- Close Files
+- Flush Logs
+- Release Resources
+
+=============================================================================================================================================================================
+11. Destroy Bean
+=============================================================================================================================================================================
+
+After @PreDestroy,
+
+Spring removes the bean from the IoC Container.
+
+The bean becomes eligible for Garbage Collection.
+
+Its memory will eventually be reclaimed by the JVM Garbage Collector.
+
+=============================================================================================================================================================================
+Complete Internal Flow
+=============================================================================================================================================================================
+
+Configuration (XML / Annotation / Java Config)
+↓
+Create BeanDefinitions
+↓
+Instantiate Bean
+↓
+Inject Dependencies
+↓
+Aware Callbacks
+↓
+BeanPostProcessor (Before Initialization)
+↓
+@PostConstruct
+↓
+BeanPostProcessor (After Initialization)
+↓
+Bean Ready
+↓
+Bean Used Throughout Application
+↓
+@PreDestroy
+↓
+Destroy Bean
+↓
+Garbage Collection (JVM)
+
+
+
+Note - Proxies are usually created during postProcessAfterInitialization().
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+										Bean Scopes
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+
+Goal:
+
+To understand how long a bean lives and how many instances of a bean Spring should create.
+
+=============================================================================================================================================================================
+Why Bean Scopes are important?
+=============================================================================================================================================================================
+
+Should Spring create only one object for the entire application?
+		or
+Should it create a new object every time it is requested?
+		or
+Should each HTTP request get its own object?
+
+
+
+This behavior is controlled using Bean Scopes.
+
+=============================================================================================================================================================================
+What is a Bean Scope?
+=============================================================================================================================================================================
+
+A Bean Scope defines:
+
+- How many instances of a bean Spring should create.
+- How long the bean should live.
+- When the bean should be destroyed.
+
+Different applications require different lifecycles.
+
+For example:
+
+Database Connection Pool - Only one object is enough.
+Shopping Cart - Each user should have a different object.
+Request Information - Each HTTP request should have a different object.
+
+=============================================================================================================================================================================
+Types of Bean Scopes
+=============================================================================================================================================================================
+
+Spring provides six bean scopes:
+
+1. Singleton (Default)
+2. Prototype
+3. Request
+4. Session
+5. Application
+6. WebSocket
+
+The first two are available in every Spring application.
+
+The remaining scopes are available only in Web Applications.
+
+=============================================================================================================================================================================
+1. Singleton Scope (Default)
+=============================================================================================================================================================================
+
+Spring creates only ONE object of the bean for the entire IoC Container.
+
+Every request for that bean receives the same object.
+
+Example:
+
+@Service
+@Scope("singleton")
+public class UserService {
+}
+
+Since Singleton is the default scope, the above is equivalent to simply writing:
+
+@Service
+public class UserService {
+}
+
+
+Flow:
+
+Application Starts
+↓
+Spring creates one UserService object
+↓
+Stores it inside the IoC Container
+↓
+Controller A requests UserService
+↓
+Same object returned
+↓
+Controller B requests UserService
+↓
+Same object returned
+↓
+Application Shutdown
+↓
+Bean Destroyed
+
+
+Example:
+
+
+@RestController
+public class UserController {
+
+    @Autowired
+    private UserService service;
+
+}
+
+@RestController
+public class AdminController {
+
+    @Autowired
+    private UserService service;
+
+}
+
+
+Both controllers receive the same UserService object.
+
+------------------------------------------------------------
+
+Advantages:
+
+- Low Memory Usage
+- Better Performance
+- Thread safe
+- Faster Object Retrieval
+- Suitable for Services and Repositories
+
+Disadvantages:
+
+- Since all users share the same object, Singleton beans should NOT store user-specific data. 
+- They should be Stateless.
+
+------------------------------------------------------------
+
+Why Singleton Beans Should Be Stateless?
+
+Stateless means: The bean does not store request-specific or user-specific data inside its instance variables.
+
+Good Example:
+
+@Service
+public class CalculatorService {
+
+    public int add(int a, int b) {
+        return a + b;
+    }
+}
+
+Every request provides its own data. Nothing is stored inside the object.
+
+------------------------------------------------------------
+
+Bad Example:
+
+@Service
+public class LoginService {
+
+    private String currentUser;
+
+    public void login(String username){
+        currentUser = username;
+    }
+}
+
+Suppose:
+
+User A logs in, currentUser = "Sai", before User A finishes,
+User B logs in, currentUser = "John", now User B and A both see currentUser = "John"
+Both users are sharing the same object. This is called a Stateful Singleton.
+
+It is unsafe. Instead, Store user-specific data in:
+
+- Database
+- Session
+- JWT
+- Redis
+- Request Object
+
+NOT inside Singleton Beans.
+
+=============================================================================================================================================================================
+2. Prototype Scope
+=============================================================================================================================================================================
+
+Spring creates a NEW object every time the bean is requested.
+
+
+Example:
+
+@Component
+@Scope("prototype")
+public class ReportGenerator {
+}
+
+
+Flow:
+
+getBean()
+↓
+Create New Object
+↓
+Return Object
+↓
+getBean()
+↓
+Create Another Object
+↓
+Return Another Object
+
+
+Every request receives a different object.
+
+
+Important Note: Spring manages only the creation of Prototype beans. After returning the bean, Spring no longer manages it.
+
+Specifically:
+
+- @PreDestroy is NOT called.
+- Spring does NOT destroy Prototype beans.
+
+The developer is responsible for cleanup.
+
+------------------------------------------------------------
+Singleton vs Prototype
+
+
+Singleton
+
+Objects Created		: 1
+Lifecycle		: Entire Application
+Stored in Container	: Yes
+Destroyed by Spring	: Yes
+Shared			: Yes
+Typical Usage		: Services, Repositories, Configuration, Utilities
+
+
+
+Prototype
+
+Objects Created		: Unlimited
+Lifecycle		: Per Request to getBean()
+Stored in Container	: No
+Destroyed by Spring	: No
+Shared			: No
+Typical Usage		: Temporary Objects, File Processing, Report Generation, PDF Creation
+
+=============================================================================================================================================================================
+3. Request Scope
+=============================================================================================================================================================================
+
+Available only in Web Applications.
+
+Spring creates one bean per HTTP Request.
+
+
+Flow:
+
+HTTP Request
+↓
+Create Bean
+↓
+Use Bean
+↓
+HTTP Response
+↓
+Destroy Bean
+
+
+Example:
+
+@Component
+@RequestScope
+public class RequestData {
+
+}
+
+Every HTTP request receives its own object.
+
+=============================================================================================================================================================================
+4. Session Scope
+=============================================================================================================================================================================
+
+Available only in Web Applications.
+
+One bean is created for each HTTP Session.
+
+
+Flow:
+
+User Login
+↓
+Create Bean
+↓
+Multiple Requests
+↓
+Same Bean Used
+↓
+Logout / Session Timeout
+↓
+Destroy Bean
+
+
+Example:
+
+@Component
+@SessionScope
+public class ShoppingCart {
+
+}
+
+Each user gets their own ShoppingCart.
+
+=============================================================================================================================================================================
+5. Application Scope
+=============================================================================================================================================================================
+
+Available only in Web Applications.
+
+One bean is created for the entire ServletContext. All users share the same object.
+
+Example:
+
+@Component
+@ApplicationScope
+public class ApplicationStatistics {
+
+}
+
+Typically used for:
+
+- Global Configuration
+- Application Statistics
+- Shared Cache
+
+=============================================================================================================================================================================
+6. WebSocket Scope
+=============================================================================================================================================================================
+
+Available only in WebSocket Applications.
+One bean is created for each WebSocket session.
+Destroyed when the WebSocket connection closes.
+
+=============================================================================================================================================================================
+Choosing the Right Scope
+=============================================================================================================================================================================
+
+Singleton
+
+Use when:
+
+- Bean contains business logic.
+- Bean is stateless.
+- Bean can be shared.
+
+Examples:
+
+- Services
+- Repositories
+- Controllers
+
+------------------------------------------------------------
+
+Prototype
+
+Use when:
+
+- Each operation requires a new object.
+- Object contains temporary state.
+
+Examples:
+
+- PDF Generator
+- Excel Generator
+- File Processor
+
+------------------------------------------------------------
+
+Request
+
+Use when:
+
+- Data belongs to one HTTP request.
+
+------------------------------------------------------------
+
+Session
+
+Use when:
+
+- Data belongs to one logged-in user.
+
+Examples:
+
+- Shopping Cart
+- User Preferences
+
+------------------------------------------------------------
+
+Application
+
+Use when:
+
+- Data should be shared by the entire application.
+
+Examples:
+
+- Application Statistics
+- Global Configuration
+
+=============================================================================================================================================================================
+
+

@@ -1,9 +1,9 @@
 package com.demo.spring_app_annotation;
 
-//import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
-//@Primary
+@Primary
 @Component
 public class ElectricEngine implements Engine {
 	@Override
@@ -11,7 +11,5 @@ public class ElectricEngine implements Engine {
 		System.out.println("Electric Engine Starts...");
 		
 	}
-	
-	
 
 }

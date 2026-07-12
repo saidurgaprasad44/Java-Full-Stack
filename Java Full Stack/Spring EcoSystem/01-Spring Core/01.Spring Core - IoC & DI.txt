@@ -182,13 +182,15 @@ You simply tell Spring (configure):
 
 Spring automatically:
 
-1. Discovers Beans.
+1. Discovers Beans by reading the Spring configuration (XML, Annotations, or Java Configuration).
 2. Creates BeanDefinitions.
 3. Instantiates Beans.
 4. Injects Dependencies.
-5. Runs Bean Lifecycle.
-6. Stores Beans in the IoC Container.
-7. Destroys Beans when the application stops.
+5. Runs Bean Lifecycle callbacks.
+6. Creates proxies (when required)
+7. Stores Beans in the IoC Container.
+8. Returns beans when requested
+9. Destroys Beans when the application stops.
 
 In short, Spring handles Dependency Injection (DI) and automates the bean lifecycle.
 
@@ -281,7 +283,7 @@ Application Ready
 ↓
 getBean() runs
 ↓
-Instantiate Bean
+Instantiate(create) Bean
 ↓
 Resolve constructor/property references
 ↓
@@ -329,23 +331,24 @@ Bean Configuration:
 
 Dependency Injection:
 
-	- Every bean is defined and identified with id or name; id and name are same only difference is that using name we can give a bean multiple aliases (names) enclosed in double quotes separated by commas.
+	- Every bean is defined and identified with id or name attribute; id and name are same only difference is that using name we can give a bean multiple aliases (names) enclosed in double quotes separated by commas.
+	- Once the bean is defined, we can write dependency injection logic in two ways - Manual wiring and Auto wiring.
 
 
-Constructor injection:
-	- <constructor-arg ref="beanRef">
+Manual wiring:
+	- <constructor-arg> and <property> tags are used to explicitly instruct which bean to be injected with the help of ref attribute i.e., bean Id
+
+	- <constructor-arg ref="beanId">: Used to manually inject a dependency using a constructor method.
 	- The Spring container inspects the target class to find a constructor whose parameter types and order match the provided arguments. It instantiates the bean and injects the dependencies simultaneously during object creation, throwing an ambiguous constructor error if multiple matches exist.
 
-
-
-Setter injection:	
-	- <property name="propertyNameThatMatchesTheSetterMethod" ref="beanRef">
+	- <property name="propertyNameThatMatchesTheSetterMethod" ref="beanId">: Used to manually inject a dependency using a setter method.
 	- The Spring container converts the name attribute value to match Java Bean naming conventions. It capitalizes the first letter of the name, prefixes it with "set", and looks for that exact method (e.g., engine becomes setEngine). If the method name does not match this convention, Spring throws a BeanCreationException
 
 
 
 Autowiring:
-	- While Constructor and Setter injections are the manual configurations for wiring (injection), because we are explicitly instructing which bean to inject using <constructor-arg> and <property> tags, XML autowiring tells the Spring container to look at your Java classes and automatically figure out dependencies. This eliminates the need to explicitly write <property> or <constructor-arg> tags.
+	- While <constructor-arg> and <property> tags are used to explicitly instruct which bean to inject, XML autowiring tells the Spring container to look at your Java classes and automatically figure out dependencies. This eliminates the need to explicitly write <property> or <constructor-arg> tags.
+
 	- Autowire byName: When you set autowire="byName", Spring looks at the setter method name (or property field name) in your class. It then searches the XML file for a <bean> with an id that matches exactly. 
 
 	Example: 
@@ -403,6 +406,7 @@ Autowiring:
 	<bean id="myCar" class="com.example.Car" autowire="constructor" />
 
 
+	- Note: Both autowire "byName" and "byType" perform setter-based injection, while "constructor" performs constructor injection.
 ------------------------------------------------------------
 
 Plugging and Unplugging:
@@ -457,11 +461,11 @@ Read XML
 ↓
 Create BeanDefinitions
 ↓
-Instantiate Beans
+Instantiate(create) Beans
 ↓
 Resolve constructor/property references
 ↓
-Inject Dependencies
+Inject Dependencies				
 ↓
 Store Beans
 ↓
@@ -536,7 +540,7 @@ Finds @Component, @Controller, @Service, @Repository classes
 ↓
 Creates BeanDefinitions
 ↓
-Instantiates Beans
+Instantiates(creates) Beans
 ↓
 Injects @Autowired dependencies
 ↓
@@ -577,6 +581,7 @@ Dependency Injection:
 - Types: Field injection, Constructor injection (recommended) and Setter injection
 - By default, every Spring bean created using @Component, @Service, @Repository or @Controller is assigned a bean name
 - The default bean name is the class name with the first letter in lowercase. Example: UserService -> userService, DatabaseConnection -> databaseConnection
+- Using annotation-based configuration, dependency injection is performed automatically by Spring using @Autowired (or a single constructor in modern Spring). Unlike XML, there is no manual wiring using <constructor-arg> or <property>.
 - By default @Autowired performs Dependency Injection by TYPE.
 
 Example:
@@ -602,6 +607,20 @@ Spring injects the bean whose name is "oracleDatabase".
 
 - Case 4: If multiple beans exist and neither @Primary nor @Qualifier is provided ---> Spring throws: NoUniqueBeanDefinitionException
 - @Primary is placed on the Bean; @Qualifier is placed where the dependency is injected.
+
+Example for @Qualifier to use in constructor injection:
+@Service
+public class UserService {
+
+    private final Database database;
+
+    public UserService(@Qualifier("oracleDatabase") Database database) {
+        this.database = database;
+    }
+
+}
+
+- @Autowired is not needed on constructor, when there is only one constructor.
 
 ------------------------------------------------------------
 
@@ -673,7 +692,7 @@ Scans @Component classes
 ↓
 Creates BeanDefinitions
 ↓
-Instantiates Beans
+Instantiates(creates) Beans
 ↓
 Injects Dependencies
 ↓
@@ -739,18 +758,41 @@ public class AppConfig {
 
 Dependency Injection:
 
-Only Constructor Injection and Setter Injection are possible with Java configuration 
-However in spring 3, we can do field injection using @Autowired also, if the config class has @ComponentScan
+- With Java-based configuration, beans are created and wired using Java code instead of XML.
+- Instead of defining beans using <bean> tags, we define them using @Bean methods inside a @Configuration class.
+- Unlike XML and annotation-based configuration, Java configuration does not support XML autowiring modes (byName, byType, constructor) because, the developer explicitly performs the dependency injection inside the @Bean methods.
+- The @Bean methods are also called Factory Methods because they create and return Spring-managed beans.
+- Spring executes every @Bean method, registers the returned object as a bean and manages its complete lifecycle.
+- When one @Bean method calls another (for example, repository() calling database()), Spring returns the already managed singleton bean instead of creating a new object.
+- Types: Constructor Injection (recommended) and Setter Injection.
+
+- Constructor Injection: The dependency is explicitly passed through the constructor.
+
+Example:
+
+@Bean
+public UserRepository repository() {
+    return new UserRepository(database());
+}
+
+- Setter Injection: The dependency is explicitly passed through the setter method.
+
+Example:
+
+@Bean
+public UserRepository repository() {
+
+    UserRepository repository = new UserRepository();
+    repository.setDatabase(database());
+    return repository;
+}
 
 ------------------------------------------------------------
 
 Plugging and Unplugging:
 
-
-
-
-
-
+Constructor Injection    : Replace the implementation passed to the constructor.
+Setter Injection         : Replace the implementation passed to the setter.
 
 ------------------------------------------------------------
 
@@ -772,3 +814,6 @@ Advantages:
 - Type-safe configuration.
 - Easier refactoring.
 - Uses normal Java instead of XML.
+
+=============================================================================================================================================================================
+

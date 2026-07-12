@@ -1,8 +1,10 @@
 package com.demo.spring_app_java_config;
 
-
+//import org.springframework.beans.factory.annotation.Autowired;
 
 public class Developer {
+	
+	//@Autowired
 	private Computer comp;
 	
 	//Constructor Injection

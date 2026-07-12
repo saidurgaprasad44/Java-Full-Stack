@@ -5,12 +5,17 @@ package com.demo.spring_app_xml;
 
 public class Car {
 
-	Engine engine;
+	private Engine engine;
 	
-//	public Car(Engine engine1) {
-//		this.engine1 = engine1;
-//	}
-	public void setEngine(Engine engine) {
+	public Car(Engine engine) { //constructor injection
+		this.engine = engine;
+	}
+	
+	public Car() {
+	
+	}
+	
+	public void setEngine(Engine engine) { //setter injection
 		this.engine = engine;
 	}
 	

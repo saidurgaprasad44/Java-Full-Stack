@@ -9,43 +9,44 @@ import org.springframework.context.annotation.Scope;
 @Configuration
 public class Config {
 
-	@Bean
-	public Laptop laptop() {
+	@Bean // bean name "laptop"
+	public Computer laptop() {
 		return new Laptop();
 	}
 	
-//	@Bean
-//	public Computer desktop() {
-//		return new Desktop();
-//	}
-	
-	@Bean
-	public Developer developerOnDesktop(Laptop laptop1) { //Constructor injection with dependency "desktop"
-		return new Developer(laptop1);
+	@Bean // bean name "desktop"
+	public Computer desktop() {
+		return new Desktop();
 	}
 	
-	@Bean
-	public Developer developer() { //Constructor injection without dependency
+	@Bean // bean name "developerWithLaptopForConstructor"
+	public Developer developerWithLaptopForConstructor(Laptop laptopForDeveloper) { //Constructor injection with dependency Laptop bean
+		return new Developer(laptopForDeveloper); //passing dependency as a parameter, spring decides which bean by matching the type (autowiring)
+	}
+	
+	@Bean // bean name "developerWithDesktopForConstructor"
+	public Developer developerWithDesktopForConstructor() { //Constructor injection with dependency Desktop bean
+		return new Developer(desktop()); 
+	}
+	
+	
+	@Bean // bean name "developerPrototypeBean"
+	@Scope("prototype")
+	public Developer developerPrototypeBean() {
 		return new Developer();
 	}
 	
-//	@Bean
-//	@Scope("prototype")
-//	public Developer developerPrototype() {
-//		return new Developer();
-//	}
+	@Bean // bean name "developerWithLaptopForSetter"
+	public Developer developerWithLaptopForSetter() { // Setter injection
+		Developer dev = developerPrototypeBean();
+		dev.setComp(laptop());
+		return dev;
+	}
 	
-//	@Bean
-//	public Developer developerOnLaptop() { // Setter injection
-//		Developer dev = developerPrototype();
-//		dev.setComp(laptop());
-//		return dev;
-//	}
-//	
-//	@Bean
-//	public Developer developerOnDesktop() { // setter injection
-//		Developer dev = developerPrototype();
-//		dev.setComp(desktop());
-//		return dev;
-//	}
+	@Bean // bean name "developerWithLaptop"
+	public Developer developerWithDesktopForSetter(Desktop desktop) { // setter injection
+		Developer dev = developerPrototypeBean();
+		dev.setComp(desktop); //passing dependency as a parameter, spring decides which bean by matching the type (autowiring)
+		return dev;
+	}
 }

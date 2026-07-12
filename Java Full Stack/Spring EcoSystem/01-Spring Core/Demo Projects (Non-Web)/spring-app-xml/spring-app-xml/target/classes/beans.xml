@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://springframework.org/schema/context"
+    xsi:schemaLocation="
+         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+         
+<!--    	<bean id = "gasCarForConstructor" class = "com.demo.spring_app_xml.Car"> <constructor-arg ref= "gasengine" /></bean> -->
+	<bean id = "gasCarForSetter" class = "com.demo.spring_app_xml.Car"> <property name="engine" ref= "gasengine" /></bean>
+
+<!-- 	<bean id = "carForSetterByName" class = "com.demo.spring_app_xml.Car" autowire = "byName" /> -->
+<!-- 	<bean id = "carForSetterByType" class = "com.demo.spring_app_xml.Car" autowire = "byType" /> -->
+<!--    	<bean id = "carForConstructor" class = "com.demo.spring_app_xml.Car" autowire = "constructor" /> -->
+   	
+   	
+   	
+	<bean id = "gasengine" class = "com.demo.spring_app_xml.GasEngine"/>
+	<bean id = "electricengine" class = "com.demo.spring_app_xml.ElectricEngine" primary = "true"/>
+	
+</beans>
