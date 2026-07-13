@@ -330,9 +330,7 @@ Note - Proxies are usually created during postProcessAfterInitialization().
 =============================================================================================================================================================================
 =============================================================================================================================================================================
 
-Goal:
-
-To understand how long a bean lives and how many instances of a bean Spring should create.
+Goal: To understand who owns each scope and when each scope should be used in a real production application.
 
 =============================================================================================================================================================================
 Why Bean Scopes are important?
@@ -354,9 +352,10 @@ What is a Bean Scope?
 
 A Bean Scope defines:
 
-- How many instances of a bean Spring should create.
-- How long the bean should live.
-- When the bean should be destroyed.
+
+- How many objects Spring should create for a bean.
+- How long those objects should live.
+- When they should be destroyed.
 
 Different applications require different lifecycles.
 
@@ -461,25 +460,29 @@ Advantages:
 Disadvantages:
 
 - Since all users share the same object, Singleton beans should NOT store user-specific data. 
-- They should be Stateless.
+- They should be Stateless 
 
 ------------------------------------------------------------
 
 Why Singleton Beans Should Be Stateless?
 
-Stateless means: The bean does not store request-specific or user-specific data inside its instance variables.
+Saying a singleton bean should be stateless means that the bean must not store changeable, client-specific data in its class-level variables. Because Spring Framework creates only one single instance of a singleton bean for the entire application, that exact same instance is shared and executed by multiple users (threads) at the same time.
 
 Good Example:
 
 @Service
 public class CalculatorService {
 
-    public int add(int a, int b) {
+    public int add(int a, int b) { 	// Business logic only
         return a + b;
     }
 }
 
 Every request provides its own data. Nothing is stored inside the object.
+
+Use Singleton for Controllers, Services and Repositories. Because, these classes only contain business logic. 
+
+Nothing those classes belongs to a specific user. Therefore, one object is enough for the entire application.
 
 ------------------------------------------------------------
 
@@ -607,7 +610,22 @@ public class RequestData {
 
 }
 
-Every HTTP request receives its own object.
+Every HTTP request receives its own object
+
+Each object can store request-specific information such as:
+
+- Request Id
+- Client IP Address
+- Authenticated User / JWT Claims
+- Request Start Time
+- Correlation ID
+- Request-specific Data
+
+This information is available only while processing the current HTTP request.
+
+Once the request is completed and the response is sent, Spring destroys the Request-scoped bean.
+
+The next HTTP request receives a completely new bean instance.
 
 =============================================================================================================================================================================
 4. Session Scope
@@ -669,9 +687,9 @@ Typically used for:
 6. WebSocket Scope
 =============================================================================================================================================================================
 
-Available only in WebSocket Applications.
-One bean is created for each WebSocket session.
-Destroyed when the WebSocket connection closes.
+- Available only in WebSocket Applications.
+- One bean is created for each WebSocket session.
+- Destroyed when the WebSocket connection closes.
 
 =============================================================================================================================================================================
 Choosing the Right Scope
@@ -681,9 +699,9 @@ Singleton
 
 Use when:
 
-- Bean contains business logic.
-- Bean is stateless.
-- Bean can be shared.
+- Bean contains business logic
+- Bean is stateless
+- Bean can be shared
 
 Examples:
 
@@ -697,8 +715,8 @@ Prototype
 
 Use when:
 
-- Each operation requires a new object.
-- Object contains temporary state.
+- Each operation requires a new object
+- Object contains temporary state
 
 Examples:
 
@@ -712,7 +730,13 @@ Request
 
 Use when:
 
-- Data belongs to one HTTP request.
+- Data belongs to one HTTP request
+
+Examples:
+
+- RequestInfo
+- AuditRequest
+- RequestContext
 
 ------------------------------------------------------------
 
@@ -720,7 +744,7 @@ Session
 
 Use when:
 
-- Data belongs to one logged-in user.
+- Data belongs to one logged-in user
 
 Examples:
 
@@ -741,5 +765,4 @@ Examples:
 - Global Configuration
 
 =============================================================================================================================================================================
-
 
