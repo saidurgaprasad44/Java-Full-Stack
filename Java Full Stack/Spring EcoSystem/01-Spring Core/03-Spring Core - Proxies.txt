@@ -1,0 +1,79 @@
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+										Proxies
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+
+Goal:
+
+To understand how Spring executes additional functionality before and after a business method without modifying the original class.
+
+=============================================================================================================================================================================
+The Problem
+=============================================================================================================================================================================
+
+Imagine we are building an Online Payment System.
+Initially, our service looks like this:
+
+
+public class PaymentService {
+
+    public void transferMoney() {
+        System.out.println("Transferring Money...");
+    }
+}
+
+
+Everything is simple.
+Now the company grows and the Product Owner starts asking for new features.
+
+- Log every payment.
+- Start a database transaction.
+- Check user authorization.
+- Measure execution time.
+- Retry failed payments.
+- Cache frequently accessed data.
+
+If we keep adding these inside the business method, eventually the method becomes:
+
+
+Authenticate User
+↓
+Start Transaction
+↓
+Start Timer
+↓
+Write Log
+↓
+Business Logic
+↓
+Commit Transaction
+↓
+Stop Timer
+
+
+The business logic is now hidden among infrastructure code.
+
+This infrastructure code is called Cross-Cutting Concern because it appears in many different classes.
+
+Examples:
+
+- Logging
+- Transactions
+- Security
+- Caching
+- Performance Monitoring
+- Retry Logic
+- Auditing
+
+Spring wanted business classes to contain ONLY business logic.
+
+The question became:
+
+"How can we execute extra code before and after a business method without modifying the original class?"
+
+The answer is:
+
+Proxy
+
+

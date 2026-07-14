@@ -41,9 +41,9 @@ Mastered: 		HTML, CSS, Tomcat, Servlets, JSP,
 
 Backend:
 
-Spring 			- dependency injection in plain java, object lifecycle in plain java (example: jdbc), dependency injection using spring, beanfactory, appicationcontext, xml vs annotation vs java configuration for bean definitions & DI, bean lifecycle in spring, bean scopes, proxies, AOP, Circular Dependency, Lazy & eager Initialization, @value & @profile, FactoryBean, event publishing, resource loading, environment & property resolution, example project for bean life cycle for hibernate-spring integration
+Spring 			- dependency injection in plain java, object lifecycle in plain java (example: jdbc), dependency injection using spring, beanfactory, appicationcontext, xml vs annotation vs java configuration for bean definitions & DI, bean lifecycle in spring, bean scopes, proxies & AOP, resource loading & resource management, Event Publishing & Listening, Environment & Property Resolution (@value @profile), FactoryBean support, Lazy & eager Initialization, Circular Dependency, Type Conversion & Data Binding, example spring project covering all - payment application
 Spring WebMVC		- spring mvc, Spring REST, their Configurations, embedded tomcat configuration, and all concepts, example project
-jdbc			- jdbc steps, manual object table mapping and transaction management
+jdbc			- jdbc steps, manual object table mapping and transactions
 ORM and hibernate/jsp	- ORM, JSP/hibernate, transaction management
 spring Data Access 	- Spring jdbc, jdbc template, Hibernate integration, transaction management, jpa, spring data jpa, configurations for all, project
 Spring Boot 		- opinionated auto-configuration, auto-configurations for spring MVC, DataSource, Transaction, Embedded tomcat, overriding and customizing auto-configuration
@@ -59,6 +59,9 @@ DSA			- string, array, collections and map, linked list, queues,
 Java	 		- java 8/11/17 features, exception handling, global exception handling, multi-threading, jvm and garbage collection
 sql 			- querying, update/insert/delete, joins, table relationships, indexing, transactions, aggregations, order of writing and execution, 
 SDLC			- planning, requirement analysis(functional and non-functional), design, implementation, testing (Junit, integration, etc.,), deployment, maintenance (logging framework,) 
+Tools			- Inspect tool in browsers, 
+
+
 
 Frontend:
 

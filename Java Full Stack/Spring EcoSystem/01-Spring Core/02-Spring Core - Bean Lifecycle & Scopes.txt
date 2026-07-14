@@ -319,6 +319,11 @@ Note - Proxies are usually created during postProcessAfterInitialization().
 
 
 
+<--------------------------------we will add the production class example on bankClient bean here---------------------->
+
+
+
+
 
 
 
