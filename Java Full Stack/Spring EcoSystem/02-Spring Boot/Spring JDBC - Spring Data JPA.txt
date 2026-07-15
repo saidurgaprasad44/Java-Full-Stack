@@ -1,5 +1,5 @@
 =======================================================================================================================================================================
-Spring JDBC vs Spring Data JPA:
+Spring JDBC vs Spring ORM (Hibernate/JPA) vs Spring Data JPA:
 =======================================================================================================================================================================
 
 Spring JDBC (Semi-Automated)
@@ -8,6 +8,12 @@ Database Connection: Automated (Spring opens/closes connections and handles tran
 Object-to-Table Mapping: Manual (You must write a RowMapper)
 SQL Writing: Manual
 
+Spring ORM (Hibernate/JPA)
+
+
+
+
+
 
 Spring Data JPA (Ultra-Automated Wrapper)
 
@@ -15,6 +21,8 @@ Database Connection: Automated
 Object-to-Table Mapping: Automated (Inherited from Hibernate)
 SQL Writing: Automated (Inherited from Hibernate)
 Repository/DAO Writing: Automated (This is what Spring Data JPA adds—you don't even have to write code to trigger Hibernate's entity manager; you just use a blank interface like UserRepository extends JpaRepository)
+
+
 
 
 If Hibernate writes the SQL, why do we need Spring Data JPA? It comes down to Boilerplate Java Code.
