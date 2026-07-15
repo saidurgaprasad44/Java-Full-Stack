@@ -78,13 +78,14 @@ At this stage, No object exists yet. Spring is only collecting information about
 2. Instantiate Bean
 =============================================================================================================================================================================
 
-Using the BeanDefinition, Spring now creates the actual Java object.
+Using the BeanDefinition, Spring now creates the actual Java object from the class.
 
 Example:
 
 UserService service = new UserService();
 
-Now, the object exists in JVM memory. However, Dependencies are NOT injected yet. The bean is not ready for use.
+- During instantiation, Java allocates memory for the object in the JVM Heap and executes the constructor. 
+- At this stage, the object exists in memory, but it may not yet be fully usable.
 
 =============================================================================================================================================================================
 3. Inject Dependencies
@@ -310,6 +311,263 @@ Garbage Collection (JVM)
 
 Note - Proxies are usually created during postProcessAfterInitialization().
 
+=============================================================================================================================================================================
+Example bean to understand the complete lifecycle in one go:
+=============================================================================================================================================================================
+
+@Repository
+public class PaymentRepository {
+
+    public void savePayment() {
+        System.out.println("Payment saved successfully.");
+    }
+
+}
+
+
+
+@Service
+public class PaymentService implements BeanNameAware {
+
+    @Autowired
+    private PaymentRepository repository;
+
+    private BankApi bankApi = new BankApi();
+
+    @Override
+    public void setBeanName(String beanName) {
+        System.out.println("Bean Name : " + beanName);
+    }
+
+    @PostConstruct
+    public void initialize() {
+
+        // One-time Initialization
+
+        bankApi.authenticate();
+
+        System.out.println("Connected to Bank Server.");
+
+    }
+
+    @Transactional
+    public void processPayment() {
+
+        repository.savePayment();
+
+    }
+
+}
+
+------------------------------------------------------------
+Step 1 - Scan the Package
+
+
+Spring scans the configured package.
+It discovers the following Spring Beans:
+
+- PaymentRepository
+- PaymentService
+
+At this stage, Spring has only identified the bean classes. No objects are created yet.
+
+------------------------------------------------------------
+Step 2 - Create BeanDefinitions
+
+
+For every discovered bean, Spring creates a BeanDefinition.
+At this stage:
+
+PaymentRepository  → BeanDefinition
+PaymentService     → BeanDefinition
+
+
+The actual objects still do not exist.
+
+------------------------------------------------------------
+Step 3 - Instantiate PaymentRepository
+
+
+Spring starts creating beans.
+Since PaymentRepository has no dependencies (no @Autowired), Spring simply creates it.
+
+
+Equivalent to:
+
+PaymentRepository repository = new PaymentRepository();
+
+
+The object is now created in the JVM Heap. but it is not yet ready to be used.
+
+------------------------------------------------------------
+Step 4 - Process the PaymentRepository Bean
+
+
+Now imagine Spring has a list of Processors.
+
+
+Processor A -> Value Processor
+	↓
+Processor B -> PostConstruct Processor
+	↓
+Processor C -> Transaction Proxy Processor
+	↓
+Processor D -> AOP Proxy Processor
+
+
+Each one has one responsibility. 
+
+Who registered them? 
+Spring did. During startup.
+
+What all processors are registered?
+Spring is smart. Spring only registers the processors required for the features you're using. 
+
+
+Now Spring says:
+
+
+Repository Bean Created
+↓
+Let's ask every processor
+if it wants to do something.
+
+
+PaymentRepository contains none of these features.
+Therefore, every stage simply passes the bean without making any changes.
+Spring stores the fully prepared PaymentRepository bean inside the IoC Container.
+
+------------------------------------------------------------
+Step 5 - Instantiate PaymentService
+
+
+Spring now creates the PaymentService object.
+
+
+Equivalent to:
+
+PaymentService service = new PaymentService();
+
+
+The object exists, but it is not yet ready to perform business operations.
+Now the same processors run again.
+
+------------------------------------------------------------
+Step 6 - Perform Dependency Injection
+
+For dependencies Spring runs a special processor InstantiationAwareBeanPostProcessor that checks for @Autowired
+
+Spring detects:
+
+@Autowired
+private PaymentRepository repository;
+
+
+Spring searches the IoC Container for a PaymentRepository bean.
+Since it already exists, Spring injects it.
+
+
+Equivalent to:
+
+service.repository = repository;
+
+------------------------------------------------------------
+Step 7 - Execute Aware Callbacks
+
+
+PaymentService implements:
+
+BeanNameAware
+
+
+Spring therefore calls:
+
+setBeanName("paymentService");
+
+
+The bean now knows its own Spring bean name.
+
+------------------------------------------------------------
+Step 8 - Execute BeanPostProcessor (Before Initialization)
+
+
+Spring now sends the bean through every registered BeanPostProcessor.
+
+Each BeanPostProcessor checks whether it has any responsibility for the current bean.
+
+If not, it simply passes the bean to the next processor.
+
+------------------------------------------------------------
+Step 9 - Execute @PostConstruct
+
+
+Spring detects:
+
+
+@PostConstruct
+public void initialize() {
+
+    bankApi.authenticate();
+}
+
+
+Spring invokes this method once.
+This method is used for one-time initialization after dependency injection has completed.
+Typical production work includes:
+
+* Authenticating with external systems.
+* Loading lookup data.
+* Building caches.
+* Validating configuration.
+* Initializing expensive resources.
+
+In this example, the application authenticates with the Bank API before processing any payment requests.
+
+Notice:
+@PostConstruct prepares the bean.
+It is NOT the bean's business logic.
+
+------------------------------------------------------------
+Step 10 - Execute BeanPostProcessor (After Initialization)
+
+
+Spring again sends the bean through every registered BeanPostProcessor.
+One of Spring's internal BeanPostProcessors detects:
+
+
+@Transactional
+
+
+Instead of returning the original PaymentService object, Spring creates a Proxy.
+
+
+PaymentService Proxy
+↓
+PaymentService
+
+
+The Proxy is returned to the IoC Container.
+(The complete Proxy mechanism will be explained in the next chapter.)
+
+------------------------------------------------------------
+Step 11 - Bean Ready
+
+
+The fully prepared bean (or Proxy) is stored inside the IoC Container.
+Whenever another bean requests like:
+
+@Autowired
+private PaymentService paymentService;
+
+Spring returns the Proxy.
+The application is now fully started.
+The PaymentService bean waits until another component invokes:
+
+paymentService.processPayment();
+
+Only then does the actual business logic execute.
+
+=============================================================================================================================================================================
 
 
 
@@ -319,7 +577,6 @@ Note - Proxies are usually created during postProcessAfterInitialization().
 
 
 
-<--------------------------------we will add the production class example on bankClient bean here---------------------->
 
 
 
@@ -356,7 +613,6 @@ What is a Bean Scope?
 =============================================================================================================================================================================
 
 A Bean Scope defines:
-
 
 - How many objects Spring should create for a bean.
 - How long those objects should live.
@@ -768,6 +1024,113 @@ Examples:
 
 - Application Statistics
 - Global Configuration
+
+=============================================================================================================================================================================
+Before Spring:
+=============================================================================================================================================================================
+
+Java never had the concept of Bean Scopes. Developers themselves decided:
+
+- When an object should be created.
+- How long it should live.
+- Who should own it.
+- When it should be destroyed.
+
+Everything depended on where the developer wrote the "new" keyword.
+
+------------------------------------------------------------
+
+Singleton-like Objects (Before Spring):
+
+If the object is created once during application startup and reused everywhere, it behaves like a Singleton.
+
+
+Example:
+
+public class Main {
+    public static void main(String[] args) {
+
+        Calculator calculator = new Calculator();
+        // Entire application uses the same object
+    }
+}
+
+One object is created.
+↓
+Entire application uses the same object.
+
+------------------------------------------------------------
+
+Prototype-like Objects (Before Spring):
+
+If the object is created every time a request is processed, each request receives a new object.
+
+
+Example:
+
+public void processRequest() {
+
+    Calculator calculator = new Calculator();
+    calculator.add(10,20);
+}
+
+
+Request 1
+↓
+new Calculator()
+↓
+Object Used
+↓
+Eligible for Garbage Collection
+
+
+Request 2
+↓
+new Calculator()
+↓
+New Object Created
+
+------------------------------------------------------------
+
+Request Scope (Before Spring):
+
+
+Servlet developers manually stored objects inside the HttpServletRequest.
+
+
+Example: 
+
+request.setAttribute("user", user);
+
+The object lived only for that HTTP request.
+
+------------------------------------------------------------
+
+Session Scope (Before Spring)
+
+
+Developers manually stored objects inside HttpSession.
+
+
+Example:
+
+session.setAttribute("shoppingCart", cart);
+
+The object remained alive until the user logged out or the session expired.
+
+------------------------------------------------------------
+
+Application Scope (Before Spring)
+
+
+Developers manually stored objects inside ServletContext.
+
+
+Example:
+
+getServletContext().setAttribute("configuration", configuration);
+
+The object was shared by the entire application.
 
 =============================================================================================================================================================================
 
