@@ -91,7 +91,21 @@ UserService service = new UserService();
 3. Inject Dependencies
 =============================================================================================================================================================================
 
-After creating the object, Spring injects all required dependencies.
+- After instantiating the bean, Spring performs Dependency Injection before executing the Aware Callbacks.
+- Spring internally uses its registered Dependency Injection processors to inspect every bean.
+
+	Examples: AutowiredAnnotationBeanPostProcessor, InstantiationAwareBeanPostProcessor
+
+- These processors check whether the bean contains any dependency-related annotations or configuration such as:
+
+	- @Autowired
+	- @Value
+	- Constructor Injection
+	- Setter Injection
+	- XML <property> / <constructor-arg>
+	- Java Configuration (@Bean method parameters)
+
+- If dependencies are found, Spring resolves the required beans from the IoC Container and injects them into the current bean.
 
 Example:
 
@@ -120,6 +134,7 @@ Now the bean has everything it needs.
 4. Aware Callbacks
 =============================================================================================================================================================================
 
+Aware callbacks are implemented by the developer, but invoked automatically by Spring.
 If the bean implements one of Spring's *Aware interfaces, Spring provides information about itself.
 
 Examples:
@@ -149,11 +164,29 @@ Output: userService
 5. BeanPostProcessor (Before Initialization)
 =============================================================================================================================================================================
 
-Spring now gives every BeanPostProcessor a chance to modify the bean before initialization.
+- After Spring executes Aware Callbacks, it passes the bean through a list of BeanPostProcessors registered during startup.
+- Spring only registers the processors required for the features you're using.
 
-Method executed:
+	Example:
+		Processor 1
+		    ↓
+		Processor 2
+		    ↓
+		Processor 3
+		    ↓
+		Processor 4
+		    ....
 
-postProcessBeforeInitialization()
+- Each BeanPostProcessor checks whether it has any responsibility for the current bean.
+- If yes, it performs its work and returns the bean.
+- Otherwise, it simply passes the bean to the next BeanPostProcessor.
+- This stage is mainly used by Spring to prepare the bean before the bean's own initialization logic (@PostConstruct) executes.
+
+Example Registered BeanPostProcessors:
+
+- AutowiredAnnotationBeanPostProcessor (A special BeanPostProcessor unlike other processors, it runs before Aware callbacks to inject the dependencies)
+- CommonAnnotationBeanPostProcessor
+
 
 Typical uses:
 
@@ -168,7 +201,11 @@ Normally, application developers rarely implement BeanPostProcessor. Spring uses
 6. @PostConstruct
 =============================================================================================================================================================================
 
-Now Spring executes the bean's initialization logic.
+- After Spring finishes preparing the bean, it invokes the developer's @PostConstruct method exactly once.
+- This method contains one-time initialization logic written by the developer
+- It is executed only after all dependencies have been injected successfully.
+- @PostConstruct prepares the bean before it starts serving business requests.
+- It is NOT used for business logic.
 
 Example:
 
@@ -181,7 +218,9 @@ public void init(){
 
 Typical uses:
 
+- Authenticate with external systems.
 - Open Database Connections
+- Load lookup data.
 - Load Configuration
 - Initialize Cache
 - Read Files
@@ -193,35 +232,34 @@ After this step, the bean has completed its own initialization.
 7. BeanPostProcessor (After Initialization)
 =============================================================================================================================================================================
 
-Spring again gives every BeanPostProcessor a chance to modify the bean.
+- After the @PostConstruct method completes, Spring again passes the bean through the list of registered BeanPostProcessors.
+- Each BeanPostProcessor checks whether it has any responsibility for the current bean.
+- If yes, it enhances, wraps or replaces the bean.
+- Otherwise, it simply passes the bean to the next BeanPostProcessor.
+- This stage is mainly used to create Proxy objects that provide additional framework features.
 
-Method executed:
 
-postProcessAfterInitialization()
+Example Registered BeanPostProcessors:
 
-This is where Spring usually creates proxies.
+- AsyncAnnotationBeanPostProcessor
+- AnnotationAwareAspectJAutoProxyCreator
+- PersistenceAnnotationBeanPostProcessor
 
-Examples:
-
+Example Use cases:
 - @Transactional
 - @Async
 - Spring Security
 - AOP
 - Caching
 
-The original bean may now be wrapped inside a proxy object.
-
 =============================================================================================================================================================================
 8. Bean Ready
 =============================================================================================================================================================================
 
-The bean is now fully initialized.
-
-It is stored inside the IoC Container.
-
-The application can now use it.
-
-Singleton beans remain inside the container until the application shuts down.
+- The bean is now fully initialized.
+- It is stored inside the IoC Container.
+- The application can now use it.
+- Singleton beans remain inside the container until the application shuts down.
 
 =============================================================================================================================================================================
 9. Bean Used
@@ -276,40 +314,6 @@ Spring removes the bean from the IoC Container.
 The bean becomes eligible for Garbage Collection.
 
 Its memory will eventually be reclaimed by the JVM Garbage Collector.
-
-=============================================================================================================================================================================
-Complete Internal Flow
-=============================================================================================================================================================================
-
-Configuration (XML / Annotation / Java Config)
-↓
-Create BeanDefinitions
-↓
-Instantiate Bean
-↓
-Inject Dependencies
-↓
-Aware Callbacks
-↓
-BeanPostProcessor (Before Initialization)
-↓
-@PostConstruct
-↓
-BeanPostProcessor (After Initialization)
-↓
-Bean Ready
-↓
-Bean Used Throughout Application
-↓
-@PreDestroy
-↓
-Destroy Bean
-↓
-Garbage Collection (JVM)
-
-
-
-Note - Proxies are usually created during postProcessAfterInitialization().
 
 =============================================================================================================================================================================
 Example bean to understand the complete lifecycle in one go:
@@ -403,7 +407,7 @@ The object is now created in the JVM Heap. but it is not yet ready to be used.
 Step 4 - Process the PaymentRepository Bean
 
 
-Now imagine Spring has a list of Processors.
+Now Spring passes the bean through the list of Processors registered during startup.
 
 
 Processor A -> Value Processor
@@ -415,17 +419,7 @@ Processor C -> Transaction Proxy Processor
 Processor D -> AOP Proxy Processor
 
 
-Each one has one responsibility. 
-
-Who registered them? 
-Spring did. During startup.
-
-What all processors are registered?
-Spring is smart. Spring only registers the processors required for the features you're using. 
-
-
 Now Spring says:
-
 
 Repository Bean Created
 ↓
@@ -513,14 +507,6 @@ public void initialize() {
 
 Spring invokes this method once.
 This method is used for one-time initialization after dependency injection has completed.
-Typical production work includes:
-
-* Authenticating with external systems.
-* Loading lookup data.
-* Building caches.
-* Validating configuration.
-* Initializing expensive resources.
-
 In this example, the application authenticates with the Bank API before processing any payment requests.
 
 Notice:

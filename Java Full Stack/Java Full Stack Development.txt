@@ -41,7 +41,7 @@ Mastered: 		HTML, CSS, Tomcat, Servlets, JSP,
 
 Backend:
 
-Spring 			- dependency injection in plain java, object lifecycle in plain java (example: jdbc), dependency injection using spring, beanfactory, appicationcontext, xml vs annotation vs java configuration for bean definitions & DI, bean lifecycle in spring, bean scopes, proxies & AOP, resource loading & resource management, Event Publishing & Listening, Environment & Property Resolution (@value @profile), FactoryBean support, Lazy & eager Initialization, Circular Dependency, Type Conversion & Data Binding, example spring project covering all - payment application
+Spring 			- dependency injection in plain java, object lifecycle in plain java (example: jdbc), dependency injection using spring, beanfactory, appicationcontext, xml vs annotation vs java configuration for bean definitions & DI, bean lifecycle in spring, bean scopes, proxies & AOP, resource loading & resource management, Event Publishing & Listening, Environment & Property Resolution (@value, @profile), FactoryBean support, Lazy & eager Initialization, Circular Dependency, Type Conversion & Data Binding, example spring project covering all - payment application
 servlets & jsps		- MVC pattern(SSR) and its package structure, servlet and jsp fundamentals, REST APIs and its package structure, Jax-rs Jersey, Jackson for json serialization, deserialization - example projects on MVC(SSR & JDBC) and REST API using jax-rs Jersey & Hibernate
 jdbc			- jdbc steps - database connection, object creation, repositories for table mappings and transactions
 ORM and hibernate/jsp	- ORM, JSP/hibernate - datasource for connection, entity management, repositories, transaction management, hibernate properties - in JEE MVC projects add JDBC&HBNT
@@ -51,14 +51,14 @@ Spring Boot 		- opinionated auto-configuration - overriding & customizing, auto-
 auth and authz 		- request and response anatomy, http statelessness, sessions , sessionid, httponly cookies, state management, jwt anatomy, session id (statefull) vs token (stataless), CORS, CSRF, token in localstorage vs httponly cookies, workflow of basic auth vs token authentication, access token vs refresh tokens, filters, spring security, 
 microservices 		- api gateway, load balancer, microservices, inter service communication, service discovery, open feign, spring cloud
 microservices patterns	- saga pattern
-caching			- redis, read through and write through techniques, TTL, eviction policies
-event driven queueing	- kafka message queues
+caching			- redis, read through and write through techniques, TTL, eviction policies, @Cacheable
+event driven queueing	- kafka message queues, @Async
 Core Java		- java 8/11/17 features, exception handling, global exception handling, multi-threading, jvm and garbage collection
 Design principles/patterns- SOLID, KISS, DRY, creational, structural, behavioral, 
 DSA			- string, array, collections and map, linked list, queues, 
 sql 			- querying, update/insert/delete, joins, table relationships, indexing, transactions, aggregations, order of writing and execution, 
 system design concepts 	- sharding, partitions, rate limiting, indexing, CDNs
-Cloud			- Azure cloud
+Cloud			- Azure cloud - 
 Docker and Kubernetes	- 
 SDLC			- planning, requirement analysis(functional and non-functional), design, implementation, testing (Junit, integration, etc.,), deployment, maintenance (logging..,) 
 Tools			- Inspect tool in browsers, 
