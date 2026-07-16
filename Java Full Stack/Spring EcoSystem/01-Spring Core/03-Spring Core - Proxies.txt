@@ -6,10 +6,10 @@
 
 Goal:
 
-To understand how Spring executes additional functionality before and after a business method without modifying the original class.
+To separate Cross-Cutting Concerns (Logging, Transactions, Security, Caching, etc.) from the Business Logic without modifying the Business Class.
 
 =============================================================================================================================================================================
-The Problem
+Why Proxies:
 =============================================================================================================================================================================
 
 Imagine we are building an Online Payment System.
@@ -18,62 +18,386 @@ Initially, our service looks like this:
 
 public class PaymentService {
 
-    public void transferMoney() {
-        System.out.println("Transferring Money...");
+    public void processPayment() {
+        // Business Logic
+	repository.savePayment();
     }
 }
 
 
-Everything is simple.
-Now the company grows and the Product Owner starts asking for new features.
+Initially, the class contains only the business logic.
+As the application grows, new requirements are introduced.
 
-- Log every payment.
-- Start a database transaction.
-- Check user authorization.
-- Measure execution time.
-- Retry failed payments.
-- Cache frequently accessed data.
+For example:
 
-If we keep adding these inside the business method, eventually the method becomes:
+Logging
+Transaction Management
+Security Checks
+Performance Monitoring
+Caching
+Retry Mechanism
+Exception Handling
+Audit Logging
 
-
-Authenticate User
-↓
-Start Transaction
-↓
-Start Timer
-↓
-Write Log
-↓
-Business Logic
-↓
-Commit Transaction
-↓
-Stop Timer
+Without Proxies, all these concerns are added directly into the business method.
 
 
-The business logic is now hidden among infrastructure code.
+Example:
 
-This infrastructure code is called Cross-Cutting Concern because it appears in many different classes.
+public void processPayment() {
+
+    logStart();
+    securityCheck();
+    startTransaction();
+    repository.savePayment();
+    commitTransaction();
+    logEnd();
+
+}
+
+
+Cross-Cutting Concerns are functionalities that are required by multiple classes but are NOT part of the actual business logic.
 
 Examples:
+
+- PaymentService
+- OrderService
+- InvoiceService
+- RefundService
+
+Every service requires:
 
 - Logging
 - Transactions
 - Security
-- Caching
-- Performance Monitoring
-- Retry Logic
-- Auditing
 
-Spring wanted business classes to contain ONLY business logic.
 
-The question became:
 
-"How can we execute extra code before and after a business method without modifying the original class?"
+Without Proxy: Client -> PaymentService
 
-The answer is:
+Problems:
 
+- Business Logic becomes difficult to read.
+- Same code is duplicated across multiple services.
+- Maintenance becomes difficult.
+- Violates the Single Responsibility Principle (SRP).
+
+------------------------------------------------------------
+
+- Instead of writing them in every class, Spring allows us to separate them using Proxies.
+- A Proxy is an object that stands between the Client and the Real Object.
+- Instead of directly calling the actual object, the client communicates with the Proxy.
+- The Proxy can perform additional work before and after invoking the actual business method.
+
+
+With Proxies: Client -> Proxy -> PaymentService
+
+- Separates Cross-Cutting Concerns from Business Logic.
+- Keeps Business Classes clean and maintainable.
+- Eliminates duplicate code.
+- Follows the Single Responsibility Principle (SRP).
+- Allows Spring to add framework features without modifying the Business Class.
+
+
+The Proxy decides what should happen:
+
+Before Business Method: Logging, Security, Start Transaction
+	↓
+Business Method
+	↓
+After Business Method: Commit Transaction, Logging, Performance Monitoring
+
+
+=============================================================================================================================================================================
+BeanPostProcessors vs Proxies:
+=============================================================================================================================================================================
+
+BeanPostProcessors and Proxies work at different stages of a Spring Application.
+
+------------------------------------------------------------
+BeanPostProcessors
+
+* BeanPostProcessors execute during the Bean Lifecycle (Application Startup).
+* They are responsible for preparing, initializing, inspecting, modifying or enhancing the bean before it is stored inside the IoC Container.
+* During the BeanPostProcessor (After Initialization) phase, Spring may create a Proxy instead of storing the original bean.
+* Once the bean is fully prepared, Spring stores the original bean or the Proxy inside the IoC Container.
+
+------------------------------------------------------------
+Proxies
+
+* Proxies execute during Runtime (Application Execution).
+* They are created during the Bean Lifecycle but are used only after the application has started.
+* Every time another object invokes a proxied bean through the IoC Container, the method call first reaches the Proxy.
+* The Proxy executes additional framework logic before and after invoking the actual business method.
+
+------------------------------------------------------------
+Relationship Between BeanPostProcessors and Proxies
+
+* BeanPostProcessors create the Proxy during the Bean Lifecycle.
+* The Proxy is then stored inside the IoC Container instead of the original bean.
+* During Runtime, every external method invocation reaches the Proxy first, which then delegates the call to the actual bean.
+
+
+Application Startup:
+
+Instantiate Bean
+↓
+Dependency Injection
+↓
+Aware Callbacks
+↓
+BeanPostProcessor (Before Initialization)
+↓
+@PostConstruct
+↓
+BeanPostProcessor (After Initialization)
+↓
+Proxy Created (If Required)
+↓
+Bean Ready (Original Bean or Proxy)
+
+------------------------------------------------------------
+
+Application Runtime:
+
+
+Client
+↓
 Proxy
+↓
+Business Method
+↓
+Return Result
+
+
+Important Note:
+
+- The Proxy intercepts only external method calls that pass through the IoC Container.
+- If one method inside the bean directly calls another method of the same bean (Self Invocation), the call bypasses the Proxy and the additional framework logic is not executed.
+
+=============================================================================================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Goal: To understand how a Proxy works by manually creating one in Plain Java.
+
+Consider the following PaymentService.
+
+```java
+public class PaymentService {
+
+    public void processPayment() {
+
+        System.out.println("Processing Payment...");
+
+    }
+
+}
+```
+
+The client directly calls the PaymentService.
+
+```text
+Client
+
+↓
+
+PaymentService
+```
+
+Now suppose a new requirement is introduced.
+
+"We need to log every payment request."
+
+One approach is to modify the PaymentService.
+
+```java
+public class PaymentService {
+
+    public void processPayment() {
+
+        System.out.println("Payment Started");
+
+        System.out.println("Processing Payment...");
+
+        System.out.println("Payment Completed");
+
+    }
+
+}
+```
+
+Although this works, the business class is now responsible for both:
+
+* Business Logic
+* Logging
+
+As more requirements are added (Transactions, Security, Caching, etc.), the business class becomes cluttered.
+
+Instead of modifying the business class, we create another class called a Proxy.
+
+The Proxy performs the additional work and then delegates the request to the real object.
+
+```text
+Client
+
+↓
+
+PaymentServiceProxy
+
+↓
+
+PaymentService
+```
+
+Business Class:
+
+```java
+public class PaymentService {
+
+    public void processPayment() {
+
+        System.out.println("Processing Payment...");
+
+    }
+
+}
+```
+
+---
+
+Proxy Class:
+
+```java
+public class PaymentServiceProxy {
+
+    private PaymentService paymentService = new PaymentService();
+
+    public void processPayment() {
+
+        System.out.println("Payment Started");
+
+        paymentService.processPayment();
+
+        System.out.println("Payment Completed");
+
+    }
+
+}
+```
+
+---
+
+Client:
+
+```java
+public class Main {
+
+    public static void main(String[] args) {
+
+        PaymentServiceProxy proxy = new PaymentServiceProxy();
+
+        proxy.processPayment();
+
+    }
+
+}
+```
+
+```text
+Client
+
+↓
+
+PaymentServiceProxy.processPayment()
+
+↓
+
+Logging Before
+
+↓
+
+PaymentService.processPayment()
+
+↓
+
+Logging After
+
+↓
+
+Return
+```
+
+Notice that the Client never directly communicates with the PaymentService.
+
+It always communicates with the Proxy.
+
+* Business Logic remains clean.
+* Cross-Cutting Concerns are separated.
+* Existing Business Class does not need modification.
+* Follows the Single Responsibility Principle (SRP).
+
+Suppose we have the following services:
+
+* PaymentService
+* OrderService
+* RefundService
+* NotificationService
+
+Each service now requires its own Proxy.
+
+```text
+PaymentService
+↓
+
+PaymentServiceProxy
+
+--------------------------------
+
+OrderService
+↓
+
+OrderServiceProxy
+
+--------------------------------
+
+RefundService
+↓
+
+RefundServiceProxy
+
+--------------------------------
+
+NotificationService
+↓
+
+NotificationServiceProxy
+```
+
+Problems:
+
+* Large amount of duplicate code.
+* One Proxy class is required for every Business Class.
+* Difficult to maintain.
+* Every new service requires writing another Proxy manually.
+
+This problem led to the introduction of Dynamic Proxies.
 
 

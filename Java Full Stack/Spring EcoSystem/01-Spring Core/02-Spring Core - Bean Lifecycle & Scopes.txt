@@ -22,11 +22,8 @@ For example:
 - A REST Client may need to initialize HTTP connections.
 
 Similarly, before the application shuts down, these resources must be released properly.
-
 Without lifecycle management, developers would need to manually initialize and destroy every object.
-
 Spring automates this entire process.
-
 Every Spring Bean goes through the following phases:
 
 1. Create BeanDefinition
@@ -48,9 +45,7 @@ Spring automatically manages all these phases.
 =============================================================================================================================================================================
 
 The first step is NOT creating the object.
-
 Spring first creates a BeanDefinition.
-
 A BeanDefinition is simply metadata (instructions) describing how to create the bean, not actual object
 
 It contains information like:
@@ -78,7 +73,7 @@ At this stage, No object exists yet. Spring is only collecting information about
 2. Instantiate Bean
 =============================================================================================================================================================================
 
-Using the BeanDefinition, Spring now creates the actual Java object from the class.
+- Using the BeanDefinition, Spring now creates the actual Java object from the class.
 
 Example:
 
@@ -134,18 +129,18 @@ Now the bean has everything it needs.
 4. Aware Callbacks
 =============================================================================================================================================================================
 
-Aware callbacks are implemented by the developer, but invoked automatically by Spring.
-If the bean implements one of Spring's *Aware interfaces, Spring provides information about itself.
+- Aware callbacks are implemented by the developer, but invoked automatically by Spring.
+- If the bean implements one of Spring's *Aware interfaces, Spring provides information about itself.
 
 Examples:
 
-BeanNameAware
-BeanFactoryAware
-ApplicationContextAware
-EnvironmentAware
-ResourceLoaderAware
+- BeanNameAware
+- BeanFactoryAware
+- ApplicationContextAware
+- EnvironmentAware
+- ResourceLoaderAware
 
-These callbacks allow a bean to know about the Spring container.
+- These callbacks allow a bean to know about the Spring container.
 
 Example:
 
@@ -226,6 +221,7 @@ Typical uses:
 - Read Files
 - Create Thread Pools
 
+
 After this step, the bean has completed its own initialization.
 
 =============================================================================================================================================================================
@@ -265,7 +261,7 @@ Example Use cases:
 9. Bean Used
 =============================================================================================================================================================================
 
-Whenever the application needs the bean, Spring returns it from the IoC Container.
+- Whenever the application needs the bean, Spring returns it from the IoC Container.
 
 Example:
 
@@ -277,13 +273,13 @@ UserRepository
 ↓
 Database
 
-The same Singleton bean is reused for every request.
+- The same Singleton bean is reused for every request.
 
 =============================================================================================================================================================================
 10. @PreDestroy
 =============================================================================================================================================================================
 
-When the application is shutting down, Spring executes methods annotated with @PreDestroy.
+- When the application is shutting down, Spring executes methods annotated with @PreDestroy.
 
 Example:
 
@@ -307,13 +303,9 @@ Typical uses:
 11. Destroy Bean
 =============================================================================================================================================================================
 
-After @PreDestroy,
-
-Spring removes the bean from the IoC Container.
-
-The bean becomes eligible for Garbage Collection.
-
-Its memory will eventually be reclaimed by the JVM Garbage Collector.
+- After @PreDestroy, Spring removes the bean from the IoC Container.
+- The bean becomes eligible for Garbage Collection.
+- Its memory will eventually be reclaimed by the JVM Garbage Collector.
 
 =============================================================================================================================================================================
 Example bean to understand the complete lifecycle in one go:
@@ -421,15 +413,12 @@ Processor D -> AOP Proxy Processor
 
 Now Spring says:
 
-Repository Bean Created
-↓
-Let's ask every processor
-if it wants to do something.
+Repository Bean Created, let's ask every processor if it wants to do something.
 
 
-PaymentRepository contains none of these features.
-Therefore, every stage simply passes the bean without making any changes.
-Spring stores the fully prepared PaymentRepository bean inside the IoC Container.
+- PaymentRepository contains none of these features.
+- Therefore, every stage simply passes the bean without making any changes.
+- Spring stores the fully prepared PaymentRepository bean inside the IoC Container.
 
 ------------------------------------------------------------
 Step 5 - Instantiate PaymentService
