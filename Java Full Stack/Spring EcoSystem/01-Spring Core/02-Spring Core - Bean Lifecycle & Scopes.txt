@@ -317,9 +317,7 @@ public class PaymentRepository {
     public void savePayment() {
         System.out.println("Payment saved successfully.");
     }
-
 }
-
 
 
 @Service
@@ -543,16 +541,6 @@ paymentService.processPayment();
 Only then does the actual business logic execute.
 
 =============================================================================================================================================================================
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -176,116 +176,44 @@ Important Note:
 - If one method inside the bean directly calls another method of the same bean (Self Invocation), the call bypasses the Proxy and the additional framework logic is not executed.
 
 =============================================================================================================================================================================
+Static Proxy:
+=============================================================================================================================================================================
+
+Goal: To separate Cross-Cutting Concerns (Logging, Transactions, Security, Caching, etc.) from the Business Logic without modifying the Business Class.
 
 
+Consider the following PaymentService:
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Goal: To understand how a Proxy works by manually creating one in Plain Java.
-
-Consider the following PaymentService.
-
-```java
 public class PaymentService {
 
     public void processPayment() {
-
         System.out.println("Processing Payment...");
-
     }
-
 }
-```
 
-The client directly calls the PaymentService.
 
-```text
-Client
+- Now suppose a new requirement is introduced "We need to log every payment request."
+- One approach is to modify the PaymentService. Although this works, the business class is now responsible for both: Business Logic and Logging
+- As more requirements are added (Transactions, Security, Caching, etc.), the business class becomes cluttered.
+- Instead of modifying the business class, we create another class called a Proxy.
+- The Proxy performs the additional work and then delegates the request to the real object.
 
-↓
-
-PaymentService
-```
-
-Now suppose a new requirement is introduced.
-
-"We need to log every payment request."
-
-One approach is to modify the PaymentService.
-
-```java
-public class PaymentService {
-
-    public void processPayment() {
-
-        System.out.println("Payment Started");
-
-        System.out.println("Processing Payment...");
-
-        System.out.println("Payment Completed");
-
-    }
-
-}
-```
-
-Although this works, the business class is now responsible for both:
-
-* Business Logic
-* Logging
-
-As more requirements are added (Transactions, Security, Caching, etc.), the business class becomes cluttered.
-
-Instead of modifying the business class, we create another class called a Proxy.
-
-The Proxy performs the additional work and then delegates the request to the real object.
-
-```text
-Client
-
-↓
-
-PaymentServiceProxy
-
-↓
-
-PaymentService
-```
+------------------------------------------------------------
 
 Business Class:
 
-```java
 public class PaymentService {
 
     public void processPayment() {
-
         System.out.println("Processing Payment...");
-
     }
-
 }
-```
 
----
+
 
 Proxy Class:
 
-```java
 public class PaymentServiceProxy {
 
     private PaymentService paymentService = new PaymentService();
@@ -293,68 +221,53 @@ public class PaymentServiceProxy {
     public void processPayment() {
 
         System.out.println("Payment Started");
-
         paymentService.processPayment();
-
         System.out.println("Payment Completed");
-
     }
-
 }
-```
 
----
+
 
 Client:
 
-```java
 public class Main {
 
     public static void main(String[] args) {
 
         PaymentServiceProxy proxy = new PaymentServiceProxy();
-
         proxy.processPayment();
-
     }
-
 }
-```
 
-```text
+------------------------------------------------------------
+
 Client
-
 ↓
-
 PaymentServiceProxy.processPayment()
-
 ↓
-
 Logging Before
-
 ↓
-
 PaymentService.processPayment()
-
 ↓
-
 Logging After
-
 ↓
-
 Return
-```
 
-Notice that the Client never directly communicates with the PaymentService.
 
-It always communicates with the Proxy.
 
-* Business Logic remains clean.
-* Cross-Cutting Concerns are separated.
-* Existing Business Class does not need modification.
-* Follows the Single Responsibility Principle (SRP).
+Notice that the Client never directly communicates with the PaymentService. It always communicates with the Proxy.
 
-Suppose we have the following services:
+This way:
+
+- Business Logic remains clean and Cross-Cutting Concerns are separated.
+- Existing Business Class does not need modification.
+- Follows the Single Responsibility Principle (SRP).
+
+This is called a static proxy.
+Because, the proxy class is manually written by the developer at compile time.
+And, before the application even runs, the compiler already knows about it.
+
+Now, suppose we have the following services:
 
 * PaymentService
 * OrderService
@@ -363,31 +276,27 @@ Suppose we have the following services:
 
 Each service now requires its own Proxy.
 
-```text
+
 PaymentService
 ↓
-
 PaymentServiceProxy
 
 --------------------------------
 
 OrderService
 ↓
-
 OrderServiceProxy
 
 --------------------------------
 
 RefundService
 ↓
-
 RefundServiceProxy
 
 --------------------------------
 
 NotificationService
 ↓
-
 NotificationServiceProxy
 ```
 
@@ -400,4 +309,129 @@ Problems:
 
 This problem led to the introduction of Dynamic Proxies.
 
+=============================================================================================================================================================================
+Dynamic Proxy:
+=============================================================================================================================================================================
+
+Goal: To eliminate the need to manually create a separate Proxy class for every Business Class.
+
+- With Static Proxies, every Business Class requires its own Proxy.
+- Although the business classes are different, the Proxy logic is almost identical.
+- The only thing that changes is the target object.
+- Instead of manually creating a Proxy class, Java can generate the Proxy automatically during Runtime.
+
+The developer only provides:
+
+* The Target Object.
+* The additional logic to execute before and after every method invocation.
+
+Java generates the Proxy class automatically.
+
+
+Client
+↓
+Dynamic Proxy (Generated at Runtime)
+↓
+Target Object
+
+
+- Java introduces an interface called: InvocationHandler
+- Instead of writing a complete Proxy class, we implement only one method:
+
+	public Object invoke(Object proxy, Method method, Object[] args);
+
+- This method is executed whenever any method on the Proxy is called.
+- Inside this method, we can write:
+
+	* Logging
+	* Security
+	* Transaction Handling
+	* Performance Monitoring
+
+- Then invoke the actual business method.
+
+------------------------------------------------------------
+
+Business Interface:
+
+public interface PaymentService {
+    void processPayment();
+}
+
+
+Business Class:
+
+public class PaymentServiceImpl implements PaymentService {
+
+    @Override
+    public void processPayment() {
+
+        System.out.println("Processing Payment...");
+    }
+}
+
+
+Invocation Handler:
+
+public class LoggingHandler implements InvocationHandler {
+
+    private Object target;
+
+    public LoggingHandler(Object target) {
+        this.target = target;
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+
+        System.out.println("Payment Started");
+
+        Object result = method.invoke(target, args);
+
+        System.out.println("Payment Completed");
+
+        return result;
+    }
+}
+
+
+PaymentService service = new PaymentServiceImpl();
+
+PaymentService proxy =
+        (PaymentService) Proxy.newProxyInstance(
+                service.getClass().getClassLoader(),
+                service.getClass().getInterfaces(),
+                new LoggingHandler(service));
+
+------------------------------------------------------------	Explain the code clearly step by step with the flow and what is what, what is Method class in java?
+
+Notice:
+We never created PaymentServiceProxy. Java generated it automatically.
+
+
+Client
+↓
+Generated Proxy
+↓
+invoke()
+↓
+Logging Before
+↓
+method.invoke(target)
+↓
+PaymentServiceImpl.processPayment()
+↓
+Logging After
+↓
+Return
+
+
+Problems:
+
+* JDK Dynamic Proxies can create Proxies only for Interfaces.
+* If the Business Class does not implement an Interface, Java cannot generate a JDK Dynamic Proxy.
+
+This limitation led to the introduction of CGLIB Proxies, which can create Proxies for concrete classes.
+
+=============================================================================================================================================================================
 
