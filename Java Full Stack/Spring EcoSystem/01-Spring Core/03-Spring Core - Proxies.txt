@@ -201,10 +201,19 @@ public class PaymentService {
 
 ------------------------------------------------------------
 
+Business Interface:
+
+public interface PaymentService {
+    void processPayment();
+}
+
+
+
 Business Class:
 
-public class PaymentService {
+public class PaymentServiceImpl implements PaymentService {
 
+    @Override
     public void processPayment() {
         System.out.println("Processing Payment...");
     }
@@ -214,14 +223,15 @@ public class PaymentService {
 
 Proxy Class:
 
-public class PaymentServiceProxy {
+public class PaymentServiceProxy implements PaymentService {
 
-    private PaymentService paymentService = new PaymentService();
-
+    private PaymentServiceImpl service = new PaymentServiceImpl();
+    
+    @Override
     public void processPayment() {
 
         System.out.println("Payment Started");
-        paymentService.processPayment();
+        service.processPayment();
         System.out.println("Payment Completed");
     }
 }
@@ -234,7 +244,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        PaymentServiceProxy proxy = new PaymentServiceProxy();
+        PaymentService proxy = new PaymentServiceProxy(new PaymentServiceImpl);
         proxy.processPayment();
     }
 }
@@ -253,7 +263,7 @@ Logging After
 ↓
 Return
 
-
+------------------------------------------------------------
 
 Notice that the Client never directly communicates with the PaymentService. It always communicates with the Proxy.
 
@@ -310,7 +320,7 @@ Problems:
 This problem led to the introduction of Dynamic Proxies.
 
 =============================================================================================================================================================================
-Dynamic Proxy:
+JDK Dynamic Proxy:
 =============================================================================================================================================================================
 
 Goal: To eliminate the need to manually create a separate Proxy class for every Business Class.
@@ -395,15 +405,19 @@ public class LoggingHandler implements InvocationHandler {
 }
 
 
+Client:
+
 PaymentService service = new PaymentServiceImpl();
 
 PaymentService proxy =
         (PaymentService) Proxy.newProxyInstance(
-                service.getClass().getClassLoader(),
-                service.getClass().getInterfaces(),
-                new LoggingHandler(service));
+                service.getClass().getClassLoader(),	// To tell Java which class loader to be loaded
+                service.getClass().getInterfaces(),	// To tell Java which interface should be implementing
+                new LoggingHandler(service));		// For the method body
 
-------------------------------------------------------------	Explain the code clearly step by step with the flow and what is what, what is Method class in java?
+proxy.processPayment();
+
+------------------------------------------------------------
 
 Notice:
 We never created PaymentServiceProxy. Java generated it automatically.
@@ -426,6 +440,9 @@ Logging After
 Return
 
 
+Now, this proxy can be used with any service class PaymentService, OrderService, RefundService,...
+
+
 Problems:
 
 * JDK Dynamic Proxies can create Proxies only for Interfaces.
@@ -434,4 +451,445 @@ Problems:
 This limitation led to the introduction of CGLIB Proxies, which can create Proxies for concrete classes.
 
 =============================================================================================================================================================================
+CGLIB Dynamic Proxy:
+=============================================================================================================================================================================
+
+Goal: To create Dynamic Proxies for Concrete Classes that do not implement an Interface.
+
+------------------------------------------------------------
+Why was CGLIB introduced?
+
+- JDK Dynamic Proxies can create Proxies only for Interfaces.
+- Now consider the following class:
+
+
+public class PaymentService {
+
+    public void processPayment() {
+
+        System.out.println("Processing Payment...");
+
+    }
+
+}
+
+
+- Since there is no Interface, JDK Dynamic Proxy cannot create a Proxy.
+
+------------------------------------------------------------
+Solution - CGLIB Proxy
+
+
+- Instead of implementing an Interface, CGLIB generates a Subclass of the Target Class during Runtime.
+
+Example:
+
+PaymentService
+↓
+PaymentService$$EnhancerByCGLIB
+
+
+- The generated subclass overrides the methods of the original class.
+- It executes additional logic before and after calling the original method.
+
+------------------------------------------------------------
+
+Business Class:
+
+public class PaymentService {
+
+    public void processPayment() {
+        System.out.println("Processing Payment...");
+    }
+}
+
+
+Method Interceptor:
+
+public class LoggingInterceptor implements MethodInterceptor {
+
+    @Override
+    public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+
+        System.out.println("Payment Started");
+
+        Object result = proxy.invokeSuper(obj, args);
+
+        System.out.println("Payment Completed");
+
+        return result;
+    }
+}
+
+
+Client:
+
+Enhancer enhancer = new Enhancer();
+
+enhancer.setSuperclass(PaymentService.class);
+
+enhancer.setCallback(new LoggingInterceptor());
+
+PaymentService proxy = (PaymentService) enhancer.create();
+
+proxy.processPayment();
+
+------------------------------------------------------------
+Execution Flow
+
+
+Client
+↓
+CGLIB Generated Subclass
+↓
+Logging Before
+↓
+super.processPayment()
+↓
+Logging After
+↓
+Return
+
+
+- Instead of calling another object, the generated subclass invokes the original implementation using super.processPayment();
+
+------------------------------------------------------------
+Advantages:
+
+* Works with Concrete Classes.
+* No Interface is required.
+* Eliminates the need for manually writing Proxy classes.
+* Generates Proxies automatically during Runtime.
+
+------------------------------------------------------------
+Limitations:
+
+* Cannot Proxy final classes.
+* Cannot override final methods.
+* Cannot Proxy private methods because they cannot be overridden.
+
+------------------------------------------------------------
+JDK Dynamic Proxy vs CGLIB Proxy:
+
+| JDK Dynamic Proxy                            | CGLIB Proxy                                    |
+| -------------------------------------------- | ---------------------------------------------- |
+| Requires an Interface                        | Works with Concrete Classes                    |
+| Generates a Proxy implementing the Interface | Generates a Subclass of the Target Class       |
+| Uses `InvocationHandler`                     | Uses Method Interception by overriding methods |
+| Cannot Proxy Classes without Interfaces      | Can Proxy Classes without Interfaces           |
+| Part of Java (`java.lang.reflect`)           | External Library (used by Spring)              |
+
+
+JDK Dynamic Proxy:
+
+Interface -> Generated Proxy -> Target Object
+
+
+CGLIB Proxy:
+
+Target Class -> Generated Subclass -> Original Methods
+
+=============================================================================================================================================================================
+Important Note
+==============
+
+Spring AOP does not have its own Proxy mechanism.
+
+Instead, Spring chooses one of the following based on the Target Bean:
+
+* If the Bean implements an Interface → Spring creates a JDK Dynamic Proxy.
+* If the Bean does not implement an Interface → Spring creates a CGLIB Proxy.
+
+Both Proxies provide the same Spring features such as:
+
+* @Transactional
+* @Async
+* @Cacheable
+* Spring AOP
+* Method Security
+
+The only difference is the technology Spring uses to generate the Proxy.
+
+
+
+=============================================================================================================================================================================
+How Spring Creates Proxies
+==========================
+
+Goal: To understand how Spring automatically creates Proxies for Beans during the Bean Lifecycle.
+
+=============================================================================================================================================================================
+The Big Picture
+===============
+
+When a Spring Bean is created, Spring does not immediately store it inside the IoC Container.
+
+Instead, the Bean passes through several phases of the Bean Lifecycle.
+
+One of these phases allows Spring to replace the original Bean with a Proxy.
+
+=============================================================================================================================================================================
+Bean Lifecycle with Proxy Creation
+==================================
+
+```text
+Bean Definition Created
+        │
+        ▼
+Bean Instantiated
+        │
+        ▼
+Dependency Injection
+        │
+        ▼
+Aware Callbacks
+        │
+        ▼
+BeanPostProcessor Before Initialization
+        │
+        ▼
+@PostConstruct
+        │
+        ▼
+BeanPostProcessor After Initialization
+        │
+        ▼
+Spring checks whether the Bean requires a Proxy
+        │
+        ▼
+If YES → Create Proxy
+If NO  → Keep Original Bean
+        │
+        ▼
+Store the Bean (or Proxy) inside the IoC Container
+```
+
+=============================================================================================================================================================================
+Production Example
+==================
+
+```java
+@Service
+public class PaymentService {
+
+    @Transactional
+    public void processPayment() {
+
+        System.out.println("Processing Payment");
+
+    }
+
+}
+```
+
+Notice:
+
+The Bean contains
+
+```java
+@Transactional
+```
+
+This annotation tells Spring that every call to this method should execute inside a Transaction.
+
+=============================================================================================================================================================================
+Step 1 - Spring Creates the Bean
+================================
+
+Spring instantiates:
+
+```java
+PaymentService paymentService =
+        new PaymentService();
+```
+
+This is still the original object.
+
+No Proxy exists yet.
+
+=============================================================================================================================================================================
+Step 2 - Dependency Injection
+=============================
+
+Spring injects all required dependencies.
+
+Example:
+
+```java
+@Autowired
+private PaymentRepository repository;
+```
+
+The Bean is now fully initialized.
+
+=============================================================================================================================================================================
+Step 3 - BeanPostProcessor After Initialization
+===============================================
+
+During the After Initialization phase, Spring executes several internal BeanPostProcessors.
+
+One of them checks:
+
+* Does this Bean have @Transactional?
+* Does this Bean have @Async?
+* Does this Bean have @Cacheable?
+* Does this Bean match any AOP Pointcuts?
+
+If none of these are present,
+
+Spring stores the original Bean.
+
+If any are present,
+
+Spring creates a Proxy.
+
+=============================================================================================================================================================================
+Step 4 - Spring Chooses the Proxy Technology
+============================================
+
+If the Bean implements an Interface,
+
+Spring creates a JDK Dynamic Proxy.
+
+```text
+PaymentServiceImpl
+
+↓
+
+JDK Dynamic Proxy
+```
+
+---
+
+If the Bean does not implement an Interface,
+
+Spring creates a CGLIB Proxy.
+
+```text
+PaymentService
+
+↓
+
+PaymentService$$EnhancerBySpringCGLIB
+```
+
+=============================================================================================================================================================================
+Step 5 - Spring Stores the Proxy
+================================
+
+The Proxy replaces the original Bean inside the IoC Container.
+
+Conceptually:
+
+```text
+Before Proxy Creation
+
+IoC Container
+
+↓
+
+PaymentService
+```
+
+After Proxy Creation
+
+```text
+IoC Container
+
+↓
+
+PaymentService Proxy
+```
+
+The original PaymentService object still exists, but it is wrapped by the Proxy.
+
+The Container now exposes only the Proxy.
+
+=============================================================================================================================================================================
+Step 6 - Bean Injection
+=======================
+
+Suppose another Bean depends on PaymentService.
+
+```java
+@Service
+public class OrderService {
+
+    @Autowired
+    private PaymentService paymentService;
+
+}
+```
+
+Spring injects:
+
+NOT
+
+```text
+PaymentService
+```
+
+Instead it injects
+
+```text
+PaymentService Proxy
+```
+
+The OrderService is unaware that it is interacting with a Proxy.
+
+=============================================================================================================================================================================
+Step 7 - Runtime Method Invocation
+==================================
+
+OrderService
+
+↓
+
+PaymentService Proxy
+
+↓
+
+Transaction Begins
+
+↓
+
+PaymentService.processPayment()
+
+↓
+
+Transaction Commits
+
+↓
+
+Return
+
+Every method call passes through the Proxy before reaching the actual Business Method.
+
+=============================================================================================================================================================================
+Why does Spring create Proxies After Initialization?
+====================================================
+
+Spring must first create and initialize the actual Bean.
+
+Only then can it inspect the fully constructed Bean and decide whether it requires additional behavior such as:
+
+* Transactions
+* Security
+* Caching
+* Asynchronous Execution
+* Logging (AOP)
+
+After making that decision, Spring either keeps the original Bean or wraps it inside a Proxy.
+
+=============================================================================================================================================================================
+Key Points
+==========
+
+* Spring creates Proxies during the BeanPostProcessor After Initialization phase.
+* The original Bean is never modified.
+* The Proxy wraps the original Bean.
+* The IoC Container stores the Proxy instead of the original Bean.
+* Other Beans receive the Proxy during Dependency Injection.
+* Every method invocation first reaches the Proxy and then the actual Business Bean.
+* Spring automatically chooses JDK Dynamic Proxy or CGLIB based on the target Bean.
 

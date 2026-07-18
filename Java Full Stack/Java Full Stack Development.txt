@@ -37,6 +37,7 @@ Partial Knowledge: 	Hibernate,
 Polish: 		Core Java, SQL and JDBC, Linux, ServiceNow, Azure DevOps, web.xml, Ant, Maven, Git, Restful APIs - Jersey & Spring REST, Spring, Spring Boot, Spring Web, Spring Data JPA, JavaScript, ReactJS, Microservices,
 Mastered: 		HTML, CSS, Tomcat, Servlets, JSP,
 
+============================================================================================================================================================================================
 
 
 Backend:
@@ -54,7 +55,7 @@ microservices patterns	- saga pattern
 sql 			- querying, update/insert/delete, joins, table relationships, indexing, transactions, aggregations, order of writing and execution, 
 caching			- redis, read through and write through techniques, TTL, eviction policies, @Cacheable
 event driven queueing	- kafka message queues, @Async
-Core Java		- java 8/11/17 features, exception handling, global exception handling, multi-threading, jvm and garbage collection
+Core Java		- java 8/11/17 features, exception handling, global exception handling, multi-threading, jvm and garbage collection, classes like Optional, Serializable, Throwable, Object, Method, 
 Design principles/patterns- SOLID, KISS, DRY, creational, structural, behavioral, 
 DSA			- string, array, collections and map, linked list, queues, 
 system design concepts 	- sharding, partitions, rate limiting, indexing, CDNs
@@ -64,6 +65,7 @@ SDLC			- planning, requirement analysis(functional and non-functional), design, 
 Tools			- Inspect tool in browsers, 
 
 
+============================================================================================================================================================================================
 
 Frontend:
 
