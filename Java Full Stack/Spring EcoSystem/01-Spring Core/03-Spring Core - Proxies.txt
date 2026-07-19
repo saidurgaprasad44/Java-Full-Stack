@@ -923,20 +923,6 @@ Weaving
 * In Spring, Weaving happens by creating a Proxy during Bean creation.
 
 ------------------------------------------------------------
-Execution Flow:
-
-
-Application Starts
-↓
-Spring creates PaymentService Bean
-↓
-BeanPostProcessor (After Initialization)
-↓
-Proxy Created
-↓
-Proxy Stored inside IoC Container
-
-------------------------------------------------------------
 
 Runtime
 ↓
@@ -952,7 +938,6 @@ After Returning / After Throwing
 ↓
 Return
 
-
 ------------------------------------------------------------
 Relationship Between AOP and Proxies:
 
@@ -966,16 +951,9 @@ Relationship Between AOP and Proxies:
 
 - Without a Proxy, Spring AOP cannot intercept method calls.
 
+=============================================================================================================================================================================
+Transaction Management using @Transactional in Spring:
+=============================================================================================================================================================================
 
 
-------------------------------------------------------------
-Key Points:
-
-* Spring AOP separates Cross-Cutting Concerns from Business Logic.
-* Spring AOP is implemented using Proxies.
-* Spring creates Proxies during the BeanPostProcessor (After Initialization) phase.
-* An Aspect contains one or more Advices and the Pointcuts that determine where they execute.
-* A Join Point is a method execution where Spring can apply additional logic.
-* A Pointcut selects which Join Points should execute an Advice.
-* Weaving is the process of connecting the Aspect with the Target Bean by creating a Proxy.
-
+we will continue this after hibernate/jpa and transaction management
