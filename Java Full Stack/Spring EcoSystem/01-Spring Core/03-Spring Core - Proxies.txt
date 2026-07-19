@@ -589,50 +589,23 @@ CGLIB Proxy:
 
 Target Class -> Generated Subclass -> Original Methods
 
-=============================================================================================================================================================================
-Important Note
-==============
-
-Spring AOP does not have its own Proxy mechanism.
-
-Instead, Spring chooses one of the following based on the Target Bean:
-
-* If the Bean implements an Interface → Spring creates a JDK Dynamic Proxy.
-* If the Bean does not implement an Interface → Spring creates a CGLIB Proxy.
-
-Both Proxies provide the same Spring features such as:
-
-* @Transactional
-* @Async
-* @Cacheable
-* Spring AOP
-* Method Security
-
-The only difference is the technology Spring uses to generate the Proxy.
-
-
 
 =============================================================================================================================================================================
 How Spring Creates Proxies
-==========================
+=============================================================================================================================================================================
 
 Goal: To understand how Spring automatically creates Proxies for Beans during the Bean Lifecycle.
 
-=============================================================================================================================================================================
-The Big Picture
-===============
 
-When a Spring Bean is created, Spring does not immediately store it inside the IoC Container.
+- When a Spring Bean is created, Spring does not immediately store it inside the IoC Container.
+- Instead, the Bean passes through several phases of the Bean Lifecycle.
+- One of these phases allows Spring to replace the original Bean with a Proxy.
 
-Instead, the Bean passes through several phases of the Bean Lifecycle.
+------------------------------------------------------------
 
-One of these phases allows Spring to replace the original Bean with a Proxy.
+Bean Lifecycle with Proxy Creation:
 
-=============================================================================================================================================================================
-Bean Lifecycle with Proxy Creation
-==================================
 
-```text
 Bean Definition Created
         │
         ▼
@@ -662,69 +635,83 @@ If NO  → Keep Original Bean
         │
         ▼
 Store the Bean (or Proxy) inside the IoC Container
-```
 
-=============================================================================================================================================================================
-Production Example
-==================
 
-```java
+Note: * Spring creates Proxies during the BeanPostProcessor After Initialization phase.
+
+------------------------------------------------------------
+Example:
+
+
+@Repository
+public class PaymentRepository {
+
+    public void savePayment() {
+
+        System.out.println("Saving Payment");
+    }
+}
+
+
 @Service
 public class PaymentService {
+
+    @Autowired
+    private PaymentRepository repository;
 
     @Transactional
     public void processPayment() {
 
-        System.out.println("Processing Payment");
-
+        repository.savePayment();
+        System.out.println("Payment Processed");
     }
-
 }
-```
+
+
+@Service
+public class OrderService {
+
+    @Autowired
+    private PaymentService paymentService;
+
+    public void placeOrder() {
+
+        paymentService.processPayment();
+    }
+}
+
 
 Notice:
 
-The Bean contains
+- The Bean contains @Transactional
+- This annotation tells Spring that every call to this method should execute inside a Transaction.
 
-```java
-@Transactional
-```
-
-This annotation tells Spring that every call to this method should execute inside a Transaction.
-
-=============================================================================================================================================================================
+------------------------------------------------------------
 Step 1 - Spring Creates the Bean
-================================
+
 
 Spring instantiates:
 
-```java
-PaymentService paymentService =
-        new PaymentService();
-```
+PaymentService paymentService = new PaymentService();
 
-This is still the original object.
+- This is still the original object. No Proxy exists yet.
 
-No Proxy exists yet.
-
-=============================================================================================================================================================================
+------------------------------------------------------------
 Step 2 - Dependency Injection
-=============================
 
-Spring injects all required dependencies.
 
-Example:
+Spring injects all required dependencies:
 
-```java
+
 @Autowired
 private PaymentRepository repository;
-```
+
 
 The Bean is now fully initialized.
 
-=============================================================================================================================================================================
+------------------------------------------------------------
 Step 3 - BeanPostProcessor After Initialization
-===============================================
+
 
 During the After Initialization phase, Spring executes several internal BeanPostProcessors.
 
@@ -735,83 +722,49 @@ One of them checks:
 * Does this Bean have @Cacheable?
 * Does this Bean match any AOP Pointcuts?
 
-If none of these are present,
+- If none of these are present, Spring stores the original Bean.
+- If any are present, Spring creates a Proxy.
+- In our example, we have @Transactional, so it will create a proxy for the bean
 
-Spring stores the original Bean.
-
-If any are present,
-
-Spring creates a Proxy.
-
-=============================================================================================================================================================================
+------------------------------------------------------------
 Step 4 - Spring Chooses the Proxy Technology
-============================================
 
-If the Bean implements an Interface,
 
-Spring creates a JDK Dynamic Proxy.
+- If the Bean implements an Interface, Spring creates a JDK Dynamic Proxy.
+- If the Bean does not implement an Interface, Spring creates a CGLIB Proxy.
 
-```text
-PaymentServiceImpl
-
-↓
-
-JDK Dynamic Proxy
-```
-
----
-
-If the Bean does not implement an Interface,
-
-Spring creates a CGLIB Proxy.
-
-```text
-PaymentService
-
-↓
-
-PaymentService$$EnhancerBySpringCGLIB
-```
-
-=============================================================================================================================================================================
+------------------------------------------------------------
 Step 5 - Spring Stores the Proxy
-================================
 
-The Proxy replaces the original Bean inside the IoC Container.
+
+- The Proxy replaces the original Bean inside the IoC Container.
 
 Conceptually:
 
-```text
 Before Proxy Creation
 
 IoC Container
-
 ↓
-
 PaymentService
-```
+
 
 After Proxy Creation
 
-```text
 IoC Container
-
 ↓
-
 PaymentService Proxy
-```
 
-The original PaymentService object still exists, but it is wrapped by the Proxy.
 
-The Container now exposes only the Proxy.
+- The original PaymentService object still exists, but it is wrapped by the Proxy.
+- The Container now exposes only the Proxy.
 
-=============================================================================================================================================================================
+------------------------------------------------------------
 Step 6 - Bean Injection
-=======================
 
-Suppose another Bean depends on PaymentService.
 
-```java
+- Now, another Bean OrderService depends on PaymentService.
+
+
 @Service
 public class OrderService {
 
@@ -819,59 +772,35 @@ public class OrderService {
     private PaymentService paymentService;
 
 }
-```
 
-Spring injects:
 
-NOT
+- Spring does not inject PaymentService, instead it injects PaymentService Proxy
+- The OrderService is unaware that it is interacting with a Proxy.
 
-```text
-PaymentService
-```
-
-Instead it injects
-
-```text
-PaymentService Proxy
-```
-
-The OrderService is unaware that it is interacting with a Proxy.
-
-=============================================================================================================================================================================
+------------------------------------------------------------
 Step 7 - Runtime Method Invocation
-==================================
+
 
 OrderService
-
 ↓
-
 PaymentService Proxy
-
 ↓
-
 Transaction Begins
-
 ↓
-
 PaymentService.processPayment()
-
 ↓
-
 Transaction Commits
-
 ↓
-
 Return
 
-Every method call passes through the Proxy before reaching the actual Business Method.
+- Every method call passes through the Proxy before reaching the actual Business Method.
 
-=============================================================================================================================================================================
+------------------------------------------------------------
 Why does Spring create Proxies After Initialization?
-====================================================
 
-Spring must first create and initialize the actual Bean.
 
-Only then can it inspect the fully constructed Bean and decide whether it requires additional behavior such as:
+- Spring must first create and initialize the actual Bean.
+- Only then can it inspect the fully constructed Bean and decide whether it requires additional behavior such as:
 
 * Transactions
 * Security
@@ -879,17 +808,174 @@ Only then can it inspect the fully constructed Bean and decide whether it requir
 * Asynchronous Execution
 * Logging (AOP)
 
-After making that decision, Spring either keeps the original Bean or wraps it inside a Proxy.
+- After making that decision, Spring either keeps the original Bean or wraps it inside a Proxy.
+
+
+
 
 =============================================================================================================================================================================
-Key Points
-==========
+=============================================================================================================================================================================
+									Spring AOP (Aspect-Oriented Programming)
+=============================================================================================================================================================================
+=============================================================================================================================================================================
 
-* Spring creates Proxies during the BeanPostProcessor After Initialization phase.
-* The original Bean is never modified.
-* The Proxy wraps the original Bean.
-* The IoC Container stores the Proxy instead of the original Bean.
-* Other Beans receive the Proxy during Dependency Injection.
-* Every method invocation first reaches the Proxy and then the actual Business Bean.
-* Spring automatically chooses JDK Dynamic Proxy or CGLIB based on the target Bean.
+Goal: To separate Cross-Cutting Concerns from Business Logic using Proxies.
+
+------------------------------------------------------------
+What is Spring AOP?
+
+
+- Spring AOP is a framework feature that applies Cross-Cutting Concerns to Spring Beans using Proxies.
+- It allows developers to execute additional logic:
+
+* Before a Business Method
+* After a Business Method
+* Around a Business Method
+* After an Exception is thrown
+
+- without modifying the Business Class.
+
+------------------------------------------------------------
+Important Terminologies:
+
+
+Aspect
+
+* An Aspect is a module that contains Cross-Cutting Logic.
+* It consists of one or more Advices and the Pointcuts that determine where those Advices should execute.
+
+Example:
+
+TransactionAspect
+LoggingAspect
+SecurityAspect
+
+
+---
+
+Advice
+
+* Advice is the actual code that should execute at a particular point during a method invocation.
+
+Types of Advice:
+
+* Before
+* After Returning
+* After Throwing
+* After (Finally)
+* Around
+
+Example:
+
+Before
+↓
+Validate User
+
+----------------------------
+
+After Returning
+↓
+Commit Transaction
+
+----------------------------
+
+After Throwing
+↓
+Rollback Transaction
+
+---
+
+Join Point
+
+* A Join Point represents a method execution where Spring AOP can apply additional logic.
+* In Spring AOP, every intercepted method execution is a Join Point.
+
+Example:
+
+processPayment()
+refund()
+placeOrder()
+
+
+Each method execution is a Join Point.
+
+---
+
+Pointcut
+
+* A Pointcut determines which Join Points should execute a particular Advice.
+
+Example:
+
+Instead of applying Logging to every method, apply it only to:
+
+PaymentService.*
+OrderService.*
+
+
+Only these methods become eligible for the Logging Advice.
+
+---
+
+Weaving
+
+* Weaving is the process of connecting an Aspect with the Target Bean.
+* In Spring, Weaving happens by creating a Proxy during Bean creation.
+
+------------------------------------------------------------
+Execution Flow:
+
+
+Application Starts
+↓
+Spring creates PaymentService Bean
+↓
+BeanPostProcessor (After Initialization)
+↓
+Proxy Created
+↓
+Proxy Stored inside IoC Container
+
+------------------------------------------------------------
+
+Runtime
+↓
+Client
+↓
+PaymentService Proxy
+↓
+Before Advice
+↓
+Business Method
+↓
+After Returning / After Throwing
+↓
+Return
+
+
+------------------------------------------------------------
+Relationship Between AOP and Proxies:
+
+
+- Spring AOP does not modify the original Business Bean, instead:
+
+* Spring creates a Proxy.
+* The Proxy executes the configured Advice.
+* The Proxy then invokes the actual Business Method.
+* The result is returned to the Client.
+
+- Without a Proxy, Spring AOP cannot intercept method calls.
+
+
+
+------------------------------------------------------------
+Key Points:
+
+* Spring AOP separates Cross-Cutting Concerns from Business Logic.
+* Spring AOP is implemented using Proxies.
+* Spring creates Proxies during the BeanPostProcessor (After Initialization) phase.
+* An Aspect contains one or more Advices and the Pointcuts that determine where they execute.
+* A Join Point is a method execution where Spring can apply additional logic.
+* A Pointcut selects which Join Points should execute an Advice.
+* Weaving is the process of connecting the Aspect with the Target Bean by creating a Proxy.
 
