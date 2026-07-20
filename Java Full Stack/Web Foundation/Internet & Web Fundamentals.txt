@@ -1,0 +1,805 @@
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+										Internet & WWW
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+
+Goal:
+
+- Understand the fundamental concepts of Networks, Internet, World Wide Web (WWW) and the Client-Server architecture. 
+
+=============================================================================================================================================================================
+What is a Network?
+=============================================================================================================================================================================
+
+A Network is a collection of interconnected devices that communicate with each other to exchange data and share resources.
+A network may consist of:
+
+- Computers
+- Laptops
+- Mobile Phones
+- Servers
+- Routers
+- Switches
+- Printers
+- IoT Devices
+
+Examples:
+
+- Home Wi-Fi Network
+- Office LAN (Local Area Network)
+- College Network
+- Banking Internal Network
+
+A network does not require the Internet to exist.
+
+Example:
+
+Laptop ---------------------------- Printer
+
+The laptop can communicate with the printer and print documents even without an Internet connection.
+
+=============================================================================================================================================================================
+Types of Networks
+=============================================================================================================================================================================
+
+Networks can be classified based on their size, geographical coverage and accessibility.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Personal Area Network (PAN)
+
+- A Personal Area Network (PAN) is a small network used to connect devices belonging to a single person.
+
+Examples:
+
+• Mobile Phone connected to Bluetooth Earphones
+• Smart Watch connected to Mobile Phone
+• Wireless Keyboard and Mouse
+
+------------------------------------------------------------------------------------------------------------------------
+
+Local Area Network (LAN)
+
+- A Local Area Network (LAN) connects devices within a limited geographical area such as a home, office or school.
+- Devices within a LAN can communicate and share resources with each other.
+
+Examples:
+
+• Home Wi-Fi Network
+• Office Network
+• College Computer Lab
+
+------------------------------------------------------------------------------------------------------------------------
+
+Metropolitan Area Network (MAN)
+
+- A Metropolitan Area Network (MAN) connects multiple Local Area Networks within a city or metropolitan area.
+
+Examples:
+
+• City-wide Government Network
+• Cable TV Network
+• University Campuses across a City
+
+------------------------------------------------------------------------------------------------------------------------
+
+Wide Area Network (WAN)
+
+- A Wide Area Network (WAN) connects networks across large geographical regions such as countries or continents.
+
+Examples:
+
+• Corporate Networks connecting multiple branches
+• Banking Networks
+• The Internet
+
+=============================================================================================================================================================================
+What is the Internet?
+=============================================================================================================================================================================
+
+- The Internet is a global network of interconnected networks.
+- It is the largest WAN
+- Instead of connecting individual devices across the world directly, multiple independent networks are interconnected to form one large global network called the Internet.
+- The Internet provides the communication infrastructure over which different services operate.
+
+Examples of Internet services:
+
+- World Wide Web (WWW)
+- Email
+- FTP
+- SSH
+- Voice & Video Calling
+- Online Gaming
+- Cloud Services
+
+The Internet itself is not a website or an application. It is the underlying infrastructure that enables communication between devices across the world.
+
+=============================================================================================================================================================================
+Private Network
+=============================================================================================================================================================================
+
+- A Private Network is a network owned by an individual or an organization.
+- Private Networks are isolated from the Internet and cannot be accessed directly from outside.
+
+Examples:
+
+• Home Network
+• Office Network
+• College Network
+• Banking Internal Network
+
+=============================================================================================================================================================================
+Public Network
+=============================================================================================================================================================================
+
+- A Public Network is a network that is accessible to everyone.
+- The Internet is the one and only Public Network, while all the other networks are private networks.
+
+=============================================================================================================================================================================
+What is the World Wide Web (WWW)?
+=============================================================================================================================================================================
+
+- The World Wide Web (WWW) is a system of interconnected web pages and web applications that communicate over the Internet using HTTP and HTTPS.
+- Users access the Web using web browsers.
+
+Examples of Web Browsers:
+
+- Google Chrome
+- Mozilla Firefox
+- Microsoft Edge
+- Safari
+
+Example:
+
+https://amazon.in
+
+- When a user enters the above URL into a browser, the browser communicates with Amazon's web servers over the Internet using HTTP or HTTPS and displays the requested web page.
+
+=============================================================================================================================================================================
+Internet vs World Wide Web (WWW)
+=============================================================================================================================================================================
+
+- One of the most common misconceptions is assuming that the Internet and the Web are the same.
+- They are not. The Internet is the global communication infrastructure.
+- The World Wide Web (WWW) is one of the many services that runs on top of the Internet.
+- Just like Email, FTP and SSH use the Internet for communication, the Web also uses the Internet to transfer web pages and web resources.
+
+Relationship:
+
+  Internet
+      │
+      ├── World Wide Web (HTTP / HTTPS)
+      ├── Email
+      ├── FTP
+      ├── SSH
+      ├── Online Gaming
+      └── Cloud Services
+
+Without the Internet, the World Wide Web cannot exist.
+
+=============================================================================================================================================================================
+Email
+=============================================================================================================================================================================
+
+Email enables users to send and receive electronic messages over the Internet.
+
+Examples:
+
+• Gmail
+• Outlook
+• Yahoo Mail
+
+Common Protocols:
+
+• SMTP (Sending Emails)
+• POP3 (Receiving Emails)
+• IMAP (Synchronizing Emails)
+
+=============================================================================================================================================================================
+File Transfer
+=============================================================================================================================================================================
+
+FTP (File Transfer Protocol) is used to transfer files between a client and a server.
+
+Examples:
+
+• Uploading website files to a web server
+• Downloading files from an FTP server
+
+Common Protocol:
+
+• FTP
+
+=============================================================================================================================================================================
+Remote Access
+=============================================================================================================================================================================
+
+SSH (Secure Shell) allows users to securely access and manage remote computers over the Internet.
+
+Examples:
+
+• Connecting to a Linux Server
+• Managing AWS EC2 Instances
+• Deploying Spring Boot Applications
+
+Common Protocol:
+
+• SSH
+
+=============================================================================================================================================================================
+Voice and Video Calling
+=============================================================================================================================================================================
+
+Voice and video communication services allow users to communicate in real time over the Internet.
+
+Examples:
+
+• Microsoft Teams
+• Zoom
+• Google Meet
+• WhatsApp Calls
+
+These services use specialized communication protocols designed for real-time media transmission.
+
+=============================================================================================================================================================================
+Cloud Services
+=============================================================================================================================================================================
+
+Cloud service providers offer computing resources such as virtual machines, databases, storage and networking over the Internet.
+
+Examples:
+
+• Amazon Web Services (AWS)
+• Microsoft Azure
+• Google Cloud Platform (GCP)
+
+Cloud services expose many of their features through Web Applications, REST APIs and Management Consoles.
+
+=============================================================================================================================================================================
+Client and Server
+=============================================================================================================================================================================
+
+Client:
+
+A Client is an application or device that initiates communication by sending requests to another application.
+
+Examples:
+
+- Web Browser
+- Mobile Application
+- Postman
+- React Application
+- Angular Application
+
+------------------------------------------------------------
+
+Server:
+
+A Server is an application running on a machine that receives client requests, processes them and sends responses.
+
+Examples:
+
+- Spring Boot Application
+- Apache Tomcat
+- Node.js Application
+- Nginx
+- ASP.NET Application
+
+------------------------------------------------------------
+
+Client-Server Communication
+
+               Request
+Client -----------------------------> Server
+
+               Response
+Client <----------------------------- Server
+
+- The Client always initiates communication by sending a request.
+- The Server receives the request, performs the required processing and returns an appropriate response.
+- This Request-Response communication model forms the foundation of HTTP, Servlets, JSP, Spring MVC, REST APIs, Spring Security and Microservices.
+- Most Internet services follow the Client-Server architecture.
+- The primary difference between these services is not the architecture, but the communication protocol they use.
+
+------------------------------------------------------------
+
+Examples:
+
+
+Web
+
+Browser
+        │
+        ▼
+Web Server
+
+------------------------------------------------------------
+
+Email
+
+Mail Application
+        │
+        ▼
+Mail Server
+
+------------------------------------------------------------
+
+FTP
+
+FTP Client
+        │
+        ▼
+FTP Server
+
+------------------------------------------------------------
+
+SSH
+
+SSH Client
+        │
+        ▼
+SSH Server
+
+
+- Although these services serve different purposes, they all fundamentally follow the Client-Server communication model.
+
+
+
+
+
+
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+										Addressing
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+
+Goal:
+
+- Understand how devices and applications are uniquely identified on a network and how users access Internet resources using human-readable names instead of numerical addresses.
+
+=============================================================================================================================================================================
+IP Address (Internet Protocol Address)
+=============================================================================================================================================================================
+
+- Every device connected to a network is assigned an IP address. 
+- An IP Address is a unique numerical identifier assigned to a device connected to a network.
+- Just as every house requires a unique postal address for delivering letters, every device connected to a network requires a unique IP Address so that data can be delivered to the correct destination.
+- Computers communicate using IP Addresses, not Domain Names.
+
+Examples:
+
+192.168.1.10
+142.250.xxx.xxx
+
+- Without IP Addresses, routers would not know where data should be delivered.
+
+=============================================================================================================================================================================
+IPv4
+=============================================================================================================================================================================
+
+- IPv4 (Internet Protocol Version 4) uses a 32-bit addressing scheme and supports approximately 4.3 billion unique addresses.
+
+Example:
+
+192.168.1.10
+
+- IPv4 is currently the most widely used addressing scheme on the Internet.
+
+=============================================================================================================================================================================
+IPv6
+=============================================================================================================================================================================
+
+- IPv6 (Internet Protocol Version 6) uses a 128-bit addressing scheme and was introduced to overcome IPv4 address exhaustion.
+
+Example:
+
+2409:40f2:1021:abcd::15
+
+- IPv6 provides an extremely large address space and is gradually replacing IPv4.
+
+=============================================================================================================================================================================
+Public IP Address
+=============================================================================================================================================================================
+
+- A Public IP Address is globally unique and is accessible over the Internet.
+- It is assigned by an Internet Service Provider (ISP).
+- Public IP Addresses are used to identify devices or servers on the Internet.
+
+Examples:
+
+• AWS EC2 Instance
+• Azure Virtual Machine
+• Company Web Server
+• Home Wi-Fi Router
+
+=============================================================================================================================================================================
+Private IP Address
+=============================================================================================================================================================================
+
+- A Private IP Address is assigned to a device within a private network and cannot be accessed directly from the Internet.
+- It is valid only inside that Private Network and cannot be accessed directly outside that network.
+- The same Private IP Address can exist in multiple Private Networks because each Private Network is isolated from the others.
+- Private IP Address ranges:
+
+10.0.0.0 – 10.255.255.255
+172.16.0.0 – 172.31.255.255
+192.168.0.0 – 192.168.255.255
+
+Examples:
+
+• Laptop connected to Home Wi-Fi
+• Office Desktop
+• Internal Database Server
+• Office Printer
+
+=============================================================================================================================================================================
+Relationship Between Private and Public IP Addresses
+=============================================================================================================================================================================
+
+- For example, consider our home network (a private network) consisting of the following devices connected to a Wi-Fi Router, which in turn is connected to the Internet (a public network).
+
+Laptop              → 192.168.0.2
+Phone               → 192.168.0.3
+TV		    → 192.168.0.4
+Wi-Fi Router        → 192.168.0.1 (Private Interface), 49.xxx.xxx.xxx (Public Interface)
+
+- Each device within the home network is assigned a unique Private IP Address.
+- The Wi-Fi Router connects all the devices through its Private Interface, forming the home's Private Network.
+- The Wi-Fi Router is also connected to the Internet through its Public Interface.
+- Since the Wi-Fi Router acts as the bridge between the Private Network and the Internet, it has both a Private IP Address (for communication within the home network) and a Public IP Address (assigned by the ISP for communication over the Internet).
+
+
+                  Internet
+
+                     ▲
+                     │
+                     │
+		     ▼
+
+          (Public IP: 49.205.xxx.xxx)
+
+                 WiFi Router
+
+           (Private IP: 192.168.0.1)
+
+─────────────────────────────────────────
+
+           Laptop        192.168.0.2
+
+           Phone         192.168.0.3
+
+           TV            192.168.0.4
+
+
+- When a device communicates with the Internet, the Router performs Network Address Translation (NAT), replacing the device's Private IP Address with its own Public IP Address before forwarding the request.
+- As a result, devices inside the Private Network always communicate using their Private IP Addresses, while the Internet communicates only with the Router's Public IP Address.
+
+=============================================================================================================================================================================
+Domain Name
+=============================================================================================================================================================================
+
+- A Domain Name is a human-readable name that represents an Internet resource.
+- Since IP Addresses are difficult for humans to remember, Domain Names provide meaningful names that are easier to identify and use.
+
+Examples:
+
+google.com
+amazon.in
+github.com
+
+- Internally, a Domain Name is translated into an IP Address before communication begins.
+- A Domain Name is NOT:
+
+• A Server
+• A Computer
+• An Application
+
+- It may point to:
+
+• One Server
+• Multiple Servers
+• Load Balancer
+• API Gateway
+• CDN
+• Kubernetes Ingress
+
+- Similarly, multiple Domain Names can also point to the same server.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Domain Structure
+
+Example:
+
+www.amazon.in
+
+www            → Subdomain
+amazon         → Registered Domain Name
+.in            → Top-Level Domain (TLD)
+
+Examples of Top-Level Domains (TLD):
+
+.com
+.org
+.net
+.in
+.gov
+.edu
+
+Examples of Subdomains:
+
+mail.google.com
+drive.google.com
+api.company.com
+admin.company.com
+
+=============================================================================================================================================================================
+DNS (Domain Name System)
+=============================================================================================================================================================================
+
+- DNS (Domain Name System) is a distributed naming system that translates Domain Names into IP Addresses.
+- Instead of remembering numerical IP Addresses, users enter Domain Names. DNS performs the translation before communication begins.
+
+Example:
+
+amazon.in
+      │
+      ▼
+     DNS
+      │
+      ▼
+52.xxx.xxx.xxx
+
+
+
+High-Level Flow:
+
+
+User enters Domain Name
+          │
+          ▼
+Browser requests DNS Resolution
+          │
+          ▼
+DNS returns IP Address
+          │
+          ▼
+Browser communicates using the IP Address
+
+
+- DNS only performs Name → IP translation.
+- It does not process HTTP requests or communicate with the application.
+
+=============================================================================================================================================================================
+DNS Resolution in Different Architectures
+=============================================================================================================================================================================
+
+Since a single domain can have multiple IPs, when client sends a request with a domain, how DNS resolves the IP:
+
+Case 1: Traditional Application
+
+Client
+   │
+   ▼
+DNS
+   │
+   ▼
+Application Server
+
+- DNS resolves the Domain Name directly to the IP Address of the Application Server.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Case 2: Multiple Instances (DNS Round Robin)
+
+Client
+   │
+   ▼
+DNS
+   │
+   ▼
+Instance 1
+Instance 2
+Instance 3
+
+- DNS stores multiple IP Addresses for the same Domain Name.
+- Each request may receive a different IP Address.
+- This technique is called DNS Round Robin.
+- DNS does not consider server health or current load.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Case 3: Multiple Instances (Using Load Balancer)
+
+Client
+   │
+   ▼
+DNS
+   │
+   ▼
+Load Balancer
+   │
+   ▼
+Instance 1
+Instance 2
+Instance 3
+
+- DNS resolves the Domain Name to the Load Balancer's IP Address.
+- The Load Balancer selects the appropriate application instance based on its routing strategy.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Case 4: Microservices with Multiple Instances
+
+Client
+   │
+   ▼
+DNS
+   │
+   ▼
+API Gateway
+   │
+   ▼
+Load Balancer
+   │
+   ▼
+Requested Microservice
+   │
+   ▼
+Service Discovery
+   │
+   ▼
+Load Balancer
+   │
+   ▼
+Another Microservice Instance
+
+- DNS resolves the Domain Name to the API Gateway.
+- The API Gateway routes the request to the appropriate Microservice.
+- The Load Balancer selects the appropriate instance of that Microservice.
+- If inter-service communication is required, Service Discovery locates the target Microservice.
+- The corresponding Load Balancer then selects one of the available instances of that Microservice.
+
+=============================================================================================================================================================================
+URL (Uniform Resource Locator)
+=============================================================================================================================================================================
+
+- A URL is the complete address used to locate and access a resource on the Web.
+
+Example:
+
+https://www.amazon.in:443/products/123?sort=price#reviews
+
+- A URL consists of the following components:
+
+https://                     → Scheme (Protocol)
+www.amazon.in                → Host (Domain Name)
+443                          → Port
+/products/123                → Path
+?sort=price                  → Query Parameters
+#reviews                     → Fragment
+
+------------------------------------------------------------------------------------------------------------------------
+
+Scheme:
+
+- Specifies how communication should occur.
+
+Examples:
+
+http
+https
+ftp
+ws (websocket)
+wss (secured websocket)
+
+------------------------------------------------------------
+
+Host:
+
+- Represents the Domain Name of the destination server.
+
+------------------------------------------------------------
+
+Port:
+
+- Identifies the application or service running on the destination machine.
+- Optional to give the port in the URL if the port is default one
+
+Common Ports
+
+HTTP           → 80
+HTTPS          → 443
+Spring Boot    → 8080
+MySQL          → 3306
+PostgreSQL     → 5432
+
+------------------------------------------------------------
+
+Path:
+
+- Identifies the requested resource.
+
+Examples:
+
+/users
+/orders
+/products/10
+
+------------------------------------------------------------
+
+Query Parameters:
+
+- Provide additional information to the server.
+
+Examples:
+
+?page=2
+?search=laptop
+?sort=price
+
+------------------------------------------------------------
+
+Fragment:
+
+- Identifies a specific section within a web page.
+
+Example:
+
+#reviews
+
+- The Fragment is processed only by the browser and is never sent to the server.
+
+=============================================================================================================================================================================
+URI (Uniform Resource Identifier)
+=============================================================================================================================================================================
+
+- A URI (Uniform Resource Identifier) is a general identifier used to identify a resource.
+- A URL is a specific type of URI that additionally specifies where the resource is located and how it can be accessed.
+
+Relationship:
+
+- Every URL is a URI.
+- Not every URI is a URL.
+
+In day-to-day backend development, the terms URL and URI are often used interchangeably. However, most frameworks such as Spring MVC and JAX-RS commonly use the term URI when referring to resource identifiers.
+
+=============================================================================================================================================================================
+
+Part 3 – Communication
+Packets
+Routers
+Switches (high level)
+ISP
+TCP
+UDP (comparison)
+HTTP (high-level overview only)
+HTTPS (high-level overview)
+
+Part 4 – The Web
+Browser
+Web Server
+Static vs Dynamic websites
+Request → Response model
+HTML
+CSS
+JavaScript (high level)
+
+Part 5 – Security (High Level)
+SSL/TLS (overview)
+Digital Certificates (overview)
+Encryption (overview)
+
+We'll revisit these in much greater depth when we cover HTTP and Spring Security.
+
+Part 6 – Modern Infrastructure (High Level)
+
+We'll only introduce these so they don't feel unfamiliar later:
+
+Reverse Proxy
+Load Balancer
+CDN
+Cache
+API Gateway

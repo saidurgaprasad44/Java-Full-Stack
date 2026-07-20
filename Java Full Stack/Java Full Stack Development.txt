@@ -43,7 +43,7 @@ Mastered: 		HTML, CSS, Tomcat, Servlets, JSP,
 Backend:
 
 Spring 			- dependency injection in plain java, object lifecycle in plain java (example: jdbc), dependency injection using spring, beanfactory, appicationcontext, xml vs annotation vs java configuration for bean definitions & DI, bean lifecycle in spring, bean scopes, proxies & AOP, resource loading & resource management, Event Publishing & Listening, Environment & Property Resolution (@value, @profile), FactoryBean support, Lazy & eager Initialization, Circular Dependency, Type Conversion & Data Binding, example spring project covering all - payment application
-servlets & jsps		- MVC pattern(SSR) and its package structure, servlet and jsp fundamentals, REST APIs and its package structure, Jax-rs Jersey, Jackson for json serialization, deserialization - example projects on MVC(SSR & JDBC) and REST API using jax-rs Jersey & Hibernate
+Java Web		- MVC pattern(SSR) and its package structure, servlet and jsp fundamentals, REST APIs and its package structure, Jax-rs Jersey, Jackson for json serialization, deserialization - example projects on MVC(SSR & JDBC) and REST API using jax-rs Jersey & Hibernate
 jdbc			- jdbc steps - database connection, object creation, repositories for table mappings and transactions
 ORM and hibernate/jsp	- ORM, JSP/hibernate - datasource for connection, entity management, repositories, transaction management, hibernate properties - in JEE MVC projects add JDBC&HBNT
 Spring WebMVC		- spring MVC(SSR), Spring REST, their Configurations, embedded tomcat configuration, and all concepts, example projects on Spring MVC(SSR) w/t hbnt & REST data jpa
