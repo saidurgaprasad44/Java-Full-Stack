@@ -364,7 +364,7 @@ IP Address (Internet Protocol Address)
 =============================================================================================================================================================================
 
 - Every device connected to a network is assigned an IP address. 
-- An IP Address is a unique numerical identifier assigned to a device connected to a network.
+- An IP Address is a unique numerical identifier assigned to a device when its connected to a network.
 - Just as every house requires a unique postal address for delivering letters, every device connected to a network requires a unique IP Address so that data can be delivered to the correct destination.
 - Computers communicate using IP Addresses, not Domain Names.
 
@@ -404,7 +404,7 @@ Public IP Address
 =============================================================================================================================================================================
 
 - A Public IP Address is globally unique and is accessible over the Internet.
-- It is assigned by an Internet Service Provider (ISP).
+- It is assigned by an Internet Service Provider (ISP) when connected to the Internet.
 - Public IP Addresses are used to identify devices or servers on the Internet.
 
 Examples:
@@ -419,6 +419,7 @@ Private IP Address
 =============================================================================================================================================================================
 
 - A Private IP Address is assigned to a device within a private network and cannot be accessed directly from the Internet.
+- The Router, through its built-in DHCP Server (or another DHCP Server in the network), assigns Private IP Addresses to devices within the Private Network.
 - It is valid only inside that Private Network and cannot be accessed directly outside that network.
 - The same Private IP Address can exist in multiple Private Networks because each Private Network is isolated from the others.
 - Private IP Address ranges:
@@ -505,11 +506,23 @@ github.com
 • CDN
 • Kubernetes Ingress
 
-- Similarly, multiple Domain Names can also point to the same server.
+Example:
+
+www.amazon.in
+    │
+    │
+    ▼
+52.xxx.xxx.x01
+52.xxx.xxx.x02
+52.xxx.xxx.x03
+52.xxx.xxx.x04
+
+
+- Similarly, multiple Domain Names can also point to the same server. Because, multiple applications can be hosted on a single server (resource sharing).
 
 ------------------------------------------------------------------------------------------------------------------------
 
-Domain Structure
+Domain Structure:
 
 Example:
 
@@ -573,7 +586,7 @@ Browser communicates using the IP Address
 - It does not process HTTP requests or communicate with the application.
 
 =============================================================================================================================================================================
-DNS Resolution in Different Architectures
+DNS Resolution in Different Architectures			- need to move this concept in modern infrastructure part
 =============================================================================================================================================================================
 
 Since a single domain can have multiple IPs, when client sends a request with a domain, how DNS resolves the IP:
@@ -592,7 +605,7 @@ Application Server
 
 ------------------------------------------------------------------------------------------------------------------------
 
-Case 2: Multiple Instances (DNS Round Robin)
+Case 2: Multiple Instances - No Microservices (DNS Round Robin)
 
 Client
    │
@@ -611,7 +624,7 @@ Instance 3
 
 ------------------------------------------------------------------------------------------------------------------------
 
-Case 3: Multiple Instances (Using Load Balancer)
+Case 3: Multiple Instances - No Microservices (Using Load Balancer)
 
 Client
    │
@@ -619,7 +632,7 @@ Client
 DNS
    │
    ▼
-Load Balancer
+Load Balancer IP Address
    │
    ▼
 Instance 1
@@ -631,7 +644,7 @@ Instance 3
 
 ------------------------------------------------------------------------------------------------------------------------
 
-Case 4: Microservices with Multiple Instances
+Case 4: Microservices with Multiple Instances (Using API Gateway & Load Balancer)
 
 Client
    │
@@ -639,7 +652,7 @@ Client
 DNS
    │
    ▼
-API Gateway
+API Gateway IP Address
    │
    ▼
 Load Balancer
@@ -656,7 +669,7 @@ Load Balancer
    ▼
 Another Microservice Instance
 
-- DNS resolves the Domain Name to the API Gateway.
+- DNS resolves the Domain Name to the API Gateway's IP address.
 - The API Gateway routes the request to the appropriate Microservice.
 - The Load Balancer selects the appropriate instance of that Microservice.
 - If inter-service communication is required, Service Discovery locates the target Microservice.
@@ -768,15 +781,8 @@ In day-to-day backend development, the terms URL and URI are often used intercha
 
 =============================================================================================================================================================================
 
-Part 3 – Communication
-Packets
-Routers
-Switches (high level)
-ISP
-TCP
-UDP (comparison)
-HTTP (high-level overview only)
-HTTPS (high-level overview)
+
+
 
 Part 4 – The Web
 Browser
@@ -787,19 +793,21 @@ HTML
 CSS
 JavaScript (high level)
 
+
+
 Part 5 – Security (High Level)
 SSL/TLS (overview)
 Digital Certificates (overview)
 Encryption (overview)
-
+Firewall
 We'll revisit these in much greater depth when we cover HTTP and Spring Security.
 
+
+
 Part 6 – Modern Infrastructure (High Level)
-
-We'll only introduce these so they don't feel unfamiliar later:
-
 Reverse Proxy
 Load Balancer
 CDN
 Cache
 API Gateway
+We'll only introduce these so they don't feel unfamiliar later:

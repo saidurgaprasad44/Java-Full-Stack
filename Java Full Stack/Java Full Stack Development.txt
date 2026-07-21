@@ -46,7 +46,7 @@ Spring 			- dependency injection in plain java, object lifecycle in plain java (
 Java Web		- MVC pattern(SSR) and its package structure, servlet and jsp fundamentals, REST APIs and its package structure, Jax-rs Jersey, Jackson for json serialization, deserialization - example projects on MVC(SSR & JDBC) and REST API using jax-rs Jersey & Hibernate
 jdbc			- jdbc steps - database connection, object creation, repositories for table mappings and transactions
 ORM and hibernate/jsp	- ORM, JSP/hibernate - datasource for connection, entity management, repositories, transaction management, hibernate properties - in JEE MVC projects add JDBC&HBNT
-Spring WebMVC		- spring MVC(SSR), Spring REST, their Configurations, embedded tomcat configuration, and all concepts, example projects on Spring MVC(SSR) w/t hbnt & REST data jpa
+Spring WebMVC		- spring MVC(SSR), filters, interceptors, Spring REST, their Configurations, embedded tomcat configuration, and all concepts, example projects on Spring MVC(SSR) w/t hbnt & REST data jpa
 spring Data Access 	- Spring jdbc, jdbc template, Spring ORM - Hibernate/JPA integration, spring data jpa - Repository interfaces, configurations of all 3
 Spring Boot 		- opinionated auto-configuration - overriding & customizing, auto-configurations for Embedded tomcat, spring MVC, DataSource, Transaction - rest & jpa project(boot)
 auth and authz 		- request and response anatomy, http statelessness, sessions , sessionid, httponly cookies, state management, jwt anatomy, session id (statefull) vs token (stataless), CORS, CSRF, token in localstorage vs httponly cookies, workflow of basic auth vs token authentication, access token vs refresh tokens, filters, spring security, 

@@ -25,6 +25,8 @@ The Anatomy of an HTTP Request:
 			        └──┘  └────────┘└──┘└───────────┘  └────┘
 			        Method       Path   PathVar     Query       Version
 
+
+
 [ REQUEST HEADERS ]     ->  	Host: www.example.com					<- Key: Value pairs
                       		Content-Type: application/json
                       		Authorization: Bearer xyz123

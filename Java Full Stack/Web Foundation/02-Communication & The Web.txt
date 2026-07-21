@@ -1,0 +1,258 @@
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+										Communication
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+
+- Communication is the process of exchanging data between two or more devices over a network. 
+- In web applications, communication occurs between a Client (Browser, Mobile App, another Microservice, etc.) and a Server (Spring Boot Application, Web Server, Database Server, etc.).
+- The data exchanged between them follows various networking protocols such as TCP, UDP, HTTP and HTTPS.
+
+=============================================================================================================================================================================
+Packets
+=============================================================================================================================================================================
+
+- A Packet is the smallest unit of data transmitted over a network.
+- Instead of sending an entire message as one large block, the data is divided into multiple smaller packets before being transmitted over the network.
+- After reaching the destination, all the packets are reassembled into the original message before it is processed by the receiving application.
+- Every packet contains two major parts:
+  • Header – Contains networking information such as the Source Address, Destination Address and other information required for routing.
+  • Payload – Contains the actual data being transmitted.
+- Packets belong to the Networking Layer (TCP/IP) and are not HTTP Requests or HTTP Responses themselves. HTTP creates the complete Request or Response, while TCP divides that message into multiple packets for transmission.
+
+Example:
+
+HTTP Response
+        │
+        ▼
+Packet 1
+Packet 2
+Packet 3
+Packet 4
+        │
+        ▼
+Internet
+        │
+        ▼
+Packet 1
+Packet 2
+Packet 3
+Packet 4
+        │
+        ▼
+HTTP Response
+
+=============================================================================================================================================================================
+Routers
+=============================================================================================================================================================================
+
+- A Router is a networking device that connects different networks and forwards packets from one network to another by determining the best available path towards the destination.
+- Routers forward packets using the Destination IP Address present in the packet header.
+- A Router does not understand HTTP, HTTPS, JSON, Images or any application data. It simply examines the Destination IP Address and forwards the packet to the next appropriate network.
+- Multiple Routers work together to move packets across the Internet until they reach the destination server.
+- Modern Home Wi-Fi Routers usually contain multiple networking components inside a single device, including a Router, Switch, Wireless Access Point, DHCP Server and NAT functionality.
+
+Example:
+
+Laptop
+   │
+   ▼
+Home Wi-Fi Router
+   │
+   ▼
+ISP Router
+   │
+   ▼
+Internet Routers
+   │
+   ▼
+AWS Network Router
+   │
+   ▼
+Spring Boot Server
+
+=============================================================================================================================================================================
+Switches
+=============================================================================================================================================================================
+
+- A Switch is a networking device that connects multiple devices within the same Local Area Network (LAN) and forwards data directly to the intended device.
+- Unlike Routers, Switches do not connect different networks. Their responsibility is to enable communication between devices within the same network.
+- Communication between devices connected to the same network generally passes through a Switch without requiring a Router.
+
+Example:
+
+        Switch
+      /    |    \
+     /     |     \
+ Laptop Printer Desktop
+
+=============================================================================================================================================================================
+Internet Service Provider (ISP)
+=============================================================================================================================================================================
+
+- An Internet Service Provider (ISP) is an organization that provides Internet connectivity to homes, offices and businesses.
+- The ISP connects a Private Network (such as a Home or Office Network) to the Public Internet.
+- The ISP assigns a Public IP Address to the Router, allowing the entire private network to communicate with devices on the Internet.
+- Without an ISP, devices within the Private Network can still communicate with each other, but they cannot access the Internet.
+
+Example:
+
+Laptop (192.168.0.2)
+        │
+Phone (192.168.0.3)
+        │
+TV (192.168.0.4)
+        │
+        ▼
+   Wi-Fi Router
+(Private IP: 192.168.0.1)
+(Public IP: 49.xxx.xxx.xxx)
+        │
+        ▼
+       ISP
+        │
+        ▼
+     Internet
+
+=============================================================================================================================================================================
+TCP (Transmission Control Protocol)
+=============================================================================================================================================================================
+
+- TCP (Transmission Control Protocol) is a Transport Layer protocol that provides reliable, ordered and error-checked communication between two devices over a network.
+- TCP is a Connection-Oriented protocol, which means it establishes a connection between the Client and the Server before transmitting any data.
+- TCP ensures that data reaches the destination completely, correctly and in the same order in which it was sent.
+- If a packet is lost during transmission, TCP automatically detects the loss and retransmits only the missing packet instead of the entire message.
+- If packets arrive out of order, TCP rearranges them into the correct order before delivering the complete message to the receiving application.
+- If a packet becomes corrupted during transmission, TCP detects the error and requests the sender to retransmit the corrupted packet.
+- TCP does not understand whether the transmitted data is HTML, JSON, XML, Images, Videos or Files. It simply transports bytes reliably from one device to another.
+- HTTP, HTTPS, REST APIs, File Downloads, Database Communication and most enterprise applications use TCP because reliability is more important than speed.
+
+Example:
+
+Browser
+   │
+   ▼
+HTTP Request
+   │
+   ▼
+TCP
+   │
+   ▼
+Packet 1
+Packet 2
+Packet 3
+Packet 4
+   │
+   ▼
+Internet
+   │
+   ▼
+Packet 1
+Packet 2
+Packet 3
+Packet 4
+   │
+   ▼
+TCP
+   │
+   ▼
+HTTP Request
+   │
+   ▼
+Spring Boot Application
+
+=============================================================================================================================================================================
+UDP (User Datagram Protocol)
+=============================================================================================================================================================================
+
+- UDP (User Datagram Protocol) is a Transport Layer protocol that provides fast communication without guaranteeing reliable delivery of data.
+- UDP is a Connectionless protocol, which means it sends data without establishing a connection between the sender and the receiver.
+- UDP does not guarantee packet delivery, ordering or retransmission.
+- If a packet is lost during transmission, UDP does not request the sender to retransmit it. Communication simply continues with the remaining packets.
+- Since UDP avoids connection establishment and retransmissions, it is generally faster than TCP.
+- UDP is suitable for applications where speed is more important than perfect reliability.
+
+Example:
+
+• Video Calls
+• Voice Calls
+• Live Streaming
+• Online Gaming
+• DNS Queries
+
+=============================================================================================================================================================================
+TCP vs UDP
+=============================================================================================================================================================================
+
+| Feature 		| TCP 					| UDP 					
+|-----------------------|---------------------------------------|-----------------------------------------
+| Connection 		| Connection-Oriented 			| Connectionless 
+| Reliability 		| Guaranteed 				| Not Guaranteed 
+| Packet Delivery 	| Guaranteed 				| Best Effort 
+| Packet Ordering 	| Preserved 				| Not Guaranteed 
+| Retransmission 	| Supported 				| Not Supported 
+| Error Recovery 	| Supported 				| Not Supported 
+| Speed 		| Slightly Slower 			| Faster 
+| Common Usage 		| HTTP, HTTPS, REST APIs, File Downloads| Video Calls, Gaming, DNS, Live Streaming 
+
+=============================================================================================================================================================================
+HTTP (HyperText Transfer Protocol)
+=============================================================================================================================================================================
+
+- HTTP (HyperText Transfer Protocol) is an Application Layer protocol used for communication between Clients and Servers over the Web.
+- HTTP defines the rules and format for exchanging Requests and Responses between applications.
+- HTTP itself does not transport data over the network. Instead, it relies on TCP to transport HTTP Requests and HTTP Responses reliably between the Client and the Server.
+- HTTP follows the Request-Response communication model, where the Client always initiates the communication by sending a Request, and the Server processes the Request and sends back a Response.
+- HTTP can transfer different types of data including HTML, JSON, XML, Images, Videos, CSS, JavaScript, PDF files and other binary content.
+- Today, HTTP is widely used not only by Web Browsers but also by Mobile Applications, REST APIs, Microservices and Cloud Services.
+
+Example:
+
+Client
+   │
+HTTP Request
+   │
+   ▼
+Server
+   │
+Processes Request
+   │
+HTTP Response
+   │
+   ▼
+Client
+
+=============================================================================================================================================================================
+HTTPS (HyperText Transfer Protocol Secure)
+=============================================================================================================================================================================
+
+- HTTPS (HyperText Transfer Protocol Secure) is HTTP running over a secure and encrypted communication channel using TLS (Transport Layer Security).
+- HTTPS provides secure communication between the Client and the Server by encrypting the data before it is transmitted over the network.
+- HTTPS protects sensitive information such as Usernames, Passwords, Banking Information and Personal Data from being read or modified while travelling across the network.
+- HTTPS provides three major security benefits:
+  • Confidentiality – Prevents unauthorized users from reading the transmitted data.
+  • Integrity – Ensures that transmitted data is not modified during communication.
+  • Authentication – Verifies that the Client is communicating with the intended Server using Digital Certificates.
+- HTTPS does not replace HTTP. It simply adds a security layer (TLS) before the data is transmitted over TCP.
+- HTTPS also does not replace TCP. The communication stack becomes HTTP → TLS → TCP → IP.
+
+Example:
+
+Browser
+   │
+HTTPS Request
+   │
+TLS Encryption
+   │
+TCP
+   │
+Internet
+   │
+TCP
+   │
+TLS Decryption
+   │
+HTTP Request
+   │
+Spring Boot Application
+
