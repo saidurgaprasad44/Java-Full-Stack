@@ -1,12 +1,12 @@
 =============================================================================================================================================================================
 =============================================================================================================================================================================
-										Internet & WWW
+										Internet
 =============================================================================================================================================================================
 =============================================================================================================================================================================
 
 Goal:
 
-- Understand the fundamental concepts of Networks, Internet, World Wide Web (WWW) and the Client-Server architecture. 
+- Understand the fundamental concepts of Networks, Internet and its services. 
 
 =============================================================================================================================================================================
 What is a Network?
@@ -257,92 +257,6 @@ Examples:
 Cloud services expose many of their features through Web Applications, REST APIs and Management Consoles.
 
 =============================================================================================================================================================================
-Client and Server
-=============================================================================================================================================================================
-
-Client:
-
-A Client is an application or device that initiates communication by sending requests to another application.
-
-Examples:
-
-- Web Browser
-- Mobile Application
-- Postman
-- React Application
-- Angular Application
-
-------------------------------------------------------------
-
-Server:
-
-A Server is an application running on a machine that receives client requests, processes them and sends responses.
-
-Examples:
-
-- Spring Boot Application
-- Apache Tomcat
-- Node.js Application
-- Nginx
-- ASP.NET Application
-
-------------------------------------------------------------
-
-Client-Server Communication
-
-               Request
-Client -----------------------------> Server
-
-               Response
-Client <----------------------------- Server
-
-- The Client always initiates communication by sending a request.
-- The Server receives the request, performs the required processing and returns an appropriate response.
-- This Request-Response communication model forms the foundation of HTTP, Servlets, JSP, Spring MVC, REST APIs, Spring Security and Microservices.
-- Most Internet services follow the Client-Server architecture.
-- The primary difference between these services is not the architecture, but the communication protocol they use.
-
-------------------------------------------------------------
-
-Examples:
-
-
-Web
-
-Browser
-        │
-        ▼
-Web Server
-
-------------------------------------------------------------
-
-Email
-
-Mail Application
-        │
-        ▼
-Mail Server
-
-------------------------------------------------------------
-
-FTP
-
-FTP Client
-        │
-        ▼
-FTP Server
-
-------------------------------------------------------------
-
-SSH
-
-SSH Client
-        │
-        ▼
-SSH Server
-
-
-- Although these services serve different purposes, they all fundamentally follow the Client-Server communication model.
 
 
 
@@ -780,34 +694,3 @@ Relationship:
 In day-to-day backend development, the terms URL and URI are often used interchangeably. However, most frameworks such as Spring MVC and JAX-RS commonly use the term URI when referring to resource identifiers.
 
 =============================================================================================================================================================================
-
-
-
-
-Part 4 – The Web
-Browser
-Web Server
-Static vs Dynamic websites
-Request → Response model
-HTML
-CSS
-JavaScript (high level)
-
-
-
-Part 5 – Security (High Level)
-SSL/TLS (overview)
-Digital Certificates (overview)
-Encryption (overview)
-Firewall
-We'll revisit these in much greater depth when we cover HTTP and Spring Security.
-
-
-
-Part 6 – Modern Infrastructure (High Level)
-Reverse Proxy
-Load Balancer
-CDN
-Cache
-API Gateway
-We'll only introduce these so they don't feel unfamiliar later:

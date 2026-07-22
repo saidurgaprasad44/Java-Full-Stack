@@ -1,0 +1,64 @@
+Part 5 – Security (High Level)
+why network security is needed?
+Encryption
+SSL/TLS (overview)
+Digital Certificates (overview)
+Firewall
+HTTPs
+We'll revisit these in much greater depth when we cover HTTP and Spring Security.
+
+
+
+Part 6 – Modern Infrastructure (High Level)
+Reverse Proxy
+Load Balancer
+CDN
+Cache
+API Gateway
+We'll only introduce these so they don't feel unfamiliar later
+
+
+
+
+
+
+
+
+
+
+
+=============================================================================================================================================================================
+HTTPS (HyperText Transfer Protocol Secure)
+=============================================================================================================================================================================
+
+- HTTPS (HyperText Transfer Protocol Secure) is HTTP running over a secure and encrypted communication channel using TLS (Transport Layer Security).
+- HTTPS provides secure communication between the Client and the Server by encrypting the data before it is transmitted over the network.
+- HTTPS protects sensitive information such as Usernames, Passwords, Banking Information and Personal Data from being read or modified while travelling across the network.
+- HTTPS provides three major security benefits:
+  • Confidentiality – Prevents unauthorized users from reading the transmitted data.
+  • Integrity – Ensures that transmitted data is not modified during communication.
+  • Authentication – Verifies that the Client is communicating with the intended Server using Digital Certificates.
+- HTTPS does not replace HTTP. It simply adds a security layer (TLS) before the data is transmitted over TCP.
+- HTTPS also does not replace TCP. The communication stack becomes HTTP → TLS → TCP → IP.
+
+Example:
+
+Browser
+   │
+HTTPS Request
+   │
+TLS Encryption
+   │
+TCP
+   │
+Internet
+   │
+TCP
+   │
+TLS Decryption
+   │
+HTTP Request
+   │
+Spring Boot Application
+
+=============================================================================================================================================================================

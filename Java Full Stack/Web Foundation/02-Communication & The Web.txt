@@ -5,8 +5,78 @@
 =============================================================================================================================================================================
 
 - Communication is the process of exchanging data between two or more devices over a network. 
-- In web applications, communication occurs between a Client (Browser, Mobile App, another Microservice, etc.) and a Server (Spring Boot Application, Web Server, Database Server, etc.).
+- In web applications, communication occurs either
+- Between a Client (Browser, Mobile App, another Microservice, etc.) and a Server (Spring Boot Application, Web Server, Database Server, etc.) or
+- Between a server (application, a service) and another server(another service, Payment Gateway, External APIs, Mail Server, Cache, Database etc.)
 - The data exchanged between them follows various networking protocols such as TCP, UDP, HTTP and HTTPS.
+
+=============================================================================================================================================================================
+Communication Architectures
+=============================================================================================================================================================================
+
+A communication architecture defines who communicates with whom.
+
+There are two primary communication architectures used in modern web applications:
+
+- Client-Server
+- Server-Server
+
+------------------------------------------------------------------------------------------------------------------------
+
+Client-Server Architecture
+
+- A client requests a service, and a server provides that service.
+
+
+               Request
+Client -----------------------------> Server
+
+               Response
+Client <----------------------------- Server
+
+
+- The client always initiates communication, while the server listens for requests and responds.
+- Almost all Internet services use the Client-Server architecture with different protocols.
+
+Examples:
+
+- World Wide Web (HTTP/HTTPS)
+- Email (SMTP)
+- File Transfer (FTP)
+- Remote Login (SSH)
+- DNS
+- Mobile Applications
+- Desktop Applications consuming APIs
+
+------------------------------------------------------------------------------------------------------------------------
+
+Server-Server Architecture:
+
+- One backend server communicates with another backend server.
+- Unlike Client-Server architecture, there is no direct end-user involved.
+
+
+Server A
+│
+▼
+Server B
+
+
+- Although users interact with one application, that application communicates with multiple backend systems to complete a request.
+
+Common Examples:
+
+------------------------------
+Service → Service (Microservices)
+Application → Database
+Application → Cache
+Application → Mail Server
+Application → External APIs
+Application → Payment Gateway
+
+Overall Flow:
+
+Client
 
 =============================================================================================================================================================================
 Packets
@@ -97,22 +167,47 @@ Internet Service Provider (ISP)
 
 Example:
 
-Laptop (192.168.0.2)
-        │
-Phone (192.168.0.3)
-        │
-TV (192.168.0.4)
-        │
-        ▼
-   Wi-Fi Router
-(Private IP: 192.168.0.1)
+   Laptop (192.168.0.2)
+           │
+    Phone (192.168.0.3)
+           │
+     TV (192.168.0.4)
+           │
+           ▼
+ ------Wi-Fi Router------
+ (Private IP: 192.168.0.1)
 (Public IP: 49.xxx.xxx.xxx)
-        │
-        ▼
-       ISP
-        │
-        ▼
-     Internet
+           │
+           ▼
+          ISP
+           │
+           ▼
+        Internet
+
+=============================================================================================================================================================================
+HTTP (HyperText Transfer Protocol)
+=============================================================================================================================================================================
+
+- HTTP (HyperText Transfer Protocol) is an Application Layer protocol used for communication between Clients and Servers over the Web.
+- HTTP defines the rules and format for exchanging Requests and Responses between applications.
+- HTTP itself does not transport data over the network. Instead, it relies on TCP to transport HTTP Requests and HTTP Responses reliably between the Client and the Server.
+- HTTP follows the Request-Response communication model, where the Client always initiates the communication by sending a Request, and the Server processes the Request and sends back a Response.
+- HTTP can transfer different types of data including HTML, JSON, XML, Images, Videos, CSS, JavaScript, PDF files and other binary content.
+- Today, HTTP is widely used not only by Web Browsers but also by Mobile Applications, REST APIs, Microservices and Cloud Services.
+
+Example:
+
+Client
+   │
+HTTP Request
+   │
+   ▼
+Server (Processes Request)
+   │
+HTTP Response
+   │
+   ▼
+Client
 
 =============================================================================================================================================================================
 TCP (Transmission Control Protocol)
@@ -196,63 +291,396 @@ TCP vs UDP
 | Common Usage 		| HTTP, HTTPS, REST APIs, File Downloads| Video Calls, Gaming, DNS, Live Streaming 
 
 =============================================================================================================================================================================
-HTTP (HyperText Transfer Protocol)
+
+
+
+
+
+
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+ 										The Web
+=============================================================================================================================================================================
 =============================================================================================================================================================================
 
-- HTTP (HyperText Transfer Protocol) is an Application Layer protocol used for communication between Clients and Servers over the Web.
-- HTTP defines the rules and format for exchanging Requests and Responses between applications.
-- HTTP itself does not transport data over the network. Instead, it relies on TCP to transport HTTP Requests and HTTP Responses reliably between the Client and the Server.
-- HTTP follows the Request-Response communication model, where the Client always initiates the communication by sending a Request, and the Server processes the Request and sends back a Response.
-- HTTP can transfer different types of data including HTML, JSON, XML, Images, Videos, CSS, JavaScript, PDF files and other binary content.
-- Today, HTTP is widely used not only by Web Browsers but also by Mobile Applications, REST APIs, Microservices and Cloud Services.
+The World Wide Web (WWW) is a collection of interconnected web pages, websites and web applications that are accessible over the Internet using HTTP/HTTPS. Users access these websites through Web Browsers, which communicate with Web Servers using the Request → Response communication model.
+
+=============================================================================================================================================================================
+Browser
+=============================================================================================================================================================================
+
+- A Browser is a client application that communicates with Web Servers using HTTP/HTTPS, downloads web resources, executes JavaScript, interprets HTML and CSS, and renders the final webpage for the user.
+
+Why do we need it?
+
+- Servers communicate by sending HTTP Responses containing HTML, CSS, JavaScript, Images and other resources.
+- Users cannot directly understand or visualize these resources.
+- A Browser is responsible for requesting these resources, interpreting them and displaying them as interactive web pages.
+
+Responsibilities
+
+- Sends HTTP Requests to Web Servers.
+- Receives HTTP Responses.
+- Parses and renders HTML.
+- Applies CSS styles.
+- Executes JavaScript.
+- Handles user interactions such as clicks, keyboard input and form submissions.
+- Manages Cookies, Local Storage, Session Storage and Browser Cache.
 
 Example:
 
-Client
-   │
+User enters URL
+        │
+        ▼
+Browser sends HTTP Request
+        │
+        ▼
+Receives HTML, CSS, JavaScript and Images
+        │
+        ▼
+Parses HTML
+        │
+        ▼
+Applies CSS
+        │
+        ▼
+Executes JavaScript
+        │
+        ▼
+Displays the Webpage
+
+=============================================================================================================================================================================
+Web Server
+=============================================================================================================================================================================
+
+- A Web Server is a software application that listens for HTTP/HTTPS Requests from clients, processes or forwards those requests to the appropriate application, and sends HTTP Responses back to the client.
+
+Why do we need it?
+
+- Clients require a software component that continuously listens for incoming HTTP Requests, accepts connections, processes or forwards requests and sends HTTP Responses.
+- Applications such as Spring Boot cannot directly receive requests from the Internet without a Web Server.
+
+
+Responsibilities
+
+- Listens for incoming HTTP Requests.
+- Accepts TCP connections.
+- Reads HTTP Requests.
+- Serves static resources or forwards requests to backend applications.
+- Sends HTTP Responses back to the client.
+
+Examples:
+
+- Apache HTTP Server
+- Nginx
+- Microsoft IIS
+- Apache Tomcat
+
+
+Browser
+    │
+    ▼
 HTTP Request
-   │
-   ▼
-Server
-   │
-Processes Request
-   │
+    │
+    ▼
+Web Server
+    │
+    ▼
+Spring Boot Application
+    │
+    ▼
 HTTP Response
-   │
-   ▼
-Client
+    │
+    ▼
+Browser
 
 =============================================================================================================================================================================
-HTTPS (HyperText Transfer Protocol Secure)
+Static Website
 =============================================================================================================================================================================
 
-- HTTPS (HyperText Transfer Protocol Secure) is HTTP running over a secure and encrypted communication channel using TLS (Transport Layer Security).
-- HTTPS provides secure communication between the Client and the Server by encrypting the data before it is transmitted over the network.
-- HTTPS protects sensitive information such as Usernames, Passwords, Banking Information and Personal Data from being read or modified while travelling across the network.
-- HTTPS provides three major security benefits:
-  • Confidentiality – Prevents unauthorized users from reading the transmitted data.
-  • Integrity – Ensures that transmitted data is not modified during communication.
-  • Authentication – Verifies that the Client is communicating with the intended Server using Digital Certificates.
-- HTTPS does not replace HTTP. It simply adds a security layer (TLS) before the data is transmitted over TCP.
-- HTTPS also does not replace TCP. The communication stack becomes HTTP → TLS → TCP → IP.
+- A Static Website is a website whose content is pre-created and stored as files on the server. The Web Server simply returns these files to every user without modifying or generating them.
+
+Why do we need it?
+
+- Many websites only need to display fixed content that remains the same for every user.
+- Generating content dynamically for such websites would unnecessarily increase complexity.
+
+
+Characteristics
+
+- Same content for every user.
+- HTML already exists before the request arrives.
+- No server-side business logic.
+- No database interaction.
+- Fast and simple to host.
+
+Browser
+    │
+    ▼
+GET /about.html
+    │
+    ▼
+Web Server
+    │
+Reads about.html
+    │
+    ▼
+HTTP Response (HTML)
+    │
+    ▼
+Browser
+
+
+Examples:
+
+- Portfolio Website
+- Company Website
+- Documentation Website
+- Landing Page
+
+=============================================================================================================================================================================
+Dynamic Website
+=============================================================================================================================================================================
+
+- A Dynamic Website is a website that generates its content at runtime based on user requests, business logic, databases or other external systems.
+- Can be:
+	Server-Side Rendering Website or
+	Client-Side Rendering Website
+
+Why do we need it?
+
+- Modern applications need to display different content for different users.
+- The displayed content often depends on business logic, databases, user accounts and external systems.
+
+Characteristics
+
+- Content changes depending on the user or request.
+- Usually connected to a database.
+- Executes server-side business logic.
+- Content is generated during request processing.
+- Supports authentication, orders, payments, dashboards and other business functionality.
+
+
+Browser
+    │
+    ▼
+HTTP Request
+    │
+    ▼
+Spring Boot
+    │
+    ▼
+Database
+    │
+    ▼
+Generate HTML
+    │
+    ▼
+HTTP Response
+    │
+    ▼
+Browser
+
+Examples:
+
+- Amazon
+- Netflix
+- Banking Applications
+- Social Media Applications
+
+=============================================================================================================================================================================
+Server-Side Rendering (SSR)
+=============================================================================================================================================================================
+
+- Server-Side Rendering (SSR) is an architecture in which the server generates the HTML page and sends it to the Browser. The Browser then renders that HTML into the final webpage.
+
+Characteristics
+
+- HTML is generated on the server.
+- Browser receives ready-to-render HTML.
+- JavaScript is mainly used to add interactivity and client-side behaviour.
+- Commonly used with JSP, Thymeleaf and Spring MVC.
 
 Example:
 
 Browser
-   │
-HTTPS Request
-   │
-TLS Encryption
-   │
-TCP
-   │
-Internet
-   │
-TCP
-   │
-TLS Decryption
-   │
+    │
+    ▼
 HTTP Request
-   │
-Spring Boot Application
+    │
+    ▼
+Spring MVC
+    │
+Business Logic
+    │
+Database
+    │
+Generate HTML
+    │
+    ▼
+Browser
+    │
+Displays HTML
 
+=============================================================================================================================================================================
+Client-Side Rendering (CSR)
+=============================================================================================================================================================================
+
+- Client-Side Rendering (CSR) is an architecture in which the Browser downloads the frontend application (HTML, CSS and JavaScript), receives data from backend REST APIs and generates the HTML dynamically using JavaScript.
+
+Why do we need it?
+
+- Modern web applications require highly interactive user interfaces that update portions of the page without reloading the entire webpage.
+- Separating the frontend and backend allows them to be developed and deployed independently.
+
+
+Characteristics
+
+- Frontend and Backend are separate applications.
+- Browser downloads HTML, CSS and JavaScript from the Frontend Server.
+- JavaScript (React, Angular, Vue, etc.) executes inside the Browser.
+- Backend usually returns JSON instead of HTML.
+- JavaScript generates and updates the HTML dynamically.
+
+Example:
+
+Browser
+        │
+        ├────────────────────────► Frontend Server
+        │                           │
+        │                           ▼
+        │                 HTML + CSS + JavaScript
+        │
+        └────────────────────────► Backend Server
+                                    │
+                                    ▼
+                                   JSON
+                                    │
+                                    ▼
+                    JavaScript generates HTML
+                                    │
+                                    ▼
+                               Browser displays UI
+
+=============================================================================================================================================================================
+Request → Response Model
+=============================================================================================================================================================================
+
+Why do we need it?
+
+- Clients and Servers require a standard communication model to exchange information over a network.
+- The Request → Response model defines how clients request resources and how servers process and return responses.
+
+Definition
+
+- The Request → Response Model is a communication model in which the Client initiates communication by sending a Request, the Server processes that Request, and returns a Response.
+
+Characteristics
+
+- Communication is always initiated by the Client.
+- The Server waits for incoming Requests.
+- Every Request receives a corresponding Response.
+- HTTP is primarily based on the Request → Response communication model.
+
+Example:
+
+
+Client
+    │
+Request
+    ▼
+Server
+    │
+Processes Request
+    │
+    ▼
+Response
+    │
+    ▼
+Client
+
+=============================================================================================================================================================================
+HTML (HyperText Markup Language)
+=============================================================================================================================================================================
+
+Why do we need it?
+
+- Browsers require a standard language to understand the structure and content of webpages.
+- HTML provides semantic meaning to webpage elements such as headings, paragraphs, images, forms and tables.
+
+Definition
+
+- HTML (HyperText Markup Language) is the standard markup language used to define the structure and content of a webpage.
+
+Characteristics
+
+- Defines the structure of a webpage.
+- Consists of HTML Elements (Tags).
+- Is not a programming language.
+- Does not contain business logic or database access.
+
+=============================================================================================================================================================================
+CSS (Cascading Style Sheets)
+=============================================================================================================================================================================
+
+Why do we need it?
+
+- HTML defines what a webpage contains but not how it should appear.
+- CSS separates presentation from structure and controls the visual appearance of webpages.
+
+Definition
+
+- CSS (Cascading Style Sheets) is a stylesheet language used to define the appearance and layout of HTML elements.
+
+Characteristics
+
+- Controls colours, fonts, spacing and layouts.
+- Supports responsive design.
+- Improves the visual presentation of webpages.
+
+Example:
+
+button{
+    background:green;
+    color:white;
+}
+
+=============================================================================================================================================================================
+JavaScript
+=============================================================================================================================================================================
+
+Why do we need it?
+
+- HTML provides structure and CSS provides appearance, but webpages also require behaviour and interactivity.
+- JavaScript enables webpages to respond to user actions and communicate with backend applications.
+
+Definition
+
+- JavaScript is a programming language that runs primarily inside the Browser and adds behaviour, interactivity and dynamic functionality to webpages.
+
+Characteristics
+
+- Executes inside the Browser.
+- Handles user interactions.
+- Performs client-side validation.
+- Calls REST APIs.
+- Updates the webpage dynamically.
+- React, Angular and Vue are JavaScript frameworks/libraries that execute inside the Browser and ultimately generate or update HTML.
+
+Example:
+
+HTML
+    │
+Defines Structure
+    ▼
+CSS
+    │
+Adds Appearance
+    ▼
+JavaScript
+    │
+Adds Behaviour
+    ▼
+Interactive Webpage
+
+=============================================================================================================================================================================

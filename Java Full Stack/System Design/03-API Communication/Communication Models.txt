@@ -1,0 +1,200 @@
+=============================================================================================================================================================================
+									Communication Models
+=============================================================================================================================================================================
+
+A communication model defines how systems exchange information after communication has been established.
+
+Communication models are broadly classified into:
+
+- Synchronous
+- Asynchronous
+
+=============================================================================================================================================================================
+Synchronous Communication:
+=============================================================================================================================================================================
+ 
+- After sending a request, the sender waits for the receiver to complete processing and return a response before continuing
+
+
+Client
+   │
+   ▼
+Request
+   │
+   ▼
+Server (Process request)
+   │
+   ▼
+Response
+   │
+   ▼
+Client continues
+
+
+Technologies/Protocols that commonly use the Synchronous communication (by default):
+
+- HTTP
+	- REST (synchronous by default, but can return 202 Accepted)
+	- SOAP 
+	- GraphQL (supports subscriptions)
+	- gRPC (Unary) (uses HTTP/2 as transport) (supports streaming)
+- FTP
+- SMTP (Command → Response)
+- Database Queries (SQL via JDBC)
+
+
+Use Synchronous whenever an immediate response is required:
+
+Examples:
+
+- Login
+- Registration
+- Product Search
+- CRUD Operations
+- Payments
+- Authentication
+- Database Queries
+
+Why isn't Synchronous communication enough?
+
+Some applications require continuous updates instead of repeatedly requesting data.
+
+Examples:
+
+- Chat Applications
+- Live Sports Scores
+- Stock Market
+- Notifications
+- Multiplayer Games
+
+These scenarios require asynchronous communication.
+
+=============================================================================================================================================================================
+Asynchronous Communication:
+=============================================================================================================================================================================
+
+- In asynchronous communication, the sender does not wait.
+- It sends the message and immediately continues doing other work.
+- The sender and receiver operate independently. The receiver may process the message immediately or later, depending on the communication mechanism.
+
+Sender
+   │
+Send Message
+   │
+Continue Working
+   │
+──────────────►
+Receiver processes later
+
+------------------------------
+
+Polling:
+
+- The client repeatedly asks the server for updates.
+- Every poll is an independent Request → Response.
+
+Used For
+
+- Simple status checks
+- Legacy applications
+
+------------------------------
+
+Long Polling:
+
+- The client sends one request. 
+- The server delays the response until new data becomes available (One long-lived HTTP response).
+
+Used For
+
+- Notifications
+- Near real-time updates
+
+------------------------------
+
+Server-Sent Events (SSE):
+
+- The client sends one request.
+- The server continuously streams updates.
+
+Used For
+
+- Dashboards
+- Live Scores
+- Stock Prices
+- Notifications
+
+------------------------------
+
+WebSockets:
+
+- Creates a persistent connection where both client and server can send messages at any time.
+
+Used For
+
+- Chat Applications
+- Multiplayer Games
+- Live Collaboration
+- Trading Systems
+
+------------------------------
+
+Webhooks:
+
+- One server automatically notifies another server when an event occurs.
+- Implemented using HTTP.
+
+Used For
+
+- Payment Notifications
+- GitHub Events
+- CI/CD Pipelines
+- Third-party Integrations
+
+------------------------------
+
+Event-Driven Communication:
+
+- Instead of directly calling another service, a service publishes an event.
+- Other services consume that event independently.
+
+
+RabbitMQ (Message Queue):
+
+- Focuses on reliable message delivery between producer and consumer.
+
+Common Use Cases
+
+- Email Sending
+- Background Jobs
+- Task Processing
+
+
+
+2. Kafka (Event Streaming):
+
+Focuses on publishing events that multiple consumers can process independently.
+
+Common Use Cases
+
+- Event-Driven Microservices
+- Analytics
+- Audit Logs
+- Real-time Processing
+
+------------------------------
+
+Comparison of Communication Models
+
+| Model 			| Type 		| Initiated By 			| Direction 				| Common Use Cases 			|
+|-------------------------------|---------------|-------------------------------|---------------------------------------|---------------------------------------|
+| REST, SOAP, GraphQL, gRPC 	| Synchronous 	| Client 			| Client → Server → Client 		| Login, CRUD, REST APIs 		|
+| Polling 			| Asynchronous 	| Client 			| Client repeatedly asks Server 	| Status Checks 			|
+| Long Polling 			| Asynchronous 	| Client 			| Client waits for updates 		| Notifications 			|
+| Server-Sent Events (SSE) 	| Asynchronous 	| Server (after initial request)| Server → Client 			| Live Dashboards, Live Feeds 		|
+| WebSockets 			| Asynchronous 	| Both 				| Client ↔ Server 			| Chat, Gaming, Collaboration 		|
+| Webhooks 			| Asynchronous 	| Server 			| Server → Server 			| Payment Notifications, GitHub Events 	|
+| RabbitMQ 			| Asynchronous 	| Producer 			| Queue → Consumer 			| Background Jobs 			|
+| Kafka 			| Asynchronous 	| Producer 			| Event Stream → Multiple Consumers 	| Event-Driven Microservices 		|
+
+=============================================================================================================================================================================
