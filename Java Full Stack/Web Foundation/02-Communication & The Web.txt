@@ -11,19 +11,19 @@
 - The data exchanged between them follows various networking protocols such as TCP, UDP, HTTP and HTTPS.
 
 =============================================================================================================================================================================
-Communication Architectures
+Communication
 =============================================================================================================================================================================
 
 A communication architecture defines who communicates with whom.
 
-There are two primary communication architectures used in modern web applications:
+There are two primary communications used in web applications:
 
 - Client-Server
 - Server-Server
 
 ------------------------------------------------------------------------------------------------------------------------
 
-Client-Server Architecture
+Client-Server Communication:
 
 - A client requests a service, and a server provides that service.
 
@@ -50,7 +50,7 @@ Examples:
 
 ------------------------------------------------------------------------------------------------------------------------
 
-Server-Server Architecture:
+Server-Server Communication:
 
 - One backend server communicates with another backend server.
 - Unlike Client-Server architecture, there is no direct end-user involved.
@@ -93,23 +93,23 @@ Packets
 Example:
 
 HTTP Response
-        │
-        ▼
+   │
+   ▼
 Packet 1
 Packet 2
 Packet 3
 Packet 4
-        │
-        ▼
+   │
+   ▼
 Internet
-        │
-        ▼
+   │
+   ▼
 Packet 1
 Packet 2
 Packet 3
 Packet 4
-        │
-        ▼
+   │
+   ▼
 HTTP Response
 
 =============================================================================================================================================================================
