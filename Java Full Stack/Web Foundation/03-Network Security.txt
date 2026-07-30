@@ -1,3 +1,237 @@
+=============================================================================================================================================================================
+										Network Security
+=============================================================================================================================================================================
+
+- Network Security is the practice of protecting communication between systems (Client → Server and Server → Server) while data travels over a network.
+- It ensures that communication is secure, trusted and protected from attackers before the request reaches the application.
+- Network Security focuses on:
+    • Confidentiality
+    • Integrity
+    • Authentication
+
+=============================================================================================================================================================================
+Why Network Security is Needed
+=============================================================================================================================================================================
+
+- Without Network Security, data transmitted over a network can be:
+    • Read by unauthorized users.
+    • Modified during transmission.
+    • Sent to or received from an untrusted system.
+
+Example:
+
+Browser
+    │
+    ▼
+Internet
+    │
+    ▼
+Application Server
+
+Without Network Security, an attacker intercepting the communication may read or modify the transmitted data.
+
+=============================================================================================================================================================================
+Encryption
+=============================================================================================================================================================================
+
+- Encryption is the process of converting readable data (Plaintext) into an unreadable format (Ciphertext) using an Encryption Key.
+- Only the intended recipient possessing the appropriate key can decrypt the data back into its original form.
+- Encryption ensures Confidentiality by preventing unauthorized users from reading transmitted data.
+
+Example:
+
+Plaintext
+    │
+    ▼
+Encryption
+    │
+    ▼
+Ciphertext
+    │
+    ▼
+Decryption
+    │
+    ▼
+Plaintext
+
+
+There are two commonly used types of encryption.
+
+Symmetric Encryption
+
+- Uses the same key for both Encryption and Decryption.
+- It is fast and efficient.
+- The major challenge is securely sharing the same key between the communicating systems.
+
+Asymmetric Encryption
+
+- Uses two mathematically related keys:
+    • Public Key
+    • Private Key
+- Data encrypted using one key can only be decrypted using the other.
+- It solves the Key Distribution Problem because only the Public Key needs to be shared.
+- It is computationally slower than Symmetric Encryption.
+
+- Modern secure communication protocols such as TLS use both Symmetric and Asymmetric Encryption to achieve secure and efficient communication
+- Encryption alone does not verify the identity of the communicating systems or detect whether data has been modified during transmission.
+
+=============================================================================================================================================================================
+Digital Certificates
+=============================================================================================================================================================================
+
+- A Digital Certificate is an electronic document that proves the identity of a communicating system.
+- It contains information such as:
+    • Domain Name
+    • Public Key
+    • Organization Name
+    • Validity Period
+    • Certificate Authority (CA)
+
+- Digital Certificates help the communicating system verify that it is communicating with the intended server before exchanging sensitive information.
+- Certificate Authorities (CA) are trusted organizations responsible for issuing Digital Certificates.
+
+Example:
+
+Communicating System
+        │
+        ▼
+Receive Digital Certificate
+        │
+        ▼
+Verify Certificate
+        │
+        ▼
+Continue TLS Handshake
+        │
+        ▼
+Secure Communication
+
+- Digital Certificates provide Authentication.
+- They do not encrypt application data directly.
+- Encryption is performed by TLS after the secure connection has been established.
+- Authentication performed using Digital Certificates is Network Authentication and should not be confused with User Authentication performed by applications.
+
+=============================================================================================================================================================================
+SSL / TLS (Secure Sockets Layer / Transport Layer Security)
+=============================================================================================================================================================================
+
+- SSL/TLS is a security protocol that establishes a secure communication channel between two communicating systems over an insecure network such as the Internet.
+- Although SSL is obsolete, the term SSL is still commonly used in the industry. Modern applications use TLS.
+
+TLS provides:
+
+• Confidentiality
+• Integrity
+• Authentication
+
+High-Level Flow:
+
+Communicating Systems
+        │
+        ▼
+TLS Handshake
+        │
+        ▼
+Digital Certificate Verification
+        │
+        ▼
+Shared Session Key Established
+        │
+        ▼
+Secure Communication Begins
+
+- During the TLS Handshake, the communicating systems verify each other's identity (when applicable) and establish a shared symmetric Session Key for encrypting subsequent communication.
+- Modern TLS derives the shared Session Key during the handshake rather than transmitting it across the network.
+- The Public Key and Private Key used during TLS are generated before the server starts and are not generated for every request.
+- TLS Handshake messages are exchanged before HTTP communication begins and are not HTTP messages.
+- HTTP communication starts only after the secure TLS connection has been established.
+- TLS is applicable for both Client → Server communication and Server → Server communication.
+
+=============================================================================================================================================================================
+Firewall
+=============================================================================================================================================================================
+
+- A Firewall is a network security system that monitors and controls incoming and outgoing network traffic based on predefined security rules.
+- It acts as a security guard between networks by deciding which communication is allowed and which should be blocked.
+
+Example:
+
+Internet
+    │
+    ▼
+Firewall
+    │
+    ▼
+Application Server
+
+- Firewalls inspect network information such as:
+    • Source IP Address
+    • Destination IP Address
+    • Port Number
+    • Protocol (TCP / UDP)
+    • Direction (Inbound / Outbound)
+
+Example Rule:
+
+ALLOW
+TCP
+Port 8080
+
+Meaning:
+
+- Allow TCP traffic destined for applications listening on Port 8080.
+
+- Firewalls can protect:
+    • Internet ↔ Private Network
+    • Private Network ↔ Private Network
+    • Client → Server communication
+    • Server → Server communication
+
+- Firewalls are not limited to Internet-facing applications. They are commonly used within private networks to restrict communication between servers, databases and internal applications.
+- Infrastructure owners (Organizations, Cloud Administrators, DevOps Teams or System Administrators) configure Firewall rules based on business and security requirements.
+
+=============================================================================================================================================================================
+HTTPS (HyperText Transfer Protocol Secure)
+=============================================================================================================================================================================
+
+- HTTPS is HTTP running over TLS.
+- HTTP remains the application protocol, while TLS secures the communication channel over which HTTP messages travel.
+
+High-Level Flow:
+
+TCP Connection
+        │
+        ▼
+TLS Handshake
+        │
+        ▼
+Digital Certificate Verification
+        │
+        ▼
+Shared Session Key Established
+        │
+        ▼
+Secure Connection
+        │
+        ▼
+HTTP Request (Encrypted)
+        │
+        ▼
+HTTP Response (Encrypted)
+
+HTTPS provides:
+
+• Confidentiality
+• Integrity
+• Authentication
+
+- HTTPS protects communication for both Client → Server and Server → Server communication.
+- HTTP is stateless, whereas TLS is connection-oriented. Multiple HTTP requests can travel securely over the same TLS connection while it remains established.
+- HTTPS uses Port 443 by default, whereas HTTP uses Port 80 by default.
+
+
+
+
 Part 5 – Security (High Level)
 why network security is needed?
 Encryption
