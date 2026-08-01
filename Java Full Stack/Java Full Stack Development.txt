@@ -49,7 +49,7 @@ ORM and hibernate/jsp	- ORM, JSP/hibernate - datasource for connection, entity m
 Spring WebMVC		- spring MVC(SSR), filters, interceptors, Spring REST, their Configurations, embedded tomcat configuration, and all concepts, example projects on Spring MVC(SSR) w/t hbnt & REST data jpa
 spring Data Access 	- Spring jdbc, jdbc template, Spring ORM - Hibernate/JPA integration, spring data jpa - Repository interfaces, configurations of all 3
 Spring Boot 		- opinionated auto-configuration - overriding & customizing, auto-configurations for Embedded tomcat, spring MVC, DataSource, Transaction - rest & jpa project(boot)
-auth and authz 		- request and response anatomy, http statelessness, sessions , sessionid, httponly cookies, state management, jwt anatomy, session id (statefull) vs token (stataless), CORS, CSRF, token in localstorage vs httponly cookies, workflow of basic auth vs token authentication, access token vs refresh tokens, filters, spring security, 
+auth and authz 		- request and response anatomy, http statelessness, session based authentication , sessionid, httponly cookies, state management, token authentication, session (stateful) vs token (stateless), jwt anatomy, access token and refresh token, CORS, CSRF, token in local storage vs httponly cookies, filters, spring security, password hashing, encryption vs encoding(sign) vs hashing, Oauth2, RBAC.
 microservices 		- api gateway, load balancer, microservices, inter service communication, service discovery, open feign, spring cloud
 microservices patterns	- saga pattern
 sql 			- querying, update/insert/delete, joins, table relationships, indexing, transactions, aggregations, order of writing and execution, 

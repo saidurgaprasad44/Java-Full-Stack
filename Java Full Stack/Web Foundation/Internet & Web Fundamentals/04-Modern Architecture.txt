@@ -1,0 +1,1221 @@
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+									MODERN INFRASTRUCTURE
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+
+Modern applications commonly use infrastructure components between clients and backend applications to improve:
+
+• Scalability
+• Availability
+• Performance
+• Security
+• Traffic management
+
+The main components:
+
+1. Reverse Proxy
+2. Load Balancer
+3. CDN
+4. Cache
+5. API Gateway
+
+=============================================================================================================================================================================
+REVERSE PROXY
+=============================================================================================================================================================================
+
+- A Reverse Proxy is a server that sits in front of one or more backend servers and receives requests on their behalf.
+- Instead of the client directly communicating with the backend:
+
+
+Client
+   │
+   ▼
+Application Server
+
+
+- A Reverse Proxy can be placed in between:
+
+
+Client
+   │
+   ▼
+Reverse Proxy
+   │
+   ▼
+Application Server
+
+
+
+- The client communicates with the Reverse Proxy, and the Reverse Proxy forwards the request to the appropriate backend server.
+
+Example:
+
+
+Browser
+   │
+   │ HTTPS Request
+   ▼
+Reverse Proxy
+   │
+   │ Forward Request
+   ▼
+Application Server
+   │
+   │ Response
+   ▼
+Reverse Proxy
+   │
+   ▼
+Browser
+
+
+- Reverse Proxy can provide functions such as:
+
+	• Request routing
+	• TLS termination
+	• Security filtering
+	• Request/response modification
+	• Load balancing
+	• Caching
+
+- The exact functions depend on the technology and configuration.
+- A Reverse Proxy can also sit in front of multiple backend servers:
+
+
+                     ┌──► Application Server 1
+                     │
+Client ──► Reverse Proxy ──► Application Server 2
+                     │
+                     └──► Application Server 3
+
+------------------------------------------------------------------------------------------------------------------------
+Reverse Proxy and TLS:
+
+- A Reverse Proxy can terminate the TLS connection from the client.
+
+
+Client
+   │
+   │ HTTPS
+   ▼
+Reverse Proxy
+   │
+   │ HTTP / HTTPS
+   ▼
+Application Server
+
+
+- The connection between the Reverse Proxy and backend depends on the architecture and security requirements.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Forward Proxy vs Reverse Proxy:
+
+
+Forward Proxy:
+
+Client
+   │
+   ▼
+Forward Proxy
+   │
+   ▼
+Internet
+   │
+   ▼
+Server
+
+
+- Forward Proxy represents the CLIENT side.
+
+
+Reverse Proxy:
+
+Client
+   │
+   ▼
+Internet
+   │
+   ▼
+Reverse Proxy
+   │
+   ▼
+Backend Servers
+
+
+- Reverse Proxy represents the SERVER side.
+
+
+Important:
+
+- A Reverse Proxy is a broader concept than a Load Balancer.
+- A Reverse Proxy acts as an intermediary between clients and backend servers.
+
+=============================================================================================================================================================================
+LOAD BALANCER
+=============================================================================================================================================================================
+
+- A Load Balancer distributes incoming requests across multiple instances of an application or service.
+- Instead of sending all traffic to one server:
+
+
+Clients
+   │
+   ▼
+Application Server
+
+
+- Multiple instances can be deployed:
+
+
+                     ┌──► Application Instance 1
+                     │
+Clients ──► Load Balancer ──► Application Instance 2
+                     │
+                     └──► Application Instance 3
+
+------------------------------------------------------------------------------------------------------------------------
+
+Benefits:
+
+• Scalability
+• High availability
+• Load distribution
+• Failure handling
+
+------------------------------------------------------------------------------------------------------------------------
+
+Health Checking:
+
+A Load Balancer can monitor the health of backend instances.
+
+
+Instance 1 → Healthy ✓
+Instance 2 → Healthy ✓
+Instance 3 → Unhealthy ✗
+
+
+- Traffic should be directed only to healthy instances.
+
+Example:
+
+
+Client
+   │
+   ▼
+Load Balancer
+   │
+   ├──► Instance 1 ✓
+   ├──► Instance 2 ✓
+   └──► Instance 3 ✗
+
+------------------------------------------------------------------------------------------------------------------------
+
+Common load-balancing strategies include:
+
+• Round Robin
+• Weighted distribution
+• Least connections
+
+Round Robin example:
+
+
+Request 1 → Instance 1
+Request 2 → Instance 2
+Request 3 → Instance 3
+Request 4 → Instance 1
+
+
+Load Balancer + Reverse Proxy:
+
+------------------------------------------------------------------------------------------------------------------------
+
+Load Balancing in Microservices:
+
+- The API Gateway identifies which service should handle the request.
+- The Load Balancer identifies which INSTANCE of that service should handle the request.
+
+
+Client
+   │
+   ▼
+API Gateway
+   │
+   │ "This belongs to Order Service"
+   ▼
+Order Service
+   │
+   ▼
+Load Balancer
+   │
+   ├──► Order Instance 1
+   ├──► Order Instance 2
+   └──► Order Instance 3
+
+
+- The same concept applies to server-to-server communication.
+
+
+Order Service
+     │
+     │ Request to Payment Service
+     ▼
+Payment Service
+     │
+     ▼
+Load Balancer
+     │
+     ├──► Payment Instance 1
+     ├──► Payment Instance 2
+     └──► Payment Instance 3
+
+------------------------------------------------------------------------------------------------------------------------
+
+- A Load Balancer does not necessarily have to be a separate physical server.
+- It can be:
+
+	• Hardware
+	• Software
+	• Cloud-managed service
+	• A feature of a Reverse Proxy
+	• Part of another infrastructure component
+
+=============================================================================================================================================================================
+CDN (CONTENT DELIVERY NETWORK)
+=============================================================================================================================================================================
+
+- A CDN is a distributed network of servers located in different geographic locations that stores and delivers content closer to users.
+- Without a CDN:
+
+
+User
+  │
+  ▼
+Origin Server
+  │
+  ▼
+Content
+
+
+- With a CDN:
+
+                     ┌──► CDN Server 1
+                     │
+User ──► CDN ────────┼──► CDN Server 2
+                     │
+                     └──► CDN Server 3
+                            │
+                            ▼
+                       Origin Server
+
+
+- A CDN mainly stores and delivers static or cacheable content such as:
+
+	• HTML
+	• CSS
+	• JavaScript
+	• Images
+	• Videos
+	• Fonts
+	• Static files
+
+CDN Cache Flow:
+
+
+User
+  │
+  │ Request
+  ▼
+CDN
+  │
+  ├── Content already cached?
+  │       │
+  │      YES
+  │       ▼
+  │   Return content
+  │
+  └── NO
+        │
+        ▼
+    Origin Server
+        │
+        ▼
+    Content
+        │
+        ▼
+    CDN stores copy
+        │
+        ▼
+       User
+
+
+Benefits of CDN:
+
+• Lower latency
+• Faster content delivery
+• Reduced load on origin server
+• Better scalability
+
+------------------------------------------------------------------------------------------------------------------------
+
+CDN and Dynamic Data:
+
+- CDNs are mainly useful for static or cacheable content.
+
+Example:
+
+/images/product.jpg
+       │
+       ▼
+      CDN
+
+- User-specific dynamic data usually needs to reach the backend.
+
+
+Example:
+
+GET /api/orders/123
+       │
+       ▼
+Backend Application
+
+
+
+Therefore:
+
+Static Content
+     → CDN is highly useful
+
+Dynamic / User-specific Data
+     → Usually handled by backend application
+
+------------------------------------------------------------------------------------------------------------------------
+
+CDN and Cache:
+
+- A CDN heavily uses caching, but CDN and Cache are not the same concept.
+
+
+Cache
+   = Mechanism for temporarily storing data for faster access
+
+CDN
+   = Distributed network of servers that can cache and deliver
+     content closer to users
+
+
+CDN storage:
+
+- A CDN edge server can use both memory and local storage.
+
+
+CDN Edge Server
+│
+├── Memory (RAM)
+│     └── Frequently accessed / hot content
+│
+└── Disk / SSD
+      └── Larger amount of cached content
+
+
+- RAM is faster but limited.
+- Disk/SSD provides larger storage capacity.
+
+=============================================================================================================================================================================
+CACHE
+=============================================================================================================================================================================
+
+- A Cache is a temporary storage location that keeps frequently or recently used data so that it can be retrieved faster.
+- Without caching:
+
+
+Application
+    │
+    ▼
+Database
+    │
+    ▼
+  Data
+    │
+    ▼
+Application
+
+
+- With caching:
+
+
+Application
+    │
+    ▼
+  Cache
+   │  │
+   │  └── Cache Miss ──► Database
+   │
+   └──── Cache Hit ────► Data
+
+------------------------------------------------------------------------------------------------------------------------
+Cache Hit:
+
+- The requested data is already available in the cache.
+
+Application
+    │
+    ▼
+  Cache
+    │
+    │ HIT ✓
+    ▼
+  Data
+
+------------------------------------------------------------------------------------------------------------------------
+Cache Miss:
+
+The requested data is not available in the cache.
+
+
+Application
+    │
+    ▼
+  Cache
+    │
+    │ MISS ✗
+    ▼
+Database
+    │
+    ▼
+  Data
+    │
+    ▼
+  Cache
+    │
+    ▼
+Application
+
+------------------------------------------------------------------------------------------------------------------------
+
+Benefits of caching:
+
+• Faster response
+• Reduced database/service load
+• Better scalability
+
+------------------------------------------------------------------------------------------------------------------------
+
+Caching can exist at different levels:
+
+
+Browser Cache
+      │
+      ▼
+CDN Cache
+      │
+      ▼
+Application Cache
+      │
+      ▼
+Database Cache
+      │
+      ▼
+Database Storage
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+BROWSER CACHE:
+
+
+- A Browser Cache stores previously downloaded resources locally in the user's browser.
+
+Examples:
+
+• HTML
+• CSS
+• JavaScript
+• Images
+• Fonts
+• Other cacheable HTTP responses
+
+
+First request:
+
+
+Browser
+   │
+   ▼
+Server
+   │
+   ▼
+Resource
+   │
+   ▼
+Browser Cache
+
+
+
+Later request:
+
+
+Browser
+   │
+   ▼
+Browser Cache
+   │
+   │ Cache Hit
+   ▼
+Resource
+
+- Browser caching is mainly controlled through HTTP response headers.
+
+
+
+Common Cache-Control directives:
+
+
+Cache-Control: max-age=3600
+
+→ Response can be reused while it is fresh.
+
+
+Cache-Control: no-store
+
+→ Response should not be stored in the cache.
+
+
+Cache-Control: no-cache
+
+→ Cached response must be validated with the server before reuse.
+
+
+no-cache ≠ do not cache
+
+
+- The browser manages the actual cache.
+- The server controls the caching policy through HTTP headers.
+
+Browser cache validation can use:
+
+• ETag
+• Last-Modified
+
+Conceptually:
+
+
+Browser
+   │
+   │ "Is my cached version still valid?"
+   ▼
+Server
+   │
+   ├── YES → Use cached version
+   │
+   └── NO  → Download new version
+
+
+
+Browser caching and Java/Spring:
+
+- A Java/Spring application can control browser caching by sending appropriate HTTP response headers.
+
+For example:
+
+Cache-Control
+ETag
+Last-Modified
+
+- The browser performs the actual caching based on these HTTP instructions.
+
+
+=============================================================================================================================================================================
+APPLICATION-LEVEL CACHING — CACHE MANAGEMENT
+=============================================================================================================================================================================
+
+- Application-level caching stores frequently accessed data so that the application can retrieve it faster without repeatedly accessing the database or another external service.
+- The following are important cache-management strategies:
+
+Read Strategies
+Write Strategies
+Cache Invalidation
+TTL (Time To Live)
+Eviction Policies
+Cache Refresh
+
+
+=============================================================================================================================================================================
+READ STRATEGIES
+=============================================================================================================================================================================
+
+- Read strategies define how data is retrieved when the application needs it.
+- The main read strategies are:
+
+• Cache-Aside
+• Read-Through
+
+
+---
+CACHE-ASIDE
+
+- In Cache-Aside, the application is responsible for checking the cache first.
+- If the data exists in the cache, it is returned.
+- If the data does not exist, the application retrieves it from the database and explicitly places the result into the cache.
+
+
+Application
+     │
+     ▼
+   Cache
+   │   │
+   │   └── HIT → Return Data
+   │
+   └── MISS
+         │
+         ▼
+     Application
+         │
+         ▼
+     Database
+         │
+         ▼
+    Application
+         │
+         ▼
+    Store in Cache
+
+
+High-level flow:
+
+1. Application checks cache
+2. Cache HIT → return cached data
+3. Cache MISS → application queries database
+4. Application stores result in cache
+5. Return data
+
+- The application explicitly controls the cache population.
+- This is a very common caching strategy in application development.
+
+
+---
+READ-THROUGH
+
+- In Read-Through, the application requests the data from the cache.
+- When the cache has the data, it returns it.
+- When the cache does not have the data, the cache itself retrieves the data from the underlying data source, stores it, and returns it to the application.
+
+
+Application
+     │
+     ▼
+   Cache
+   │   │
+   │   └── HIT → Return Data
+   │
+   └── MISS
+         │
+         ▼
+     Database
+         │
+         ▼
+    Store in Cache
+         │
+         ▼
+    Return Data
+
+
+High-level flow:
+
+1. Application requests data from cache
+2. Cache HIT → return cached data
+3. Cache MISS → cache retrieves data from database
+4. Cache stores the data
+5. Cache returns the data to application
+
+- The application does not explicitly handle the cache-miss → database → cache-population flow.
+
+=============================================================================================================================================================================
+WRITE STRATEGIES
+=============================================================================================================================================================================
+
+- Write strategies define how data is handled when the application creates or updates data.
+- The main write strategies are:
+
+• Write-Through
+• Write-Behind / Write-Back
+• Write-Around
+
+
+---
+WRITE-THROUGH
+
+- In Write-Through, data is written to the cache and the underlying database as part of the same write operation.
+
+
+Application
+     │
+     ▼
+   Cache
+     │
+     ▼
+  Database
+
+
+High-level flow:
+
+1. Application writes data
+2. Cache is updated
+3. Database is updated
+4. Write operation completes
+
+- The cache and database are updated together.
+- This helps keep the cached value synchronized with the database after a successful write.
+
+
+---
+WRITE-BEHIND / WRITE-BACK
+
+- In Write-Behind (also called Write-Back), the application writes to the cache first.
+- The database update happens later, usually asynchronously.
+
+
+Application
+     │
+     ▼
+   Cache
+     │
+     │ Later / Asynchronously
+     ▼
+  Database
+
+
+High-level flow:
+
+1. Application writes data
+2. Cache is updated
+3. Application can continue without waiting for database write
+4. Cache later writes the change to the database
+
+
+Advantages:
+
+• Faster write response
+• Reduces immediate database load
+• Multiple changes can potentially be combined before reaching the database
+
+Risk:
+
+- If the cache fails before the data is persisted to the database, the pending changes can potentially be lost.
+- Therefore, this strategy requires careful reliability and consistency handling.
+
+
+---
+WRITE-AROUND
+
+- In Write-Around, data is written directly to the database without updating the cache.
+
+Application
+     │
+     ▼
+  Database
+
+   Cache
+     │
+     └── Not updated during write
+
+
+When the data is subsequently requested:
+
+Application
+     │
+     ▼
+   Cache
+     │
+     │ MISS
+     ▼
+  Database
+     │
+     ▼
+Store in Cache
+
+
+- This prevents data that may not be read again from unnecessarily occupying cache space.
+- However, immediately after a write, the cache may not contain the latest data.
+
+=============================================================================================================================================================================
+CACHE MANAGEMENT
+=============================================================================================================================================================================
+
+Cache Invalidation
+    → Explicitly make cached data invalid.
+
+TTL
+    → Automatically expire cached data after a specified period.
+
+Eviction Policy
+    → Decide which entries to remove when cache space is limited.
+
+Cache Refresh
+    → Proactively update cached data before it becomes stale.
+
+
+------------------------------------------------------------------------------------------------------------------------
+CACHE INVALIDATION:
+
+
+- Cache invalidation means removing or marking cached data as no longer valid when the original data changes.
+
+Example:
+
+
+Database
+Product 100 → Price = ₹100
+
+Cache
+Product 100 → Price = ₹100
+
+
+
+
+The database is updated:
+
+Database
+Product 100 → Price = ₹120
+
+
+The cached value may now be stale:
+
+Cache
+Product 100 → Price = ₹100
+
+
+
+
+The application can invalidate the cached entry:
+
+
+Database updated
+      │
+      ▼
+Invalidate Cache
+      │
+      ▼
+Next request → Cache Miss → Get latest data
+
+
+- Cache invalidation is important because cached data can become outdated.
+
+------------------------------------------------------------------------------------------------------------------------
+TTL — TIME TO LIVE:
+
+
+- TTL defines how long an item is allowed to remain valid in the cache.
+
+Example:
+
+
+Product 100
+   │
+   ▼
+Cache
+   │
+   │ TTL = 10 minutes
+   ▼
+Expires after 10 minutes
+
+
+
+After the TTL expires:
+
+
+Request
+   │
+   ▼
+Cache
+   │
+   │ Expired → MISS
+   ▼
+Database
+   │
+   ▼
+Latest Data
+
+
+
+- TTL is useful when data does not need to remain cached indefinitely.
+- It also provides an automatic way to remove stale data.
+
+------------------------------------------------------------------------------------------------------------------------
+EVICTION POLICIES:
+
+
+- Eviction is the process of removing entries from the cache, usually because the cache has reached its capacity or because entries are no longer useful.
+- An eviction policy determines: "Which cached item should be removed?"
+
+
+Common policies include:
+
+LRU — Least Recently Used - Removes the item that has not been accessed for the longest time.
+
+Example:
+
+    Cache:
+    A → recently used
+    B → recently used
+    C → not used for longest time
+
+    If space is required:
+
+    C → Evicted
+
+
+LFU — Least Frequently Used - Removes the item that has been accessed the fewest times.
+
+Example:
+
+    A → accessed 100 times
+    B → accessed 50 times
+    C → accessed 2 times
+
+    C → Evicted
+
+
+FIFO — First In, First Out - Removes the item that was added to the cache first.
+
+Example:
+
+    A → added first
+    B → added second
+    C → added third
+
+    A → Evicted first
+
+- The exact eviction policies available depend on the cache technology.
+
+------------------------------------------------------------------------------------------------------------------------
+CACHE REFRESH:
+
+
+- Cache refresh means updating cached data with newer data from the underlying data source.
+- Instead of waiting for the cached entry to expire or be requested after a cache miss, the application can proactively refresh the cached data.
+
+Example:
+
+
+Database
+Product 100 → Price = ₹120
+
+      │
+      │ Refresh
+      ▼
+
+Cache
+Product 100 → Price = ₹120
+
+
+
+This can be performed periodically:
+
+Cache
+   │
+   │ Every 10 minutes
+   ▼
+Fetch latest data
+   │
+   ▼
+Update Cache
+
+- Cache refresh is useful when keeping relatively fresh data in the cache is important and we want to avoid cache misses for frequently accessed data.
+
+=============================================================================================================================================================================
+DATABASE CACHE
+=============================================================================================================================================================================
+
+- Databases also use caching internally.
+- The main purpose is to avoid repeatedly reading data from disk.
+
+Conceptually:
+
+
+Database Server
+│
+├── RAM
+│     └── Buffer Pool / Database Cache
+│           ├── Table Pages
+│           ├── Index Pages
+│           └── Other Database Pages
+│
+└── Disk / SSD
+      └── Persistent Database Data
+
+
+Database Cache Hit:
+
+
+Query
+  │
+  ▼
+Database Cache
+  │
+  │ HIT
+  ▼
+Data
+
+
+Database Cache Miss:
+
+
+Query
+  │
+  ▼
+Database Cache
+  │
+  │ MISS
+  ▼
+Disk / SSD
+  │
+  ▼
+Data loaded into memory
+
+
+Database caching is generally managed automatically by the database engine.
+
+Application developers usually do not manually cache individual database pages.
+
+Database configuration can control things such as:
+
+• Memory allocated for database caching
+• Buffer pool/cache size
+• Eviction policies
+• Other memory/performance settings
+
+Examples:
+
+• MySQL/InnoDB → Buffer Pool
+• PostgreSQL → Shared Buffers + Operating System Filesystem Cache
+
+=============================================================================================================================================================================
+DIFFERENT CACHE LEVELS
+=============================================================================================================================================================================
+
+- Multiple caching layers can exist in the same request path.
+
+Example:
+
+Browser
+   │
+   │ Cache Miss
+   ▼
+CDN
+   │
+   │ Cache Miss
+   ▼
+Reverse Proxy
+   │
+   ▼
+Application
+   │
+   │ Cache Miss
+   ▼
+Application Cache / Redis
+   │
+   │ Cache Miss
+   ▼
+Database
+   │
+   ▼
+Database Buffer Cache
+   │
+   │ Cache Miss
+   ▼
+Disk / SSD
+
+
+- Each layer tries to prevent the request from going further down the chain.
+- The closer the cache is to the requester, the more network traffic and processing it can potentially save.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Cache management differs by layer:
+
+
+Browser Cache
+    → Browser + HTTP response headers
+
+CDN Cache
+    → CDN infrastructure + cache policies
+
+Application Cache
+    → Application / Framework / Developer
+
+Database Cache
+    → Database Engine + Database Configuration
+
+
+=============================================================================================================================================================================
+API GATEWAY
+=============================================================================================================================================================================
+
+- An API Gateway is a centralized entry point for APIs in a distributed or microservices architecture.
+- Instead of clients directly communicating with every backend service:
+
+
+Client
+  │
+  ├────► Order Service
+  ├────► Payment Service
+  └────► User Service
+
+
+The client can communicate through an API Gateway:
+
+
+Client
+   │
+   ▼
+API Gateway
+   │
+   ├────► Order Service
+   ├────► Payment Service
+   └────► User Service
+
+
+The API Gateway can provide functions such as:
+
+• API routing
+• Authentication / Authorization
+• Rate limiting
+• Request/response transformation
+• API versioning
+• Service discovery integration
+• Other API-specific policies
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+API Gateway vs Load Balancer:
+
+API Gateway
+    → Decides WHICH SERVICE should handle the request.
+
+Load Balancer
+    → Decides WHICH INSTANCE of that service should handle the request.
+
+
+Example:
+
+
+GET /orders/123
+      │
+      ▼
+API Gateway
+      │
+      │ "This belongs to Order Service"
+      ▼
+Order Service
+      │
+      ▼
+Load Balancer
+      │
+      ├──► Order Instance 1
+      ├──► Order Instance 2
+      └──► Order Instance 3
+
+=============================================================================================================================================================================

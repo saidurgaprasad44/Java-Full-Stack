@@ -1,0 +1,584 @@
+=============================================================================================================================================================================
+										Network Security
+=============================================================================================================================================================================
+
+- Network Security is the practice of protecting communication between systems (Client → Server and Server → Server) while data travels over a network.
+- It ensures that communication is secure, trusted and protected from attackers before the request reaches the application.
+- Network Security focuses on:
+    • Confidentiality
+    • Integrity
+    • Authentication
+
+=============================================================================================================================================================================
+Why Network Security is Needed
+=============================================================================================================================================================================
+
+- Without Network Security, data transmitted over a network can be:
+    • Read by unauthorized users.
+    • Modified during transmission.
+    • Sent to or received from an untrusted system.
+
+Example:
+
+Browser
+    │
+    ▼
+Internet
+    │
+    ▼
+Application Server
+
+Without Network Security, an attacker intercepting the communication may read or modify the transmitted data.
+
+=============================================================================================================================================================================
+Encryption
+=============================================================================================================================================================================
+
+- Encryption is the process of converting readable data (Plaintext) into an unreadable format (Ciphertext) using an Encryption Key.
+- Only the intended recipient possessing the appropriate key can decrypt the data back into its original form.
+- Encryption ensures Confidentiality by preventing unauthorized users from reading transmitted data.
+
+Example:
+
+Plaintext
+    │
+    ▼
+Encryption
+    │
+    ▼
+Ciphertext
+    │
+    ▼
+Decryption
+    │
+    ▼
+Plaintext
+
+
+There are two commonly used types of encryption.
+
+Symmetric Encryption:
+
+	- Uses the same key for both Encryption and Decryption.
+	- It is fast and efficient.
+	- The major challenge is securely sharing the same key between the communicating systems.
+
+Asymmetric Encryption:
+
+	- Uses two mathematically related keys:
+    		• Public Key
+    		• Private Key
+	- Data encrypted using one key can only be decrypted using the other.
+	- It solves the Key Distribution Problem because only the Public Key needs to be shared.
+	- It is computationally slower than Symmetric Encryption.
+
+- Modern secure communication protocols such as TLS use both Symmetric and Asymmetric Encryption to achieve secure and efficient communication
+- While Encryption ensures confidentiality, it does not verify:
+	- The identity of the communicating systems
+	- Detect whether data has been modified during transmission.
+
+=============================================================================================================================================================================
+SSL / TLS (Secure Sockets Layer / Transport Layer Security)
+=============================================================================================================================================================================
+
+- SSL/TLS is a security protocol that establishes a secure communication channel between two communicating systems over an insecure network.
+- Although SSL is obsolete, the term "SSL" is still commonly used. Modern applications use TLS (Transport Layer Security).
+- TLS is used for both Client → Server and Server → Server communication.
+
+TLS provides:
+
+	• Confidentiality
+	• Integrity
+	• Authentication
+
+------------------------------------------------------------------------------------------------------------------------
+How is a Secure Connection Established?
+
+- Before exchanging any HTTP data, the communicating systems must first establish a secure connection. This process is called the TLS Handshake.
+- Only after the TLS Handshake completes successfully do both systems begin exchanging encrypted HTTP Requests and HTTP Responses.
+
+High-Level Flow:
+
+Communicating Systems
+        │
+        ▼
+TLS Handshake
+        │
+        ▼
+Secure Connection Established
+        │
+        ▼
+Encrypted HTTP Communication Begins
+
+------------------------------------------------------------------------------------------------------------------------
+Step 1 - Client Initiates the TLS Handshake:
+
+- The communicating system (Client or another Server) first establishes a TCP connection with the destination server.
+- Once the TCP connection is established, it sends a TLS "Client Hello" message (not HTTP request).
+- Since TLS sits on TCP and not on HTTP, TLS doesn't require HTTP to send messages to Server
+
+	HTTP
+	 |
+	 ▼
+	TLS
+	 |
+	 ▼
+	TCP
+	 |
+	 ▼
+	IP
+
+- The TLS Client Hello typically contains information such as:
+
+	• Supported TLS Versions
+	• Supported Encryption Algorithms (Cipher Suites)
+	• A Random Number used during Key Generation
+	• Other TLS Capabilities
+
+At this stage:
+
+- No HTTP Request has been sent.
+- No application data has been exchanged.
+- The purpose is only to begin establishing a secure connection.
+
+
+High-Level Flow:
+
+TCP Connection
+        │
+        ▼
+Client Hello
+        │
+        ▼
+Waiting for Server Response
+
+------------------------------------------------------------------------------------------------------------------------
+Step 2 - Server Responds with the Digital Certificate:
+
+- The server receives the Client Hello and responds with a TLS "Server Hello" message.
+- The Server Hello message is the Digital Certificate.
+
+---------------------------------------------------
+Digital Certificate:
+
+- A Digital Certificate is an electronic document that proves the identity of a communicating system.
+- It contains information such as:
+    • Domain Name
+    • Public Key
+    • Organization Name
+    • Validity Period
+    • Certificate Authority (CA)
+
+- Digital Certificates help the communicating system verify that it is communicating with the intended server before exchanging sensitive information.
+- Certificate Authorities (CA) like Let's Encrypt, DigiCert, and Sectigo are trusted organizations responsible for issuing Digital Certificates.
+
+
+Communicating System
+        │
+        ▼
+Receive Digital Certificate
+        │
+        ▼
+Verify Certificate
+        │
+        ▼
+Continue TLS Handshake
+        │
+        ▼
+Secure Communication
+
+
+- Digital Certificates provide network level Authentication, not User Authentication performed by applications.
+
+---------------------------------------------------
+
+- During TLS handshake, the communication systems initially use Asymmetric Encryption (private and public keys)
+- The Server sends the public key in the Digital Certificate, keeping the private key with it
+
+Now:
+
+- The requester verifies the Digital Certificate before continuing the TLS Handshake.
+- This verification ensures that it is communicating with the intended server and not an attacker.
+
+
+High-Level Flow:
+
+Client Hello
+        │
+        ▼
+Server Hello
+        │
+        ▼
+Digital Certificate
+
+------------------------------------------------------------------------------------------------------------------------
+Step 3 - Securely Establishing a Shared Session Key:
+
+
+- After verifying the Digital Certificate, both communicating systems must agree on a common Encryption Key for future communication.
+- Symmetric Encryption is very fast and efficient when compared to Asymmetric Encryption, but both systems must possess the same Encryption Key.
+
+The challenge is:
+
+- How can both systems obtain the same key without exposing it over the network?
+- This is known as the Key Distribution Problem.
+- TLS solves this problem using Asymmetric Encryption.
+
+Every server already possesses:
+
+	• A Public Key
+	• A corresponding Private Key
+
+- These keys are generated before the server starts and are associated with its Digital Certificate.
+- Using the server's Asymmetric Public Key, the communicating systems securely establish a shared Symmetric Session Key during the TLS Handshake.
+- The Session Key is never transmitted directly across the network. Instead, both sides independently calculate the same shared session secret.
+- TLS combines both encryption techniques because each solves a different problem.
+
+Asymmetric Encryption:
+
+- Used only during the TLS Handshake.
+- Securely establishes the shared Symmetric Session Key.
+- Computationally slower but solves the Key Distribution Problem.
+
+Symmetric Encryption:
+
+- Used after the TLS Handshake.
+- Encrypts all HTTP Requests and HTTP Responses.
+- Much faster and more efficient for continuous communication.
+
+
+High-Level Flow:
+
+Digital Certificate
+        │
+        ▼
+Asymmetric Encryption
+        │
+        ▼
+Shared Symmetric Session Key Established
+        │
+        ▼
+Symmetric Encryption begins
+        │
+        ▼
+Encrypted HTTP Communication
+
+
+------------------------------------------------------------------------------------------------------------------------
+Step 4 - Secure Connection Established:
+
+
+- Once both communicating systems possess the same Symmetric Session Key, the TLS Handshake is complete.
+- At this point:
+
+	• The Secure Connection has been established.
+	• HTTP communication can now begin.
+	• All subsequent communication is encrypted using the shared Symmetric Session Key.
+
+High-Level Flow:
+
+Shared Session Key
+        │
+        ▼
+TLS Handshake Complete
+        │
+        ▼
+Secure Connection Established
+        │
+        ▼
+HTTP Communication Begins
+
+
+=============================================================================================================================================================================
+Firewall
+=============================================================================================================================================================================
+
+- A Firewall is a network security system that monitors and controls incoming and outgoing network traffic based on predefined security rules.
+- It acts as a security guard between networks by deciding which communication is allowed and which should be blocked.
+
+Example:
+
+Internet
+    │
+    ▼
+Firewall
+    │
+    ▼
+Application Server
+
+- Firewalls inspect network information such as:
+    • Source IP Address
+    • Destination IP Address
+    • Port Number
+    • Protocol (TCP / UDP)
+    • Direction (Inbound / Outbound)
+
+Example Rule:
+
+ALLOW
+TCP
+Port 8080
+
+Meaning:
+
+- Allow TCP traffic destined for applications listening on Port 8080.
+
+- Firewalls can protect:
+    • Internet ↔ Private Network
+    • Private Network ↔ Private Network
+    • Client → Server communication
+    • Server → Server communication
+
+- Firewalls are not limited to Internet-facing applications. They are commonly used within private networks to restrict communication between servers, databases and internal applications.
+- Infrastructure owners (Organizations, Cloud Administrators, DevOps Teams or System Administrators) configure Firewall rules based on business and security requirements.
+
+=============================================================================================================================================================================
+HTTPS (HyperText Transfer Protocol Secure)
+=============================================================================================================================================================================
+
+- HTTPS (HyperText Transfer Protocol Secure) is HTTP running over a secure and encrypted communication channel using TLS (Transport Layer Security).
+- HTTPS provides secure communication between the Client and the Server by encrypting the data before it is transmitted over the network.
+- HTTPS protects sensitive information such as Usernames, Passwords, Banking Information and Personal Data from being read or modified while travelling across the network.
+- HTTPS provides three major security benefits:
+  • Confidentiality – Prevents unauthorized users from reading the transmitted data.
+  • Integrity – Ensures that transmitted data is not modified during communication.
+  • Authentication – Verifies that the Client is communicating with the intended Server using Digital Certificates.
+- HTTPS does not replace HTTP. It simply adds a security layer (TLS) before the data is transmitted over TCP.
+- HTTPS also does not replace TCP. The communication stack becomes HTTP → TLS → TCP → IP.
+
+
+High-Level Flow:
+
+
+TCP Connection
+        │
+        ▼
+TLS Handshake
+        │
+        ▼
+Digital Certificate Verification
+        │
+        ▼
+Shared Session Key Established
+        │
+        ▼
+Secure Connection
+        │
+        ▼
+HTTP Request (Encrypted)
+        │
+        ▼
+HTTP Response (Encrypted)
+
+
+
+- HTTPS protects communication for both Client → Server and Server → Server communication.
+- HTTP is stateless, whereas TLS is connection-oriented. Multiple HTTP requests can travel securely over the same TLS connection while it remains established.
+- HTTPS uses Port 443 by default, whereas HTTP uses Port 80 by default.
+
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+								HTTPS in Java Applications
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+
+The important concepts are:
+
+• Digital Certificate
+• JKS
+• KeyStore
+• TrustStore
+• Java `cacerts`
+
+
+------------------------------------------------------------------------------------------------------------------------
+What is a JKS?
+
+- JKS stands for Java KeyStore.
+- It is a Java-specific keystore format used to securely store cryptographic material such as:
+
+	- Private keys
+	- Public-key certificates
+	- Trusted certificates
+
+myapp.jks
+│
+├── Private Key
+├── Application Certificate
+├── CA Certificate
+└── Other Trusted Certificates
+
+- A JKS is simply a container.
+- It can be configured to serve as a:
+
+	• KeyStore
+	• TrustStore
+	• Both, depending on how Java is configured
+
+- The keystore itself is password-protected.
+- Java applications use keystores and/or truststores when establishing HTTPS/TLS connections.
+- The easiest way to distinguish between them is with two questions:
+
+"Who am I?"
+
+and
+
+"Who do I trust?"
+
+------------------------------------------------------------------------------------------------------------------------
+KeyStore:
+
+
+- Here, the Server acts as the TLS Server. So, it needs its own identity.
+- A KeyStore is a JKS that generally contains the application's own identity
+- It contains:
+
+	• Private Keys
+	• Corresponding Digital Certificates (with public key)
+	• Certificate Chains
+
+
+Private Key
+     +
+Digital Certificate (with Public key)
+     │
+     ▼
+Server Identity
+
+- During the TLS Handshake, the TLS Server presents its Digital Certificate to the connecting system and uses its Private Key to prove that it owns the corresponding identity.
+- Therefore:
+
+
+KeyStore
+    │
+    ▼
+"Who am I?"
+
+------------------------------------------------------------------------------------------------------------------------
+TrustStore:
+
+
+- Here, the server acts as the TLS Client. So, it needs to know who it trusts.
+- During the TLS Handshake, the TLS server sends its Digital Certificate to the client.
+- However, the TLS client cannot simply trust any certificate that it receives.
+- Otherwise, an attacker could send a fake certificate and the client would automatically trust it.
+- Therefore, the client needs an independent source of trust. The TrustStore provides this trusted information.
+- It allows your Java application to say: "I trust certificates issued by these authorities / belonging to these trusted systems."
+
+
+Conceptually:
+
+
+Server sends Certificate
+         │
+         ▼
+Java receives Certificate
+         │
+         ▼
+   Validate Certificate
+         │
+         ▼
+    Check TrustStore
+          │
+    ┌────┴────┐
+    ▼           ▼
+ Trusted     Not Trusted
+    │           │
+    ▼           ▼
+ Continue     Reject
+  TLS          TLS
+
+
+Therefore:
+
+TrustStore
+    │
+    ▼
+"Who do I trust?"
+
+
+- The server already sends its certificate during the TLS Handshake. Then, why does the TrustStore store the TLS Server's Certificate? Because,
+- The TrustStore does NOT provide the server certificate to the server.
+- The TrustStore provides the Certificate Authorities that Java can use to determine whether the received certificate during TLS handshake should be trusted or not.
+
+------------------------------------------------------------------------------------------------------------------------
+Java cacerts:
+
+
+- Java provides a default TrustStore called cacerts
+- It contains certificates of Certificate Authorities that the Java runtime trusts by default.
+
+Conceptually:
+
+Java Runtime
+     │
+     ▼
+   cacerts
+     │
+     ├── Public CA
+     ├── Public CA
+     ├── Public CA
+     └── ...
+
+- When a Java application establishes a TLS connection, Java can use these trusted certificates when validating the certificate presented by the remote server.
+
+------------------------------------------------------------------------------------------------------------------------
+Note: A Java application can configure to use single JKS as both KeyStore and TrustStore or different JKS
+
+- For example:
+
+keyStore   → ourapp.jks
+trustStore → ourapp.jks
+
+- Here, the same JKS is being used for both purposes.
+
+
+- Or:
+
+keyStore   → ourapp.jks
+trustStore → cacerts / ourapptrust.jks
+
+- Then your application's identity comes from ourapp.jks, while trust decisions come from cacerts / ourapptrust.jks (another JKS).
+- Which one is actually used depends on the Java/application configuration.
+
+------------------------------------------------------------------------------------------------------------------------
+Certificate Chain:
+
+
+- A server certificate is commonly part of a Certificate Chain.
+
+
+Example:
+
+Root CA
+   │
+   ▼
+Intermediate CA
+   │
+   ▼
+Server Certificate
+
+
+
+During the TLS Handshake:
+
+Server
+   │
+   │ sends certificate/chain
+   ▼
+Java
+   │
+   ▼
+Validate Certificate Chain
+   │
+   ▼
+Check whether the required CA is trusted
+   │
+   ▼
+Continue or reject TLS
+
+
+- If the appropriate CA is already trusted, the server's certificate can be validated without manually importing the server's individual certificate.
+- Therefore, it is often preferable to trust the appropriate CA certificate rather than manually trusting every individual server certificate.
+
+=============================================================================================================================================================================
