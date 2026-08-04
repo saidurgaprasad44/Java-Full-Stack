@@ -1,26 +1,4 @@
 ===============================================================================================================================================================================
-HTTP Response Status Codes: 
-===============================================================================================================================================================================
-
-Servers respond with three-digit codes to indicate the outcome of a request:
-
-Informational responses - (100 - 199)
-Successful responses	- (200 - 299)
-Redirection messages	- (300 - 399)
-Client error responses	- (400 - 499)
-Server error responses	- (500 - 599)
-
-
-Some common Status Codes:
-
-- 200 OK: The request was successful.
-- 201 Created: A new resource was successfully created (typically after a POST).
-- 400 Bad Request: The request was invalid or malformed.
-- 401 Unauthorized: Authentication is required or has failed.
-- 404 Not Found: The requested resource does not exist.
-- 500 Internal Server Error: A general error occurred on the server
-
-===============================================================================================================================================================================
 State Management:
 ===============================================================================================================================================================================
 
@@ -51,30 +29,55 @@ Hidden Form Fields:
 - Purpose: Used to transiently pass contextual values from page to page during complex forms. The data is hidden from view on the screen, but it is sent directly to the server payload when the user hits submit.
 
 
-===============================================================================================================================================================================
-Web Security Basics:
-===============================================================================================================================================================================
+------------------------------------------------------------------------------------------------------------------------
+TRACE
+
+- TRACE is used for diagnostic purposes to perform a loop-back of the request.
+- It is generally disabled in production environments because of security considerations.
+
+------------------------------------------------------------------------------------------------------------------------
+CONNECT
+
+- CONNECT is used to establish a tunnel to the server identified by the target.
+- It is commonly used with HTTP proxies.
 
 
-CORS (Cross-Origin Resource Sharing):
-- What it is: A security mechanism built directly into modern web browsers to prevent malicious websites from reading data from your Java API.
-- Purpose: Restricts web clients running on one domain (e.g., localhost:3000 for React) from making background API requests to a server on a different domain (e.g., localhost:8080 for Spring Boot).
-- Behind the scenes: The browser sends a hidden "Preflight" request using the HTTP OPTIONS method. The browser checks if your Java backend responds with the Access-Control-Allow-Origin header allowing that external client domain to access resources.
 
 
-HTTPS (Hypertext Transfer Protocol Secure):
-- What it is: The secure, encrypted evolution of the baseline HTTP protocol.
-- Purpose: Prevents hackers from eavesdropping, sniffing passwords, or intercepting payloads traveling through public Wi-Fi networks.
-- Behind the scenes: HTTPS forces standard HTTP data text blocks to pass through an advanced Transport Layer Security (TLS/SSL) encryption pipe. Instead of transmitting plaintext passwords, data is scrambled into unreadable gibberish that can only be decrypted by the holder of the server's private key.
 
 
-Basic Authentication:
-- What it is: The simplest and oldest protocol standard for enforcing access security on web endpoints.
-- Purpose: Used to block unauthorized users from hitting protected web routes or administrative APIs.
-- Behind the scenes: The client combines the username:password into a single string, encodes it into raw base64 format (e.g., admin:secret123 becomes YWRtaW46c2VjcmV0MTIz), and sends it inside the request header: Authorization: Basic YWRtaW46c2VjcmV0MTIz.
-- Warning Note: Base64 encoding is easily reversed and is not true encryption. It should never be used without an underlying HTTPS pipe.
 
-===============================================================================================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 =============================================================================================================================================================================
 										HTTP PROTOCOL
 =============================================================================================================================================================================
@@ -241,7 +244,7 @@ HTTP RESPONSE
 				Set-Cookie: JSESSIONID=abc789; Path=/ ;HttpOnly
 				Cache-Control: no-cache
 
----------------------------------Empty Line--------------------------------------
+--------------------------------Empty Line-------------------------------------
 
 [ RESPONSE BODY ]  	->  	{
 					"status": "success",
@@ -381,36 +384,336 @@ Example:
 DELETE /users/100 HTTP/1.1
 
 ------------------------------------------------------------------------------------------------------------------------
+
 HEAD
 
 - HEAD is similar to GET, but the server returns the response headers without the response body.
-- It can be used when the client needs information about a resource without downloading the complete representation.
+- HEAD is useful when the client needs information about a resource without downloading its complete representation.
 
 ------------------------------------------------------------------------------------------------------------------------
+
 OPTIONS
 
 - OPTIONS is used to determine the communication options supported by a target resource.
-- OPTIONS is also used by browsers for CORS preflight requests.
+- OPTIONS is commonly used by browsers for CORS preflight requests.
 
 Example:
 
 OPTIONS /users HTTP/1.1
 
-------------------------------------------------------------------------------------------------------------------------
-TRACE
-
-- TRACE is used for diagnostic purposes to perform a loop-back of the request.
-- It is generally disabled in production environments because of security considerations.
 
 ------------------------------------------------------------------------------------------------------------------------
-CONNECT
+Safe Methods
 
-- CONNECT is used to establish a tunnel to the server identified by the target.
-- It is commonly used with HTTP proxies.
+- A safe HTTP method is a method intended only for retrieving information and not for requesting a state-changing operation on the target resource.
+
+Safe methods include:
+
+GET
+HEAD
+OPTIONS
+
+- Safe does not mean that the request can never cause any side effects on the server.
+- It means that the method's intended semantics are read-only with respect to the target resource.
+
+------------------------------------------------------------------------------------------------------------------------
+Idempotent Methods
+
+- An HTTP method is idempotent when making the same request multiple times has the same intended effect on the server as making it once.
+
+Example:
+
+DELETE /users/100
+
+First request:
+
+text
+User exists
+   ↓
+User is deleted
+
+
+Repeated request:
+
+text
+User already deleted
+   ↓
+Resource remains deleted
+
+
+- The final intended state is the same.
+
+Idempotent methods:
+
+GET
+HEAD
+OPTIONS
+PUT
+DELETE
+
+- PATCH may or may not be idempotent depending on the operation.
+- POST is generally non-idempotent.
 
 =============================================================================================================================================================================
+HTTP STATUS CODES
+=============================================================================================================================================================================
+
+- HTTP Status Codes indicate the result of processing an HTTP request.
+
+The five categories are:
+
+1xx → Informational
+2xx → Successful
+3xx → Redirection
+4xx → Client Error
+5xx → Server Error
+
+------------------------------------------------------------------------------------------------------------------------
+
+1xx — Informational
+
+- Indicates that the request has been received and processing can continue.
+
+Example:
+
+100 Continue
+
+------------------------------------------------------------------------------------------------------------------------
+
+2xx — Successful
+
+- Indicates that the request was successfully received, understood and processed.
+
+Important status codes:
+
+200 OK
+→ Request successfully processed.
+
+201 Created
+→ A new resource was created.
+
+202 Accepted
+→ Request was accepted for processing, but processing may not yet be complete.
+
+204 No Content
+→ Request successfully processed, but there is no response body.
+
+------------------------------------------------------------------------------------------------------------------------
+
+3xx — Redirection
+
+- Indicates that the client needs to take additional action or that the resource is available at another location.
+
+Important status codes:
+
+301 Moved Permanently
+→ Permanent redirect.
+
+302 Found
+→ Temporary redirect.
+
+303 See Other
+→ Client should retrieve the result from another URI, commonly using GET.
+
+307 Temporary Redirect
+→ Temporary redirect while preserving the HTTP method and request body.
+
+308 Permanent Redirect
+→ Permanent redirect while preserving the HTTP method and request body.
+
+------------------------------------------------------------------------------------------------------------------------
+
+4xx — Client Error
+
+- Indicates that the request contains a problem from the client's side.
+
+Important status codes:
+
+400 Bad Request
+→ Request is invalid or malformed.
+
+401 Unauthorized
+→ Authentication is missing or invalid.
+
+403 Forbidden
+→ Access to the requested resource or operation is refused.
+
+404 Not Found
+→ Requested resource could not be found.
+
+405 Method Not Allowed
+→ HTTP method is not supported for the target resource.
+
+409 Conflict
+→ Request conflicts with the current state of the resource.
+
+429 Too Many Requests
+→ Client has sent too many requests within a given period.
+
+------------------------------------------------------------------------------------------------------------------------
+
+5xx — Server Error
+
+- Indicates that the server failed to successfully process an otherwise valid request.
+
+Important status codes:
+
+500 Internal Server Error
+→ Generic server-side error.
+
+502 Bad Gateway
+→ A server acting as a gateway or proxy received an invalid response from an upstream server.
+
+503 Service Unavailable
+→ Server is currently unable to handle the request.
+
+504 Gateway Timeout
+→ A gateway or proxy did not receive a timely response from an upstream server.
+
+=============================================================================================================================================================================
+HTTP HEADERS
+=============================================================================================================================================================================
+
+- HTTP Headers provide metadata, information and instructions associated with HTTP requests and responses.
+
+General format:
+
+Header-Name: Header-Value
+
+Example:
+
+Content-Type: application/json
+
+- Headers are not represented as JSON.
+
+- Different headers exist to solve different communication requirements.
+
+------------------------------------------------------------------------------------------------------------------------
+Request Headers
+
+- Request Headers are sent by the client/requester to provide information about the request.
+
+Examples:
+
+Host
+→ Identifies the target host.
+
+Accept
+→ Specifies representations the client is willing to receive.
+
+Authorization
+→ Carries authentication credentials.
+
+Cookie
+→ Carries applicable cookies.
+
+Content-Type
+→ Indicates the format of the request body.
+
+Origin
+→ Identifies the origin of a browser request.
+
+------------------------------------------------------------------------------------------------------------------------
+Response Headers
+
+- Response Headers are sent by the server/receiver to provide information about the response or instructions to the client.
+
+Examples:
+
+Content-Type
+→ Indicates the representation format of the response body.
+
+Set-Cookie
+→ Instructs the browser to store a cookie.
+
+Cache-Control
+→ Provides caching instructions.
+
+ETag
+→ Identifies a representation for cache validation.
+
+Last-Modified
+→ Indicates when a representation was last modified.
+
+Location
+→ Identifies the target location for a redirect.
+
+WWW-Authenticate
+→ Indicates the authentication scheme required by the server.
+
+------------------------------------------------------------------------------------------------------------------------
+Important Headers
+
+Content-Type
+
+→ Indicates the media type of the message body.
+
+Accept
+
+→ Indicates the media types the client is willing to receive.
+
+Authorization
+
+→ Carries authentication credentials.
+
+Cookie
+
+→ Carries cookies stored by the browser.
+
+Set-Cookie
+
+→ Instructs the browser to store a cookie.
+
+Cache-Control
+
+→ Provides caching directives.
+
+ETag
+
+→ Identifies a representation.
+
+Last-Modified
+
+→ Indicates when a representation was last modified.
+
+If-None-Match
+
+→ Sends an ETag during conditional requests.
+
+If-Modified-Since
+
+→ Sends a modification time during conditional requests.
+
+Location
+
+→ Specifies the target of a redirect.
+
+Origin
+
+→ Identifies the origin of a browser request.
+
+Access-Control-Allow-Origin
+
+→ Specifies which origin is allowed.
+
+=============================================================================================================================================================================
+HTTP BODY
+=============================================================================================================================================================================
+
+- The HTTP Body contains the actual data being transferred.
+
+- The body can contain different representations depending on the use case.
+
+Common representations include:
+
+
+• JSON
+• XML
+• Form Data
+• Multipart Data
+
+------------------------------------------------------------------------------------------------------------------------
 CONTENT-TYPE
-============
 
 * `Content-Type` identifies the media type of the message body.
 * It can be present in both requests and responses.
@@ -443,9 +746,38 @@ Content-Type: application/json
 
 → The response body is JSON.
 
-=============================================================================================================================================================================
+------------------------------------------------------------------------------------------------------------------------
+
+JSON
+
+- JSON is commonly used for API request and response bodies.
+
+Example:
+
+Content-Type: application/json
+
+{
+"name": "Sai",
+"age": 28
+}
+
+------------------------------------------------------------------------------------------------------------------------
+
+XML
+
+- XML can also be used as a representation for request or response bodies.
+
+Example:
+
+Content-Type: application/xml
+
+<user>
+    <name>Sai</name>
+</user>
+
+------------------------------------------------------------------------------------------------------------------------
 application/json
-================
+
 
 * Indicates that the message body contains JSON.
 
@@ -453,9 +785,8 @@ Example:
 
 Content-Type: application/json
 
-=============================================================================================================================================================================
+------------------------------------------------------------------------------------------------------------------------
 text/html
-=========
 
 * Indicates that the message body contains HTML.
 
@@ -471,9 +802,9 @@ Example body:
     </body>
 </html>
 
-=============================================================================================================================================================================
+------------------------------------------------------------------------------------------------------------------------
 application/x-www-form-urlencoded
-=================================
+
 
 * Used for URL-encoded form data.
 
@@ -485,9 +816,8 @@ username=Sai&password=secret
 
 * Form fields are represented as key-value pairs in the request body.
 
-=============================================================================================================================================================================
+------------------------------------------------------------------------------------------------------------------------
 multipart/form-data
-===================
 
 * Used when a request contains multiple independent parts.
 
@@ -502,6 +832,775 @@ Example:
 Content-Type: multipart/form-data
 
 * Each part can contain its own headers and content.
+
+=============================================================================================================================================================================
+URL / URI STRUCTURE
+=============================================================================================================================================================================
+
+Example:
+
+https://example.com:8443/users/100?active=true#details
+
+The URL can contain:
+
+Scheme
+Host
+Port
+Path
+Query Parameters
+Fragment
+
+------------------------------------------------------------------------------------------------------------------------
+
+Scheme
+
+Example:
+
+https://
+
+- Identifies the protocol/scheme used to access the resource.
+
+Common examples:
+
+http
+https
+
+------------------------------------------------------------------------------------------------------------------------
+
+Host
+
+Example:
+
+example.com
+
+- Identifies the host where the resource is located.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Port
+
+Example:
+
+:8443
+
+- Identifies the network port used for communication.
+
+- Standard ports:
+
+HTTP
+→ 80
+
+HTTPS
+→ 443
+
+------------------------------------------------------------------------------------------------------------------------
+
+Path
+
+Example:
+
+/users/100
+
+- Identifies the path to the requested resource.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Query Parameters
+
+Example:
+
+?active=true&sort=name
+
+- Query parameters provide additional parameters to the request.
+
+Structure:
+
+?key=value&key=value
+
+Example:
+
+?active=true&sort=name
+
+------------------------------------------------------------------------------------------------------------------------
+
+Fragment
+
+Example:
+
+#details
+
+- Identifies a specific section or location within the resource.
+
+- The fragment is generally processed by the client and is not sent to the server as part of the HTTP request.
+
+=============================================================================================================================================================================
+HTTP STATELESSNESS
+=============================================================================================================================================================================
+
+- HTTP is stateless.
+
+- The server does not inherently maintain knowledge of previous HTTP requests simply because those requests came from the same client.
+
+Example:
+
+Request 1
+│
+▼
+Server
+
+Request 2
+│
+▼
+Server
+
+- The second request is independent from the first at the HTTP protocol level.
+
+- Application-level mechanisms can associate multiple requests with the same user or client.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Why HTTP is Stateless
+
+- Stateless communication allows each request to contain the information required to process it.
+
+- The server does not need to inherently maintain protocol-level state for every previous request.
+
+- This simplifies scaling because requests can be handled independently by different server instances when the application architecture supports it.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Cookies
+
+- Cookies allow the browser to store data and send applicable data with subsequent requests.
+
+Example:
+
+Server
+│
+│ Set-Cookie
+▼
+Browser
+│
+│ Cookie
+▼
+Server
+
+Example:
+
+Set-Cookie: JSESSIONID=ABC123
+
+Subsequent request:
+
+Cookie: JSESSIONID=ABC123
+
+------------------------------------------------------------------------------------------------------------------------
+
+Sessions
+
+- A session allows the server to maintain state associated with a client across multiple requests.
+
+Typical flow:
+
+Login
+│
+▼
+Server creates Session
+│
+▼
+Session ID sent to client
+│
+▼
+Client sends Session ID
+│
+▼
+Server identifies Session
+
+------------------------------------------------------------------------------------------------------------------------
+
+Tokens
+
+- A token can be sent with requests to represent authentication or other application-level information.
+
+Example:
+
+Authorization: Bearer ABC123
+
+- The token can allow the server to associate the request with an authenticated identity or permissions.
+
+=============================================================================================================================================================================
+AUTHENTICATION MECHANISMS
+=============================================================================================================================================================================
+
+- Authentication establishes the identity associated with a request.
+
+- HTTP provides mechanisms for carrying authentication information.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Basic Authentication
+
+- Basic Authentication sends username and password credentials through the `Authorization` header.
+
+Example:
+
+Authorization: Basic <credentials>
+
+- The credentials are Base64 encoded.
+
+- Base64 is encoding, not encryption.
+
+- HTTPS/TLS should be used to protect the credentials during transmission.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Bearer Authentication
+
+- Bearer Authentication sends a token through the `Authorization` header.
+
+Example:
+
+Authorization: Bearer <token>
+
+- A JWT can be used as a Bearer token.
+
+- Bearer authentication itself does not require the token to be a JWT.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Session-Based Authentication
+
+- A server can create a session and send its identifier using a cookie.
+
+Example:
+
+Set-Cookie: JSESSIONID=ABC123; Secure; HttpOnly
+
+- The browser sends the cookie with subsequent applicable requests.
+
+Example:
+
+Cookie: JSESSIONID=ABC123
+
+- The server uses the session identifier to identify the associated session.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Authentication vs Authorization
+
+Authentication
+
+→ Establishes who is making the request.
+
+Authorization
+
+→ Determines what the authenticated requester is allowed to access or perform.
+
+------------------------------------------------------------------------------------------------------------------------
+
+401 vs 403
+
+401 Unauthorized
+
+→ Authentication is missing or invalid.
+
+403 Forbidden
+
+→ Access to the requested resource or operation is refused.
+
+=============================================================================================================================================================================
+HTTP CACHING & CONDITIONAL REQUESTS
+=============================================================================================================================================================================
+
+- HTTP caching allows previously received responses to be stored and reused.
+
+- HTTP caches can exist at different locations:
+
+  • Browser
+  • CDN
+  • Proxy
+
+- Caching can reduce:
+
+  • Network traffic
+  • Latency
+  • Server processing
+  • Bandwidth usage
+
+------------------------------------------------------------------------------------------------------------------------
+
+Cache-Control
+
+- `Cache-Control` provides caching directives to HTTP caches.
+
+Example:
+
+Cache-Control: max-age=3600
+
+- Cache-Control can apply to different HTTP caches, not only browser caches.
+
+------------------------------------------------------------------------------------------------------------------------
+
+max-age
+
+Example:
+
+Cache-Control: max-age=3600
+
+- Specifies how long the response can remain fresh.
+
+------------------------------------------------------------------------------------------------------------------------
+
+no-store
+
+Example:
+
+Cache-Control: no-store
+
+- Instructs caches not to store the response.
+
+------------------------------------------------------------------------------------------------------------------------
+
+no-cache
+
+Example:
+
+Cache-Control: no-cache
+
+- Does not mean that the response cannot be stored.
+
+- It means that a stored response must be revalidated before reuse.
+
+Therefore:
+
+no-store
+→ Do not store
+
+no-cache
+→ May store, but must revalidate before reuse
+
+------------------------------------------------------------------------------------------------------------------------
+
+ETag
+
+- `ETag` identifies a particular representation of a resource.
+
+Example:
+
+ETag: "abc123"
+
+- The cache can store the representation together with the ETag.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Last-Modified
+
+- `Last-Modified` indicates when a representation was last modified.
+
+Example:
+
+Last-Modified: Sat, 01 Aug 2026 10:00:00 GMT
+
+------------------------------------------------------------------------------------------------------------------------
+
+Conditional Requests
+
+- Conditional requests allow the client/cache to ask the server whether the cached representation is still valid.
+
+ETag-based validation:
+
+GET /profile HTTP/1.1
+If-None-Match: "abc123"
+
+Last-Modified-based validation:
+
+GET /profile HTTP/1.1
+If-Modified-Since: Sat, 01 Aug 2026 10:00:00 GMT
+
+------------------------------------------------------------------------------------------------------------------------
+
+304 Not Modified
+
+- `304 Not Modified` indicates that the cached representation is still valid.
+
+Flow:
+
+Client Cache
+│
+│ Conditional Request
+▼
+Server
+│
+│ 304 Not Modified
+▼
+Client uses existing cached representation
+
+- If the representation has changed, the server returns the updated representation instead.
+
+Example:
+
+HTTP/1.1 200 OK
+ETag: "xyz789"
+
+<new representation>
+
+------------------------------------------------------------------------------------------------------------------------
+
+ETag vs Last-Modified
+
+ETag
+
+→ Identifies a representation.
+
+If-None-Match
+
+→ Sends the ETag for conditional validation.
+
+Last-Modified
+
+→ Identifies the modification time.
+
+If-Modified-Since
+
+→ Sends the modification time for conditional validation.
+
+=============================================================================================================================================================================
+HTTP REDIRECTS
+=============================================================================================================================================================================
+
+- A redirect tells the client that the requested resource or operation should be handled at another location.
+
+- Redirect responses generally contain:
+
+  • 3xx Status Code
+  • Location Header
+
+Example:
+
+HTTP/1.1 301 Moved Permanently
+Location: https://example.com/new-page
+
+Redirect Flow:
+
+Client
+│
+│ Request
+▼
+Server
+│
+│ 3xx + Location
+▼
+Client
+│
+│ New Request
+▼
+New Location
+
+------------------------------------------------------------------------------------------------------------------------
+
+Location
+
+- The `Location` header identifies the target of the redirect.
+
+Example:
+
+Location: https://example.com/products
+
+- It can also contain a relative location:
+
+Location: /products
+
+------------------------------------------------------------------------------------------------------------------------
+
+301 — Moved Permanently
+
+- Indicates that a resource has permanently moved.
+
+Example:
+
+HTTP/1.1 301 Moved Permanently
+Location: /new-resource
+
+------------------------------------------------------------------------------------------------------------------------
+
+302 — Found
+
+- Indicates a temporary redirect.
+
+Example:
+
+HTTP/1.1 302 Found
+Location: /temporary-resource
+
+------------------------------------------------------------------------------------------------------------------------
+
+303 — See Other
+
+- Indicates that the client should retrieve the result from another URI, commonly using GET.
+
+Typical flow:
+
+POST
+↓
+303 See Other
+↓
+GET
+
+------------------------------------------------------------------------------------------------------------------------
+
+307 — Temporary Redirect
+
+- Indicates a temporary redirect while preserving the original HTTP method and request body.
+
+Example:
+
+POST /payment
+│
+▼
+307 Temporary Redirect
+│
+▼
+POST /new-payment
+
+------------------------------------------------------------------------------------------------------------------------
+
+308 — Permanent Redirect
+
+- Indicates a permanent redirect while preserving the original HTTP method and request body.
+
+Example:
+
+POST /old-payment
+│
+▼
+308 Permanent Redirect
+│
+▼
+POST /new-payment
+
+------------------------------------------------------------------------------------------------------------------------
+
+Redirect Comparison
+
+301
+→ Permanent Redirect
+
+302
+→ Temporary Redirect
+
+303
+→ See Other
+→ Commonly followed using GET
+
+307
+→ Temporary Redirect
+→ Preserve method and body
+
+308
+→ Permanent Redirect
+→ Preserve method and body
+
+=============================================================================================================================================================================
+CONTENT NEGOTIATION
+=============================================================================================================================================================================
+
+- Content negotiation allows the client and server to determine an appropriate representation of a resource.
+
+- A resource can have multiple representations.
+
+Example:
+
+Product Resource
+│
+├── JSON
+├── XML
+└── HTML
+
+- The client communicates its preferences using request headers.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Accept
+
+- `Accept` specifies the media types that the client is willing to receive.
+
+Example:
+
+Accept: application/json
+
+Multiple media types:
+
+Accept: application/json, application/xml
+
+- Preferences can be specified using quality values.
+
+Example:
+
+Accept: application/json, application/xml;q=0.8
+
+------------------------------------------------------------------------------------------------------------------------
+
+Accept-Language
+
+- Specifies preferred response languages.
+
+Example:
+
+Accept-Language: en-US, en;q=0.9, hi;q=0.8
+
+------------------------------------------------------------------------------------------------------------------------
+
+Accept-Encoding
+
+- Specifies content encodings that the client can handle.
+
+Example:
+
+Accept-Encoding: gzip, br
+
+------------------------------------------------------------------------------------------------------------------------
+
+Content-Type
+
+- Indicates the actual media type of the message body.
+
+Example:
+
+Content-Type: application/json
+
+------------------------------------------------------------------------------------------------------------------------
+
+Content-Language
+
+- Indicates the language of the representation being sent.
+
+Example:
+
+Content-Language: en-US
+
+------------------------------------------------------------------------------------------------------------------------
+
+Content-Encoding
+
+- Indicates the encoding applied to the representation.
+
+Example:
+
+Content-Encoding: gzip
+
+------------------------------------------------------------------------------------------------------------------------
+
+Accept vs Content-Type
+
+Accept
+
+→ Representation the client is willing to receive.
+
+Content-Type
+
+→ Representation format of the actual message body.
+
+Example:
+
+GET /products/100 HTTP/1.1
+Accept: application/json
+
+Response:
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+------------------------------------------------------------------------------------------------------------------------
+
+Content Negotiation Flow
+
+Request:
+
+GET /products/100 HTTP/1.1
+Accept: application/json, application/xml;q=0.8
+Accept-Language: en-US
+Accept-Encoding: gzip
+
+Response:
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Language: en-US
+Content-Encoding: gzip
+
+Relationship:
+
+Accept
+→ Desired media types
+
+Accept-Language
+→ Desired languages
+
+Accept-Encoding
+→ Supported content encodings
+
+Content-Type
+→ Actual media type
+
+Content-Language
+→ Actual language
+
+Content-Encoding
+→ Applied content encoding
+=============================================================================================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 =============================================================================================================================================================================
 COOKIES
