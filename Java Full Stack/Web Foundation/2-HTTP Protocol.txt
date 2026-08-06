@@ -1516,22 +1516,32 @@ Conditional Requests
 
 - Conditional requests allow the client/cache to ask the server whether the cached representation is still valid, instead of blindly downloading the resource again.
 - The two important mechanisms are: ETag, Last-Modified and their corresponding request headers
-- `ETag` identifies a particular representation of a resource.
+
+
+ETag:
+- identifies a particular representation of a resource.
 
 Example:
 ETag: "abc123"
 
 - The cache can store the representation together with the ETag.
-- `Last-Modified` indicates when a representation was last modified.
+
+
+
+Last-Modified:
+- indicates when a representation was last modified.
 
 Example:
 Last-Modified: Sat, 01 Aug 2026 10:00:00 GMT
+
 
 
 ETag-based validation:
 
 GET /profile HTTP/1.1
 If-None-Match: "abc123"
+
+
 
 Last-Modified-based validation:
 
