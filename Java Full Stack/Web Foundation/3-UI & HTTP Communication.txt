@@ -1,0 +1,450 @@
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+									UI & HTTP COMMUNICATION
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+
+
+
+=============================================================================================================================================================================
+HTML FORMS
+=============================================================================================================================================================================
+
+- An HTML form allows users to enter or select data and submit it to a server.
+
+Example:
+
+<form action="/login" method="post">
+    <input type="text" name="username">
+    <input type="password" name="password">
+    <button type="submit">Login</button>
+</form>
+
+- When the user submits the form, the browser collects the form data and constructs an HTTP request.
+
+Basic flow:
+
+HTML Form
+    ↓
+User enters data
+    ↓
+Browser constructs HTTP Request
+    ↓
+Server
+
+- HTML forms are one way of generating HTTP requests; JavaScript can also generate HTTP requests programmatically.
+
+------------------------------------------------------------------------------------------------------------------------
+`<form>` ELEMENT
+
+- The `<form>` element defines a form and groups the form controls that belong to it.
+
+Example:
+
+<form>
+    <input type="text" name="username">
+    <button type="submit">Submit</button>
+</form>
+
+- The two important attributes are:
+
+  - action
+  - method
+
+------------------------------------------------------------------------------------------------------------------------
+`action`
+
+- Specifies the URL to which the form data is submitted.
+
+Example:
+<form action="/login">
+
+- If `action` is omitted, the form is generally submitted to the current document URL.
+
+------------------------------------------------------------------------------------------------------------------------
+
+`method`
+
+- Specifies the HTTP method used for form submission.
+- Common values:
+
+  - GET
+  - POST
+
+------------------------------------------------------------------------------------------------------------------------
+FORM SUBMISSION
+------------------------------------------------------------------------------------------------------------------------
+GET Form Submission
+
+Example:
+
+<form action="/search" method="get">
+    <input type="text" name="query">
+    <button type="submit">Search</button>
+</form>
+
+
+- If the user enters: "java spring"
+- The browser can send:
+
+http
+GET /search?query=java+spring HTTP/1.1
+
+- Form data is generally placed in the URL as query parameters.
+
+------------------------------------------------------------------------------------------------------------------------
+POST Form Submission
+
+Example:
+
+<form action="/login" method="post">
+    <input type="text" name="username">
+    <input type="password" name="password">
+    <button type="submit">Login</button>
+</form>
+
+- The browser can send:
+
+http
+POST /login HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+username=Sai&password=secret123
+
+- Form data is generally placed in the HTTP request body.
+
+------------------------------------------------------------------------------------------------------------------------
+GET vs POST
+
+GET
+→ Form data → Query parameters
+
+POST
+→ Form data → Request body
+
+- HTML forms traditionally support GET and POST directly through the `method` attribute.
+- HTML forms do not directly provide standard form submission for PUT, PATCH, or DELETE.
+
+=============================================================================================================================================================================
+FORM CONTROLS
+=============================================================================================================================================================================
+
+- Form controls allow users to enter, select, or submit data.
+
+------------------------------------------------------------------------------------------------------------------------
+Text Input
+
+<input type="text" name="username">
+
+- Allows the user to enter single-line text.
+
+Example submitted value:
+
+username=Sai
+
+------------------------------------------------------------------------------------------------------------------------
+Password Input
+
+<input type="password" name="password">
+
+- Allows password input and normally hides the characters visually.
+- `type="password"` does not encrypt the password.
+
+------------------------------------------------------------------------------------------------------------------------
+Radio Buttons
+
+<input type="radio" name="gender" value="male">
+<input type="radio" name="gender" value="female">
+
+- Used when the user should select one option from a group.
+- Radio buttons in the same group normally have the same `name`.
+- Only the selected option is submitted.
+
+Example:
+
+gender=male
+
+------------------------------------------------------------------------------------------------------------------------
+Checkboxes
+
+<input type="checkbox" name="skill" value="java">
+<input type="checkbox" name="skill" value="spring">
+
+- Allows the user to select zero, one, or multiple options.
+- Multiple selected checkboxes can produce multiple values with the same name.
+
+Example:
+
+skill=java&skill=spring
+
+- An unchecked checkbox normally does not contribute a value.
+
+------------------------------------------------------------------------------------------------------------------------
+Select / Dropdown
+
+<select name="country">
+    <option value="india">India</option>
+    <option value="usa">USA</option>
+</select>
+
+- Allows the user to select an option from a list.
+- The `value` attribute is submitted rather than the displayed text.
+
+Example:
+
+country=india
+
+------------------------------------------------------------------------------------------------------------------------
+Textarea
+
+<textarea name="message"></textarea>
+
+- Allows the user to enter multi-line text.
+
+------------------------------------------------------------------------------------------------------------------------
+Hidden Input
+
+<input type="hidden" name="userId" value="100">
+
+- Not displayed to the user but can still be submitted.
+- Hidden fields are not secure because users can inspect and modify them.
+
+------------------------------------------------------------------------------------------------------------------------
+File Input
+
+<input type="file" name="profileImage">
+
+- Allows the user to select a file for submission.
+- File uploads normally use `multipart/form-data`.
+
+------------------------------------------------------------------------------------------------------------------------
+Submit Button
+
+<button type="submit">Login</button>
+
+- Triggers form submission.
+- A submit button can also have a name and value:
+
+<button type="submit" name="action" value="save">
+    Save
+</button>
+
+- The button's value can identify which submit button was used.
+
+=============================================================================================================================================================================
+FORM DATA
+=============================================================================================================================================================================
+
+- Form data is generally represented using the control's `name` and current `value`.
+
+Example:
+
+<input type="text" name="username" value="Sai">
+
+- Becomes: 
+
+username=Sai
+
+- The `name` identifies the field.
+- The current value provides the field's value.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Controls That Do Not Contribute Data
+
+- A form control without a `name` normally does not produce a form-data entry.
+- A disabled control is normally not submitted.
+- An unchecked checkbox is normally not submitted.
+- An unselected radio button is not submitted.
+
+Example:
+
+<input type="text" value="Sai">
+
+- No `name` → normally no submitted field.
+
+=============================================================================================================================================================================
+FORM DATA ENCODING
+=============================================================================================================================================================================
+
+- The browser encodes form data before placing it into the HTTP request.
+
+------------------------------------------------------------------------------------------------------------------------
+`application/x-www-form-urlencoded`
+
+- Common encoding for normal HTML form submissions.
+
+Example:
+
+http
+Content-Type: application/x-www-form-urlencoded
+
+username=Sai&password=secret123
+
+- Data is represented as `name=value` pairs separated by `&`.
+- Special characters are URL-encoded.
+
+------------------------------------------------------------------------------------------------------------------------
+`multipart/form-data`
+
+- Used when submitting files along with form fields.
+
+Example:
+
+<form action="/upload"
+      method="post"
+      enctype="multipart/form-data">
+
+    <input type="text" name="username">
+    <input type="file" name="profileImage">
+
+    <button type="submit">Upload</button>
+</form>
+
+- The request body contains multiple parts separated by a boundary.
+- Each part can contain its own form field or file data.
+
+Example header:
+
+http
+Content-Type: multipart/form-data; boundary=----Boundary123
+
+------------------------------------------------------------------------------------------------------------------------
+`enctype`
+
+- Specifies how the browser should encode form data during submission.
+
+Common values:
+
+application/x-www-form-urlencoded
+multipart/form-data
+
+- The selected encoding is reflected in the HTTP request's `Content-Type` header.
+
+=============================================================================================================================================================================
+HTML FORM VS REST API REQUEST
+=============================================================================================================================================================================
+
+Traditional HTML Form Submission
+
+- The browser automatically constructs the HTTP request from the HTML form.
+
+Example:
+
+HTML Form
+    ↓
+Browser
+    ↓
+HTTP Request
+    ↓
+Server
+    ↓
+HTML Response
+
+- Commonly used in traditional server-side rendered web applications.
+
+------------------------------------------------------------------------------------------------------------------------
+JavaScript / API Request
+
+- JavaScript can directly construct HTTP requests without submitting an HTML form.
+
+Example:
+
+javascript
+fetch("/api/users", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        name: "Sai",
+        age: 28
+    })
+});
+
+
+- The request can be:
+
+http
+POST /api/users HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "Sai",
+    "age": 28
+}
+
+
+- No HTML `<form>` is required.
+
+------------------------------------------------------------------------------------------------------------------------
+Why REST APIs Commonly Use JSON
+
+- REST APIs can accept different representations, including form data.
+- JSON is commonly used because it represents structured and nested application data conveniently.
+
+Example:
+
+json
+{
+    "name": "Sai",
+    "age": 28,
+    "skills": [
+        "Java",
+        "Spring"
+    ],
+    "address": {
+        "city": "Hyderabad"
+    }
+}
+
+- REST APIs are not restricted to JSON; JSON is simply the most commonly used representation.
+
+=============================================================================================================================================================================
+FORM VALIDATION
+=============================================================================================================================================================================
+
+- Form validation checks whether the submitted data satisfies required rules.
+
+------------------------------------------------------------------------------------------------------------------------
+Client-Side Validation
+
+- Performed in the browser before the HTTP request is sent.
+
+Example:
+
+<input type="email" name="email" required>
+
+- Other common validation attributes:
+
+required
+min
+max
+minlength
+maxlength
+pattern
+
+- JavaScript can also perform custom client-side validation.
+
+------------------------------------------------------------------------------------------------------------------------
+Server-Side Validation
+
+- Performed by the server after receiving the HTTP request.
+- Server-side validation is mandatory because client-side validation can be bypassed or manipulated.
+
+Basic flow:
+
+User Input
+    ↓
+Client-Side Validation
+    ↓
+HTTP Request
+    ↓
+Server-Side Validation
+    ↓
+Process valid data
+
+- Client-side validation mainly improves user experience.
+- Server-side validation ensures that the server only processes acceptable input.
+
+=============================================================================================================================================================================
