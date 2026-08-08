@@ -1,0 +1,103 @@
+CHAPTER 4 — JAVA WEB FOUNDATION
+
+│
+├── 1. Java Web Applications
+│ ├── What is a Java Web Application?
+│ ├── Client, Web Server, Application Server
+│ ├── How a Java application receives an HTTP request
+│ └── Request → Processing → Response
+│
+├── 2. Web Containers
+│ ├── Web Server
+│ ├── Servlet Container
+│ ├── Application Server
+│ ├── Tomcat
+│ └── Container vs Application Server
+│
+├── 3. Servlets
+│ ├── What is a Servlet?
+│ ├── Servlet lifecycle 	- servlet instance can be created at app startup or lazily created, depending on the configuration
+│ ├── init()
+│ ├── service()
+│ ├── doGet()
+│ ├── doPost()
+│ └── destroy()
+│ └── Servlet instance & multithreading
+│
+├── 4. Servlet Request & Response
+│ ├── HttpServletRequest
+│ ├── HttpServletResponse
+│ ├── Request parameters
+│ ├── Request headers
+│ ├── Request body
+│ ├── Response status
+│ ├── Response headers
+│ └── Response body
+│
+httpservletrequest:
+parameter		- parameters encoded in http request body or query parameters in the url
+attribute		- to move the java components for internal use, like servlet to another servlet or jsps or other classes 
+request URI/path	- 
+header
+cookie
+body			- raw request body, can access using getReader() or getInputStream()
+
+httpservletresponse:
+status			
+content-type		- 
+header
+set-cookie		
+body 			- getWriter().write() or OutputStream to write the simple text (string) into the response body
+│
+├── 5. Servlet URL Mapping
+│ ├── @WebServlet
+│ ├── URL patterns
+│ ├── Exact mapping
+│ ├── Path mapping
+│ └── Servlet selection
+│
+├── 6. Servlet Configuration
+│ ├── web.xml
+│ ├── Annotation-based configuration
+│ └── Servlet initialization parameters
+│
+├── 7. Servlet Scopes & Context
+│ ├── Request
+│ ├── Session
+│ ├── Application
+│ └── ServletContext
+│
+├── 8. Request Dispatching
+│ ├── Forward
+│ ├── Include
+│ ├── Redirect
+│ └── Forward vs Redirect
+│
+├── 9. JSP
+│ ├── What is JSP?
+│ ├── JSP → Servlet relationship
+│ ├── JSP lifecycle
+│ ├── JSP expressions
+│ ├── JSP scriptlets
+│ ├── JSP declarations
+│ └── JSP directives
+│
+├── 10. MVC Foundation
+│ ├── Why MVC?
+│ ├── Model
+│ ├── View
+│ ├── Controller
+│ ├── Servlet as Controller
+│ ├── JSP as View
+│ └── Request flow in MVC
+│
+└── 11. Java Web Application Structure
+├── Static resources
+├── Java classes
+├── Views
+├── Configuration
+└── Deployment structure
+
+=============================================================================================================================================================================
+
+
