@@ -42,7 +42,7 @@ header
 cookie
 body			- raw request body, can access using getReader() or getInputStream()
 
-httpservletresponse:
+httpservletresponse: only involved in sending response back to client, like for server to client communication, in any other cases, request is used
 status			
 content-type		- 
 header
@@ -59,20 +59,48 @@ body 			- getWriter().write() or OutputStream to write the simple text (string) 
 ├── 6. Servlet Configuration
 │ ├── web.xml
 │ ├── Annotation-based configuration
-│ └── Servlet initialization parameters
+│ └── Servlet initialization parameters and ServletConfig
 │
 ├── 7. Servlet Scopes & Context
-│ ├── Request
-│ ├── Session
-│ ├── Application
-│ └── ServletContext
-│
+│ ├── Request scope, HttpServletRequest
+│ ├── Session scope, HttpSession and its lifecycle
+│ └── Application scope and ServletContext
+
+REQUEST SCOPE
+    ↓
+HttpServletRequest
+    ↓
+request.setAttribute()
+request.getAttribute()
+
+
+SESSION SCOPE
+    ↓
+HttpSession
+    ↓
+request.getSession()
+request.getSession(false)
+session.setAttribute("user", user)
+session.getAttribute("user")
+session.removeAttribute("user")
+session.invalidate() - automatic servlet container session-timeout invalidation / explicit invalidation
+
+
+APPLICATION SCOPE
+    ↓
+ServletContext
+    ↓
+context.setAttribute()
+context.getAttribute()
+
 ├── 8. Request Dispatching
 │ ├── Forward
 │ ├── Include
-│ ├── Redirect
+│ ├── Redirect - for instance browser requested post /login, If we return the page directly, the browser displays the login page, but the browser's current URL is still /login 
 │ └── Forward vs Redirect
-│
+
+│   8.5. servlet filters
+
 ├── 9. JSP
 │ ├── What is JSP?
 │ ├── JSP → Servlet relationship

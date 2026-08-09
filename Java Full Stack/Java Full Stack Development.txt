@@ -58,18 +58,19 @@ event driven queueing	- kafka message queues, @Async
 Core Java		- java 8/11/17 features, exception handling, global exception handling, multi-threading, jvm and garbage collection, classes like Optional, Serializable, Throwable, Object, Method, 
 Design principles/patterns- SOLID, KISS, DRY, creational, structural, behavioral, 
 DSA			- string, array, collections and map, linked list, queues, 
-system design concepts 	- sharding, partitions, rate limiting, indexing, CDNs
+system design concepts 	- sharding, partitions, rate limiting, indexing, CDNs, reverse proxy, 
 Cloud			- Azure cloud - 
 Docker and Kubernetes	- 
 SDLC			- planning, requirement analysis(functional and non-functional), design, implementation, testing (Junit, integration, etc.,), deployment, maintenance (logging..,) 
-Tools			- Inspect tool in browsers, 
+Tools			- Inspect tool in browsers, CI/CD pipeline, splunk
 
+
+must learn before interview - transactions, hibernate, spring boot auto config, sql, cicd pipelines, azure cloud, saga, redis, jwt implementation, system design concepts
 
 ============================================================================================================================================================================================
 
 Frontend:
 
-JavaScript		- state management, asynchronous javascript, api integration
+JavaScript		- ES6, state management, asynchronous javascript, api integration
 react 			- hooks (useEffect, useState, useRef etc), state management in react, routing, api integration
-
 

@@ -1,0 +1,50 @@
+1. Java Core & Runtime Internals (The "Under the Hood" Knowledge)
+- Memory Management: Deep understanding of JVM Heap vs. Non-Heap memory, Metaspace, and Garbage Collection (GC) behavior (e.g., G1GC, Parallel GC tuning). 
+- Concurrency Issues: Understanding thread lifecycle, identifying thread deadlocks, thread starvation, and CPU spikes caused by rogue loops. 
+- Troubleshooting Artifacts: Ability to generate, read, and analyze Thread Dumps and Heap Dumps to pinpoint memory leaks (OutOfMemoryError) or hung processing.
+- Java Versioning: Practical understanding of changes between Java 8, 11, and 17 (e.g., modularity, performance improvements). 
+
+
+2. Modern Enterprise Frameworks (Spring Ecosystem)
+- Spring Boot Foundations: Understanding the lifecycle of Spring Beans, Dependency Injection, and externalized configuration management (application.properties / YAML profiles). 
+- Spring Data JPA & Hibernate: Understanding object-relational mapping, connection pooling (HikariCP), and diagnosing production silent killers like the N+1 query problem or unindexed slow transactions.
+- REST API Integration: Strong debugging knowledge of HTTP status codes, timeout configurations (connection vs. read timeouts), and interceptors/filters.
+
+
+3. Distributed Architecture & Microservices
+- Service Mesh & Discovery: Understanding how services find each other via tools like Eureka Service Discovery. 
+- Traffic Routing: Basic configuration and debugging of API Gateways (e.g., Spring Cloud Gateway, Zuul), route matching, and rate limiting. 
+- Inter-Service Resilience: Understanding why a failure in Service A cascades to Service B. Experience with client-side load balancing (OpenFeign) and circuit breakers (Resilience4j) to prevent total system outages. 
+
+
+4. Enterprise Observability & Monitoring Tools
+- Log Aggregation: Advanced query writing in Splunk, ELK Stack (Elasticsearch, Logstash, Kibana), or Azure Log Analytics. You must be able to correlate unique Correlation IDs across multiple microservice logs.
+- Application Performance Monitoring (APM): Navigating dashboards in Dynatrace, AppDynamics, or New Relic to track API latency, database query execution times, and JVM health metrics.
+- Infrastructure Monitoring: Monitoring VM health, CPU/Memory consumption curves, and disk space alerts (e.g., Azure Monitor, Datadog). 
+
+
+5. Caching, Databases & Security Performance
+- Caching Layers: Understanding Redis or Memcached cache-aside patterns, handling cache invalidation, configuring Time-To-Live (TTL), and diagnosing cache stampedes.
+- Database Operations: Writing complex SQL queries to run data fixes, performing index analysis, reading database execution plans, and understanding database locking behaviors (Oracle / PostgreSQL).
+- Transport Security: Understanding SSL/TLS Handshakes, certificate keystores/truststores (.jks, .p12), handling certificate renewals, and debugging common SSLHandshakeException errors.
+
+
+6. Cloud, DevOps & Operational Workflows
+- Cloud Infrastructure: Basic administration of application servers hosted on Cloud VMs (like Microsoft Azure or AWS EC2), understanding virtual networks (VNets), and load balancing.
+- CI/CD Awareness: Navigating deployment pipelines (Azure DevOps, Jenkins, or GitHub Actions) to restart failed deployments, verify build tags, and check environmental variables.
+- ITIL Framework: Strict adherence to Incident Management (handling P1/P2 critical outages), Problem Management (Root Cause Analysis - RCA documentation), and Change Management (deploying fixes to production securely)
+
+
+
+Core Java (8/11/17)
+JVM Memory & GC tuning
+Splunk or ELK Log Analysis
+Spring Boot Framework
+Microservice Data Flow
+Writing Production RCA Documents
+Advanced SQL Queries
+REST API Timeouts/Failures
+ServiceNow or Jira Ticket Lifecycle
+SSL/TLS & Certificates
+Cache Invalidation Concepts
+Diagnosing Live App Outages (P1/P2)

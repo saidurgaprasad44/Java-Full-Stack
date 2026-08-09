@@ -1224,7 +1224,7 @@ Set-Cookie: accessToken=eyJhbGciOi...; HttpOnly; Secure; SameSite=Lax
 Session-Based Authentication
 
 
-- After User Credentials validation, a server creates a session and sends its identifier to the client using a cookie.
+- After User Credentials validation, a server creates a session object with user state and sends its identifier to the client using a cookie.
 
 Example:
 Set-Cookie: JSESSIONID=ABC123; Secure; HttpOnly
