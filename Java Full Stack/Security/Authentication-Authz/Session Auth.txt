@@ -502,12 +502,9 @@ Notice that the login API does not assume every authenticated user is a normal u
 
 --java--------------------------------
 @GetMapping("/profile")
-public String profile(
-        HttpSession session) {
+public String profile(HttpSession session) {
 
-    String username =
-            (String) session.getAttribute(
-                    "username");
+    String username = (String) session.getAttribute("username");
 
     if(username == null) {
         return "Please Login";
@@ -532,12 +529,9 @@ ADMIN
 
 --java--------------------------------
 @GetMapping("/admin/reports")
-public String reports(
-        HttpSession session) {
+public String reports(HttpSession session) {
 
-    String role =
-            (String) session.getAttribute(
-                    "role");
+    String role = (String) session.getAttribute("role");
 
     if(role == null) {
         return "Please Login";

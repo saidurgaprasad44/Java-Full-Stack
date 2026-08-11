@@ -65,7 +65,7 @@ SDLC			- planning, requirement analysis(functional and non-functional), design, 
 Tools			- Inspect tool in browsers, CI/CD pipeline, splunk
 
 
-must learn before interview - transactions, hibernate, spring boot auto config, sql, cicd pipelines, azure cloud, saga, redis, jwt implementation, system design concepts
+must learn before interview - transactions, hibernate, spring-hibernate-transactions, spring data jpa-transactions, spring boot auto config, sql, microservices, cicd pipelines, azure cloud, saga, redis, jwt implementation, system design concepts
 
 ============================================================================================================================================================================================
 

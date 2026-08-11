@@ -1,0 +1,207 @@
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+								HTTPS in Java Applications
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+
+The important concepts are:
+
+• Digital Certificate
+• JKS
+• KeyStore
+• TrustStore
+• Java `cacerts`
+
+
+------------------------------------------------------------------------------------------------------------------------
+What is a JKS?
+
+- JKS stands for Java KeyStore.
+- It is a Java-specific keystore format used to securely store cryptographic material such as:
+
+	- Private keys
+	- Public-key certificates
+	- Trusted certificates
+
+myapp.jks
+│
+├── Private Key
+├── Application Certificate
+├── CA Certificate
+└── Other Trusted Certificates
+
+- A JKS is simply a container.
+- It can be configured to serve as a:
+
+	• KeyStore
+	• TrustStore
+	• Both, depending on how Java is configured
+
+- The keystore itself is password-protected.
+- Java applications use keystores and/or truststores when establishing HTTPS/TLS connections.
+- The easiest way to distinguish between them is with two questions:
+
+"Who am I?"
+
+and
+
+"Who do I trust?"
+
+------------------------------------------------------------------------------------------------------------------------
+KeyStore:
+
+
+- Here, the Server acts as the TLS Server. So, it needs its own identity.
+- A KeyStore is a JKS that generally contains the application's own identity
+- It contains:
+
+	• Private Keys
+	• Corresponding Digital Certificates (with public key)
+	• Certificate Chains
+
+
+Private Key
+     +
+Digital Certificate (with Public key)
+     │
+     ▼
+Server Identity
+
+- During the TLS Handshake, the TLS Server presents its Digital Certificate to the connecting system and uses its Private Key to prove that it owns the corresponding identity.
+- Therefore:
+
+
+KeyStore
+    │
+    ▼
+"Who am I?"
+
+------------------------------------------------------------------------------------------------------------------------
+TrustStore:
+
+
+- Here, the server acts as the TLS Client. So, it needs to know who it trusts.
+- During the TLS Handshake, the TLS server sends its Digital Certificate to the client.
+- However, the TLS client cannot simply trust any certificate that it receives.
+- Otherwise, an attacker could send a fake certificate and the client would automatically trust it.
+- Therefore, the client needs an independent source of trust. The TrustStore provides this trusted information.
+- It allows your Java application to say: "I trust certificates issued by these authorities / belonging to these trusted systems."
+
+
+Conceptually:
+
+
+Server sends Certificate
+         │
+         ▼
+Java receives Certificate
+         │
+         ▼
+   Validate Certificate
+         │
+         ▼
+    Check TrustStore
+          │
+    ┌────┴────┐
+    ▼           ▼
+ Trusted     Not Trusted
+    │           │
+    ▼           ▼
+ Continue     Reject
+  TLS          TLS
+
+
+Therefore:
+
+TrustStore
+    │
+    ▼
+"Who do I trust?"
+
+
+- The server already sends its certificate during the TLS Handshake. Then, why does the TrustStore store the TLS Server's Certificate? Because,
+- The TrustStore does NOT provide the server certificate to the server.
+- The TrustStore provides the Certificate Authorities that Java can use to determine whether the received certificate during TLS handshake should be trusted or not.
+
+------------------------------------------------------------------------------------------------------------------------
+Java cacerts:
+
+
+- Java provides a default TrustStore called cacerts
+- It contains certificates of Certificate Authorities that the Java runtime trusts by default.
+
+Conceptually:
+
+Java Runtime
+     │
+     ▼
+   cacerts
+     │
+     ├── Public CA
+     ├── Public CA
+     ├── Public CA
+     └── ...
+
+- When a Java application establishes a TLS connection, Java can use these trusted certificates when validating the certificate presented by the remote server.
+
+------------------------------------------------------------------------------------------------------------------------
+Note: A Java application can configure to use single JKS as both KeyStore and TrustStore or different JKS
+
+- For example:
+
+keyStore   → ourapp.jks
+trustStore → ourapp.jks
+
+- Here, the same JKS is being used for both purposes.
+
+
+- Or:
+
+keyStore   → ourapp.jks
+trustStore → cacerts / ourapptrust.jks
+
+- Then your application's identity comes from ourapp.jks, while trust decisions come from cacerts / ourapptrust.jks (another JKS).
+- Which one is actually used depends on the Java/application configuration.
+
+------------------------------------------------------------------------------------------------------------------------
+Certificate Chain:
+
+
+- A server certificate is commonly part of a Certificate Chain.
+
+
+Example:
+
+Root CA
+   │
+   ▼
+Intermediate CA
+   │
+   ▼
+Server Certificate
+
+
+
+During the TLS Handshake:
+
+Server
+   │
+   │ sends certificate/chain
+   ▼
+Java
+   │
+   ▼
+Validate Certificate Chain
+   │
+   ▼
+Check whether the required CA is trusted
+   │
+   ▼
+Continue or reject TLS
+
+
+- If the appropriate CA is already trusted, the server's certificate can be validated without manually importing the server's individual certificate.
+- Therefore, it is often preferable to trust the appropriate CA certificate rather than manually trusting every individual server certificate.
+
+=============================================================================================================================================================================
+v
