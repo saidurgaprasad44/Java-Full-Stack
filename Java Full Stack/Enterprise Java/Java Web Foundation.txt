@@ -35,18 +35,18 @@ CHAPTER 4 — JAVA WEB FOUNDATION
 │ └── Response body
 │
 httpservletrequest:
-parameter		- parameters encoded in http request body or query parameters in the url
-attribute		- to move the java components for internal use, like servlet to another servlet or jsps or other classes 
+parameter		- parameters encoded in http request body or query parameters in the url, use request.getParameter()
+attribute		- to move the java components for internal use, like servlet to another servlet or jsps or other classes. use request.getAttribute() and request.setAttribute()
 request URI/path	- 
-header
-cookie
-body			- raw request body, can access using getReader() or getInputStream()
+header			- use request.getHeader()
+cookie			- request.getCookies() - returns Cookie object
+body			- raw request body, can access using request.getReader() or request.getInputStream()
 
 httpservletresponse: only involved in sending response back to client, like for server to client communication, in any other cases, request is used
-status			
+status			- response.setStatus(200) or response.setStatus(HttpServletResponse.SC_OK)
 content-type		- 
-header
-set-cookie		
+header			- response.setHeader("Content-Type", "application/json")
+set-cookie		- response.addCookie(new Cookie("JSESSIONID", "ABC123"))
 body 			- getWriter().write() or OutputStream to write the simple text (string) into the response body
 │
 ├── 5. Servlet URL Mapping

@@ -1,0 +1,3 @@
+OWASP - Open Worldwide Application Security Project (formerly Open Web Application Security Project)
+- It is a global open-source community and non-profit foundation dedicated to improving software and web application security through free tools, documents, and standards
+- OWASP Top 10: A standard awareness document that represents the most critical security risks to web applications
