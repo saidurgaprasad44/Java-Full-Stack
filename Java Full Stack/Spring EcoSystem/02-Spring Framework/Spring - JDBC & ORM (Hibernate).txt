@@ -1,0 +1,25 @@
+spring jdbc handles the following using jdbctemplate:
+
+Connection management
+Exception translation
+Statement execution
+ResultSet handling
+Row mapping support
+Resource cleanup
+Transaction integration
+
+
+
+
+Spring-hibernate integration = dependency management + transaction/resource management
+
+Spring manages things such as:
+
+Creating/configuring persistence infrastructure
+Injecting persistence components
+Transaction management
+Transaction boundaries
+Binding persistence context to the current transaction/thread
+Exception translation
+Resource lifecycle
+Integration with Spring's application context

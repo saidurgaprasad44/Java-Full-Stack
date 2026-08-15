@@ -1,0 +1,88 @@
+Terminology:
+
+EntityManagerFactory
+EntityManager
+Entity
+Persistence
+PersistenceContext
+
+
+
+
+=======================================================================================================================================================================
+JPA/Hibernate  (Automated Mapping & SQL)
+=======================================================================================================================================================================
+
+Database Connection: Automated (Hibernate uses its own built-in connection pool or hooks into one you provide)
+Object-to-Table Mapping: Automated (Done via @Entity and @Column annotations)
+SQL Writing: Automated (You call session.save(user) and Hibernate writes the INSERT INTO... SQL statement for you)
+
+=======================================================================================================================================================================
+
+Hibernate has its own API specification before the standard JPA API was introduced.
+Later when JPA API was introduced, it has all the standard persistence specifications using which JPA/Hibernate was implemented again.
+There are other implementations of JPA than Hibernate like
+
+
+
+
+Hibernate handles:
+
+Object-relational mapping
+Entity state
+Persistence context
+Dirty checking
+Relationships
+Lazy loading
+Cascading
+SQL generation
+First-level cache
+JPQL/HQL
+
+
+
+
+
+JPA + Hibernate architecture
+
+
+Configuration without Spring
+
+
+Entities & mappings - @Entity, @Table(name = "employee"), @Id, @GeneratedValue(strategy = GenerationType.IDENTITY)/@GeneratedValue(strategy = GenerationType.SEQUENCE), @Column(name = "employee_name"), 
+@Entity
+@Table(name = "employee")
+public class Employee {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "employee_name", nullable = false)
+    private String name;
+
+    private double salary;
+
+    private String department;
+
+    // getters/setters
+}
+
+
+EntityManager CRUD
+Persistence Context ⭐
+Entity states & lifecycle ⭐ - Transient --persist()--> Managed --detach()/clear()/close()--> Detached --remove()--> Removed
+Dirty checking ⭐ - before flushing the 
+Flush & clear
+Transactions
+
+Relationships
+Lazy/Eager loading & proxies
+Cascade & orphan removal
+JPQL
+N+1 problem ⭐
+Optimistic/pessimistic locking
+Caching
+Hibernate/JPA performance basics
+
+

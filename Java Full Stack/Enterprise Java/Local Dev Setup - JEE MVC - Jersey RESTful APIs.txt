@@ -164,7 +164,7 @@ Configure Java for the project
 
 ///////////////////////////////////////////////////////////////////
 
-maven-archetype-webapp -> Use this archetype for all traditional WAR packaged SSR applications (External server)
+maven-archetype-webapp -> Use this archetype for all traditional WAR packaged SSR Web applications (External server)
 
 File > New > Maven Project
 Create a simple project (skip archetype selection) - keep unchecked and click on Next

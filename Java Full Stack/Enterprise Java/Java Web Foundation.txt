@@ -1,3 +1,19 @@
+Terminology:
+
+Servlet
+HttpServlet
+HttpServletRequest
+HttpServletResponse
+Web server
+Servlet Container / ServletContext
+Application server
+HttpSession
+RequestDispatcher
+ServletConfig
+
+
+
+
 CHAPTER 4 — JAVA WEB FOUNDATION
 
 │
@@ -8,9 +24,9 @@ CHAPTER 4 — JAVA WEB FOUNDATION
 │ └── Request → Processing → Response
 │
 ├── 2. Web Containers
-│ ├── Web Server
-│ ├── Servlet Container
-│ ├── Application Server
+│ ├── Web Server (Apache http server)
+│ ├── Servlet Container (tomcat, jetty)
+│ ├── Application Server (weblogic)
 │ ├── Tomcat
 │ └── Container vs Application Server
 │
@@ -37,10 +53,13 @@ CHAPTER 4 — JAVA WEB FOUNDATION
 httpservletrequest:
 parameter		- parameters encoded in http request body or query parameters in the url, use request.getParameter()
 attribute		- to move the java components for internal use, like servlet to another servlet or jsps or other classes. use request.getAttribute() and request.setAttribute()
-request URI/path	- 
+request URI/path	- request.getRequestURI()
 header			- use request.getHeader()
 cookie			- request.getCookies() - returns Cookie object
 body			- raw request body, can access using request.getReader() or request.getInputStream()
+session			- request.getSession()
+request dispatcher	- request.getRequestDispatcher("/home").forward(request,response)
+
 
 httpservletresponse: only involved in sending response back to client, like for server to client communication, in any other cases, request is used
 status			- response.setStatus(200) or response.setStatus(HttpServletResponse.SC_OK)

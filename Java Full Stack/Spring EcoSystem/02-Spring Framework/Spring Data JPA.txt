@@ -1,0 +1,22 @@
+Spring Data JPA:
+
+Spring Data JPA sits above JPA API - Meaning, Spring Data JPA uses the JPA API, and Hibernate is commonly the JPA provider/implementation underneath it.
+
+
+              Your Application
+                     │
+                     ▼
+              Spring Data JPA
+                     │
+                     ▼
+                JPA API
+             (EntityManager)
+                     │
+                     ▼
+                 Hibernate
+                     │
+                     ▼
+                   JDBC
+                     │
+                     ▼
+                 Database

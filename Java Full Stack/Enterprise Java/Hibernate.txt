@@ -1,7 +1,0 @@
-=======================================================================================================================================================================
-Hibernate/JPA  (Automated Mapping & SQL)
-=======================================================================================================================================================================
-
-Database Connection: Automated (Hibernate uses its own built-in connection pool or hooks into one you provide)
-Object-to-Table Mapping: Automated (Done via @Entity and @Column annotations)
-SQL Writing: Automated (You call session.save(user) and Hibernate writes the INSERT INTO... SQL statement for you)

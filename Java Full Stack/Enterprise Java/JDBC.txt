@@ -9,3 +9,13 @@ SQL Writing: Manual
 
 
 =======================================================================================================================================================================
+Steps:
+
+obtaining connections
+preparing statements
+binding parameters
+executing queries
+processing resultset
+mapping rows to java objects
+closing connections
+handling transactions
