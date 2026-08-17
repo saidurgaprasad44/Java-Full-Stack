@@ -75,7 +75,7 @@ EntityManager is an interface used to manage the entities and its lifecyle in th
 - em.persist(employee) - CREATE: creates new entity in persistence context to manage/track it and schedule it to be inserted in the db
 - em.find() - READ: JPA first checks the persistence context, return it if it is present in persistence context, or query database, create entity in persistence context, & make it managed 
 - em.remove(employee) - DELETE: mark it for deletion and during flush, hibernate removes it 
-- merge():  
+- em.merge(): copies the detached/transient entity's state and applies it the newly created/managed entity, if a managed entity with same identity is already present in the persistence context, it will not create a new entity in the persistence context
 - em.flush():
 - em.detach(): 
 - em.clear():
@@ -100,16 +100,12 @@ Persistence Context
 =======================================================================================================================================================================
 Entity states & lifecycle ⭐ 
 
-- Transient --persist()-->
-- Managed --detach()/clear()/close()--> 
-- Detached --remove()--> 
-- Removed
-
+[Transient] --persist()--> [Managed] --detach()/clear()/close()--> [Detached] --remove()--> [Removed]
 
 =======================================================================================================================================================================
 Dirty checking ⭐ 
 
-Hibernate can track all the changes of a managed entity and detects those changes () during flush and generates SQL queries based on the changes made to the entity and runs the queries even though we dont run update call/query explicitly.
+Hibernate can track all the changes of a managed entity and detects those changes during flush and generates SQL queries based on the changes made to the entity and runs the queries even though we dont run update call/query explicitly.
 
 =======================================================================================================================================================================
 Flush & clear
@@ -117,6 +113,9 @@ Flush & clear
 we will see the difference between flush and commit when we learn transaction management
 =======================================================================================================================================================================
 Transactions
+
+follows the begin(), commit(), rollback() pattern
+
 =======================================================================================================================================================================
 Relationships
 =======================================================================================================================================================================

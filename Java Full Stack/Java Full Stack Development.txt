@@ -51,20 +51,21 @@ Spring Boot 		- opinionated auto-configuration - overriding & customizing, auto-
 auth and authz 		- request and response anatomy, http statelessness, session based authentication , sessionid, httponly cookies, state management, token authentication, session (stateful) vs token (stateless), jwt anatomy, access token and refresh token, CORS, CSRF, token in local storage vs httponly cookies, filters, spring security, password hashing, encryption vs encoding(sign) vs hashing, Oauth2, RBAC.
 microservices 		- api gateway, load balancer, microservices, inter service communication, service discovery, open feign, spring cloud
 microservices patterns	- saga pattern
-sql 			- querying, update/insert/delete, joins, table relationships, indexing, transactions, aggregations, order of writing and execution, stored procedures
+API communication	- websockets, webhooks, graphql, sse, polling, long polling, soap, rest
+sql & DBMS 		- querying, update/insert/delete, joins, table relationships, indexing, transactions, aggregations, order of writing and execution, stored procedures, deadlocks
 caching			- redis, read through and write through techniques, TTL, eviction policies, @Cacheable
 event driven queueing	- kafka message queues, @Async
 Core Java		- java 8/11/17 features, exception handling, global exception handling, multi-threading & concurrent futures, jvm architecture and garbage collection, classes like Optional, Serializable, Throwable, Object, Method, Runnable, Callable, Thread, Future,...
 Design principles/patterns- SOLID, KISS, DRY, creational, structural, behavioral, 
 DSA			- string, array, collections and map, linked list, queues, 
 system design concepts 	- sharding, partitions, replication, rate limiting, CDNs, reverse proxy, 
-Cloud			- Azure cloud - 
+Cloud			- Azure cloud - its services
 Docker and Kubernetes	- 
 SDLC			- planning, requirement analysis(functional and non-functional), design, implementation, testing (Junit, integration, etc.,), deployment, maintenance (logging..,) 
 Tools			- Inspect tool in browsers, CI/CD pipeline, splunk
 
 
-must learn before interview - jdbc-transactions, hibernate-transactions, spring-hibernate-transactions, spring data jpa-transactions, spring boot auto config, sql - indexing & stored procedures, java - 8/11/17 features & global exception handling & concurrent futures & multithreading, microservices, cicd pipelines, azure cloud, saga, redis, jwt implementation, system design concepts, 
+must learn before interview - jdbc-transactions, hibernate-transactions, spring-hibernate-transactions, spring data jpa-transactions, spring boot auto config, sql/database - indexing & stored procedures & deadlocks & sharding vs partitions vs replication, java - 8/11/17 features & global exception handling & concurrent futures & multithreading, microservices, cicd pipelines, azure cloud, saga, redis, jwt implementation, system design concepts, circuit breakers, websockets vs webhooks vs graphql
 
 ============================================================================================================================================================================================
 
