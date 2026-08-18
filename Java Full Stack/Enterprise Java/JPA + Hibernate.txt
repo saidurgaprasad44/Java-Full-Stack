@@ -117,7 +117,15 @@ Transactions
 follows the begin(), commit(), rollback() pattern
 
 =======================================================================================================================================================================
-Relationships
+Relationships: onetomany, manytoone, onetoone, manytomany
+
+owning side: to tell the jpa to map the entities with this property in database
+Unidirectional/Bidirectional: use it based on the business need of navigation directions of objects.
+mappedby: to tell the jpa that this is just the other side of the relationship and not the owning side so dont use it for mapping the database rows while synchronizing the changes, use it only for java objects association. Use it to tell the jpa to skip this for mapping while using the bidirectional java navigation. It represents the inverse side.
+joincolumn: 
+jointable: 
+
+note: to tell the database only owning side change is required and is enough. but for maintaining java objects consistency in a bidirectional relationship, update both the entities 
 =======================================================================================================================================================================
 Lazy/Eager loading & proxies
 =======================================================================================================================================================================

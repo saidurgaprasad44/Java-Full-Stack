@@ -204,7 +204,7 @@ Annotations:
 	@OneToMany
 	@ManyToOne
 	@ManyToMany
-	@JoinColumn	: used to create/edit the name of the foreign key
+	@JoinColumn	: used to represent the name of the foreign key from the database table
 	@JoinTable	: used to create/edit the join/bridge table in ManyToMany
 
 
