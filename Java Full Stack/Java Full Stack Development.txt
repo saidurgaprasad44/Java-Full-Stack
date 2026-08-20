@@ -24,7 +24,7 @@ Security & IAM:		Authentication(JWT, OAuth2), Authorization, Web Security (CORS,
 Microservices:		Microservices Architecture, Spring Cloud, Service Discovery (Eureka), API Gateway, Distributed Config, RESTful Web Services, Kafka, Redis caching
 AI:			LLMs, RAG system, 
 Ticket & Project Management tool: ServiceNow & Azure DevOps
-Operating System: 	Windows, Linux	
+Operating System: 	Windows, Linux
 
 
 
@@ -59,7 +59,7 @@ Core Java		- java 8/11/17 features, exception handling, global exception handlin
 Design principles/patterns- SOLID, KISS, DRY, creational, structural, behavioral, 
 DSA			- string, array, collections and map, linked list, queues, 
 system design concepts 	- sharding, partitions, replication, rate limiting, CDNs, reverse proxy, 
-Cloud			- Azure cloud - its services
+Cloud			- Azure cloud and its services
 Docker and Kubernetes	- 
 SDLC			- planning, requirement analysis(functional and non-functional), design, implementation, testing (Junit, integration, etc.,), deployment, maintenance (logging..,) 
 Tools			- Inspect tool in browsers, CI/CD pipeline, splunk

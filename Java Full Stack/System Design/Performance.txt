@@ -1,0 +1,5 @@
+Lazy vs Eager Loading
+N+1 Query Problem
+DSA & LLD
+
+Caching - Browser cache, CDN, Application cache, Db cache
