@@ -494,11 +494,60 @@ Types:
 
 
 ////////////////////////////////////////////////////////////
-Other Key Relationships: Beyond the four pillars, Java also uses several concepts to define how objects relate and interact:
+Relationships:
+
+IS-A Relationship (Inheritance): 
+
+- The IS-A relationship is based entirely on inheritance
+- A subclass is a more specialized version of the superclass.
+- It is tightly coupled (changes in the parent class directly affect child classes)
+- Example: A Car IS-A Vehicle
  
-Association: A general relationship between two separate classes where objects can exist independently (e.g., a teacher and a student).
-Aggregation: A specialized "has-a" relationship where the child can exist independently of the parent (e.g., a Department has Professors).
-Composition: A strong form of aggregation where the child cannot exist without the parent (e.g., a House has Rooms; if the house is destroyed, the rooms are too).
+
+HAS-A Relationship (Association):
+
+- The HAS-A relationship occurs when an instance of one class is used as a field inside another class
+- This establishes a loose coupling between classes.
+- Association is divided into two sub-types based on how strictly the lifecycles of the objects are tied
+
+      Aggregation (Weak HAS-A): 
+
+	- The child object can exist independently of the parent.
+	- Lifecycle: Independent lifetimes. If the parent object is destroyed, the child object survives.
+	- Example: A Department HAS-A Professor. If the department closes, the professor still exists.
+
+	//Child
+	class Professor {
+    		String name;
+    		Professor(String name) { this.name = name; }
+	}
+
+	//Parent
+	class Department {
+    		private Professor professor; // Aggregation
+    		Department(Professor professor) {
+        		this.professor = professor; // Professor is passed from outside
+    		}
+	}
+
+      Composition (Strong HAS-A):
+
+	- The child object cannot exist independently of the parent.
+	- Lifecycle: Tightly bound lifetimes. If the parent object is destroyed, the child object is also destroyed.
+	- Example: A Department HAS-A Professor. If the department closes, the professor still exists.
+
+	//Child
+	class Engine {
+    		void start() { System.out.println("Vroom!"); }
+	}
+
+	//Parent
+	class Car {
+		private final Engine engine; // Composition
+    		Car() {
+        		this.engine = new Engine(); // Engine lifecycle is managed entirely by Car
+    		}
+	}
 
 ===============================================================================================================================================================================
 Strings:

@@ -179,7 +179,7 @@ Configure Tomcat for the project
 
 ///////////////////////////////////////////////////////////////////
 
-jersey-quickstart-webapp -> User this archetype for WAR packaged REST applications (External server)
+jersey-quickstart-webapp -> Use this archetype for WAR packaged REST applications (External server)
 
 File > New > Maven Project
 Create a simple project (skip archetype selection) - keep unchecked and click on Next
