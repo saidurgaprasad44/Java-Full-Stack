@@ -6,9 +6,6 @@ Entity
 Persistence
 PersistenceContext
 
-
-
-
 =======================================================================================================================================================================
 JPA/Hibernate  (Automated Mapping & SQL)
 =======================================================================================================================================================================
@@ -39,16 +36,47 @@ SQL generation
 First-level cache
 JPQL/HQL
 
-
-
 =======================================================================================================================================================================
 JPA + Hibernate architecture
 =======================================================================================================================================================================
 
-Configuration without Spring
+Configuration without Spring:
+
+needs persistence.xml for configuring the jpa provider(hibernate), dialect(database driver), and properties
+
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence" 
+			 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+			 xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd" 
+			 version="3.0">
+			 
+    <persistence-unit name="employeeCRUD">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        
+        <class>demo.example.employeeCRUD.Department</class>
+        <class>demo.example.employeeCRUD.Employee</class>
+        
+        <properties>
+            <!-- Database Connection -->
+            <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver" />
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/employee" />
+            <property name="jakarta.persistence.jdbc.user" value="postgres" />
+            <property name="jakarta.persistence.jdbc.password" value="postgres" />
+
+            <!-- Hibernate Properties -->
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect" />
+            <property name="hibernate.hbm2ddl.auto" value="update" />
+            <property name="hibernate.show_sql" value="true" />
+            <property name="hibernate.format_sql" value="true" />
+        </properties>
+    </persistence-unit>
+</persistence>
 
 =======================================================================================================================================================================
-Entities & mappings - @Entity, @Table(name = "employee"), @Id, @GeneratedValue(strategy = GenerationType.IDENTITY)/@GeneratedValue(strategy = GenerationType.SEQUENCE), @Column(name = "employee_name"), 
+
+Entities & mappings
+
+- @Entity, @Table(name = "employee"), @Id, @GeneratedValue(strategy = GenerationType.IDENTITY)/@GeneratedValue(strategy = GenerationType.SEQUENCE), @Column(name = "employee_name"), 
+
 @Entity
 @Table(name = "employee")
 public class Employee {
@@ -62,13 +90,18 @@ public class Employee {
 
     private double salary;
 
+    @ManyToOne
     private String department;
 
     // getters/setters
 }
+
 =======================================================================================================================================================================
 
 EntityManager and Persistence operations 
+
+EntityManagerFactory emf = Persistence.createEntityManagerFactory("employeeCRUD");
+EntityManager em = emf.createEntityManager();
 
 EntityManager is an interface used to manage the entities and its lifecyle in the persistence context
 
@@ -82,7 +115,9 @@ EntityManager is an interface used to manage the entities and its lifecyle in th
 - em.close(): closes the entitymanager/persistence context
 - em.refresh(): queries the database and updates the entity in the persistence.
 - em.contains(): 
+
 =======================================================================================================================================================================
+
 Persistence Context ⭐
 
 - It is an environment and first level cache where all the changes of the entities are tracked once they are added in it.
@@ -98,25 +133,33 @@ Persistence Context
      └── Department #5
 
 =======================================================================================================================================================================
+
 Entity states & lifecycle ⭐ 
 
 [Transient] --persist()--> [Managed] --detach()/clear()/close()--> [Detached] --remove()--> [Removed]
 
 =======================================================================================================================================================================
+
 Dirty checking ⭐ 
 
 Hibernate can track all the changes of a managed entity and detects those changes during flush and generates SQL queries based on the changes made to the entity and runs the queries even though we dont run update call/query explicitly.
 
 =======================================================================================================================================================================
+
 Flush & clear
 
 we will see the difference between flush and commit when we learn transaction management
+
 =======================================================================================================================================================================
+
 Transactions
+
+EntityTransaction tx = em.create
 
 follows the begin(), commit(), rollback() pattern
 
 =======================================================================================================================================================================
+
 Relationships: onetomany, manytoone, onetoone, manytomany
 
 owning side: to tell the jpa to map the entities with this property in database
@@ -126,25 +169,136 @@ joincolumn:
 jointable: 
 
 note: to tell the database only owning side change is required and is enough. but for maintaining java objects consistency in a bidirectional relationship, update both the entities 
+
 =======================================================================================================================================================================
+
 Lazy/Eager loading & proxies
+
+when to load/fetch the dependent entities
+
+eager loading - fetches the related data while the entities themselves are loaded
+lazy loading - keeps the hibernate proxies in place of related data while loading the entities and retrieves the related data from the data only when requested.
+
+@ManyToOne(fetch = FetchType.LAZY)
+
+by default:
+
+@ManyToOne, @OneToOne are Eagerly loaded
+@ManyToMany, @OneToMany are Lazily loaded
+
+LazyInitializationException
+
 =======================================================================================================================================================================
+
 Cascade & orphan removal
+
+cascade: while performing a lifecycle operation like em.find(), em.remove(), em.detach(), etc, hibernate decides whether to propagate the operation to its related entities or not based on the cascade configuration
+
+orphan removal: the child entity becomes an orphan in the relationship when it is removed from the relationship. hibernate decides whether to delete such entities or not based on the configuration
+
+@OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
+
+ 
 =======================================================================================================================================================================
+
 JPQL
+
+Basic JPQL:
+TypedQuery<Employee> query = em.createQuery("SELECT e FROM Employee e", Employee.class);
+List<Employee> employees = query.getResultList();
+
+Parameterized Queries:
+List<Employee> employees = em.createQuery("SELECT e FROM Employee e WHERE e.email = :email", Employee.class)
+	.setParameter("email", "saidurgaprasad@outlook.com")
+	.getResultList();
+
+getResultList() //zero or 1 or more than one entities
+getSingleResult() //exactly 1 entity, , 0 results -> NoResultException, >1 -> NonUniqueResultException
+
 =======================================================================================================================================================================
+
 N+1 problem ⭐
 
-JOIN FETCH: while loading/fetching the employee table, fetch the department entities as well.
+JOIN FETCH: while loading/fetching the employee table, fetch the department entities as well
+
+Entity Graph: 
+defining an entity graph:
+@Entity
+@NamedEntityGraph(
+    name = "Employee.withDepartment",
+    attributeNodes = {
+        @NamedAttributeNode("department")
+    }
+)
+class Employee {
+    @Id
+    Long id;
+
+    String name;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    Department department;
+}
+
+using the graph:
+
+EntityGraph<Employee> graph =
+    em.createEntityGraph("Employee.withDepartment");
+
+Map<String, Object> properties = new HashMap<>();
+
+properties.put(
+    "jakarta.persistence.fetchgraph",
+    graph
+);
+
+Employee employee =
+    em.find(
+        Employee.class,
+        1L,
+        properties
+    );
+
+
+
+JOIN FETCH = fetching is specified inside the query.
+Entity Graph = fetching is specified separately as a fetch plan.
+
 =======================================================================================================================================================================
+
 Optimistic/pessimistic locking
 
-optimistic locking: @version hibernate maintains the version column to control the locks
+optimistic locking: hibernate and database maintain the version column to control the locks - @Version
 pessimistic locking: LockModeType.PESSIMISTIC_WRITE,
+
+Account account = em.find(Account.class, id, LockModeType.PESSIMISTIC_WRITE);
+
+Account account = em.createQuery("SELECT a FROM Account a WHERE a.id = :id", Account.class)
+    .setParameter("id", id)
+    .setLockMode(LockModeType.PESSIMISTIC_WRITE) // Syntax flag
+    .getSingleResult();
+
 =======================================================================================================================================================================
+
 Caching
+
+l1 cache - persistence context (enabled by default) - reference to the actual java objects - not another copy of entities - no need of invalidation/updates
+l2 cache - hibernate's sessionfactory (not enabled by default) - keeps another copy/cache of entities - needs data invalidation/update - not equivalent to distributed cache like redis
+query cache - caches the identifiers of entities instead of the entire entities while using typedqueries
+
 =======================================================================================================================================================================
+
 Hibernate/JPA performance basics
+
+- N+1 query problem with lazy loading and its optimization - join fetch / entity graphs / eager loading
+- Unnecessary queries
+- pagination
+- Batch fetching / JDBC batching
+- Large persistence contexts
+- Dirty checking overhead
+- Selecting only the data you need — DTO projections
+- Indexes and database-side performance
+
 =======================================================================================================================================================================
 
 

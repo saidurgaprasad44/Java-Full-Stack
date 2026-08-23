@@ -65,7 +65,7 @@ SDLC			- planning, requirement analysis(functional and non-functional), design, 
 Tools			- Inspect tool in browsers, CI/CD pipeline, splunk
 
 
-must learn before interview - jdbc-transactions, hibernate-transactions, spring-hibernate-transactions, spring data jpa-transactions, spring boot auto config, sql/database - indexing & stored procedures & deadlocks & sharding vs partitions vs replication, java - 8/11/17 features & global exception handling & concurrent futures & multithreading, microservices, cicd pipelines, azure cloud, saga, redis, jwt implementation, system design concepts, circuit breakers, websockets vs webhooks vs graphql
+must learn before interview - spring-hibernate-transactions, spring data jpa-transactions, spring boot auto config, sql/database - indexing & stored procedures & deadlocks & sharding vs partitions vs replication, java - 8/11/17 features & global exception handling & concurrent futures & multithreading, microservices, cicd pipelines, azure cloud, saga, redis, jwt implementation, system design concepts, circuit breakers, websockets vs webhooks vs graphql, understand the versions
 
 ============================================================================================================================================================================================
 
