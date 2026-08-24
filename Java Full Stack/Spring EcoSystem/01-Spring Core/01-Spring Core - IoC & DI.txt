@@ -252,8 +252,8 @@ All implementations of ApplicationContext Interface:
 - ClassPathXmlApplicationContext		- for Standalone Java	- XML file on Classpath
 - FileSystemXmlApplicationContext		- for Standalone Java	- XML file on Local disk
 - XmlWebApplicationContext			- for Web Application	- XML file under web folder
-- AnnotationConfigApplicationContext		- for Standalone Java	- @Configuration Classes / Scans
-- AnnotationConfigWebApplicationContext		- for Web Application	- @Configuration Classes
+- AnnotationConfigApplicationContext		- for Standalone Java	- Using @Configuration Classes and/or Component Scans
+- AnnotationConfigWebApplicationContext		- for Web Application	- Using @Configuration Classes
 
 
 =============================================================================================================================================================================
@@ -502,7 +502,7 @@ Getting a Bean:
 
 Service service = context.getBean(Service.class);
 
-Note: In real Spring MVC applications, you almost never call getBean() yourself. Spring calls it internally when it needs a Controller, Service, Repository, etc.
+Note: In real Spring MVC applications, you almost never call getBean() yourself. Spring MVC calls it internally when it needs a Controller, Service, Repository, etc.
 
 ------------------------------------------------------------
 
@@ -579,7 +579,6 @@ public class UserService {
 Dependency Injection:
 
 - With annotation-based configuration, Spring automatically discovers the required beans and injects them.
-- Unlike XML configuration, you do not manually specify the wiring using <constructor-arg> or <property>. Instead, Spring determines the dependencies from your classes (using constructors, setters, or @Autowired).
 - Types: Field injection, Constructor injection (recommended) and Setter injection
 - By default, every Spring bean created using @Component, @Service, @Repository or @Controller is assigned a bean name
 - The default bean name is the class name with the first letter in lowercase. Example: UserService -> userService, DatabaseConnection -> databaseConnection
@@ -686,7 +685,7 @@ ApplicationContext
 ↓
 Reads @Configuration class
 ↓
-Processes @Bean methods
+Processes @Bean methods (Specially used for defining beans of third-party classes)
 ↓
 Creates BeanDefinitions
 ↓

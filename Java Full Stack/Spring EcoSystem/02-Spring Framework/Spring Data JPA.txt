@@ -3,20 +3,125 @@ Spring Data JPA:
 Spring Data JPA sits above JPA API - Meaning, Spring Data JPA uses the JPA API, and Hibernate is commonly the JPA provider/implementation underneath it.
 
 
-              Your Application
-                     │
-                     ▼
-              Spring Data JPA
-                     │
-                     ▼
-                JPA API
-             (EntityManager)
-                     │
-                     ▼
-                 Hibernate
-                     │
-                     ▼
-                   JDBC
-                     │
-                     ▼
-                 Database
+=======================================================================================================================================================================
+
+Controller
+    ↓
+Service
+    ↓
+EmployeeRepository proxy
+    ↓
+Spring Data JPA
+    ↓
+JPA API
+(EntityManager)
+    ↓
+Hibernate
+    ↓
+JDBC
+    ↓
+Database
+
+=======================================================================================================================================================================
+
+Required Configuration:
+
+=======================================================================================================================================================================
+
+A high level REST API
+
+
+
+@RestController
+@RequestMapping("/employees")
+public class EmployeeController{
+	
+	EmployeeService employeeService;
+
+	public EmployeeController(EmployeeService employeeService){
+		this.employeeService = employeeService;
+	}
+
+	@GetMapping
+	public Page<Employee> getAllEmployees(@RequestParam(required = false) String cursor, @RequestParam(defaultValue = 20) int limit){
+		return employeeService.getAllEmployees(cursor, limit);
+	}
+
+	@GetMapping("/{id}")
+	public Employee getEmployeeById(@PathVariable long id){
+		return employeeService.getEmployeeById(id);
+	}
+
+	@PostMapping
+	public void addEmployee(@RequestBody Employee employee){
+		employeeService.addEmployee(employee);
+	}
+
+	@PutMapping
+	public void updateEmployee(@RequestBody Employee employee){
+		employeService.updateEmployee(employee);
+	}
+
+	@DeleteMapping("/{id}")
+	public void deleteEmployeeById(@PathVariable long id){
+		employeeService.deleteEmployeeById(id);
+	} 
+
+}
+
+
+@RestControllerAdvise
+public class GlobalExceptionHandler{
+	
+	@ExceptionHandler(EmployeeNotFoundException.class)
+	public ResponseEntity<?> employeeNotFoundHandler(EmployeeNotFoundException ex){
+		return ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+	}
+
+	@ExceptionHandler(IllegalArgumentException.class)
+	public ResponseEntity<?> illegalArgumentHandler(IllegalArgumentException ex){
+		return ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+	}
+}
+
+
+@Service
+public class EmployeeService{
+
+	EmployeeRepo empRepo;
+
+	public EmployeeService(EmployeeRepo empRepo){
+		this.empRepo = empRepo;
+	}
+
+	public Page<Employee> getAllEmployees(String cursor, int limit){
+		return empRepo.findAll(cursor, limit);
+	}
+
+	public Employee getEmployeeById(long id){
+		return empRepo.findById(id);
+	}
+
+	@Transactional
+	public void addEmployee(Employee employee){
+		empRepo.save(employee);
+	}
+
+	@Transactional
+	public void updateEmployee(Employee employee){
+		empRepo.save(employee);
+	}
+
+	@Transactional
+	public void deleteEmployeeById(long id){
+		empRepo.deleteById(id);
+	} 
+}
+
+
+@Repository
+public interface EmployeeRepo extends JpaRepository{
+}
+
+
+

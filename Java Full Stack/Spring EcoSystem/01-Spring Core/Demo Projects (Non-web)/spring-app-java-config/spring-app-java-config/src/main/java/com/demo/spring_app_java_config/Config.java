@@ -21,7 +21,7 @@ public class Config {
 	
 	@Bean // bean name "developerWithLaptopForConstructor"
 	public Developer developerWithLaptopForConstructor(Laptop laptopForDeveloper) { //Constructor injection with dependency Laptop bean
-		return new Developer(laptopForDeveloper); //passing dependency as a parameter, spring decides which bean by matching the type (autowiring)
+		return new Developer(laptopForDeveloper); //passing dependency as a parameter, spring decides which bean by matching the type in constructor (autowiring)
 	}
 	
 	@Bean // bean name "developerWithDesktopForConstructor"
@@ -46,7 +46,7 @@ public class Config {
 	@Bean // bean name "developerWithLaptop"
 	public Developer developerWithDesktopForSetter(Desktop desktop) { // setter injection
 		Developer dev = developerPrototypeBean();
-		dev.setComp(desktop); //passing dependency as a parameter, spring decides which bean by matching the type (autowiring)
+		dev.setComp(desktop); //passing dependency as a parameter, spring decides which bean by matching the type in setter (autowiring)
 		return dev;
 	}
 }

@@ -62,53 +62,11 @@ git config user.name
 git config user.email
 
 =======================================================================================================================================================================
-Setup IDE:
-
-Spring Tools for Eclipse:
-
-Download:
-https://spring.io/tools#eclipse
-
-After installing configure Java and Maven:
-
-Add Installed JRE/JDK in STS:
-Window → Preferences → Java → Installed JREs
-Select JDK 17 manually.
-
-Then: 
-Window → Preferences → Java → Compiler → Set compliance to 17
-
-If not configured:
-Project build errors “Execution environment not supported”
-
-
-Configure Maven:
-Window → Preferences → Maven → Installations
-
-You will see:
-Embedded Maven (came with STS)
-
-OR Add External Maven
-Select system Maven if installed
-
-Add Eclipse EE and web developer tools:
-To be able to work with web projects without spring,
-STS does not have Web developer tools by default to work with Dynamic Web Project
-Also includes html, jsp, xml, css editors.
-Help -> Eclipse Marketplace - look for Eclipse Enterprise Java and Web Developer Tools
-
-=======================================================================================================================================================================
-Tomcat Setup:
+Install Tomcat:
 
 If Using Spring Boot:
 No need to install Tomcat separately
 Spring Boot has embedded Tomcat
-
-Run project:
-mvn spring-boot:run
-OR run main class in IDE.
-Then the app runs at:
-http://localhost:8080
 
 
 If Using Traditional Spring MVC (WAR file):
@@ -123,13 +81,72 @@ Tomcat 9 (for Spring 5.x, Spring Boot 2.x and earlier)
 
 Extract → D:\Softwares
 
-Add Server Runtime Environment in STS:
+
+Start the server to test:
+
+Go to bin\ inside Tomcat installation path and run:
+startup.bat
+
+Or
+
+From Services:
+
+Modify ports in server.xml (8005: shutdown, 8080: HTTP Connector, 8009: The AJP Connector port if used, 8443: SSL/HTTPS Connector port if used), modify SERVICE_NAME, DISPLAYNAME, CATALINA_BASE in service.bat (if you want to have multiple tomcats running simultaneously, optional)
+Open CMD
+Go to bin\ inside Tomcat installation path and run the command:
+service.bat install
+Open Services -> Apache Tomcat xx Tomcatx -> Start
+
+=======================================================================================================================================================================
+Setup IDE:
+
+Spring Tools for Eclipse:
+
+Download:
+https://spring.io/tools#eclipse
+
+After installing configure Java and Maven:
+
+////////////////////////////////////////////////////////////
+Configure Installed JRE/JDK in STS:
+
+Window → Preferences → Java → Installed JREs
+Select JDK 17 manually.
+
+Then: 
+Window → Preferences → Java → Compiler → Set compliance to 17
+
+If not configured:
+Project build errors “Execution environment not supported”
+
+////////////////////////////////////////////////////////////
+Configure Maven in STS (optional, if you want to use embedded Maven in the IDE):
+
+Window → Preferences → Maven → Installations
+
+You will see:
+Embedded Maven (came with STS)
+
+OR Add External Maven
+Select system Maven if installed
+
+////////////////////////////////////////////////////////////
+Add Eclipse EE and web developer tools:
+
+To be able to work with web projects without spring,
+STS does not have Web developer tools by default to work with Dynamic Web Project
+Also includes html, jsp, xml, css editors.
+Help -> Eclipse Marketplace - look for Eclipse Enterprise Java and Web Developer Tools
+
+////////////////////////////////////////////////////////////
+Configure Installed Server(Tomcat) in STS:
+
 Window > Preferences > Server > Runtime Environments --- Add installed tomcat
 
 Add installed Java17 to Tomcat:
 Window > Preferences > Server > Runtime Environments --- Edit and add installed Java
 
-Create new server instance in STS:
+Create new server(Tomcat) instance in STS:
 This step will create a pointer to actual physical tomcat installation folder in your machine.
 Window > Show View > Other > Server > Servers --- Open (This will open the Servers Pane view)
 In the Servers Pane right click > New > Server > Apache > Select tomcat version (9) > Select the Server Runtime Environment > Finish
@@ -139,23 +156,8 @@ Change Config Location:
 Right click on the server > properties > Switch location > Apply and Save
 Double click on the server > Server Locations > User Tomcat installation --- Save
 
-Start the server:
-Without IDE:
-Go to bin\ inside Tomcat installation path and run:
-startup.bat
+Start the server from IDE to test:
 
-Or
-
-From Services:
-Modify ports in server.xml (8005: shutdown, 8080: HTTP Connector, 8009: The AJP Connector port if used, 8443: SSL/HTTPS Connector port if used), modify SERVICE_NAME, DISPLAYNAME, CATALINA_BASE in service.bat (if you want to have multiple tomcats running simultaneously, optional)
-Open CMD
-Go to bin\ inside Tomcat installation path and run the command:
-service.bat install
-Open Services -> Apache Tomcat xx Tomcatx -> Start
-
-Or
-
-From IDE:
 Right Click on the server and click Start
 
 Check in the browser:
@@ -237,14 +239,14 @@ Project Structure:
 
 In Spring core (non boot), we need to write manual configuration for the dependencies like MVC, Tomcat, JPA/Hibernate etc
 
-Dependencies required for Spring Core:
+Dependencies required for Spring (Non-Boot):
 "spring-context"
 "spring-webmvc"
 
 
 
 
-Spring Core - Non Web App (console/desktop/stand alone) - JAR (no web server like tomcat)
+Spring - Non Web App (console/desktop/stand alone) - JAR (no web server like tomcat)
 
 How to create: Create a standard Maven project. Add "spring-context". In your main method, manually bootstrap the Spring environment using AnnotationConfigApplicationContext.
 
@@ -267,7 +269,7 @@ spring-console-jar/
 
 
 
-Spring Core - Server-Side Rendering (html/css/jsp/thymeleaf) - WAR (external tomcat)
+Spring - Server-Side Rendering (html/css/jsp/thymeleaf) - WAR (external tomcat)
 
 How to create: Add "spring-webmvc". Implement WebApplicationInitializer to code-configure your DispatcherServlet. JSPs require the webapp/WEB-INF structure. Thymeleaf can reside either in webapp or resources.
 
@@ -294,7 +296,7 @@ spring-ssr-war/
 
 
 
-Spring Core - Server-Side Rendering (thymeleaf/Freemarker/mustache) - JAR (embedded tomcat)
+Spring - Server-Side Rendering (thymeleaf/Freemarker/mustache) - JAR (embedded tomcat)
 
 How to create: Set packaging to jar. Add "spring-webmvc" and "tomcat-embed-core". Write code in your main method to instantiate a new org.apache.catalina.startup.Tomcat instance, add your Spring context, and bind it to a port. Templates are loaded directly from your classpath resources/.
 
@@ -319,7 +321,7 @@ spring-ssr-embedded-jar/
 
 
 
-Spring Core - REST APIs - WAR (external tomcat)
+Spring - REST APIs - WAR (external tomcat)
 
 How to create: Add "spring-webmvc". Set packaging to war. Configure DispatcherServlet programmatically. Return serialisable domain objects marked with @RestController or @ResponseBody.
 
@@ -346,7 +348,7 @@ spring-rest-war/
 
 
 
-Spring Core — REST APIs — JAR (Embedded Tomcat)
+Spring — REST APIs — JAR (Embedded Tomcat)
 
 How to create: Same execution as project #7 "spring-webmvc" and "tomcat-embed-core", but without the template files or HTML rendering configurations. The programmatically launched embedded Tomcat handles incoming requests and serialises Java POJOs directly to JSON.
 
@@ -555,6 +557,16 @@ spring.datasource.driver-class-name=org.postgresql.Driver
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+=======================================================================================================================================================================
+Setup Runtime Environment for Java and Tomcat:
+
+Right click on the project -> Properties -> Java Build Path -> Libraries Tab -> 
+
+
+Run the Project/Application:
+
+
 
 =======================================================================================================================================================================
 Install Postman:

@@ -60,38 +60,9 @@ git config --global user.email "your@email.com"
 Verify:
 git config user.name
 git config user.email
-=======================================================================================================================================================================
-Setup IDE:
-
-Eclipse IDE for Enterprise Java and Web Developers:
-
-Download:
-https://www.eclipse.org/downloads/packages/
-
-After installing, configure Java and Maven:
-
-Add Installed JRE/JDK in Eclipse:
-Window → Preferences → Java → Installed JREs
-Select JDK 1.8 manually.
-
-Then: 
-Window → Preferences → Java → Compiler → Set compliance to 1.8
-
-If not configured:
-Project build errors “Execution environment not supported”
-
-
-Configure Maven (optional, if you want to use embedded Maven in the IDE):
-Window → Preferences → Maven → Installations
-
-You will see:
-Embedded Maven (came with Eclipse)
-
-Add External Maven
-Select system Maven if installed
 
 =======================================================================================================================================================================
-Tomcat Setup:
+Install Tomcat:
 
 Download Tomcat:
 https://tomcat.apache.org/
@@ -102,10 +73,60 @@ Tomcat 9 (for Java EE, javax.servlet, Servlet 4.0)
 
 Extract → D:\Softwares
 
-Add Server Runtime Environment in Eclipse:
+
+Start the server to test:
+
+Go to bin\ inside Tomcat installation path and run:
+startup.bat
+
+Or
+
+From Services:
+Modify ports in server.xml (8005: shutdown, 8080: HTTP Connector, 8009: The AJP Connector port if used, 8443: SSL/HTTPS Connector port if used), modify SERVICE_NAME, DISPLAYNAME, CATALINA_BASE in service.bat (if you want to have multiple tomcats running simultaneously, optional)
+Open CMD
+Go to bin\ inside Tomcat installation path and run the command:
+service.bat install
+Open Services -> Apache Tomcat xx Tomcatx -> Start
+
+=======================================================================================================================================================================
+Setup IDE:
+
+Eclipse IDE for Enterprise Java and Web Developers:
+
+Download:
+https://www.eclipse.org/downloads/packages/
+
+After installing Eclipse, configure Java, Maven and Tomcat:
+
+////////////////////////////////////////////////////////////
+Configure Installed JRE/JDK in Eclipse:
+
+Window → Preferences → Java → Installed JREs
+Select JDK 1.8 manually.
+
+Then: 
+Window → Preferences → Java → Compiler → Set compliance to 1.8
+
+If not configured:
+Project build errors “Execution environment not supported”
+
+////////////////////////////////////////////////////////////
+Configure Maven in Eclipse (optional, if you want to use embedded Maven in the IDE):
+
+Window → Preferences → Maven → Installations
+
+You will see:
+Embedded Maven (came with Eclipse)
+
+Add External Maven
+Select system Maven if installed
+
+////////////////////////////////////////////////////////////
+Configure installed Server (Tomcat) in Eclipse:
+
 Window > Preferences > Server > Runtime Environments --- Add installed tomcat
 
-Add installed Java8 to Tomcat:
+Map installed Java8 to Tomcat:
 This step tells the tomcat to run on so and so Java
 Window > Preferences > Server > Runtime Environments --- Edit and add installed Java
 
@@ -119,23 +140,9 @@ Change Config Location:
 Right click on the server > properties > Switch location > Apply and Save
 Double click on the server > Server Locations > User Tomcat installation --- Save
 
-Start the server:
-Without IDE:
-Go to bin\ inside Tomcat installation path and run:
-startup.bat
 
-Or
+Start the server from STS to test:
 
-From Services:
-Modify ports in server.xml (8005: shutdown, 8080: HTTP Connector, 8009: The AJP Connector port if used, 8443: SSL/HTTPS Connector port if used), modify SERVICE_NAME, DISPLAYNAME, CATALINA_BASE in service.bat (if you want to have multiple tomcats running simultaneously, optional)
-Open CMD
-Go to bin\ inside Tomcat installation path and run the command:
-service.bat install
-Open Services -> Apache Tomcat xx Tomcatx -> Start
-
-Or
-
-From IDE:
 Right Click on the server and click Start
 
 Check in the browser:
@@ -207,9 +214,7 @@ https://mvnrepository.com/
 Project Structure:
 =======================================================================================================================================================================
 
-
 In Maven project, the libraries(jars / Maven dependencies) are not stored in project structure, they are stored in system .m2 maven local repository
-
 
 
 
@@ -313,6 +318,17 @@ https://jdbc.postgresql.org/download/
 Copy and paste it in project Lib
 Add to the build path
 Restart Tomcat
+
+=======================================================================================================================================================================
+Setup Runtime Environment for Java and Tomcat:
+
+Right click on the project -> Properties -> Java Build Path -> Libraries Tab -> 
+
+
+
+Run the Project/Application:
+
+
 
 =======================================================================================================================================================================
 Install Postman:

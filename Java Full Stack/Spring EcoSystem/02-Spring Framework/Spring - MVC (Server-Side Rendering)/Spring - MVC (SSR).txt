@@ -24,12 +24,20 @@ DispatcherServlet
    +--> HandlerAdapter
    |
    v
-Controller
+Controller <--> Service <--> Repository <--> Database
    |
    v
-Service
+ViewResolver
    |
+   |JSP
    v
-Repository
+Browser
 
 =======================================================================================================================================================================
+
+configuration:
+
+DispatcherServlet
+Configure Application Context - Application@EnableWebMVC, @Configuration, @ComponentScan("com.example")
+ViewResolver
+Configure application beans

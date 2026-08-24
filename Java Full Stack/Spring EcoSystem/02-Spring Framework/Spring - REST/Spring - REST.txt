@@ -1,0 +1,65 @@
+
+
+
+
+
+
+
+Browser
+   |
+   | HTTP request
+   v
+Servlet Container (Tomcat)
+   |
+   v
+DispatcherServlet
+   |
+   +--> HandlerMapping
+   |       |
+   |       v
+   |   Controller method
+   |
+   +--> HandlerAdapter
+   |
+   v
+Controller <--> Service <--> Repository <--> Database
+   |
+   v
+HttpMessageConverter (Jackson)
+   |
+   |Json/xml
+   v
+ResponseEntity
+   |
+   v
+Browser
+
+
+=======================================================================================================================================================================
+
+ResponseEntity
+   |
+   +-- HTTP status
+   +-- headers
+   +-- body
+
+
+return ResponseEntity<>(employee, HttpStatus.OK);
+
+return ResponseEntity.ok(employee);
+
+return ResponseEntity.status(HttpStatus.OK).
+
+=======================================================================================================================================================================
+
+@ExceptionHandler / @ControllerAdvice / @RestControllerAdvice / GlobalExceptionHandler
+
+=======================================================================================================================================================================
+
+Required Configuration:
+
+DispatcherServlet
+Configure Application Context - Application@EnableWebMVC, @Configuration, @ComponentScan("com.example")
+HttpMessageConverter, Jackson
+Configure application beans
+
