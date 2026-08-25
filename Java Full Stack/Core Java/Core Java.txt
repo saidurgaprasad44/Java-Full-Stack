@@ -387,7 +387,7 @@ catch(){} - The "safety net" that intercepts a specific exception object and exe
 finally{} - The "guaranteed cleanup" block that runs whether an exception happened or not, usually to close files or database connections.
 
 
-throw - manually triggers exception and throws Exception object, use it when there is no way an exception is triggered but you still want to throw	
+throw - manually triggers exception and throws Exception object, use it when there is no way an exception is triggered but you still want to throw and for custom exceptions.	
 throws - it is a warning to the caller of the method saying, "Hey, this method is dangerous. You must handle the error yourself using a try-catch." (throws is mandatory for Checked Exceptions; for unchecked exceptions, handling is not mandatory)
 	
 
@@ -673,7 +673,7 @@ Used only for methods. It tells the compiler that the method performs an action 
 synchronized: Ensures a method can only be accessed by one thread at a time (prevents data corruption).
 volatile: Ensures that changes to a variable are always read directly from main memory, not a thread's local cache.
 
-6. default (for methods with bodies in interfaces)
+6. default (keyword for methods with bodies in interfaces)
 Methods: : Allowed developers to add method implementations inside interfaces using the default keyword without breaking existing implementing classes.
 
 ===============================================================================================================================================================================
@@ -793,6 +793,7 @@ Key Feature: It simultaneously creates the object and provides the concrete logi
 Implementation Example: Here, MultiActionHandler is an interface/class with three abstract/concrete methods
 
 MultiActionHandler myButton = new MultiActionHandler() {  // Defining (or) overriding method(s) while creating an instance of an interface (or) class
+
 	public void onClick() {
 	        System.out.println("Single click detected.");
         }

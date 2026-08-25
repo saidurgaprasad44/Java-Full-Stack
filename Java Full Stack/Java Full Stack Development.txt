@@ -65,7 +65,7 @@ SDLC			- planning, requirement analysis(functional and non-functional), design, 
 Tools			- Inspect tool in browsers, CI/CD pipeline, splunk
 
 
-must learn before interview - sql/database - indexing & stored procedures & deadlocks & sharding vs partitions vs replication, java - 8/11/17 features & global exception handling & modifiers/keywords & concurrent futures & multithreading, design principles and design patterns, microservices and system design concepts - saga, redis, jwt implementation, circuit breakers, websockets vs webhooks vs graphql, understand the versions, cicd pipelines, azure cloud
+must learn before interview - sql/database - indexing & stored procedures & deadlocks & sharding vs partitions vs replication, java - 8/11/17 features & modifiers/keywords & concurrent futures & multithreading, design principles and design patterns, microservices and system design concepts - saga, redis, jwt implementation, circuit breakers, websockets vs webhooks vs graphql, understand the versions, cicd pipelines, azure cloud and its services
 
 ============================================================================================================================================================================================
 
