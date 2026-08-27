@@ -15,7 +15,6 @@ ServletConfig
 
 
 CHAPTER 4 — JAVA WEB FOUNDATION
-
 │
 ├── 1. Java Web Applications
 │ ├── What is a Java Web Application?
