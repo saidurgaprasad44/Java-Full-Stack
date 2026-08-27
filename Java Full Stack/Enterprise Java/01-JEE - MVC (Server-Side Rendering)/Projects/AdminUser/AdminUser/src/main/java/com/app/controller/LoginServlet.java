@@ -1,39 +1,31 @@
 package com.app.controller;
 
 import com.app.model.User;
-import com.app.service.UserService;
+import com.app.service.LoginService;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
 import java.io.IOException;
-import java.util.*;
  
 public class LoginServlet extends HttpServlet {
 	
-	private UserService userService = new UserService();
- 
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
- 
-        String username = req.getParameter("username");
-        String password = req.getParameter("password");
+	private LoginService loginService = new LoginService();
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)throws ServletException, IOException {
         
-        User user = userService.authenticate(username, password);
-        List<User> users = userService.getAllUsers();
-        
-        if (user != null){
-        	if (user.getRole().equals("admin")) {
-        		req.setAttribute("users", users);
-        		req.setAttribute("name", user.getUsername());
-        		req.getRequestDispatcher("admin.jsp").forward(req, resp);
-        	}
-        	else if(user.getRole().equals("basic")) {
-        		req.setAttribute("username", user.getUsername());
-        		req.getRequestDispatcher("basicUser.jsp").forward(req, resp);
-        	}
-        } else {
-            req.setAttribute("errorMsg", "Invalid username or password");
-            req.getRequestDispatcher("login.jsp").forward(req, resp);
-        }
+    		User user = loginService.authenticateUser(req.getParameter("username"), req.getParameter("password"));
+		if(user != null) {
+			HttpSession session = req.getSession(true);
+			session.setAttribute("user", user);
+			
+			resp.sendRedirect(req.getContextPath() + "/user");
+		}
+		else {
+			req.setAttribute("errorMsg", "Invalid username or password");
+			req.getRequestDispatcher("login.jsp").forward(req, resp);
+		}   	
     }
+    
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)throws ServletException, IOException {
+		req.getRequestDispatcher("login.jsp").forward(req, resp);
+	}
 }

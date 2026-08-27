@@ -22,10 +22,14 @@ public class SignupServlet extends HttpServlet {
         
         if (user != null){
             req.setAttribute("username", user.getUsername());
-            req.getRequestDispatcher("success.jsp").forward(req, resp);
+            req.getRequestDispatcher("WEB-INF/views/success.jsp").forward(req, resp);
         } else {
             req.setAttribute("errorMsg", "User is not added, try again");
             req.getRequestDispatcher("signup.jsp").forward(req, resp);
         }
+    }
+    
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)throws ServletException, IOException {
+    		req.getRequestDispatcher("signup.jsp").forward(req, resp);
     }
 }
