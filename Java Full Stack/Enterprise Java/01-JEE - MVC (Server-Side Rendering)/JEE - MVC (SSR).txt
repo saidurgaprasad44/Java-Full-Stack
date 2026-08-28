@@ -1,0 +1,688 @@
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+									MVC - Server-Side Rendering
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+MVC / SSR FOUNDATION
+=============================================================================================================================================================================
+
+- As a Java Web Application grows, putting all responsibilities inside a single Servlet becomes difficult to maintain.
+- A Servlet could potentially be responsible for:
+
+  - Receiving the HTTP request
+  - Reading request parameters
+  - Performing business logic
+  - Accessing the database
+  - Preparing data
+  - Generating HTML
+  - Sending the HTTP response
+
+- This creates tightly coupled code.
+- Example of an undesirable structure:
+
+  Browser
+  ↓
+  Servlet
+  ↓
+  Request handling
+  ↓
+  Business logic
+  ↓
+  Database access
+  ↓
+  HTML generation
+  ↓
+  Response
+
+- MVC separates these responsibilities into three major components:
+
+  Model
+  View
+  Controller
+
+- The main goal of MVC is separation of responsibilities.
+- Conceptually:
+
+  Client
+  ↓
+  Controller
+  ↓
+  Model
+  ↓
+  Controller
+  ↓
+  View
+  ↓
+  Response
+
+=============================================================================================================================================================================
+MODEL
+=============================================================================================================================================================================
+
+- The Model represents the application's data and application-related state/logic.
+- In a typical Java Web Application, the Model can involve:
+
+  - Domain objects
+  - Data access
+  - Business logic
+  - Application state
+
+Examples:
+
+* User
+* Product
+* Order
+* Customer
+* ProductService
+* UserRepository
+* DAO
+
+- A simple domain object:
+
+  public class Product {
+
+  	private Long id;
+  	private String name;
+  	private double price;
+
+  	// getters and setters
+
+  }
+
+- The Model is responsible for representing and working with application data.
+- It should not be responsible for generating HTML.
+- It should not be responsible for handling HTTP requests directly.
+
+- Conceptually:
+
+  Model
+  ├── Data
+  ├── Business Logic
+  └── Data Access
+
+=============================================================================================================================================================================
+VIEW
+=============================================================================================================================================================================
+
+- The View is responsible for presenting the data to the client.
+- In traditional Java Web MVC applications, JSP is commonly used as the View.
+- The View typically generates HTML.
+
+Example:
+
+  JSP
+
+  <h1>${product.name}</h1>
+  <p>${product.price}</p>
+
+- The View should primarily focus on presentation.
+- It should not contain substantial business logic.
+
+- Conceptually:
+
+  Model Data
+  ↓
+  View
+  ↓
+  HTML
+  ↓
+  Browser
+
+- In traditional Java Web MVC:
+
+  JSP
+  ↓
+  HTML generation
+
+=============================================================================================================================================================================
+CONTROLLER
+=============================================================================================================================================================================
+
+- The Controller handles incoming requests and controls the flow of the application.
+- It acts as the entry point for a particular web request.
+- In traditional Java Web applications, a Servlet can act as the Controller.
+- The Controller typically:
+
+  - Receives the request
+  - Reads request parameters
+  - Validates basic request input
+  - Calls the appropriate application/business logic
+  - Obtains the required data
+  - Places data into the appropriate scope
+  - Selects the View
+  - Forwards the request to the View
+
+- Conceptually:
+
+  Client
+  ↓
+  Controller
+  ↓
+  Model
+  ↓
+  Controller
+  ↓
+  View
+
+=============================================================================================================================================================================
+SERVLET AS CONTROLLER
+=============================================================================================================================================================================
+
+- A Servlet can act as the Controller in a traditional Java Web MVC application.
+
+Example:
+
+  @WebServlet("/products")
+  public class ProductServlet extends HttpServlet {
+
+  	protected void doGet(
+          	HttpServletRequest request,
+          	HttpServletResponse response)
+          	throws ServletException, IOException {
+
+      		Product product = productService.getProduct(101L);
+
+      		request.setAttribute("product", product);
+
+      		request.getRequestDispatcher("/WEB-INF/views/product.jsp").forward(request, response);
+  	}
+  }
+
+- The Servlet is acting as the Controller because it:
+
+  - Receives the HTTP request.
+  - Coordinates the request processing.
+  - Calls application logic.
+  - Places the result into a request attribute.
+  - Selects the JSP.
+  - Forwards the request to the JSP.
+
+- The Servlet itself should not ideally contain:
+
+  - HTML generation
+  - Large amounts of business logic
+  - Database implementation details
+
+- Instead:
+
+  Servlet
+  ↓
+  Service / Model
+  ↓
+  Data
+  ↓
+  Servlet
+  ↓
+  JSP
+
+=============================================================================================================================================================================
+JSP AS VIEW
+=============================================================================================================================================================================
+
+- JSP can act as the View in traditional Java Web MVC.
+- The Controller provides data to the JSP.
+- The JSP uses that data to generate HTML.
+
+Example:
+
+  Controller:
+
+  request.setAttribute("product", product);
+
+- JSP:
+
+  <h1>${product.name}</h1>
+
+  <p>${product.price}</p>
+
+- Flow:
+
+  Controller
+  ↓
+  request.setAttribute()
+  ↓
+  JSP
+  ↓
+  HTML
+  ↓
+  Browser
+
+- JSP therefore does not normally retrieve the data directly from the database.
+- The Controller obtains the required data and makes it available to the View.
+
+=============================================================================================================================================================================
+REQUEST FLOW IN MVC
+=============================================================================================================================================================================
+
+- A typical traditional Java Web MVC request flow is:
+
+  Browser
+  ↓
+  HTTP Request
+  ↓
+  Servlet / Controller
+  ↓
+  Service / Model
+  ↓
+  Database / External System
+  ↓
+  Model / Data
+  ↓
+  Servlet / Controller
+  ↓
+  request.setAttribute()
+  ↓
+  JSP / View
+  ↓
+  HTML
+  ↓
+  HTTP Response
+  ↓
+  Browser
+
+- Example request:
+
+  GET /products/101
+
+- Step 1:
+
+  - Browser sends the HTTP request.
+
+- Step 2:
+
+  - Servlet Container receives the request.
+
+- Step 3:
+
+  - URL mapping selects the appropriate Servlet.
+
+- Step 4:
+
+  - Servlet acts as the Controller.
+
+- Step 5:
+
+  - Controller extracts required information from the request.
+
+- Product ID = 101
+
+- Step 6:
+
+  - Controller calls the appropriate application logic.
+
+- productService.getProduct(101)
+
+- Step 7:
+
+  - Application logic retrieves the required data.
+
+- Step 8:
+
+  - Controller stores the result in a request attribute.
+
+  request.setAttribute("product", product);
+
+- Step 9:
+
+  - Controller forwards to the JSP.
+
+  request.getRequestDispatcher(
+  "/WEB-INF/views/product.jsp"
+  ).forward(request, response);
+
+- Step 10:
+
+  - JSP acts as the View.
+  - JSP uses the provided data to generate HTML.
+
+- Step 11:
+
+  - The generated HTML becomes part of the HTTP response.
+
+- Step 12:
+
+  - Browser receives and renders the HTML.
+
+=============================================================================================================================================================================
+SERVER-SIDE RENDERING — SSR
+=============================================================================================================================================================================
+
+- SSR stands for Server-Side Rendering.
+- In SSR, the server generates the HTML before sending the response to the client.
+- Traditional JSP-based MVC is an example of server-side rendering.
+
+- Flow:
+
+  Browser
+  ↓
+  HTTP Request
+  ↓
+  Controller
+  ↓
+  Model / Business Logic
+  ↓
+  View / JSP
+  ↓
+  HTML generated on server
+  ↓
+  HTTP Response
+  ↓
+  Browser
+
+- The browser receives already-generated HTML.
+Example:
+
+  JSP receives:
+
+  product.name = "Laptop"
+  product.price = 75000
+
+- The server renders:
+
+  <h1>Laptop</h1>
+  <p>75000</p>
+
+- The browser receives the resulting HTML rather than the JSP source code.
+
+- Important:
+
+  JSP source code remains on the server.
+  The client receives the generated response, such as HTML.
+
+=============================================================================================================================================================================
+TYPICAL JAVA WEB MVC/SSR STRUCTURE
+=============================================================================================================================================================================
+
+- A traditional Java Web MVC application can be organized approximately as:
+
+  application/
+  │
+  ├── src/main/java/
+  │   │
+  │   └── com/example/
+  │       ├── controller/
+  │       │   └── ProductServlet.java
+  │       │
+  │       ├── service/
+  │       │   └── ProductService.java
+  │       │
+  │       ├── repository/
+  │       │   └── ProductRepository.java
+  │       │
+  │       └── model/
+  │           └── Product.java
+  │
+  └── src/main/webapp/
+  │
+  ├── css/
+  │   └── style.css
+  │
+  ├── js/
+  │   └── app.js
+  │
+  └── WEB-INF/
+  ├── web.xml
+  │
+  └── views/
+  ├── home.jsp
+  ├── product.jsp
+  └── login.jsp
+
+=============================================================================================================================================================================
+DEPLOYMENT STRUCTURE
+=============================================================================================================================================================================
+
+- A traditional Java Web Application can be packaged as a WAR file.
+- WAR stands for Web Application Archive.
+- A simplified WAR structure can look like:
+
+  application.war
+  │
+  ├── WEB-INF/
+  │   ├── web.xml
+  │   ├── classes/
+  │   │   └── compiled Java classes
+  │   ├── lib/
+  │   │   └── dependency JARs
+  │   └── views/
+  │       └── JSP files
+  │
+  ├── css/
+  │   └── style.css
+  │
+  ├── js/
+  │   └── app.js
+  │
+  └── images/
+  └── logo.png
+
+- Important directories:
+
+  WEB-INF/
+  ↓
+  Protected Web Application resources and configuration
+
+  WEB-INF/classes/
+  ↓
+  Compiled application classes
+
+  WEB-INF/lib/
+  ↓
+  Dependency JAR files
+
+  Static resource directories
+  ↓
+  CSS / JS / Images / other public resources
+
+- Resources under WEB-INF cannot be directly requested by the browser.
+- The server-side application can access/forward to appropriate resources under WEB-INF.
+
+=============================================================================================================================================================================
+JAVA WEB APPLICATION STRUCTURE
+=============================================================================================================================================================================
+
+- A traditional Java Web Application commonly contains:
+
+  Web Application
+  │
+  ├── Static Resources
+  ├── Java Classes
+  ├── Views
+  ├── Configuration
+  └── Deployment Structure
+
+=============================================================================================================================================================================
+STATIC RESOURCES
+=============================================================================================================================================================================
+
+- Static resources are files that are served without dynamically generating their contents for each request.
+- Common static resources include:
+
+- CSS
+- JavaScript
+- Images
+- Fonts
+- Icons
+
+- Example structure:
+
+  src/
+  └── main/
+  └── webapp/
+  ├── css/
+  │   └── style.css
+  ├── js/
+  │   └── app.js
+  └── images/
+  └── logo.png
+
+- A browser can request:
+
+  /css/style.css
+
+- The server can return the file as a static resource.
+
+=============================================================================================================================================================================
+JAVA CLASSES
+=============================================================================================================================================================================
+
+- Java source code contains the application's server-side logic.
+- Common packages/classes include:
+
+- Controllers
+- Services
+- Repositories / DAOs
+- Domain objects
+- Utility classes
+- Configuration classes
+
+- Example structure:
+
+  src/
+  └── main/
+  └── java/
+  └── com/
+  └── example/
+  ├── controller/
+  ├── service/
+  ├── repository/
+  ├── model/
+  └── util/
+
+- Typical responsibility separation:
+
+  Controller
+  ↓
+  Service
+  ↓
+  Repository / DAO
+  ↓
+  Database
+
+=============================================================================================================================================================================
+VIEWS
+=============================================================================================================================================================================
+
+- Views contain presentation-related resources.
+- In traditional Java Web MVC applications, JSP files are commonly used.
+- A common structure is:
+
+  src/
+  └── main/
+  └── webapp/
+  └── WEB-INF/
+  └── views/
+  ├── home.jsp
+  ├── product.jsp
+  └── login.jsp
+
+- JSP files can be placed under WEB-INF so that they cannot be directly requested by the browser.
+- The Controller can forward to them:
+
+  request.getRequestDispatcher(
+  "/WEB-INF/views/product.jsp"
+  ).forward(request, response);
+
+- This helps ensure that the Controller controls how the View is reached.
+
+=============================================================================================================================================================================
+CONFIGURATION
+=============================================================================================================================================================================
+
+- Configuration defines how the Web Application behaves and how its components are registered.
+- Traditional Java Web applications may use:
+
+- web.xml
+- Servlet annotations
+- Filter configuration
+- Servlet initialization parameters
+- Context configuration
+
+- Example:
+
+  WEB-INF/
+  └── web.xml
+
+- Modern Servlet applications can use annotations such as:
+
+  @WebServlet
+  @WebFilter
+  @WebListener
+
+- Therefore, configuration can be:
+
+  - XML-based
+  - Annotation-based
+  - Or a combination of both.
+
+=============================================================================================================================================================================
+MVC RESPONSIBILITY SUMMARY
+=============================================================================================================================================================================
+
+- Controller:
+
+  - Receives the HTTP request.
+  - Controls request flow.
+  - Calls application/business logic.
+  - Prepares data for the View.
+  - Selects the View.
+
+- Servlet
+
+- Model:
+
+  - Represents application data.
+  - Contains application/business-related logic.
+  - Interacts with persistence/data-access components.
+
+- Domain objects
+- Services
+- Repositories / DAOs
+
+- View:
+
+  - Presents the data.
+  - Generates the response representation.
+
+- JSP
+
+=============================================================================================================================================================================
+COMPLETE MVC / SSR FLOW
+=============================================================================================================================================================================
+
+Browser
+│
+│ HTTP Request
+▼
+Servlet Container
+│
+│ URL Mapping
+▼
+Controller
+(Servlet)
+│
+│ Calls
+▼
+Model
+├── Service
+├── Repository / DAO
+└── Domain Objects
+│
+│ Data
+▼
+Controller
+│
+│ request.setAttribute()
+▼
+View
+(JSP)
+│
+│ Server-Side Rendering
+▼
+HTML
+│
+│ HTTP Response
+▼
+Browser
+
+=============================================================================================================================================================================

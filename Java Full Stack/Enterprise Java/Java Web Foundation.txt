@@ -1,149 +1,1439 @@
-Terminology:
-
-Servlet
-HttpServlet
-HttpServletRequest
-HttpServletResponse
-Web server
-Servlet Container / ServletContext
-Application server
-HttpSession
-RequestDispatcher
-ServletConfig
-
-
-
-
-CHAPTER 4 — JAVA WEB FOUNDATION
-│
-├── 1. Java Web Applications
-│ ├── What is a Java Web Application?
-│ ├── Client, Web Server, Application Server
-│ ├── How a Java application receives an HTTP request
-│ └── Request → Processing → Response
-│
-├── 2. Web Containers
-│ ├── Web Server (Apache http server)
-│ ├── Servlet Container (tomcat, jetty)
-│ ├── Application Server (weblogic)
-│ ├── Tomcat
-│ └── Container vs Application Server
-│
-├── 3. Servlets
-│ ├── What is a Servlet?
-│ ├── Servlet lifecycle 	- servlet instance can be created at app startup or lazily created, depending on the configuration
-│ ├── init()
-│ ├── service()
-│ ├── doGet()
-│ ├── doPost()
-│ └── destroy()
-│ └── Servlet instance & multithreading
-│
-├── 4. Servlet Request & Response
-│ ├── HttpServletRequest
-│ ├── HttpServletResponse
-│ ├── Request parameters
-│ ├── Request headers
-│ ├── Request body
-│ ├── Response status
-│ ├── Response headers
-│ └── Response body
-│
-httpservletrequest:
-parameter		- parameters encoded in http request body or query parameters in the url, use request.getParameter()
-attribute		- to move the java components for internal use, like servlet to another servlet or jsps or other classes. use request.getAttribute() and request.setAttribute()
-request URI/path	- request.getRequestURI()
-header			- use request.getHeader()
-cookie			- request.getCookies() - returns Cookie object
-body			- raw request body, can access using request.getReader() or request.getInputStream()
-session			- request.getSession()
-request dispatcher	- request.getRequestDispatcher("/home").forward(request,response)
-
-
-httpservletresponse: only involved in sending response back to client, like for server to client communication, in any other cases, request is used
-status			- response.setStatus(200) or response.setStatus(HttpServletResponse.SC_OK)
-content-type		- 
-header			- response.setHeader("Content-Type", "application/json")
-set-cookie		- response.addCookie(new Cookie("JSESSIONID", "ABC123"))
-body 			- getWriter().write() or OutputStream to write the simple text (string) into the response body
-│
-├── 5. Servlet URL Mapping
-│ ├── @WebServlet
-│ ├── URL patterns
-│ ├── Exact mapping
-│ ├── Path mapping
-│ └── Servlet selection
-│
-├── 6. Servlet Configuration
-│ ├── web.xml
-│ ├── Annotation-based configuration
-│ └── Servlet initialization parameters and ServletConfig
-│
-├── 7. Servlet Scopes & Context
-│ ├── Request scope, HttpServletRequest
-│ ├── Session scope, HttpSession and its lifecycle
-│ └── Application scope and ServletContext
-
-REQUEST SCOPE
-    ↓
-HttpServletRequest
-    ↓
-request.setAttribute()
-request.getAttribute()
-
-
-SESSION SCOPE
-    ↓
-HttpSession
-    ↓
-request.getSession()
-request.getSession(false)
-session.setAttribute("user", user)
-session.getAttribute("user")
-session.removeAttribute("user")
-session.invalidate() - automatic servlet container session-timeout invalidation / explicit invalidation
-
-
-APPLICATION SCOPE
-    ↓
-ServletContext
-    ↓
-context.setAttribute()
-context.getAttribute()
-
-├── 8. Request Dispatching
-│ ├── Forward
-│ ├── Include
-│ ├── Redirect - for instance browser requested post /login, If we return the page directly, the browser displays the login page, but the browser's current URL is still /login 
-│ └── Forward vs Redirect
-
-│   8.5. servlet filters
-
-├── 9. JSP
-│ ├── What is JSP?
-│ ├── JSP → Servlet relationship
-│ ├── JSP lifecycle
-│ ├── JSP expressions
-│ ├── JSP scriptlets
-│ ├── JSP declarations
-│ └── JSP directives
-│
-├── 10. MVC Foundation
-│ ├── Why MVC?
-│ ├── Model
-│ ├── View
-│ ├── Controller
-│ ├── Servlet as Controller
-│ ├── JSP as View
-│ └── Request flow in MVC
-│
-└── 11. Java Web Application Structure
-├── Static resources
-├── Java classes
-├── Views
-├── Configuration
-└── Deployment structure
-
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+										JAVA WEB FOUNDATION
+=============================================================================================================================================================================
 =============================================================================================================================================================================
 
+Supporting Servlet infrastructure:
 
+  Servlet
+  HttpServlet
+  HttpSession
+  HttpServletRequest
+  HttpServletResponse
+  Web server
+  Servlet Container
+  Application server
+  Request Scope
+  Session Scope
+  Application Scope
+  RequestDispatcher
+  Forward
+  Include
+  Redirect
+  Filters
+  ServletConfig
+  ServletContext
+
+=============================================================================================================================================================================
+JAVA WEB APPLICATIONS
+=============================================================================================================================================================================
+
+- A Java Web Application is a server-side application that communicates with clients over HTTP.
+- The client is usually a web browser, but it can also be:
+
+  - Mobile applications
+  - Another backend application
+  - REST clients
+  - Any HTTP-capable client
+
+- A Java Web Application runs inside a server-side runtime such as:
+
+  - Servlet Container
+  - Application Server
+
+- Basic flow:
+
+  Client / Browser
+  ↓
+  HTTP Request
+  ↓
+  Server / Servlet Container
+  ↓
+  Java Web Application
+  ↓
+  HTTP Response
+  ↓
+  Client / Browser
+
+- The application can:
+
+  - Receive client input
+  - Process the request
+  - Execute business logic
+  - Access databases or external systems
+  - Generate a response
+  - Send the response back to the client
+
+- The fundamental web application cycle is:
+
+  Request
+  ↓
+  Processing
+  ↓
+  Response
+
+=============================================================================================================================================================================
+CLIENT, WEB SERVER AND APPLICATION SERVER
+=============================================================================================================================================================================
+
+Client:
+
+  - The client initiates communication with the server.
+  - A browser is the most common web client.
+  - A client can also be another application or service.
+
+Examples:
+
+* Browser
+* Mobile application
+* Postman
+* Another backend service
+
+------------------------------------------------------------
+Web Server:
+
+  - Primarily handles HTTP communication.
+  - Commonly serves static resources.
+  - Can handle things such as:
+
+    - HTML
+    - CSS
+    - JavaScript
+    - Images
+    - Other static files
+
+Example:
+
+* Apache HTTP Server
+
+------------------------------------------------------------
+Servlet Container:
+
+- A Java application does not normally directly listen to the network and manually parse HTTP requests.
+- The Servlet Container handles the web-level infrastructure.
+- The Servlet Container is responsible for:
+
+  - Loading Servlet classes
+  - Creating Servlet instances
+  - Managing Servlet lifecycle
+  - Receiving HTTP requests
+  - Creating/providing HttpServletRequest
+  - Creating/providing HttpServletResponse
+  - Mapping URLs to Servlets
+  - Invoking Servlet methods
+  - Managing sessions
+  - Managing request dispatching
+  - Managing filters
+  - Managing other Servlet-based web components
+
+Example:
+
+* Tomcat
+* Jetty
+
+
+TOMCAT:
+
+- Apache Tomcat is primarily a Servlet Container.
+- It provides the runtime required to execute:
+
+  - Servlets
+  - JSP
+  - Filters
+  - Other Servlet-based web components
+
+- Tomcat can also serve static resources.
+- Its primary role in traditional Java Web applications is providing the Servlet runtime.
+- Modern Spring Boot applications commonly use an embedded Servlet Container such as Tomcat instead of requiring deployment to a traditional external Application Server.
+
+------------------------------------------------------------
+Application Server:
+
+  - Provides a broader runtime environment for enterprise applications.
+  - Can provide services such as:
+
+    - Transactions
+    - Security
+    - Messaging
+    - Connection pooling
+    - Persistence-related infrastructure
+    - Web application runtime
+
+Example:
+
+* Oracle WebLogic Server
+
+------------------------------------------------------------
+CONTAINER VS APPLICATION SERVER
+
+- Servlet Container:
+
+  - Focuses primarily on web application components.
+  - Provides Servlet/JSP runtime.
+  - Manages web request processing and lifecycle.
+
+- Application Server:
+
+  - Provides web application capabilities.
+  - Provides additional enterprise-level services.
+
+------------------------------------------------------------
+Basic flow:
+
+- Every web interaction can fundamentally be viewed as:
+
+REQUEST → PROCESSING → RESPONSE
+
+
+- Request:
+
+  GET /products/101
+
+- Processing:
+
+  - Servlet receives the request
+  - Application retrieves the product
+  - Application prepares the result
+
+- Response:
+
+  HTTP 200 OK
+  Content-Type: application/json
+
+  {
+  "id": 101,
+  "name": "Laptop"
+  }
+
+=============================================================================================================================================================================
+SERVLETS
+=============================================================================================================================================================================
+
+WHAT IS A SERVLET?
+
+- A Servlet is a Java class managed by a Servlet Container.
+- It is used to process client requests and generate responses.
+- The Servlet Container manages the Servlet's lifecycle.
+- Application code normally does not create and manage Servlet instances directly.
+
+Example:
+
+  @WebServlet("/hello")
+  public class HelloServlet extends HttpServlet {
+
+  @Override
+  protected void doGet(
+          HttpServletRequest request,
+          HttpServletResponse response)
+          throws IOException {
+
+      response.getWriter().write("Hello");
+  }
+
+  }
+
+------------------------------------------------------------
+SERVLET LIFECYCLE
+
+- The Servlet lifecycle is managed by the Servlet Container.
+- Basic lifecycle:
+
+  Servlet Class
+  ↓
+  Class Loading
+  ↓
+  Servlet Instance Creation
+  ↓
+  init()
+  ↓
+  service()
+  ↓
+  doGet() / doPost() / ...
+  ↓
+  destroy()
+
+- A Servlet instance can be:
+
+  - Created when the application starts, depending on configuration.
+  - Created lazily when the Servlet is first needed.
+
+- Therefore:
+
+  - Servlet creation is not necessarily tied to the first request.
+  - Configuration can cause eager initialization at application startup.
+
+------------------------------------------------------------
+INIT()
+
+- init() is called by the container to initialize the Servlet instance.
+- It is normally called once for that Servlet instance.
+- Initialization-related work like the following can be performed here:
+
+  - Loading initialization data
+  - Reading Servlet configuration
+  - Creating resources required by the Servlet
+
+------------------------------------------------------------
+SERVICE()
+
+- service() is the main request-processing method provided by HttpServlet.
+- The container invokes service() when a request is received for the Servlet.
+- HttpServlet's service() examines the HTTP method and dispatches the request to the appropriate method.
+- Conceptually:
+
+  HTTP Request
+  ↓
+  service()
+  ↓
+  HTTP Method
+  ↓
+  doGet()
+  doPost()
+  doPut()
+  doDelete()
+  ...
+
+DOGET()
+
+- doGet() handles HTTP GET requests.
+
+ GET /products
+ GET /products/101
+
+DOPOST()
+
+- doPost() handles HTTP POST requests.
+
+ POST /products
+ POST /login
+
+------------------------------------------------------------
+DESTROY()
+
+- destroy() is called by the container when the Servlet instance is being removed.
+- It is used for cleanup.
+
+  - Releasing resources
+  - Closing resources created by the Servlet
+
+------------------------------------------------------------
+SERVLET INSTANCE AND MULTITHREADING
+
+- A Servlet Container generally creates a Servlet instance and uses that instance to handle multiple requests.
+- Multiple requests can therefore execute concurrently against the same Servlet instance.
+- Conceptually:
+
+             Servlet Instance
+             /      |       \
+            /       |        \
+     Request 1  Request 2  Request 3
+
+
+- Because the same Servlet instance can be accessed concurrently:
+
+  - Mutable instance variables must be handled carefully.
+  - Request-specific data should not normally be stored in Servlet instance fields (should be stateless).
+
+- Unsafe example:
+
+  public class MyServlet extends HttpServlet {
+
+  	private String username;
+
+  }
+
+- If multiple requests modify username simultaneously, one request can interfere with another.
+- Local variables inside request-processing methods are generally request-specific and therefore do not have this shared-instance problem.
+
+=============================================================================================================================================================================
+SERVLET REQUEST & RESPONSE
+=============================================================================================================================================================================
+
+HTTPSERVLETREQUEST
+
+- HttpServletRequest represents the HTTP request received from the client.
+- It provides access to:
+
+  - Parameters
+  - Attributes
+  - Request URI/path
+  - Headers
+  - Cookies
+  - Request body
+  - Session
+  - RequestDispatcher
+
+------------------------------------------------------------
+HTTPSERVLETRESPONSE
+
+- HttpServletResponse represents the HTTP response sent from the server to the client.
+- It is primarily involved in server → client communication.
+- It provides access to:
+
+  - Response status
+  - Response headers
+  - Cookies
+  - Response body
+
+------------------------------------------------------------
+
+  HttpServletRequest
+  ↓
+  Client → Server information
+
+  HttpServletResponse
+  ↓
+  Server → Client information
+
+------------------------------------------------------------
+REQUEST PARAMETERS
+
+- Parameters are values associated with the HTTP request.
+- Parameters can be encoded:
+
+  - In the URL as query parameters.
+  - In the request body, such as form-encoded parameters.
+
+- GET /products?id=101
+- Access parameters using:
+
+  String id = request.getParameter("id");
+
+- Multiple values can be accessed using:
+
+  request.getParameterValues("id");
+
+- getParameter() is concerned with request parameters.
+- It is not a general-purpose method for reading arbitrary raw request-body content.
+
+------------------------------------------------------------
+REQUEST ATTRIBUTES
+
+- Request attributes are server-side objects associated with the current request.
+- They are used to pass Java objects between server-side components.
+- They are not values directly sent by the client as HTTP parameters.
+- Store an attribute:
+
+  request.setAttribute("user", user);
+
+- Retrieve an attribute:
+
+  User user = (User) request.getAttribute("user");
+
+- Common uses:
+
+  Servlet → Servlet
+  Servlet → JSP
+  Filter → Servlet
+
+------------------------------------------------------------
+REQUEST URI / PATH
+
+- The requested URI can be obtained using:
+
+  request.getRequestURI();
+
+- For:
+
+  http://example.com/products/101
+
+- The URI may be:
+
+  /products/101
+
+------------------------------------------------------------
+REQUEST HEADERS
+
+- HTTP request headers contain metadata sent by the client.
+- Access a header using:
+
+  request.getHeader("Authorization");
+
+  request.getHeader("Content-Type");
+
+Examples:
+
+* Authorization
+* Content-Type
+* Accept
+* User-Agent
+* Cookie
+
+------------------------------------------------------------
+COOKIES
+
+- Cookies are HTTP state information sent by the client.
+- Access cookies using:
+
+  Cookie[] cookies = request.getCookies();
+
+- Each cookie is represented by a Cookie object.
+
+------------------------------------------------------------
+REQUEST BODY
+
+- The request body contains the payload sent by the client.
+- The raw request body can be accessed using:
+
+  request.getReader();
+	
+	(or)
+  
+  request.getInputStream();
+
+- getReader():
+
+  - Used for character/text-oriented request bodies.
+
+- getInputStream():
+
+  - Used for byte-oriented request bodies.
+
+- JSON request body:
+
+  {
+  "name": "Laptop",
+  "price": 75000
+  }
+
+- Parameters and raw request body are different concepts.
+
+  request.getParameter()
+  ↓
+  Request parameters
+
+  request.getReader()
+  request.getInputStream()
+  ↓
+  Raw request body
+
+------------------------------------------------------------
+SESSION
+
+- A Servlet can access the HTTP session using:
+
+  request.getSession();
+
+- An existing session can be retrieved without creating one using:
+
+  request.getSession(false);
+
+- Session concepts are covered separately under Session Scope.
+
+------------------------------------------------------------
+REQUEST DISPATCHER
+
+- A RequestDispatcher allows server-side request dispatching.
+
+- Obtain one using:
+
+  RequestDispatcher dispatcher =
+  request.getRequestDispatcher("/home");
+
+- Forward the request:
+
+  dispatcher.forward(request, response);
+
+- Include another resource:
+
+  dispatcher.include(request, response);
+
+------------------------------------------------------------
+RESPONSE STATUS
+
+- The HTTP response status communicates the result of the request.
+- A status can be explicitly set using:
+
+  response.setStatus(200);
+
+- Prefer Servlet constants where appropriate:
+
+  response.setStatus(HttpServletResponse.SC_OK);
+
+- Common constants include:
+
+  HttpServletResponse.SC_OK
+  HttpServletResponse.SC_NOT_FOUND
+  HttpServletResponse.SC_INTERNAL_SERVER_ERROR
+
+------------------------------------------------------------
+RESPONSE HEADERS
+
+- Response headers provide metadata about the response.
+- Set a response header using:
+
+  response.setHeader(
+  "Content-Type",
+  "application/json"
+  );
+
+- The Content-Type header tells the client how to interpret the response body.
+
+------------------------------------------------------------
+CONTENT TYPE
+
+- The response content type can be specified using:
+
+  response.setContentType("text/html");
+
+  response.setContentType("application/json");
+
+Examples:
+
+* text/html
+* application/json
+* text/plain
+
+------------------------------------------------------------
+SET-COOKIE
+
+- A server can send a cookie to the client using:
+
+  response.addCookie(
+  new Cookie("JSESSIONID", "ABC123")
+  );
+
+- In normal Servlet session management, the Servlet Container manages the session cookie automatically.
+- Application code generally does not manually create the JSESSIONID cookie.
+
+------------------------------------------------------------
+RESPONSE BODY
+
+- Text/character responses can be written using:
+
+  response.getWriter().write("Hello");
+
+- Binary responses can be written using:
+
+  response.getOutputStream();
+
+- Conceptually:
+
+  getWriter()
+  ↓
+  Character/text response
+
+  getOutputStream()
+  ↓
+  Binary response
+
+=============================================================================================================================================================================
+SERVLET URL MAPPING
+=============================================================================================================================================================================
+
+@WEBSERVLET
+
+- A Servlet can be mapped to a URL using @WebServlet.
+
+  @WebServlet("/hello")
+  public class HelloServlet extends HttpServlet {
+  }
+
+- A request such as:
+
+  GET /hello
+
+- Can therefore be mapped to HelloServlet.
+
+------------------------------------------------------------
+URL PATTERNS
+
+- Servlet mappings determine which Servlet handles a request.
+- Common mapping types include:
+
+  - Exact mapping
+  - Path mapping
+  - Other Servlet URL-pattern rules
+
+------------------------------------------------------------
+EXACT MAPPING
+
+- Example:
+
+  @WebServlet("/products")
+
+- Matches:
+
+  /products
+
+- It does not represent arbitrary paths underneath /products.
+
+------------------------------------------------------------
+PATH MAPPING
+
+- Example:
+
+  @WebServlet("/products/*")
+
+- Matches paths such as:
+
+  /products/101
+  /products/102
+  /products/101/details
+
+- The mapping is based on the path prefix.
+
+------------------------------------------------------------
+SERVLET SELECTION
+
+- When a request arrives, the Servlet Container evaluates the configured URL mappings.
+- It applies Servlet URL-mapping rules to determine which Servlet should handle the request.
+
+- Conceptually:
+
+  HTTP Request URL
+  ↓
+  URL Mapping
+  ↓
+  Selected Servlet
+  ↓
+  service()
+  ↓
+  doGet() / doPost() / ...
+
+=============================================================================================================================================================================
+SERVLET CONFIGURATION
+=============================================================================================================================================================================
+
+WEB.XML
+
+- web.xml is the traditional deployment descriptor for Java Web Applications.
+- It can be used to configure:
+
+  - Servlets
+  - Servlet mappings
+  - Initialization parameters
+  - Filters
+  - Other web application configuration
+
+Example:
+
+  <servlet>
+      <servlet-name>HelloServlet</servlet-name>
+      <servlet-class>com.example.HelloServlet</servlet-class>
+
+      <init-param>
+          <param-name>environment</param-name>
+          <param-value>prod</param-value>
+      </init-param>
+  </servlet>
+
+  <servlet-mapping>
+      <servlet-name>HelloServlet</servlet-name>
+      <url-pattern>/hello</url-pattern>
+  </servlet-mapping>
+
+------------------------------------------------------------
+ANNOTATION-BASED CONFIGURATION
+
+- Modern Servlet applications commonly use annotations instead of XML for many configuration tasks.
+
+- Example:
+
+  @WebServlet("/hello")
+  public class HelloServlet extends HttpServlet {
+  }
+
+- Annotation-based configuration reduces the need for web.xml.
+
+------------------------------------------------------------
+SERVLET INITIALIZATION PARAMETERS
+
+- Servlet-specific initialization parameters can be configured for a Servlet.
+- These parameters are accessed through ServletConfig.
+
+- Example:
+
+  @WebServlet(
+  	value = "/hello",
+  	initParams = {
+  	@WebInitParam(name = "environment", value = "prod")
+  	}
+  )
+  public class HelloServlet extends HttpServlet {
+  }
+
+------------------------------------------------------------
+SERVLETCONFIG
+
+- ServletConfig represents configuration specific to one Servlet.
+- A Servlet can access its ServletConfig using:
+
+  getServletConfig();
+
+- Example:
+
+  String environment = getServletConfig().getInitParameter("environment");
+
+- Important distinction:
+
+  ServletConfig
+  ↓
+  Configuration for one Servlet
+
+  ServletContext
+  ↓
+  Context for the entire Web Application
+
+=============================================================================================================================================================================
+SERVLET SCOPES & CONTEXT
+=============================================================================================================================================================================
+
+- Different scopes determine:
+
+  - How long data exists.
+  - Which components can access it.
+
+- Main Servlet-related scopes:
+
+  Request Scope
+  ↓
+  One HTTP request
+
+  Session Scope
+  ↓
+  One user's HTTP session
+
+  Application Scope
+  ↓
+  Entire Web Application
+
+------------------------------------------------------------
+REQUEST SCOPE
+
+- Request scope is associated with the current HttpServletRequest.
+
+  REQUEST SCOPE
+  ↓
+  HttpServletRequest
+  ↓
+  request.setAttribute()
+  request.getAttribute()
+
+- Store data:
+
+  request.setAttribute("user", user);
+
+- Retrieve data:
+
+  User user =
+  (User) request.getAttribute("user");
+
+- Request attributes exist only for the lifetime of the current request.
+- They are useful for passing server-side data between components participating in the same request.
+
+------------------------------------------------------------
+SESSION SCOPE
+
+- Session scope represents state associated with a particular client session.
+
+  SESSION SCOPE
+  ↓
+  HttpSession
+  ↓
+  request.getSession()
+  request.getSession(false)
+
+- Obtain/create a session:
+
+  HttpSession session =
+  request.getSession();
+
+- Retrieve an existing session without creating one:
+
+  HttpSession session =
+  request.getSession(false);
+
+- Difference:
+
+  request.getSession()
+  ↓
+  Returns an existing session or creates one.
+
+  request.getSession(false)
+  ↓
+  Returns an existing session or null.
+
+- Store session data:
+
+  session.setAttribute("user", user);
+
+- Retrieve session data:
+
+  User user = (User) session.getAttribute("user");
+
+- Remove one session attribute:
+
+  session.removeAttribute("user");
+
+- Explicitly invalidate the session:
+
+  session.invalidate();
+
+- A session can also be invalidated automatically by the Servlet Container when the configured session timeout is reached.
+
+------------------------------------------------------------
+APPLICATION SCOPE
+
+- Application scope is represented by ServletContext.
+
+  APPLICATION SCOPE
+  ↓
+  ServletContext
+  ↓
+  context.setAttribute()
+  context.getAttribute()
+
+- Obtain the application context:
+
+  ServletContext context =
+  getServletContext();
+
+- Store application-wide data:
+
+  context.setAttribute("config", config);
+
+- Retrieve application-wide data:
+
+  Object config =
+  context.getAttribute("config");
+
+- The same ServletContext represents the Web Application as a whole.
+- Application-scope attributes can therefore be accessed by multiple components.
+- Because application-scope data is shared across requests and users:
+
+  - Mutable shared state must be handled carefully.
+  - Thread safety must be considered.
+
+=============================================================================================================================================================================
+REQUEST DISPATCHING
+=============================================================================================================================================================================
+
+- Request dispatching allows server-side resources to transfer or delegate request processing.
+- The main mechanisms are:
+
+  Forward
+  Include
+  Redirect
+
+------------------------------------------------------------
+FORWARD
+
+- forward() performs an internal server-side transfer.
+
+Example:
+
+  RequestDispatcher dispatcher =
+  request.getRequestDispatcher("/home");
+
+  dispatcher.forward(request, response);
+
+- The same request and response objects are used.
+- The browser does not make another HTTP request.
+- The browser's URL remains the original URL.
+
+Flow:
+
+  Browser
+  ↓
+  Request
+  ↓
+  Servlet A
+  ↓
+  forward()
+  ↓
+  Servlet B / JSP
+  ↓
+  Response
+  ↓
+  Browser
+
+------------------------------------------------------------
+INCLUDE
+
+- include() executes another server-side resource and includes its output in the current response.
+
+Example:
+
+  dispatcher.include(request, response);
+
+- The original resource continues processing after the included resource finishes.
+
+Flow:
+
+  Servlet A
+  ↓
+  include()
+  ↓
+  Resource B
+  ↓
+  Output included
+  ↓
+  Servlet A continues
+
+------------------------------------------------------------
+REDIRECT
+
+- A redirect tells the client to make a new HTTP request.
+
+Example:
+
+  response.sendRedirect("/home");
+
+- Flow:
+
+  Browser
+  ↓
+  POST /login
+  ↓
+  Server
+  ↓
+  3xx Redirect
+  ↓
+  Browser
+  ↓
+  GET /home
+  ↓
+  Server
+
+- A redirect therefore:
+
+  - Causes a new HTTP request.
+  - Changes the browser's URL.
+  - Does not preserve the original request object.
+
+------------------------------------------------------------
+FORWARD VS REDIRECT
+
+- Forward:
+
+  forward()
+  ↓
+  Server-side transfer
+  ↓
+  Same request
+  ↓
+  Browser URL unchanged
+
+- Redirect:
+
+  redirect
+  ↓
+  Client-side navigation
+  ↓
+  New HTTP request
+  ↓
+  Browser URL changes
+
+- Example:
+
+  Browser sends:
+
+  POST /login
+
+- If the server forwards to the login page:
+
+  - The browser displays the login page.
+  - The browser's URL is still /login.
+
+- If the server redirects to /home:
+
+  - The browser receives the redirect.
+  - The browser makes a new request to /home.
+  - The browser's URL becomes /home.
+
+- Redirect-after-POST is commonly used to avoid accidental form resubmission.
+
+------------------------------------------------------------
+FORWARD
+
+- Preserves the original request and response objects.
+- The original HTTP method is preserved because there is no new HTTP request.
+- Therefore, if the original request was POST, the forwarded resource receives the same POST request.
+- The next Servlet/JSP processes the same request internally on the server.
+
+  POST /login
+       ↓
+  Servlet A
+       ↓ forward()
+  Servlet B / JSP
+       ↓
+  Response
+
+
+REDIRECT
+
+- Does not preserve the original request and response objects.
+- The server tells the client to make a new HTTP request.
+- Therefore, the HTTP method and request data of the new request depend on the redirect mechanism and client behavior.
+- With the traditional response.sendRedirect(), the common behavior is POST → 3xx → GET, i.e. Post-Redirect-Get (PRG).
+- Since a new request is made, request attributes from the original request are not carried over.
+
+  POST /login
+       ↓
+  Servlet A
+       ↓ redirect
+  Browser receives 3xx
+       ↓
+  GET /home
+       ↓
+  Servlet B / JSP
+
+------------------------------------------------------------
+SERVLET FILTERS
+
+- A Servlet Filter is a web component that can intercept requests and/or responses before and after a target resource executes.
+- Conceptual flow:
+
+  Client
+  ↓
+  Filter
+  ↓
+  Servlet
+  ↓
+  Filter
+  ↓
+  Client
+
+- Filters can be used for cross-cutting web concerns such as:
+
+- Authentication checks
+- Authorization/security checks
+- Logging
+- Character encoding
+- Request modification
+- Response modification
+
+- A Filter continues processing using:
+
+  chain.doFilter(request, response);
+
+- Filters are particularly important in modern Spring applications because technologies such as Spring Security use the Servlet filter chain extensively.
+
+=============================================================================================================================================================================
+JSP — JAVASERVER PAGES
+=============================================================================================================================================================================
+
+WHAT IS JSP?
+
+- JSP stands for JavaServer Pages.
+- JSP is a server-side technology used to generate dynamic content, particularly HTML.
+- JSP allows HTML/template content to be combined with JSP features.
+- JSP is primarily associated with the View layer in traditional server-side Java Web applications.
+- The most important fact about JSP:
+
+  JSP is translated into a Servlet.
+
+- Conceptually:
+
+  JSP
+  ↓
+  Translation
+  ↓
+  Generated Servlet source
+  ↓
+  Compilation
+  ↓
+  Servlet class
+  ↓
+  Execution
+  ↓
+  HTTP Response
+
+------------------------------------------------------------
+JSP → SERVLET RELATIONSHIP
+
+- JSP is not a completely separate execution model from Servlets.
+- A JSP is translated by the JSP container into Servlet source code.
+- The generated Servlet is then compiled and executed.
+
+Example JSP:
+
+  <h1>Hello</h1>
+
+- Conceptually, the generated Servlet may contain something similar to:
+
+  out.write("<h1>Hello</h1>");
+
+- The exact generated source is container-specific.
+- The important relationship is:
+
+  JSP
+  ↓
+  Generated Servlet
+  ↓
+  HTTP Response
+
+------------------------------------------------------------
+JSP LIFECYCLE
+
+- JSP lifecycle:
+
+  JSP
+  ↓
+  Translation
+  ↓
+  Generated Servlet Source
+  ↓
+  Compilation
+  ↓
+  Servlet Class
+  ↓
+  Class Loading
+  ↓
+  Object Creation
+  ↓
+  jspInit()
+  ↓
+  _jspService()
+  ↓
+  jspDestroy()
+
+- Translation:
+
+  - JSP source is translated into Java Servlet source code.
+
+- Compilation:
+
+  - Generated Servlet source is compiled into bytecode.
+
+- jspInit():
+
+  - Called when the JSP is initialized.
+  - Normally called once for the JSP instance.
+
+- _jspService():
+
+  - Handles individual requests to the JSP.
+  - JSP content ultimately becomes code executed as part of this request-processing method.
+
+- jspDestroy():
+
+  - Called when the JSP instance is being removed.
+  - Used for cleanup.
+
+- Relationship with Servlet lifecycle:
+
+  JSP                  Servlet
+
+  jspInit()      ↔     init()
+
+  _jspService()  ↔     Request processing
+
+  jspDestroy()   ↔     destroy()
+
+- The JSP is not normally translated and compiled from scratch for every request.
+- The generated Servlet can be reused until recompilation is required, such as when the JSP source changes.
+
+------------------------------------------------------------
+JSP EXPRESSIONS
+
+Syntax:
+
+  <%= expression %>
+
+- A JSP expression evaluates a Java expression and writes its result to the response.
+
+Example:
+
+  Hello <%= name %>
+
+- Conceptually:
+
+  out.write("Hello ");
+  out.print(name);
+
+- The content inside `<%= ... %>` must be an expression that produces a value.
+
+Examples:
+
+  <%= 10 + 20 %>
+
+  <%= user.getName() %>
+
+- A Java statement such as a variable declaration is not an expression:
+
+  <%= int x = 10; %>
+
+- Therefore it is invalid as a JSP expression.
+
+------------------------------------------------------------
+JSP SCRIPTLETS
+
+Syntax:
+
+  <%
+  Java statements
+  %>
+
+- Scriptlets allow Java statements to be embedded directly into JSP.
+
+Example:
+
+  <%
+  String name = "Sai";
+  int age = 28;
+  %>
+
+- Conceptually, the statements become part of the generated Servlet's _jspService() method:
+
+  public void _jspService(...) {
+
+  String name = "Sai";
+  int age = 28;
+
+  }
+
+- Variables declared inside scriptlets are therefore essentially local variables of _jspService().
+
+------------------------------------------------------------
+JSP DECLARATIONS
+
+- Syntax:
+
+  <%!
+  declarations
+  %>
+
+- JSP declarations define members of the generated Servlet class.
+- They can contain:
+
+  - Fields
+  - Methods
+
+- Example:
+
+  <%!
+  private int count = 0;
+
+  public int add(int a, int b) {
+      return a + b;
+  }
+
+  %>
+
+- Conceptually:
+
+  public class SomeJsp extends HttpJspBase {
+
+  	private int count = 0;
+
+  	public int add(int a, int b) {
+      		return a + b;
+  	}
+
+ 	public void _jspService(...) {
+      		...
+  	}
+
+  }
+
+------------------------------------------------------------
+Important distinction:
+
+  <% ... %>
+  ↓
+  Code inside _jspService()
+
+  <%= ... %>
+  ↓
+  Expression output inside _jspService()
+
+  <%! ... %>
+  ↓
+  Member of generated Servlet class
+
+- Mutable fields declared using JSP declarations have the same concurrency concerns as mutable Servlet instance variables.
+
+------------------------------------------------------------
+JSP DIRECTIVES
+
+- JSP directives provide instructions to the JSP container about how the JSP should be processed.
+- The three standard directive types are:
+
+  <%@ page ... %>
+
+  <%@ include ... %>
+
+  <%@ taglib ... %>
+
+------------------------------------------------------------
+PAGE DIRECTIVE
+
+Syntax:
+
+  <%@ page contentType="text/html" %>
+
+- The page directive configures properties of the JSP page.
+- Common page directive attributes include:
+
+- contentType
+- import
+- pageEncoding
+- session
+- errorPage
+- isErrorPage
+
+- Example:
+
+  <%@ page import="java.util.List" %>
+
+------------------------------------------------------------
+INCLUDE DIRECTIVE
+
+Syntax:
+
+  <%@ include file="header.jsp" %>
+
+- The include directive performs a translation-time/static include.
+- The included content becomes part of the JSP during JSP translation.
+- This is different from RequestDispatcher.include(), which performs runtime request dispatching.
+
+- Important distinction:
+
+  <%@ include ... %>
+  ↓
+  Translation-time include
+
+  RequestDispatcher.include()
+  ↓
+  Runtime request dispatch
+
+------------------------------------------------------------
+TAGLIB DIRECTIVE
+
+- Syntax:
+
+  <%@ taglib ... %>
+
+- The taglib directive makes a tag library available to a JSP.
+- It is historically important for technologies such as JSTL.
+
+=============================================================================================================================================================================
+JAVA WEB FOUNDATION — CONCEPTUAL FLOW
+=============================================================================================================================================================================
+
+- The concepts covered in this chapter connect together as follows:
+
+  Client
+  ↓
+  HTTP Request
+  ↓
+  Web Server / Servlet Container
+  ↓
+  URL Mapping
+  ↓
+  Servlet
+  ↓
+  Servlet Lifecycle
+  ↓
+  HttpServletRequest
+  ↓
+  Request Processing
+  ↓
+  HttpServletResponse
+  ↓
+  HTTP Response
+
+=============================================================================================================================================================================

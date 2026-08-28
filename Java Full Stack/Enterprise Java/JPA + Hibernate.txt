@@ -1,4 +1,4 @@
-Terminology:
+Supporting infrastructure:
 
 EntityManagerFactory
 EntityManager

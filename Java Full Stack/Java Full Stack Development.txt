@@ -7,7 +7,7 @@ Exception Handling: 	try-catch-finally, throw, throws
 Collections Framework: 	List, Set, Map, Queue, Stream API
 Multi-threading: 	Threads, Runnable, Synchronization
 I/O Streams: 		File handling, Serialization
-JVM, JRE, JDK:		Memory management, Garbage collection
+JVM:			Memory management, Garbage collection
 Fundamentals of Memory: Stack, Heap, Class loader
 Basic Networking: 	Sockets basics
 DSA:			
@@ -38,7 +38,6 @@ Polish: 		Core Java, SQL and JDBC, Linux, ServiceNow, Azure DevOps, web.xml, Ant
 Mastered: 		HTML, CSS, Tomcat, Servlets, JSP,
 
 ============================================================================================================================================================================================
-
 Backend:
 
 Spring 			- dependency injection in plain java, object lifecycle in plain java (example: jdbc), dependency injection using spring, beanfactory, appicationcontext, xml vs annotation vs java configuration for bean definitions & DI, bean lifecycle in spring, bean scopes, proxies & AOP, resource loading & resource management, Event Publishing & Listening, Environment & Property Resolution (@value, @profile), FactoryBean support, Lazy & eager Initialization, Circular Dependency, Type Conversion & Data Binding, example spring project covering all - payment application
@@ -64,13 +63,10 @@ Docker and Kubernetes	-
 SDLC			- planning, requirement analysis(functional and non-functional), design, implementation, testing (Junit, integration, etc.,), deployment, maintenance (logging..,) 
 Tools			- Inspect tool in browsers, CI/CD pipeline, splunk
 
-
 must learn before interview - sql/database - indexing & stored procedures & deadlocks & sharding vs partitions vs replication, java - 8/11/17 features & modifiers/keywords & concurrent futures & multithreading, design principles and design patterns, microservices and system design concepts - saga, redis, jwt implementation, circuit breakers, websockets vs webhooks vs graphql, understand the versions, cicd pipelines, azure cloud and its services
 
 ============================================================================================================================================================================================
-
 Frontend:
 
 JavaScript		- ES6, state management, asynchronous javascript, api integration
 react 			- hooks (useEffect, useState, useRef etc), state management in react, routing, api integration
-

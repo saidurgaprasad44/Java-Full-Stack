@@ -145,9 +145,11 @@ public class MyConfig extends ResourceConfig {
 
 ===============================================================================================================================================================================
 
-Tip: Uncomment the Moxy dependency in pom.xml for JSON serialization:
+Uncomment the Moxy dependency in pom.xml for JSON serialization:
 
 <dependency>
 	<groupId>org.glassfish.jersey.media</groupId>
 	<artifactId>jersey-media-moxy</artifactId>
 </dependency>
+
+===============================================================================================================================================================================
