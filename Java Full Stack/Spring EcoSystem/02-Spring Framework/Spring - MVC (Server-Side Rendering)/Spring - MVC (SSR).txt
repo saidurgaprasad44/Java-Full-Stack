@@ -516,6 +516,15 @@ JSP
 SPRING MVC (SSR) - CONFIGURATION
 =======================================================================================================================================================================
 
+Spring MVC Configuration 
+ 	DispatcherServlet configuration 
+ 	web.xml 
+ 	Java-based configuration 
+ 	@EnableWebMvc 
+ 	@ComponentScan 
+ 	ViewResolver configuration 
+
+
 - Before Spring Boot, Spring MVC applications required more explicit configuration.
 - The developer typically needed to configure or register:
 
