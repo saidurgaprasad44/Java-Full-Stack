@@ -75,9 +75,11 @@ Then you must install Tomcat manually:
 Download Tomcat:
 https://tomcat.apache.org/
 
+Download Core zip
+
 Use:
-Tomcat 10 (for Spring 6.x, Spring Boot 3.x and above)
-Tomcat 9 (for Spring 5.x, Spring Boot 2.x and earlier)
+Tomcat 10 (for Spring 6.x, Spring Boot 3.x and above, Jakarta namespace)
+Tomcat 9 (for Spring 5.x, Spring Boot 2.x and earlier, javax namespace)
 
 Extract → D:\Softwares
 

@@ -1,126 +1,495 @@
+=======================================================================================================================================================================
+=======================================================================================================================================================================
+										JPA + HIBERNATE
+=======================================================================================================================================================================
+=======================================================================================================================================================================
+
 Supporting infrastructure:
 
+JPA
 EntityManagerFactory
 EntityManager
 Entity
 Persistence
 PersistenceContext
+persistence.xml
 
 =======================================================================================================================================================================
-JPA/Hibernate  (Automated Mapping & SQL)
+JPA + HIBERNATE ARCHITECTURE
 =======================================================================================================================================================================
 
-Database Connection: Automated (Hibernate uses its own built-in connection pool or hooks into one you provide)
-Object-to-Table Mapping: Automated (Done via @Entity and @Column annotations)
-SQL Writing: Automated (You call session.save(user) and Hibernate writes the INSERT INTO... SQL statement for you)
+- JPA (Jakarta Persistence API) is a specification.
+- It defines standard APIs, annotations and rules for ORM.
+- JPA itself does not communicate with the database.
+- Hibernate is an ORM framework that implements the JPA specification.
+- Hibernate performs the actual ORM work and communicates with the database through JDBC.
+
+
+Application
+↓
+JPA API
+↓
+Hibernate
+↓
+JDBC
+↓
+Database
+
+
+- The application can therefore use standard JPA APIs while Hibernate acts as the implementation underneath.
+
+Example:
+
+EntityManager em;
+
+- EntityManager is defined by JPA.
+- Hibernate provides the implementation of EntityManager.
+
+------------------------------------------------------------
+JPA defines:
+
+- @Entity
+- @Id
+- @ManyToOne
+- @OneToMany
+- EntityManager
+- Persistence Context
+- JPQL
+- Entity lifecycle
+- Locking APIs
+- Fetching rules
+
+Hibernate provides:
+
+- Implementation of the JPA APIs
+- ORM engine
+- SQL generation
+- Dirty checking implementation
+- First-level cache
+- Optional second-level and query caching
+- Proxies/lazy-loading mechanisms
+- JDBC interaction
+- Hibernate-specific features
+- Hibernate can also be used through its native API, the preferred approach is the standard JPA and Hibernate as its implementation.
 
 =======================================================================================================================================================================
-
-Hibernate has its own API specification before the standard JPA API was introduced.
-Later when JPA API was introduced, it has all the standard persistence specifications using which JPA/Hibernate was implemented again.
-There are other implementations of JPA than Hibernate like
-
-
+JPA + HIBERNATE CONFIGURATION
 =======================================================================================================================================================================
 
-Hibernate handles:
+PERSISTENCE.XML
 
-Object-relational mapping
-Entity state
-Persistence context
-Dirty checking
-Relationships
-Lazy loading
-Cascading
-SQL generation
-First-level cache
-JPQL/HQL
+- In a plain JPA + Hibernate application, `persistence.xml` is normally placed under:
 
-=======================================================================================================================================================================
-JPA + Hibernate architecture
-=======================================================================================================================================================================
+src/main/resources/META-INF/persistence.xml
 
-Configuration without Spring:
+- It contains the persistence-unit configuration.
 
-needs persistence.xml for configuring the jpa provider(hibernate), dialect(database driver), and properties
+Example:
 
-<persistence xmlns="https://jakarta.ee/xml/ns/persistence" 
+  <?xml version="1.0" encoding="UTF-8"?>
+  <persistence xmlns="https://jakarta.ee/xml/ns/persistence" 
 			 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 			 xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd" 
 			 version="3.0">
 			 
-    <persistence-unit name="employeeCRUD">
-        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+      <persistence-unit name="employeeCRUD">
+          <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         
-        <class>demo.example.employeeCRUD.Department</class>
-        <class>demo.example.employeeCRUD.Employee</class>
+          <class>demo.example.employeeCRUD.Department</class>
+          <class>demo.example.employeeCRUD.Employee</class>
         
-        <properties>
-            <!-- Database Connection -->
-            <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver" />
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/employee" />
-            <property name="jakarta.persistence.jdbc.user" value="postgres" />
-            <property name="jakarta.persistence.jdbc.password" value="postgres" />
+          <properties>
+              <!-- Database Connection -->
+              <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver" />
+              <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/employee" />
+              <property name="jakarta.persistence.jdbc.user" value="postgres" />
+              <property name="jakarta.persistence.jdbc.password" value="postgres" />
 
-            <!-- Hibernate Properties -->
-            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect" />
-            <property name="hibernate.hbm2ddl.auto" value="update" />
-            <property name="hibernate.show_sql" value="true" />
-            <property name="hibernate.format_sql" value="true" />
-        </properties>
-    </persistence-unit>
-</persistence>
+              <!-- Hibernate Properties -->
+              <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect" />
+              <property name="hibernate.hbm2ddl.auto" value="update" />
+              <property name="hibernate.show_sql" value="true" />
+              <property name="hibernate.format_sql" value="true" />
+          </properties>
+      </persistence-unit>
+  </persistence>
+
+
+- `persistence.xml` is a standard JPA configuration mechanism.
+- Hibernate can also have additional Hibernate-specific configuration properties inside the same persistence unit.
+
+------------------------------------------------------------
+PERSISTENCE UNIT
+
+- A persistence unit represents a configured set of entity classes and persistence-related settings.
+- It defines which entities belong to a particular persistence configuration.
+- In plain JPA applications, a persistence unit is traditionally defined in `META-INF/persistence.xml`.
+
+Example:
+
+<persistence-unit name="companyPU">
+
+	<provider>
+    		org.hibernate.jpa.HibernatePersistenceProvider
+	</provider>
+
+	<class>com.example.Employee</class>
+	<class>com.example.Department</class>
+
+	<properties>
+    		...
+	</properties>
+
+</persistence-unit>
+
+- `companyPU` is the name of the persistence unit.
+- The application uses this name when creating the EntityManagerFactory.
+
+------------------------------------------------------------
+JPA PROVIDER
+
+- The provider tells JPA which implementation should perform the persistence operations.
+- Hibernate is one such JPA provider.
+
+------------------------------------------------------------
+ENTITY CLASS CONFIGURATION
+
+- JPA needs to know which classes are entities belonging to the persistence unit.
+- These classes are then available to the persistence unit.
+- Depending on the environment and configuration, entity discovery can also be used instead of explicitly listing every entity.
+
+------------------------------------------------------------
+DATABASE CONNECTION CONFIGURATION
+
+- Hibernate ultimately communicates with the database through JDBC.
+- Therefore, the persistence configuration needs database connection information when the application manages the connection configuration directly.
+
+Typical settings:
+
+- JDBC driver
+- JDBC URL
+- Username
+- Password
+
+------------------------------------------------------------
+HIBERNATE DIALECT
+
+- Hibernate needs to generate SQL appropriate for the target database.
+- Different databases have different SQL features and syntax.
+- Hibernate's dialect mechanism provides database-specific SQL generation behavior.
+- In modern Hibernate versions, the dialect can often be detected automatically from the database connection.
+- Therefore, explicitly configuring `hibernate.dialect` is not always necessary.
+
+------------------------------------------------------------
+SQL LOGGING
+
+- Hibernate can be configured to display SQL generated by Hibernate.
+
+Example:
+
+  <property name="hibernate.show_sql" value="true"/>
+
+- This is useful during development and debugging.
+
+Example generated SQL:
+
+SELECT
+e.id,
+e.name,
+e.salary
+FROM
+employee e
+WHERE
+e.id = ?
+
+- SQL formatting can also be enabled.
+
+Example:
+
+  <property name="hibernate.format_sql" value="true"/>
+
+- Formatted SQL is easier to read when debugging.
+
+------------------------------------------------------------
+
+SCHEMA GENERATION
+
+- Hibernate/JPA can be configured to create, validate, update or remove database schema objects based on entity mappings.
+- Hibernate-specific configuration commonly uses:
+
+hibernate.hbm2ddl.auto
+
+Example:
+
+  <property name="hibernate.hbm2ddl.auto" value="update"/>
+
+
+Common values:
+
+none
+
+- No automatic schema management.
+
+validate
+
+- Validates that the existing database schema is compatible with the entity mappings.
+- Does not modify the schema.
+
+update
+
+- Attempts to update the existing schema according to the entity mappings.
+- Convenient during development.
+- Should not generally be relied upon as the production database migration mechanism.
+
+create
+
+- Creates the database schema when the persistence infrastructure starts.
+- Existing schema objects may be dropped/recreated as part of this process.
+
+create-drop
+
+- Creates the schema when the persistence infrastructure starts.
+- Drops the schema when the persistence infrastructure is closed.
+- `hibernate.hbm2ddl.auto` is useful for development and simple environments.
+- Production applications commonly use dedicated database migration tools instead.
+- Migration tools allow controlled, versioned database changes.
+
+------------------------------------------------------------
+ENTITYMANAGERFACTORY CREATION
+
+- `EntityManagerFactory` is created using the name of the persistence unit.
+
+Example:
+
+  EntityManagerFactory emf = Persistence.createEntityManagerFactory("employeeCRUD");
+
+- The EntityManagerFactory uses the persistence-unit configuration.
+- It initializes the persistence infrastructure required by the JPA provider.
+
+Conceptually:
+
+persistence.xml
+↓
+Persistence Unit
+↓
+EntityManagerFactory
+↓
+EntityManager
+↓
+Persistence Context
+
+------------------------------------------------------------
+ENTITYMANAGER CREATION
+
+- EntityManagerFactory creates EntityManager instances.
+
+Example:
+
+  EntityManager em = emf.createEntityManager();
+
+- The EntityManager is used by the application to perform persistence operations.
+
+Example:
+
+  Employee employee = em.find(Employee.class, 1L);
+
+- The EntityManager works with a Persistence Context.
+
+Conceptually:
+
+EntityManagerFactory
+↓
+EntityManager
+↓
+Persistence Context
+↓
+Managed Entities
+
+------------------------------------------------------------
+CONFIGURATION IN MODERN APPLICATIONS
+
+- In plain JPA + Hibernate, much of the configuration can be written explicitly in `persistence.xml`.
+- In Spring applications, Spring can manage the EntityManagerFactory and related configuration.
+- In Spring Boot, many configuration details are automatically configured based on dependencies and application properties.
 
 =======================================================================================================================================================================
+ENTITIES & MAPPINGS
+=======================================================================================================================================================================
 
-Entities & mappings
+ENTITY
 
-- @Entity, @Table(name = "employee"), @Id, @GeneratedValue(strategy = GenerationType.IDENTITY)/@GeneratedValue(strategy = GenerationType.SEQUENCE), @Column(name = "employee_name"), 
+- An entity is a Java class whose instances represent persistent data.
+- An entity is normally mapped to a database table.
+- Entity attributes are mapped to database columns.
+- Every entity normally has an identifier marked with @Id.
+
+Example:
 
 @Entity
 @Table(name = "employee")
 public class Employee {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@Id
+private Long id;
 
-    @Column(name = "employee_name", nullable = false)
-    private String name;
+private String name;
 
-    private double salary;
+private double salary;
 
-    @ManyToOne
-    private String department;
-
-    // getters/setters
 }
 
+Database:
+
+employee
++----+------+--------+
+| id | name | salary |
++----+------+--------+
+| 1  | Sai  | 60000  |
+| 2  | Ravi | 70000  |
++----+------+--------+
+
+- Employee → employee table
+- id → id column
+- name → name column
+- salary → salary column
+
+------------------------------------------------------------
+ENTITY MAPPING
+
+
+@Entity
+
+- Marks a Java class as a JPA entity.
+
+
+@Table
+
+- Specifies the database table.
+
+Example:
+
+  @Entity
+  @Table(name = "employee")
+  public class Employee {
+  }
+
+-----------------
+@Id
+
+- Identifies the primary-key attribute.
+
+@GeneratedValue
+
+- Allows the identifier to be generated automatically according to the configured generation strategy (IDENTITY or SEQUENCE).
+
+Example:
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+-----------------
+@Column
+
+- Customizes the mapping of an entity attribute to a database column.
+
+Example:
+
+  @Column(name = "employee_name")
+  private String name;
+
+- Without @Column, JPA can derive the column name from the attribute name according to its naming rules.
+
+-----------------
+@Transient
+
+- Marks an attribute that should not be persisted.
+
+Example:
+
+  @Transient
+  private String displayName;
+
+- displayName exists only in the Java object and has no corresponding persistent column.
+
+------------------------------------------------------------
+ENTITY IDENTITY
+
+- The @Id value identifies an entity instance from the database's perspective.
+- The identifier corresponds to the primary key.
+
+Database:
+
+employee
++----+------+--------+
+| id | name | salary |
++----+------+--------+
+| 1  | Sai  | 60000  |
+| 2  | Ravi | 70000  |
++----+------+--------+
+
+- Employee with id = 1 and Employee with id = 2 are different entities.
+- 1L simply means the Java long value 1.
+
+Example:
+
+  Employee employee = em.find(Employee.class, 1L);
+
+=======================================================================================================================================================================
+ENTITYMANAGER
 =======================================================================================================================================================================
 
-EntityManager and Persistence operations 
+- EntityManager is the main JPA API used to manage entities.
+- It interacts with the Persistence Context.
+- It provides operations for:
 
-EntityManagerFactory emf = Persistence.createEntityManagerFactory("employeeCRUD");
-EntityManager em = emf.createEntityManager();
+  - Create
+  - Read
+  - Update through managed entities
+  - Delete
+  - Merge
+  - Detach
+  - Clear
+  - Close
+  - Refresh
+  - Flush
+  - Locking
+  - Contains?
 
-EntityManager is an interface used to manage the entities and its lifecyle in the persistence context
+Common methods:
 
-- em.persist(employee) - CREATE: creates new entity in persistence context to manage/track it and schedule it to be inserted in the db
-- em.find() - READ: JPA first checks the persistence context, return it if it is present in persistence context, or query database, create entity in persistence context, & make it managed 
-- em.remove(employee) - DELETE: mark it for deletion and during flush, hibernate removes it 
-- em.merge(): copies the detached/transient entity's state and applies it the newly created/managed entity, if a managed entity with same identity is already present in the persistence context, it will not create a new entity in the persistence context
-- em.flush():
-- em.detach(): 
-- em.clear():
-- em.close(): closes the entitymanager/persistence context
-- em.refresh(): queries the database and updates the entity in the persistence.
-- em.contains(): 
+persist()
+find()
+remove()
+merge()
+detach()
+clear()
+close()
+refresh()
+flush()
+contains()
+
+- EntityManager itself is not the Persistence Context.
+- EntityManager manages and provides access to a Persistence Context.
+
+Conceptually:
+
+EntityManager
+↓
+Persistence Context
+↓
+Managed entities
 
 =======================================================================================================================================================================
+PERSISTENCE CONTEXT
+=======================================================================================================================================================================
 
-Persistence Context ⭐
+- A Persistence Context is a set of entity instances that are currently managed by an EntityManager.
+- It is maintained in application memory.
+- It is not a database.
+- It is not a second copy of the entire database.
+- It contains managed Java entity instances and the persistence information Hibernate needs to manage them.
 
-- It is an environment and first level cache where all the changes of the entities are tracked once they are added in it.
 
 EntityManager
      │
@@ -132,163 +501,1883 @@ Persistence Context
      ├── Employee #2
      └── Department #5
 
-=======================================================================================================================================================================
 
-Entity states & lifecycle ⭐ 
+- The Persistence Context provides:
 
-[Transient] --persist()--> [Managed] --detach()/clear()/close()--> [Detached] --remove()--> [Removed]
+  - Entity management
+  - Entity identity
+  - First-level cache
+  - Dirty checking
+  - Relationship tracking
+  - Synchronization with the database
 
-=======================================================================================================================================================================
+------------------------------------------------------------
+ENTITYMANAGER VS PERSISTENCE CONTEXT
 
-Dirty checking ⭐ 
+EntityManager
 
-Hibernate can track all the changes of a managed entity and detects those changes during flush and generates SQL queries based on the changes made to the entity and runs the queries even though we dont run update call/query explicitly.
+- JPA API/interface used by the application.
+- Provides methods such as find(), persist(), merge(), remove() and flush().
+- Provides access to a Persistence Context.
 
-=======================================================================================================================================================================
+Persistence Context
 
-Flush & clear
+- The managed-entity environment associated with an EntityManager.
+- Contains the managed entity instances.
+- Tracks their state.
+- Performs first-level caching.
+- Enables dirty checking.
 
-we will see the difference between flush and commit when we learn transaction management
+Conceptually:
 
-=======================================================================================================================================================================
+Application
+↓
+EntityManager
+↓
+Persistence Context
+↓
+Managed Employee object
 
-Transactions
+- EntityManager is the interface through which we perform operations.
+- Persistence Context is the environment in which managed entities live.
 
-EntityTransaction tx = em.create
+------------------------------------------------------------
+PERSISTENCE CONTEXT AND OBJECT MEMORY
 
-follows the begin(), commit(), rollback() pattern
+- When a Java object is created, it is already stored in JVM memory.
+- When that object becomes managed, JPA does not create a second independent "database copy" of the object inside the Persistence Context.
+- The Persistence Context manages the entity instance.
+- Hibernate also keeps internal persistence information needed for tracking.
 
-=======================================================================================================================================================================
+Example:
 
-Relationships: onetomany, manytoone, onetoone, manytomany
+  Employee employee = new Employee();
+  em.persist(employee);
 
-owning side: to tell the jpa to map the entities with this property in database
-Unidirectional/Bidirectional: use it based on the business need of navigation directions of objects.
-mappedby: to tell the jpa that this is just the other side of the relationship and not the owning side so dont use it for mapping the database rows while synchronizing the changes, use it only for java objects association. Use it to tell the jpa to skip this for mapping while using the bidirectional java navigation. It represents the inverse side.
-joincolumn: 
-jointable: 
+Conceptually:
 
-note: to tell the database only owning side change is required and is enough. but for maintaining java objects consistency in a bidirectional relationship, update both the entities 
+JVM memory
+↓
+Employee object
+↓
+managed by Persistence Context
 
-=======================================================================================================================================================================
-
-Lazy/Eager loading & proxies
-
-when to load/fetch the dependent entities
-
-eager loading - fetches the related data while the entities themselves are loaded
-lazy loading - keeps the hibernate proxies in place of related data while loading the entities and retrieves the related data from the data only when requested.
-
-@ManyToOne(fetch = FetchType.LAZY)
-
-by default:
-
-@ManyToOne, @OneToOne are Eagerly loaded
-@ManyToMany, @OneToMany are Lazily loaded
-
-LazyInitializationException
-
-=======================================================================================================================================================================
-
-Cascade & orphan removal
-
-cascade: while performing a lifecycle operation like em.find(), em.remove(), em.detach(), etc, hibernate decides whether to propagate the operation to its related entities or not based on the cascade configuration
-
-orphan removal: the child entity becomes an orphan in the relationship when it is removed from the relationship. hibernate decides whether to delete such entities or not based on the configuration
-
-@OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
-
- 
-=======================================================================================================================================================================
-
-JPQL
-
-Basic JPQL:
-TypedQuery<Employee> query = em.createQuery("SELECT e FROM Employee e", Employee.class);
-List<Employee> employees = query.getResultList();
-
-Parameterized Queries:
-List<Employee> employees = em.createQuery("SELECT e FROM Employee e WHERE e.email = :email", Employee.class)
-	.setParameter("email", "saidurgaprasad@outlook.com")
-	.getResultList();
-
-getResultList() //zero or 1 or more than one entities
-getSingleResult() //exactly 1 entity, , 0 results -> NoResultException, >1 -> NonUniqueResultException
+- Think of the Persistence Context as a management/tracking environment, not as another storage location containing another copy of Employee.
 
 =======================================================================================================================================================================
+BASIC CRUD OPERATIONS
+=======================================================================================================================================================================
 
-N+1 problem ⭐
+PERSISTING AN ENTITY
 
-JOIN FETCH: while loading/fetching the employee table, fetch the department entities as well
+persist()
 
-Entity Graph: 
-defining an entity graph:
-@Entity
-@NamedEntityGraph(
-    name = "Employee.withDepartment",
-    attributeNodes = {
-        @NamedAttributeNode("department")
-    }
-)
-class Employee {
-    @Id
-    Long id;
+- persist() makes a transient entity managed.
+- It is normally used to create a new persistent entity.
+- persist() does not necessarily execute INSERT immediately.
+- The INSERT is normally synchronized with the database during flush.
 
-    String name;
+Example:
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    Department department;
-}
+  Employee employee = new Employee();
 
-using the graph:
+  employee.setName("Sai");
+  employee.setSalary(60000);
 
-EntityGraph<Employee> graph =
-    em.createEntityGraph("Employee.withDepartment");
+  em.persist(employee);
 
-Map<String, Object> properties = new HashMap<>();
 
-properties.put(
-    "jakarta.persistence.fetchgraph",
-    graph
-);
+Entity lifecycle:
+
+Employee object
+↓
+Transient
+↓ persist()
+Managed
+
+
+Database after flush:
+
+employee
++----+------+--------+
+| id | name | salary |
++----+------+--------+
+| 1  | Sai  | 60000  |
++----+------+--------+
+
+------------------------------------------------------------
+FINDING AN ENTITY
+
+find()
+
+- find() retrieves an entity using its primary key.
+- If the entity is not already present in the Persistence Context, Hibernate loads it from the database.
+- The resulting entity becomes managed.
+
+Example:
+
+  Employee employee = em.find(Employee.class, 1L);
+
+Database:
+
+employee
++----+------+--------+
+| id | name | salary |
++----+------+--------+
+| 1  | Sai  | 60000  |
++----+------+--------+
+
+After find():
+
+Persistence Context
+↓
+Employee object
+id = 1
+name = Sai
+salary = 60000
+
+- If the entity is already managed, Hibernate does not create another managed object for the same entity identity.
+
+Example:
+
+  Employee e1 = em.find(Employee.class, 1L);
+  Employee e2 = em.find(Employee.class, 1L);
+
+e1 == e2
+
+- Result: true
+
+------------------------------------------------------------
+UPDATEING A MANAGED ENTITY
+
+- JPA does not have an em.update(entity) operation.
+- An entity that is already managed does not need to be explicitly updated.
+- Simply modify the Java object.
+- Hibernate detects the change through dirty checking.
+- During flush, Hibernate generates the required UPDATE.
+
+Example:
+
+  Employee employee = em.find(Employee.class, 1L);
+  employee.setSalary(70000);
+
+- No update() call is required.
+
+Database before flush:
+
+employee
++----+------+--------+
+| id | name | salary |
++----+------+--------+
+| 1  | Sai  | 60000  |
++----+------+--------+
+
+After dirty checking and flush:
+
+employee
++----+------+--------+
+| id | name | salary |
++----+------+--------+
+| 1  | Sai  | 70000  |
++----+------+--------+
+
+Conceptual SQL:
+
+UPDATE employee
+SET salary = 70000
+WHERE id = 1;
+
+------------------------------------------------------------
+REMOVING AN ENTITY
+
+remove()
+
+- remove() marks a managed entity for deletion.
+- The DELETE is normally executed during flush.
+
+Example:
 
 Employee employee =
-    em.find(
-        Employee.class,
-        1L,
-        properties
-    );
+em.find(Employee.class, 1L);
 
+em.remove(employee);
 
+Conceptually:
 
-JOIN FETCH = fetching is specified inside the query.
-Entity Graph = fetching is specified separately as a fetch plan.
+Managed
+↓ remove()
+Removed
+↓ flush()
+DELETE
 
-=======================================================================================================================================================================
+Database before flush:
 
-Optimistic/pessimistic locking
+employee
++----+------+--------+
+| id | name | salary |
++----+------+--------+
+| 1  | Sai  | 70000  |
++----+------+--------+
 
-optimistic locking: hibernate and database maintain the version column to control the locks - @Version
-pessimistic locking: LockModeType.PESSIMISTIC_WRITE,
+After flush:
 
-Account account = em.find(Account.class, id, LockModeType.PESSIMISTIC_WRITE);
-
-Account account = em.createQuery("SELECT a FROM Account a WHERE a.id = :id", Account.class)
-    .setParameter("id", id)
-    .setLockMode(LockModeType.PESSIMISTIC_WRITE) // Syntax flag
-    .getSingleResult();
-
-=======================================================================================================================================================================
-
-Caching
-
-l1 cache - persistence context (enabled by default) - reference to the actual java objects - not another copy of entities - no need of invalidation/updates
-l2 cache - hibernate's sessionfactory (not enabled by default) - keeps another copy/cache of entities - needs data invalidation/update - not equivalent to distributed cache like redis
-query cache - caches the identifiers of entities instead of the entire entities while using typedqueries
+employee
++----+------+--------+
+| id | name | salary |
++----+------+--------+
+|    |      |        |
++----+------+--------+
 
 =======================================================================================================================================================================
+ENTITY STATES & LIFECYCLE
+=======================================================================================================================================================================
 
+- A JPA entity can be in one of four important states:
+
+  - Transient
+  - Managed
+  - Detached
+  - Removed
+
+------------------------------------------------------------
+TRANSIENT STATE
+
+- An object is transient when it has been created but is not associated with a Persistence Context.
+
+Example:
+
+  Employee employee = new Employee();
+  employee.setName("Sai");
+
+- employee is transient.
+
+Conceptually:
+
+Java object
+↓
+Transient
+
+- Hibernate is not tracking it.
+- Changes to it are not automatically synchronized with the database.
+
+------------------------------------------------------------
+MANAGED STATE
+
+- An entity is managed when it is associated with a Persistence Context.
+- Hibernate tracks the entity.
+- Dirty checking applies.
+- Changes can be synchronized with the database.
+
+- An entity can become managed through:
+
+  em.persist(employee);
+
+  or:
+
+  Employee employee = em.find(Employee.class, 1L);
+
+
+Conceptually:
+
+Transient
+↓ persist()
+Managed
+
+or:
+
+Database
+↓ find()
+Managed entity
+
+------------------------------------------------------------
+DETACHED STATE
+
+- A detached entity was previously managed but is no longer associated with the Persistence Context.
+
+Example:
+
+  Employee employee = em.find(Employee.class, 1L);
+  em.detach(employee);
+
+- employee becomes detached.
+- Changes made to the detached object are not automatically detected by that Persistence Context.
+
+Example:
+
+  employee.setSalary(70000);
+
+- This does not automatically cause an UPDATE because employee is detached.
+
+------------------------------------------------------------
+REMOVED STATE
+
+- A removed entity is a managed entity that has been marked for deletion.
+
+Example:
+
+  Employee employee = em.find(Employee.class, 1L);
+  em.remove(employee);
+
+- The entity becomes removed.
+- During flush, Hibernate synchronizes the deletion with the database.
+
+------------------------------------------------------------
+ENTITY LIFECYCLE
+
+Transient
+↓ persist()
+Managed
+↓
+├── detach()
+│      ↓
+│   Detached
+│      ↓ merge()
+│   Managed
+│
+├── clear()
+│      ↓
+│   Detached
+│
+├── close()
+│      ↓
+│   Detached
+│
+└── remove()
+↓
+Removed
+↓ flush()
+DELETE
+
+=======================================================================================================================================================================
+DIRTY CHECKING
+=======================================================================================================================================================================
+
+- Dirty checking is the mechanism Hibernate uses to detect changes made to managed entities.
+- The application does not explicitly call update().
+- Hibernate tracks managed entities inside the Persistence Context.
+- During flush, Hibernate determines whether the entity's persistent state has changed.
+- If it has changed, Hibernate generates the appropriate SQL.
+
+Example:
+
+  Employee employee = em.find(Employee.class, 1L);
+
+  employee.setSalary(70000);
+
+- No update() call is required.
+
+
+Conceptually:
+
+Database
+↓
+find()
+↓
+Managed Employee
+salary = 60000
+↓
+setSalary(70000)
+↓
+Hibernate detects change
+↓
+flush()
+↓
+UPDATE
+
+
+Conceptual SQL:
+
+UPDATE employee
+SET salary = 70000
+WHERE id = 1;
+
+------------------------------------------------------------
+WHY DIRTY CHECKING WORKS
+
+- When Hibernate manages an entity, it maintains enough information to determine whether its persistent state has changed.
+- Hibernate can compare the current managed state with the state it previously knew.
+- If differences are detected, Hibernate schedules the appropriate SQL operation.
+- The exact internal implementation is Hibernate-specific.
+
+Example:
+
+Initially:
+
+Employee
+salary = 60000
+
+After Java code:
+
+  employee.setSalary(70000);
+
+Current state:
+
+Employee
+salary = 70000
+
+- During flush, Hibernate detects that salary changed.
+
+=======================================================================================================================================================================
+MERGE
+=======================================================================================================================================================================
+
+merge()
+
+- merge() is used when we have an entity whose state needs to be incorporated into a Persistence Context.
+- It is commonly used with detached entities.
+- Can also be used with transient entities.
+- merge() does not make the supplied object managed.
+- It copies the state of the supplied object onto a managed/newly created entity.
+- merge() returns the managed entity.
+
+Example:
+
+  Employee detachedEmployee = em.find(Employee.class, 1L);
+
+  em.detach(detachedEmployee);
+
+  detachedEmployee.setSalary(70000);
+
+  Employee managedEmployee = em.merge(detachedEmployee); //Here new object is created in JVM
+
+
+Conceptually:
+
+detachedEmployee
+↓
+state:
+id = 1
+name = Sai
+salary = 70000
+
+    merge()
+
+Persistence Context
+↓
+managed Employee
+id = 1
+name = Sai
+salary = 70000
+
+
+- detachedEmployee and managedEmployee can be two different Java objects.
+
+detachedEmployee == managedEmployee
+
+- Normally:
+
+false
+
+------------------------------------------------------------
+MERGE WHEN A MANAGED ENTITY ALREADY EXISTS
+
+- If an entity with the same identity is already managed in the Persistence Context, merge() copies the detached state onto that existing managed entity.
+
+Database:
+
+employee
++----+------+--------+
+| id | name | salary |
++----+------+--------+
+| 1  | Sai  | 60000  |
++----+------+--------+
+
+Example:
+
+  Employee detachedEmployee = em.find(Employee.class, 1L);
+
+  em.detach(detachedEmployee);
+
+  detachedEmployee.setSalary(70000);
+
+  Employee managedEmployee = em.find(Employee.class, 1L);
+
+  Employee mergedEmployee = em.merge(detachedEmployee);
+
+
+Before merge():
+
+managedEmployee
+↓
+managed
+salary = 60000
+
+detachedEmployee
+↓
+detached
+salary = 70000
+
+
+After merge():
+
+managedEmployee
+↓
+managed
+salary = 70000
+
+mergedEmployee
+↓
+same managed object
+
+
+Therefore:
+
+managedEmployee == mergedEmployee
+
+- Result:
+
+true
+
+- Hibernate does not need to create another managed object for that identity.
+
+------------------------------------------------------------
+MERGE WITH A TRANSIENT ENTITY
+
+- merge() can also receive a transient entity.
+- In this situation, JPA can create a new managed entity based on the supplied state.
+- The original object remains transient.
+- The returned object is the managed instance.
+
+Example:
+
+  Employee employee = new Employee();
+
+  employee.setName("Sai");
+  employee.setSalary(60000);
+
+  Employee managedEmployee = em.merge(employee);
+
+
+Conceptually:
+
+employee
+↓
+Transient
+
+managedEmployee
+↓
+Managed
+
+- At flush, Hibernate can generate an INSERT.
+
+
+
+=======================================================================================================================================================================
+FLUSH & CLEAR
+=======================================================================================================================================================================
+
+flush()
+
+- flush() synchronizes the Persistence Context with the database.
+- Hibernate processes pending INSERT, UPDATE and DELETE operations.
+- Dirty checking occurs as part of this synchronization process.
+- flush() does not commit the transaction.
+
+Conceptually:
+
+Persistence Context
+↓
+Dirty checking
+↓
+SQL statements
+↓
+Database
+
+
+Example:
+
+  employee.setSalary(70000);
+  em.flush();
+
+
+Conceptual SQL:
+
+UPDATE employee
+SET salary = 70000
+WHERE id = 1;
+
+------------------------------------------------------------
+AUTOMATIC FLUSH
+
+- We do not normally have to call flush() manually every time.
+- JPA/Hibernate can automatically flush at appropriate points.
+- With the common AUTO flush mode, Hibernate may flush before transaction commit and before certain queries when required to maintain query consistency.
+- Explicit flush() is useful when we specifically need synchronization with the database before continuing.
+
+Example:
+
+  employee.setSalary(70000);
+
+- Hibernate can automatically flush later when required.
+
+------------------------------------------------------------
+CLEAR
+
+clear()
+
+- clear() removes all managed entities from the Persistence Context.
+- Previously managed entities become detached.
+
+Before:
+
+Persistence Context
+↓
+Employee #1
+Employee #2
+Department #10
+
+  em.clear();
+
+After:
+
+Persistence Context
+↓
+empty
+
+- The Java objects themselves are not destroyed.
+- They simply stop being managed by that Persistence Context.
+
+------------------------------------------------------------
+REFRESH
+
+refresh()
+
+- Reloads an entity's state from the database.
+- It can discard changes currently present in the managed entity that have not been persisted.
+
+Database:
+
+employee
++----+------+--------+
+| id | name | salary |
++----+------+--------+
+| 1  | Sai  | 60000  |
++----+------+--------+
+
+Managed entity:
+
+salary = 70000
+
+  em.refresh(employee);
+
+Managed entity becomes:
+
+salary = 60000
+
+=======================================================================================================================================================================
+TRANSACTIONS
+=======================================================================================================================================================================
+
+- Database modifications are normally performed within a transaction.
+- A transaction represents a unit of work that can be committed or rolled back.
+
+- Typical flow:
+
+Begin transaction
+↓
+Persistence operations
+↓
+Flush
+↓
+Commit
+
+- Or, when an error occurs:
+
+Begin transaction
+↓
+Persistence operations
+↓
+Flush
+↓
+Rollback
+
+------------------------------------------------------------
+FLUSH VS COMMIT
+
+flush()
+
+- Synchronizes the Persistence Context with the database.
+- SQL statements can be executed.
+- The transaction is still active.
+- The changes can still be rolled back.
+
+commit()
+
+- Commits the transaction.
+- Makes the transaction's changes permanent.
+
+Example:
+
+  employee.setSalary(70000);
+  em.flush();
+
+- Database can now contain salary = 70000.
+- But if the transaction has not committed, it can still be rolled back.
+
+  em.rollback();
+
+- The uncommitted transaction changes are undone.
+- After successful commit(), that transaction cannot be rolled back.
+
+=======================================================================================================================================================================
+RELATIONSHIPS
+=======================================================================================================================================================================
+
+- JPA provides four major relationship mappings:
+
+@OneToOne
+@OneToMany
+@ManyToOne
+@ManyToMany
+
+- Relationships can also be:
+
+  - Unidirectional
+  - Bidirectional
+
+- In a relational database, relationships are commonly represented using foreign keys or join tables.
+- In JPA, relationships allow Java objects to navigate between associated entities.
+
+------------------------------------------------------------
+PARENT AND CHILD
+
+- "Parent" and "child" are conceptual terms.
+- They usually describe ownership/dependency between entities.
+- They are not determined simply by @OneToMany or @ManyToOne.
+
+Example:
+
+Department
+↓
+Employees
+
+- A Department can conceptually be treated as the parent.
+- Employees can be treated as children of that Department.
+- However, JPA ownership and parent/child dependency are separate concepts.
+- The owning side is about which side controls the database relationship mapping.
+- Parent/child is about the business/data model.
+
+=======================================================================================================================================================================
+MANY-TO-ONE & ONE-TO-MANY
+=======================================================================================================================================================================
+
+MANY-TO-ONE
+
+- Many Employee entities can belong to one Department.
+- The foreign key is normally stored in the Employee table.
+
+Database:
+
+department
++----+-------------+
+| id | name        |
++----+-------------+
+| 10 | Engineering |
+| 20 | HR          |
++----+-------------+
+
+employee
++----+------+--------+---------------+
+| id | name | salary | department_id |
++----+------+--------+---------------+
+| 1  | Sai  | 60000  | 10            |
+| 2  | Ravi | 70000  | 10            |
+| 3  | Arun | 50000  | 20            |
++----+------+--------+---------------+
+
+Entity:
+
+  @ManyToOne
+  @JoinColumn(name = "department_id")
+  private Department department;
+
+- Multiple Employees can reference the same Department.
+- Employee is on the many side.
+- Department is on the one side.
+
+------------------------------------------------------------
+ONE-TO-MANY
+
+- One Department can have many Employees.
+
+Department:
+
+  @OneToMany(mappedBy = "department")
+  private List<Employee> employees;
+
+Employee:
+
+  @ManyToOne
+  @JoinColumn(name = "department_id")
+  private Department department;
+
+- The Employee side owns the relationship.
+- Department.employees is the inverse side.
+- mappedBy = "department" points to Employee.department.
+
+------------------------------------------------------------
+OWNING SIDE
+
+- The owning side is the side that controls the JPA relationship mapping with the Database.
+- In a typical Many-to-One relationship, the owning side is the entity containing the foreign-key mapping.
+
+Example:
+
+  @ManyToOne
+  @JoinColumn(name = "department_id")
+  private Department department;
+
+- This field controls employee.department_id.
+
+INVERSE SIDE
+
+- mappedBy tells Hibernate that this collection is the inverse representation of the same relationship and don't use it for mapping the database rows while synchronizing the changes.
+- It does not independently control employee.department_id.
+
+Example:
+
+  @OneToMany(mappedBy = "department")
+  private List<Employee> employees;
+
+- This field is used only for associating Java Objects, not database rows
+
+------------------------------------------------------------
+WHY THE INVERSE SIDE ALONE IS NOT ENOUGH
+
+Example:
+
+department.getEmployees().add(employee);
+
+- This changes the Java collection.
+- It tells the Java object graph:
+
+Department
+↓
+contains Employee
+
+- But the owning relationship is still:
+
+employee.department
+
+- If employee.department is still null, Hibernate has no owning-side change telling it that employee.department_id should become 10.
+- Therefore, bidirectional relationship maintenance commonly does:
+
+  employee.setDepartment(department);
+  department.getEmployees().add(employee);
+
+- The first operation updates the owning side.
+- The second keeps the inverse Java collection synchronized.
+
+------------------------------------------------------------
+UNIDIRECTIONAL RELATIONSHIP
+
+- Only one entity has a reference to the other entity.
+
+Example:
+
+Employee:
+
+@ManyToOne
+@JoinColumn(name = "department_id")
+private Department department;
+
+- Department has no employees collection.
+
+Employee
+↓
+Department
+
+- This is perfectly valid.
+- If the application only needs Employee → Department navigation, there is no need to add the reverse relationship.
+
+------------------------------------------------------------
+BIDIRECTIONAL RELATIONSHIP
+
+- Both entities have references to each other.
+
+Employee:
+
+  @ManyToOne
+  @JoinColumn(name = "department_id")
+  private Department department;
+
+Department:
+
+  @OneToMany(mappedBy = "department")
+  private List<Employee> employees;
+
+Employee
+↓
+Department
+
+Department
+↓
+Employees
+
+- Bidirectional mapping is useful when the application needs navigation in both directions.
+- It is not mandatory simply because the database relationship exists.
+
+------------------------------------------------------------
+JOINCOLUMN
+
+- @JoinColumn specifies the database column used for the relationship.
+
+Example:
+
+  @ManyToOne
+  @JoinColumn(name = "department_id")
+  private Department department;
+
+Database:
+
+employee
++----+------+---------------+
+| id | name | department_id |
++----+------+---------------+
+| 1  | Sai  | 10            |
++----+------+---------------+
+
+department
++----+-------------+
+| id | name        |
++----+-------------+
+| 10 | Engineering |
++----+-------------+
+
+- employee.department_id references department.id.
+
+=======================================================================================================================================================================
+ONE-TO-ONE
+=======================================================================================================================================================================
+
+- One entity is associated with one other entity.
+
+Example:
+
+User
+↓
+Profile
+
+Database:
+
+user
++----+--------+
+| id | name   |
++----+--------+
+| 1  | Sai    |
++----+--------+
+
+profile
++----+---------+----------+
+| id | user_id | address  |
++----+---------+----------+
+| 10 | 1       | Hyderabad|
++----+---------+----------+
+
+Example:
+
+  @OneToOne
+  @JoinColumn(name = "profile_id")
+  private Profile profile;
+
+- The foreign key determines how the database relationship is represented (Usually set UNIQUE constraint).
+
+=======================================================================================================================================================================
+MANY-TO-MANY
+=======================================================================================================================================================================
+
+- Many entities on one side can be associated with many entities on the other side.
+- A join/merge table is normally required in ManyToMany.
+
+Example:
+
+Student
+↕
+Course
+
+Database:
+
+student
++----+------+
+| id | name |
++----+------+
+| 1  | Sai  |
+| 2  | Ravi |
++----+------+
+
+course
++----+---------+
+| id | name    |
++----+---------+
+| 10 | Java    |
+| 20 | Spring  |
++----+---------+
+
+student_course
++------------+-----------+
+| student_id | course_id |
++------------+-----------+
+| 1          | 10        |
+| 1          | 20        |
+| 2          | 10        |
++------------+-----------+
+
+Example:
+
+  @ManyToMany @JoinTable( 
+  	name = "student_course", 
+  	joinColumns = @JoinColumn(name = "student_id"), 
+  	inverseJoinColumns = @JoinColumn(name = "course_id") 
+  ) 
+  private List<Course> courses = new ArrayList<>();
+ 
+- The join table represents the many-to-many relationship.
+
+=======================================================================================================================================================================
+LAZY/EAGER LOADING & PROXIES
+=======================================================================================================================================================================
+
+LAZY LOADING
+
+- Lazy loading means an associated entity/collection is not necessarily loaded when the owning entity is initially loaded.
+- Hibernate can represent the association using a proxy or another lazy-loading mechanism.
+- The associated data is loaded when it is actually needed.
+
+Example:
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  private Department department;
+
+Example:
+
+  Employee employee = em.find(Employee.class, 1L);
+
+- Employee can be loaded without immediately initializing Department.
+
+Later:
+
+  Department department = employee.getDepartment();
+
+- Hibernate can then execute the query required to initialize the Department.
+
+Conceptually:
+
+find Employee
+↓
+Employee loaded
+↓
+Department not initialized
+↓
+getDepartment()
+↓
+Department loaded
+
+------------------------------------------------------------
+EAGER LOADING
+
+- Eager loading means the association is expected to be available when the entity is loaded.
+- EAGER does not necessarily mean Hibernate must use one SQL JOIN.
+- Hibernate can use different SQL strategies depending on the query and mapping.
+
+JPA defaults:
+
+@ManyToOne → EAGER
+@OneToOne → EAGER
+@OneToMany → LAZY
+@ManyToMany → LAZY
+
+- In many real applications, LAZY relationships are preferred by default and required relationships are fetched explicitly for particular use cases.
+
+------------------------------------------------------------
+PROXIES
+
+- Hibernate can use proxy objects for lazy loading.
+- A proxy represents an entity/association whose complete data has not yet been initialized.
+- Accessing the required state can trigger database access.
+
+Conceptually:
+
+Employee
+↓
+department proxy
+↓
+getDepartment().getName()
+↓
+Hibernate initializes Department
+↓
+SQL query
+
+- Proxies are an implementation mechanism used by Hibernate to support lazy loading.
+
+------------------------------------------------------------
+LAZYINITIALIZATIONEXCEPTION
+
+- A lazy association generally needs an active Persistence Context when Hibernate has to initialize it.
+- If the Persistence Context has already been closed, Hibernate may be unable to load the association.
+
+Example:
+
+  Employee employee = em.find(Employee.class, 1L);
+  em.close();
+  employee.getDepartment();
+
+- If Department was still uninitialized, this can result in LazyInitializationException.
+- The usual solution is not to make everything EAGER.
+- Instead, fetch the required relationships while the Persistence Context is active.
+
+=======================================================================================================================================================================
+CASCADE
+=======================================================================================================================================================================
+
+- Cascade specifies which lifecycle operations should propagate from one entity to its associated entity/entities.
+- Cascade is directional.
+- The direction is determined by where cascade is configured.
+
+Example:
+
+  @OneToMany(
+  mappedBy = "department",
+  cascade = CascadeType.ALL
+  )
+  private List<Employee> employees;
+
+- Operations propagated from Department can affect Employees according to the configured cascade types.
+
+Common cascade types:
+
+CascadeType.PERSIST
+CascadeType.MERGE
+CascadeType.REMOVE
+CascadeType.REFRESH
+CascadeType.DETACH
+CascadeType.ALL
+
+- CascadeType.ALL means all cascade operations are enabled.
+
+------------------------------------------------------------
+CASCADE DIRECTION
+
+Example:
+
+Department:
+
+  @OneToMany(
+  mappedBy = "department",
+  cascade = CascadeType.PERSIST
+  )
+  private List<Employee> employees;
+
+- Persisting Department can cascade persist to Employees.
+
+Department
+↓ cascade
+Employees
+
+- This does not automatically mean:
+
+Employee
+↓
+Department
+
+- Cascade is directional.
+- To propagate operations from Employee to Department, cascade must be configured on the Employee relationship.
+
+=======================================================================================================================================================================
+ORPHAN REMOVAL
+=======================================================================================================================================================================
+
+- orphanRemoval = true tells JPA to remove an associated entity when it becomes an orphan from the relationship.
+- It is commonly used where the child is conceptually dependent on the parent.
+
+Example:
+
+  @OneToMany(
+  mappedBy = "department",
+  orphanRemoval = true
+  )
+  private List<Employee> employees;
+
+Database:
+
+employee
++----+------+---------------+
+| id | name | department_id |
++----+------+---------------+
+| 1  | Sai  | 10            |
+| 2  | Ravi | 10            |
++----+------+---------------+
+
+If:
+
+department.getEmployees().remove(employee);
+
+- With orphanRemoval enabled, Employee 1 can be deleted from the database during synchronization.
+
+Database after flush:
+
+employee
++----+------+---------------+
+| id | name | department_id |
++----+------+---------------+
+| 2  | Ravi | 10            |
++----+------+---------------+
+
+- orphanRemoval is directional.
+- It does not mean that deleting/removing a parent automatically deletes everything.
+- Cascade REMOVE and orphanRemoval are related but distinct concepts.
+
+=======================================================================================================================================================================
+JPQL
+=======================================================================================================================================================================
+
+- JPQL stands for Jakarta Persistence Query Language.
+- JPQL is defined by JPA.
+- JPQL operates on entity classes and their attributes rather than directly on database tables and columns.
+
+Example:
+
+  SELECT e
+  FROM Employee e
+  WHERE e.salary > :salary
+
+- Employee is the entity.
+- salary is the entity attribute.
+
+------------------------------------------------------------
+JPQL PARAMETERS
+
+Example:
+
+  TypedQuery<Employee> query = em.createQuery(
+  	"SELECT e FROM Employee e WHERE e.salary > :salary",
+  	Employee.class
+  );
+
+  query.setParameter("salary", 50000);
+
+  List<Employee> employees = query.getResultList();
+
+- Named parameters improve readability and avoid constructing query strings by concatenating values.
+
+------------------------------------------------------------
+JPQL RELATIONSHIP NAVIGATION
+
+- JPQL can navigate entity relationships.
+
+Example:
+
+  SELECT e
+  FROM Employee e
+  WHERE e.department.name = :departmentName
+
+- e.department refers to the Employee.department relationship.
+- department.name refers to the Department.name attribute.
+- JPQL works with the Java entity model rather than requiring the developer to write the physical foreign-key relationship directly.
+
+------------------------------------------------------------
+JOIN
+
+- JPQL JOIN can be used to join an entity with its associated entity.
+- The joined entity can then be used for filtering or other query logic.
+
+Example:
+
+  SELECT e
+  FROM Employee e
+  JOIN e.department d
+  WHERE d.name = :name
+
+- The JOIN is useful because the query needs Department for the condition.
+
+=======================================================================================================================================================================
+N+1 QUERY PROBLEM & SOLUTIONS
+=======================================================================================================================================================================
+
+- The N+1 problem occurs when:
+
+  - One query loads N parent entities.
+  - Accessing an association then causes additional queries for those entities.
+
+Example:
+
+  List<Employee> employees = query.getResultList();
+
+  for (Employee employee : employees) {
+  	employee.getDepartment().getName();
+  }
+
+
+Potential query pattern:
+
+1 query
+↓
+Load all Employees
+
+	+
+
+N additional queries
+↓
+Load Departments as required
+
+
+Total: N + 1 queries
+
+- The exact number can vary because Hibernate's first-level cache can prevent repeated loading of the same entity identity.
+
+
+N+1 EXAMPLE
+
+Database:
+
+employee
++----+------+---------------+
+| id | name | department_id |
++----+------+---------------+
+| 1  | Sai  | 10            |
+| 2  | Ravi | 10            |
+| 3  | Arun | 20            |
++----+------+---------------+
+
+department
++----+-------------+
+| id | name        |
++----+-------------+
+| 10 | Engineering |
+| 20 | HR          |
++----+-------------+
+
+- Query 1:
+
+SELECT employees
+
+- Then accessing departments can cause additional SELECTs.
+
+Conceptually:
+
+  SELECT employees ...
+
+  SELECT department WHERE id = 10
+
+  SELECT department WHERE id = 20
+
+- Because Employees 1 and 2 reference the same Department 10, the exact number of additional queries may be smaller than N due to the first-level cache.
+- Nevertheless, the repeated-fetch pattern is the N+1 problem.
+
+------------------------------------------------------------
+N+1 SOLUTION #1: JOIN FETCH
+
+- JOIN FETCH tells JPA/Hibernate to fetch the associated entity as part of the query result.
+
+Example:
+
+  SELECT e
+  FROM Employee e
+  JOIN FETCH e.department
+
+- Hibernate can fetch Employee and Department together.
+- This avoids the repeated lazy-loading queries for Department in this use case.
+
+Conceptually:
+
+employee
+JOIN
+department
+
+- The association is initialized as part of the query result.
+
+------------------------------------------------------------
+N+1 SOLUTION #2: ENTITY GRAPH
+
+- An Entity Graph is a JPA mechanism for defining which attributes/relationships should be fetched for a particular operation.
+- It separates the fetch plan from the JPQL query itself.
+
+Example:
+
+  @NamedEntityGraph(
+  	name = "Employee.withDepartment",
+  	attributeNodes = {
+		@NamedAttributeNode("department")
+	}
+  )
+
+- The same entity can therefore have different fetch plans for different use cases without changing the entity's default fetch configuration.
+
+Conceptually:
+
+Entity
+↓
+Entity Graph
+↓
+Attributes/relationships to fetch
+
+------------------------------------------------------------
+JOIN FETCH VS ENTITY GRAPH
+
+JOIN FETCH
+
+- Fetching strategy is expressed directly in JPQL.
+
+Example:
+
+  SELECT e
+  FROM Employee e
+  JOIN FETCH e.department
+
+Entity Graph
+
+- Fetching strategy is expressed separately as a fetch plan.
+
+Example:
+
+Employee
+↓
+Entity Graph
+↓
+department
+
+- Both can solve N+1 problems by fetching required associations.
+- JOIN FETCH is often convenient for a specific query.
+- Entity Graphs are useful when the same entity needs different fetch plans across different use cases.
+
+=======================================================================================================================================================================
+LOCKING
+=======================================================================================================================================================================
+
+OPTIMISTIC LOCKING
+
+- Optimistic locking assumes concurrent modifications can happen but does not immediately lock the database row for the entire transaction.
+- JPA commonly implements optimistic locking using @Version.
+
+Example:
+
+  @Version
+  private Long version;
+
+Database:
+
+employee
++----+--------+---------+
+| id | salary | version |
++----+--------+---------+
+| 1  | 60000  | 3       |
++----+--------+---------+
+
+- @Version normally corresponds to a database column.
+- Hibernate uses the version to detect conflicting updates.
+
+
+OPTIMISTIC LOCKING EXAMPLE:
+
+Transaction A reads:
+
+Employee
+id = 1
+salary = 60000
+version = 3
+
+Transaction B reads:
+
+Employee
+id = 1
+salary = 60000
+version = 3
+
+Transaction A changes salary:
+
+70000
+
+Conceptual SQL:
+
+UPDATE employee
+SET salary = 70000,
+version = 4
+WHERE id = 1
+AND version = 3;
+
+- Transaction A succeeds.
+
+Database:
+
+employee
++----+--------+---------+
+| id | salary | version |
++----+--------+---------+
+| 1  | 70000  | 4       |
++----+--------+---------+
+
+- Transaction B still has version = 3.
+- Its update condition:
+
+WHERE id = 1
+AND version = 3
+
+- No row matches because the database now has version = 4.
+- Hibernate detects the conflict and raises an optimistic locking exception.
+
+------------------------------------------------------------
+PESSIMISTIC LOCKING
+
+- Pessimistic locking requests a database lock while the transaction is working with the data.
+- JPA provides standard pessimistic lock modes.
+- Hibernate translates the JPA lock request into database-specific locking behavior.
+
+Example:
+
+  Employee employee = em.find(
+	Employee.class,
+  	1L,
+  	LockModeType.PESSIMISTIC_WRITE
+  );
+
+- A relational database may use SQL similar to:
+
+  SELECT *
+  FROM employee
+  WHERE id = 1
+  FOR UPDATE;
+
+- FOR UPDATE is a database-level SQL feature.
+- Pessimistic locking is therefore a combination of:
+
+  - JPA lock API
+  - Hibernate implementation
+  - Database locking mechanism
+
+------------------------------------------------------------
+BUS SEAT EXAMPLE
+
+- Suppose two users try to book the same seat.
+
+
+Pessimistic approach:
+
+
+Transaction A
+↓
+Lock seat row
+↓
+Book seat
+↓
+Commit
+
+Transaction B
+↓
+Attempts conflicting access
+↓
+Waits/fails depending on database behavior
+↓
+Transaction A releases lock
+
+
+- This prevents another transaction from simultaneously modifying the locked resource.
+
+
+
+Optimistic approach:
+
+
+Transaction A
+↓
+Reads seat
+version = 5
+
+Transaction B
+↓
+Reads same seat
+version = 5
+
+Transaction A
+↓
+Books seat
+version = 6
+
+Transaction B
+↓
+Attempts update using version = 5
+↓
+Conflict detected
+
+
+- Optimistic locking does not prevent B from initially reading the seat.
+- It detects the conflict when B attempts to update.
+
+------------------------------------------------------------
+OPTIMISTIC VS PESSIMISTIC
+
+Optimistic:
+
+- Does not normally hold a database lock for the entire transaction.
+- Allows concurrent access.
+- Detects conflicts during update.
+- @Version is the common JPA mechanism.
+- Useful when conflicts are relatively uncommon.
+
+Pessimistic:
+
+- Explicitly requests database locking.
+- Other transactions may be blocked from conflicting operations.
+- JPA uses LockModeType.
+- Database mechanisms such as FOR UPDATE may implement the requested lock.
+- Useful when preventing concurrent modifications during a critical operation is important.
+
+=======================================================================================================================================================================
+CACHING
+=======================================================================================================================================================================
+
+- Hibernate/JPA applications can use several levels/types of caching.
+- Important concepts are:
+
+  - First-level cache
+  - Second-level cache
+  - Query cache
+
+- These are different mechanisms and should not be confused.
+
+------------------------------------------------------------
+LEVEL 1 CACHE
+
+- The Persistence Context acts as Hibernate's first-level cache.
+- It is enabled by default.
+- It is associated with a particular Persistence Context.
+- Therefore, it is effectively scoped to the EntityManager/session.
+
+Example:
+
+  Employee e1 = em.find(Employee.class, 1L);
+  Employee e2 = em.find(Employee.class, 1L);
+
+e1 == e2
+
+- Result: true
+
+- The second find() can return the already-managed entity from the Persistence Context instead of loading another instance from the database.
+
+Conceptually:
+
+EntityManager
+↓
+Persistence Context
+↓
+L1 Cache
+↓
+Employee id = 1
+
+- L1 cache is not only about avoiding repeated database queries.
+- It is also the environment in which managed entities are tracked.
+- Dirty checking works with these managed entities.
+
+------------------------------------------------------------
+LEVEL 2 CACHE
+
+- L2 cache is an optional Hibernate cache.
+- It is associated with the SessionFactory/EntityManagerFactory rather than one Persistence Context.
+- Therefore, it can be shared by multiple Persistence Contexts.
+
+Conceptually:
+
+EntityManager 1
+↓
+Persistence Context 1
+↓
+L1
+
+EntityManager 2
+↓
+Persistence Context 2
+↓
+L1
+
+Both
+↓
+L2 Cache
+
+- L2 cache can reduce database access across different Persistence Contexts.
+- It requires configuration and a cache provider.
+
+Important distinction:
+
+L1
+→ Persistence Context scope
+
+L2
+→ EntityManagerFactory/SessionFactory scope
+
+------------------------------------------------------------
+QUERY CACHE
+
+- Hibernate's query cache stores information about query results.
+- It is different from the L1 and L2 entity caches.
+- L2 cache primarily caches entity/association data.
+- Query cache caches information about the results of particular queries.
+
+Conceptually:
+
+Query:
+
+SELECT employees
+WHERE department = 10
+
+Query Cache
+↓
+Result identifiers / query-result information
+
+L2 Cache
+↓
+Employee entity data
+
+- Query cache generally works together with the second-level cache.
+- Query cache does not simply store arbitrary complete SQL result sets as a permanent snapshot.
+- Cache invalidation and consistency must be considered.
+
+------------------------------------------------------------
+CACHE LEVELS
+
+L1 Cache
+
+- Persistence Context scope.
+- Enabled by default.
+- Managed entities.
+- Closely tied to entity lifecycle and dirty checking.
+
+L2 Cache
+
+- EntityManagerFactory/SessionFactory scope.
+- Optional.
+- Can be shared across Persistence Contexts.
+- Requires configuration/provider.
+
+Query Cache
+
+- Caches query-result information.
+- Optional.
+- Usually used together with L2 caching.
+- Useful for suitable repeated queries, but requires careful consideration of invalidation and data-changing frequency.
+
+=======================================================================================================================================================================
+PAGINATION
+=======================================================================================================================================================================
+
+- Pagination retrieves data in smaller portions instead of loading the complete result set.
+- Two important approaches are:
+
+  - Offset pagination
+  - Cursor/keyset pagination
+
+------------------------------------------------------------
+OFFSET PAGINATION
+
+- Offset pagination uses:
+
+  - Offset
+  - Limit/page size
+
+Example:
+
+offset = 40
+limit = 20
+
+Conceptual SQL:
+
+  SELECT *
+  FROM employee
+  ORDER BY id
+  LIMIT 20 OFFSET 40;
+
+- Meaning:
+
+  - Skip the first 40 rows.
+  - Return the next 20 rows.
+
+Advantages:
+
+- Simple.
+- Easy to understand.
+- Easy to implement.
+- Supports direct page-number navigation.
+
+Disadvantages:
+
+- Large offsets can become inefficient.
+- Results can shift when records are inserted or deleted between requests.
+
+------------------------------------------------------------
+CURSOR / KEYSET PAGINATION
+
+- Cursor pagination uses a cursor representing the position from which the next page should be retrieved.
+- Keyset pagination commonly uses an ordered column such as id.
+
+Example:
+
+lastSeenId = 40
+limit = 20
+
+Conceptual SQL:
+
+  SELECT *
+  FROM employee
+  WHERE id > 40
+  ORDER BY id
+  LIMIT 20;
+
+- The next request can send a cursor representing the last position.
+
+Example:
+
+previous page ended at: id = 60
+
+Next request: WHERE id > 60
+
+
+Advantages:
+
+- Efficient for large datasets.
+- Does not require skipping a large number of rows.
+- Well suited to next/previous navigation.
+- More stable for continuously changing datasets.
+
+Disadvantages:
+
+- More complicated.
+- Arbitrary page-number navigation is not natural.
+- Requires a suitable ordering/key.
+
+------------------------------------------------------------
+OFFSET VS CURSOR
+
+Offset:
+
+Page 1
+↓
+OFFSET 0
+
+Page 2
+↓
+OFFSET 20
+
+Page 3
+↓
+OFFSET 40
+
+Cursor:
+
+Page 1
+↓
+last ID = 20
+
+Page 2
+↓
+id > 20
+
+Page 3
+↓
+id > 40
+
+- Offset asks the database to position itself based on how many rows to skip.
+- Cursor/keyset asks the database to continue after a known position.
+
+=======================================================================================================================================================================
 Hibernate/JPA performance basics
+=======================================================================================================================================================================
 
 - N+1 query problem with lazy loading and its optimization - join fetch / entity graphs / eager loading
 - Unnecessary queries
@@ -300,5 +2389,3 @@ Hibernate/JPA performance basics
 - Indexes and database-side performance
 
 =======================================================================================================================================================================
-
-

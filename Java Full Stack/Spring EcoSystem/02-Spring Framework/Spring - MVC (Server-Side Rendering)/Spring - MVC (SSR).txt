@@ -1,11 +1,19 @@
-Spring MVC:
+=======================================================================================================================================================================
+=======================================================================================================================================================================
+									SPRING MVC — SERVER-SIDE RENDERING
+=======================================================================================================================================================================
 
-- A Spring MVC is a Java framework which is used to build web applications. It follows the Model-View-Controller design pattern.
-- It implements all the basic features of a core spring framework like Inversion of Control, Dependency Injection.
-- A Spring MVC provides an elegant solution to use MVC in spring framework with the help of DispatcherServlet (The Front Controller).
-- The DispatcherServlet is a class that receives the incoming request and maps it to the right resource such as controllers, models, and views.
 
 =======================================================================================================================================================================
+SPRING MVC ARCHITECTURE
+=======================================================================================================================================================================
+
+- Spring MVC is a web framework built on top of the Servlet API.
+- A Servlet container such as Tomcat receives the HTTP request and invokes the `DispatcherServlet`.
+- `DispatcherServlet` acts as the Front Controller of the Spring MVC application.
+- It coordinates the different components involved in processing a request.
+
+- Basic request flow:
 
 Browser
    |
@@ -26,6 +34,7 @@ DispatcherServlet
    v
 Controller <--> Service <--> Repository <--> Database
    |
+   |View Name
    v
 ViewResolver
    |
@@ -33,11 +42,746 @@ ViewResolver
    v
 Browser
 
+------------------------------------------------------------
+DISPATCHERSERVLET
+
+
+- `DispatcherServlet` is a Spring MVC `Servlet`.
+- It acts as the central entry point for Spring MVC requests.
+- The Servlet container invokes it when the incoming request matches its servlet mapping.
+- It coordinates request processing rather than containing application-specific business logic.
+- Major responsibilities include:
+
+  - Finding the appropriate handler.
+  - Invoking the handler.
+  - Processing the handler's result.
+  - Resolving the view.
+  - Coordinating exception handling.
+
+------------------------------------------------------------
+FRONT CONTROLLER PATTERN
+
+
+- Front Controller is a design pattern where a single central component receives and coordinates requests.
+- Spring MVC implements the Front Controller pattern using `DispatcherServlet`.
+
+- Without a Front Controller:
+
+Request A → Servlet A
+Request B → Servlet B
+Request C → Servlet C
+
+- With Spring MVC:
+
+Request A ─┐
+Request B ─┼→ DispatcherServlet
+Request C ─┘          
+                       ↓
+             Appropriate Controller
+
+- Centralizing request processing allows common concerns such as routing and exception handling to be handled consistently.
+
+=======================================================================================================================================================================
+HANDLERMAPPING
 =======================================================================================================================================================================
 
-configuration:
+- `HandlerMapping` is responsible for finding the handler that should process an incoming request.
+- In annotation-based Spring MVC applications, the handler is typically a controller method.
+- It uses request information such as URL, HTTP method, and mapping conditions to identify the appropriate handler.
+
+- Example:
+
+@GetMapping("/employees")
+public String getEmployees() {
+    ...
+}
+
+- For:
+
+GET /employees
+
+- HandlerMapping identifies:
+
+EmployeeController.getEmployees()
+
+- Spring MVC provides the HandlerMapping implementations.
+- Developers normally do not implement HandlerMapping themselves.
+- For annotation-based controllers, an important implementation is `RequestMappingHandlerMapping`.
+- It understands annotations such as:
+
+  - `@RequestMapping`
+  - `@GetMapping`
+  - `@PostMapping`
+  - `@PutMapping`
+  - `@DeleteMapping`
+
+- An application can have multiple HandlerMappings.
+- They are application-level MVC infrastructure components.
+- They are not created separately for each controller.
+
+- Conceptually:
 
 DispatcherServlet
-Configure Application Context - Application@EnableWebMVC, @Configuration, @ComponentScan("com.example")
+      ↓
+HandlerMapping 1
+HandlerMapping 2
+HandlerMapping 3
+      ↓
+Appropriate Handler
+
+=======================================================================================================================================================================
+HANDLERADAPTER
+=======================================================================================================================================================================
+
+- `HandlerAdapter` is responsible for invoking the handler selected by HandlerMapping.
+- `DispatcherServlet` does not directly invoke every possible type of handler.
+- It delegates handler invocation to an appropriate HandlerAdapter.
+
+- Flow:
+
+DispatcherServlet
+      ↓
+HandlerMapping
+      ↓
+Find Handler
+      ↓
+HandlerAdapter
+      ↓
+Invoke Handler
+
+- For annotation-based controller methods, the HandlerAdapter also participates in:
+
+  - Resolving controller method arguments.
+  - Processing method-related annotations.
+  - Invoking the controller method.
+  - Processing the controller method's return value.
+
+- Spring MVC provides HandlerAdapter implementations.
+- For annotation-based controller methods, an important implementation is `RequestMappingHandlerAdapter`.
+- Developers normally do not implement HandlerAdapter themselves.
+- An application can have multiple HandlerAdapters.
+- They are application-level infrastructure components, not one per controller.
+
+=======================================================================================================================================================================
+CONTROLLER
+=======================================================================================================================================================================
+
+- A controller handles incoming web requests.
+- In Spring MVC SSR applications, controllers are commonly annotated with `@Controller`.
+- `@Controller` makes the class a Spring-managed component suitable for MVC request handling.
+- The controller generally delegates business logic to the service layer.
+
+- Example:
+
+@Controller
+public class EmployeeController {
+
+    @GetMapping("/employees")
+    public String getEmployees(Model model) {
+
+        List<Employee> employees =
+                employeeService.findAll();
+
+        model.addAttribute("employees", employees);
+
+        return "employees";
+    }
+}
+
+- Controller methods can:
+
+  - Receive request information.
+  - Call service-layer operations.
+  - Add data to the Model.
+  - Return a logical view name.
+
+------------------------------------------------------------
+REQUEST MAPPING
+
+
+- Spring MVC maps HTTP requests to controller methods using mapping annotations.
+- Common annotations:
+
+@RequestMapping
+@GetMapping
+@PostMapping
+@PutMapping
+@DeleteMapping
+
+- Example:
+
+@GetMapping("/employees")
+public String getEmployees() {
+    return "employees";
+}
+
+- Mapping:
+
+GET /employees
+      ↓
+getEmployees()
+
+=======================================================================================================================================================================
+MODEL
+=======================================================================================================================================================================
+
+- `Model` is a Spring MVC abstraction used to carry data from the controller to the view.
+- It is not the same as a JPA entity model or database model.
+- It represents data that should be made available to the view during the current request.
+
+- Example:
+
+model.addAttribute("employees", employees);
+
+- Conceptually:
+
+Model
+┌──────────────────────────────┐
+│ "employees" → List<Employee> │
+└──────────────────────────────┘
+
+------------------------------------------------------------
+MODEL.ADDATTRIBUTE()
+
+
+- `addAttribute()` adds data to the Model using a name-value pair.
+
+- Example:
+
+model.addAttribute("employees", employees);
+
+- `employees` is the model attribute name.
+- `employees` is the value made available to the view.
+- The view can then access the model attribute while rendering the response.
+
+------------------------------------------------------------
+Passing data from Controller → View
+
+- When the controller returns, the DispatcherServlet has the model and the logical view name
+- It passes these to the view-rendering mechanism
+- Then the ViewResolver resolves the view name 
+- Finally when the JSP is rendered, the model attributes are made available to the JSP's request context.
+
+How does the JSP access it?
+
+- For example, with JSTL:
+
+<c:forEach var="employee" items="${employees}">
+    <p>${employee.name}</p>
+</c:forEach>
+
+------------------------------------------------------------
+MODEL VS SERVLET REQUEST ATTRIBUTES
+
+
+- In a traditional Servlet application, data can be passed to a JSP using request attributes.
+- Servlet approach:
+
+request.setAttribute("employees", employees);
+RequestDispatcher dispatcher = request.getRequestDispatcher("/employees.jsp");
+dispatcher.forward(request, response);
+
+- Spring MVC provides the higher-level `Model` abstraction.
+- Spring MVC approach:
+
+model.addAttribute("employees", employees);
+return "employees";
+
+- Spring MVC handles the underlying request-to-view processing.
+- Conceptually:
+
+
+Servlet
+
+request.setAttribute()
+        ↓
+RequestDispatcher.forward()
+        ↓
+JSP
+
+
+Spring MVC
+
+model.addAttribute()
+        ↓
+return "employees"
+        ↓
 ViewResolver
-Configure application beans
+        ↓
+JSP
+
+=======================================================================================================================================================================
+VIEW
+=======================================================================================================================================================================
+
+- A View is responsible for generating the response representation.
+- In Spring MVC SSR, the View typically generates HTML on the server.
+- JSP is one traditional server-side view technology.
+- The controller generally returns a logical view name rather than directly generating HTML.
+
+------------------------------------------------------------
+LOGICAL VIEW NAME
+
+
+- A controller can return a `String` representing a logical view name.
+
+- Example:
+
+return "employees";
+
+- `"employees"` is a logical view name.
+- It is not necessarily the physical path of the JSP file.
+- Spring MVC passes the logical view name to the ViewResolver.
+
+- Conceptually:
+
+"employees"
+     ↓
+ViewResolver
+     ↓
+employees.jsp
+
+------------------------------------------------------------
+JSP AS A SERVER-SIDE VIEW
+
+
+- JSP can be used as the View in a Spring MVC SSR application.
+- The JSP executes on the server and generates HTML.
+- The generated HTML is then sent to the browser.
+
+- Conceptually:
+
+Controller
+    ↓
+Model
+    ↓
+JSP
+    ↓
+HTML
+    ↓
+Browser
+
+- JSP is a traditional view technology; Spring MVC is not limited to JSP.
+
+=======================================================================================================================================================================
+VIEWRESOLVER
+=======================================================================================================================================================================
+
+- `ViewResolver` maps a logical view name to an actual View.
+- It separates the controller from the physical location and technology of the view.
+
+- Example:
+
+return "employees";
+
+- ViewResolver can resolve this to:
+
+/WEB-INF/views/employees.jsp
+
+- Conceptually:
+
+Controller
+    ↓
+"employees"
+    ↓
+ViewResolver
+    ↓
+/WEB-INF/views/employees.jsp
+
+- Spring MVC provides ViewResolver implementations.
+- Developers normally configure the appropriate ViewResolver rather than implementing one themselves.
+- An application can have multiple ViewResolvers.
+- They are application-level infrastructure components, not one per controller.
+
+------------------------------------------------------------
+JSP PREFIX AND SUFFIX
+
+
+- A JSP ViewResolver can be configured with a prefix and suffix.
+
+- Example:
+
+Prefix: /WEB-INF/views/
+Suffix: .jsp
+
+- When the controller returns:
+
+return "employees";
+
+- Spring resolves it conceptually as:
+
+/WEB-INF/views/ + employees + .jsp → /WEB-INF/views/employees.jsp
+
+- Example configuration:
+
+@Bean
+public InternalResourceViewResolver viewResolver() {
+
+    InternalResourceViewResolver resolver = new InternalResourceViewResolver();
+
+    resolver.setPrefix("/WEB-INF/views/");
+    resolver.setSuffix(".jsp");
+
+    return resolver;
+}
+
+------------------------------------------------------------
+MULTIPLE VIEWRESOLVERS
+
+
+- Spring MVC can have multiple ViewResolvers.
+- They are application-level infrastructure components.
+- They are not created separately for every controller.
+
+- Conceptually:
+
+DispatcherServlet
+      ↓
+ViewResolver 1
+ViewResolver 2
+ViewResolver 3
+      ↓
+Resolved View
+
+=======================================================================================================================================================================
+SPRING MVC SSR REQUEST FLOW
+=======================================================================================================================================================================
+
+- Consider:
+
+GET /employees
+
+
+- The complete request processing flow is:
+
+
+Client
+  ↓
+GET /employees
+  ↓
+Tomcat
+  ↓
+DispatcherServlet
+  ↓
+HandlerMapping
+  ↓
+Find EmployeeController.getEmployees()
+  ↓
+HandlerAdapter
+  ↓
+Invoke controller method
+  ↓
+Controller
+  ↓
+Service
+  ↓
+Model + "employees"
+  ↓
+ViewResolver
+  ↓
+/WEB-INF/views/employees.jsp
+  ↓
+JSP renders HTML
+  ↓
+HTTP Response
+  ↓
+Browser
+
+
+- The important responsibilities are:
+
+
+DispatcherServlet
+    → Coordinates request processing
+
+HandlerMapping
+    → Finds the appropriate handler
+
+HandlerAdapter
+    → Invokes the handler
+
+Controller
+    → Handles the web request
+
+Model
+    → Carries data to the View
+
+ViewResolver
+    → Resolves logical view name to View
+
+JSP
+    → Generates HTML
+
+=======================================================================================================================================================================
+SPRING MVC (SSR) - CONFIGURATION
+=======================================================================================================================================================================
+
+- Before Spring Boot, Spring MVC applications required more explicit configuration.
+- The developer typically needed to configure or register:
+
+  - DispatcherServlet
+  - Servlet mappings
+  - Spring MVC configuration
+  - Component scanning
+  - ViewResolver
+  - View-related configuration
+
+- Spring Boot reduces much of this explicit configuration through auto-configuration.
+
+------------------------------------------------------------
+DISPATCHERSERVLET CONFIGURATION
+
+
+- The Servlet container must know about the `DispatcherServlet`.
+- Traditionally, this was commonly configured using `web.xml`.
+
+- Example:
+
+<servlet>
+    <servlet-name>dispatcher</servlet-name>
+
+    <servlet-class>
+        org.springframework.web.servlet.DispatcherServlet
+    </servlet-class>
+</servlet>
+
+<servlet-mapping>
+    <servlet-name>dispatcher</servlet-name>
+    <url-pattern>/</url-pattern>
+</servlet-mapping>
+
+- The servlet mapping determines which requests are routed to the DispatcherServlet.
+
+------------------------------------------------------------
+WEB.XML
+
+
+- `web.xml` is the traditional deployment descriptor for Java web applications.
+- It can be used to configure:
+
+  - Servlets
+  - Servlet mappings
+  - Filters
+  - Listeners
+  - Other web application configuration (Component scan, Enablement of Spring MVC, ViewResolver)
+
+
+- Modern Spring applications use Java-based configuration instead.
+
+------------------------------------------------------------
+JAVA-BASED CONFIGURATION
+
+
+- Spring MVC configuration can be defined using Java configuration instead of XML.
+
+- Example:
+
+@Configuration
+@EnableWebMvc
+@ComponentScan("com.example")
+public class WebConfig {
+}
+
+- `@Configuration` identifies the class as a source of Spring bean configuration.
+- `@EnableWebMvc` enables Spring MVC configuration support.
+- `@ComponentScan` enables component scanning for the specified package.
+
+------------------------------------------------------------
+@ENABLEWEBMVC
+
+
+- `@EnableWebMvc` enables Spring MVC configuration support.
+- It registers/configures the MVC infrastructure required by Spring MVC.
+- It is commonly used in traditional Java-based Spring MVC applications.
+- Spring Boot provides additional auto-configuration that can configure MVC infrastructure automatically.
+
+------------------------------------------------------------
+@COMPONENTSCAN
+
+
+- `@ComponentScan` tells Spring which packages to scan for Spring components.
+- Spring discovers classes annotated with component stereotypes and registers them as Spring beans.
+
+- Common component annotations:
+
+@Controller
+@Service
+@Repository
+@Component
+
+- Example:
+
+@ComponentScan("com.example")
+
+- Conceptually:
+
+@ComponentScan
+      ↓
+Package scanning
+      ↓
+Find EmployeeController
+      ↓
+Register EmployeeController as Spring Bean
+
+------------------------------------------------------------
+VIEWRESOLVER CONFIGURATION
+
+
+- Traditional Spring MVC applications can explicitly configure a ViewResolver.
+
+- Example:
+
+@Bean
+public InternalResourceViewResolver viewResolver() {
+
+    InternalResourceViewResolver resolver = new InternalResourceViewResolver();
+
+    resolver.setPrefix("/WEB-INF/views/");
+    resolver.setSuffix(".jsp");
+
+    return resolver;
+}
+
+- Then:
+
+return "employees";
+
+- resolves conceptually to:
+
+/WEB-INF/views/employees.jsp
+
+=======================================================================================================================================================================
+EXCEPTION HANDLING
+=======================================================================================================================================================================
+
+- Spring MVC provides mechanisms to handle exceptions thrown during request processing.
+- The main mechanisms covered are:
+
+  - `@ExceptionHandler`
+  - `@ControllerAdvice`
+
+------------------------------------------------------------
+@EXCEPTIONHANDLER
+
+
+- `@ExceptionHandler` identifies a method that handles a particular exception.
+- It can be defined inside a controller.
+- The handler method can return a logical view name in an SSR application.
+
+- Example:
+
+@Controller
+public class EmployeeController {
+
+    @GetMapping("/employees/{id}")
+    public String getEmployee(
+            @PathVariable Long id,
+            Model model) {
+
+        ...
+    }
+
+    @ExceptionHandler(EmployeeNotFoundException.class)
+    public String handleEmployeeNotFound() {
+
+        return "employee-not-found";
+    }
+}
+
+- If the controller throws `EmployeeNotFoundException`, Spring MVC can invoke the corresponding exception handler.
+
+- SSR flow:
+
+
+Controller
+    ↓
+Exception
+    ↓
+@ExceptionHandler
+    ↓
+Logical View Name
+    ↓
+ViewResolver
+    ↓
+JSP
+    ↓
+HTML Response
+
+------------------------------------------------------------
+@CONTROLLERADVICE
+
+
+- `@ControllerAdvice` allows controller-related behavior to be applied across multiple controllers.
+- It is commonly used to centralize exception handling.
+- It avoids duplicating the same exception-handling methods in every controller.
+
+- Without `@ControllerAdvice`:
+
+```text
+EmployeeController
+    ↓
+Exception Handler
+
+DepartmentController
+    ↓
+Exception Handler
+
+ProjectController
+    ↓
+Exception Handler
+
+- With `@ControllerAdvice`:
+
+EmployeeController ─┐
+DepartmentController ├──→ @ControllerAdvice
+ProjectController ───┘
+                           ↓
+                    Exception Handlers
+
+- Example:
+
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(EmployeeNotFoundException.class)
+    public String handleEmployeeNotFound() {
+
+        return "employee-not-found";
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public String handleIllegalArgument(
+            IllegalArgumentException ex) {
+
+        return "bad-request";
+    }
+}
+
+
+- `@ControllerAdvice` itself is not limited to a particular exception or controller.
+- The exception type specified on each `@ExceptionHandler` determines which exception that particular method handles.
+- A single `@ControllerAdvice` can contain multiple exception handlers.
+- In SSR applications, these handlers can return logical view names.
+
+
+- Example:
+
+Any Controller
+      ↓
+Exception
+      ↓
+@ControllerAdvice
+      ↓
+Matching @ExceptionHandler
+      ↓
+View Name
+      ↓
+ViewResolver
+      ↓
+JSP
+      ↓
+HTML
+
+- `@RestControllerAdvice` is the REST-oriented variant and is covered with Spring REST.
+
+=======================================================================================================================================================================

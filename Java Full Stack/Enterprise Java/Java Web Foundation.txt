@@ -6,24 +6,30 @@
 
 Supporting Servlet infrastructure:
 
-  Servlet
-  HttpServlet
-  HttpSession
-  HttpServletRequest
-  HttpServletResponse
-  Web server
-  Servlet Container
-  Application server
-  Request Scope
-  Session Scope
-  Application Scope
-  RequestDispatcher
-  Forward
-  Include
-  Redirect
-  Filters
-  ServletConfig
-  ServletContext
+Servlet
+HttpServlet
+HttpSession
+HttpServletRequest
+HttpServletResponse
+Web server
+Servlet Container
+Application server
+Request Scope
+Session Scope
+Application Scope
+RequestDispatcher
+Forward
+Include
+Redirect
+Filters
+ServletConfig
+ServletContext
+JSP
+JSP Lifecycle
+JSP Expressions
+JSP Scriptlets
+JSP Declarations
+JSP Directives
 
 =============================================================================================================================================================================
 JAVA WEB APPLICATIONS
@@ -622,9 +628,9 @@ RESPONSE BODY
 SERVLET URL MAPPING
 =============================================================================================================================================================================
 
-@WEBSERVLET
+- A Servlet can be mapped to a URL using @WebServlet annotation or <servlet> & <servlet-mapping> in web.xml.
 
-- A Servlet can be mapped to a URL using @WebServlet.
+Example:
 
   @WebServlet("/hello")
   public class HelloServlet extends HttpServlet {
@@ -704,11 +710,58 @@ WEB.XML
   - Servlets
   - Servlet mappings
   - Initialization parameters
-  - Filters
+  - Filter mappings, multiple filter chain
   - Other web application configuration
 
 Example:
 
+  <servlet>
+      <servlet-name>HelloServlet</servlet-name>
+      <servlet-class>com.example.HelloServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+      <servlet-name>HelloServlet</servlet-name>
+      <url-pattern>/hello</url-pattern>
+  </servlet-mapping>
+
+------------------------------------------------------------
+ANNOTATION-BASED CONFIGURATION
+
+- Modern Servlet applications commonly use annotations instead of XML for many configuration tasks.
+- The servlet container automatically detects the @WebServlet() and routes the request accordingly.
+- It is mostly used to configure:
+
+  - Servlets
+  - Servlet mappings
+  - Initialization parameters
+  - Filter mappings
+
+- Example:
+
+  @WebServlet("/hello")
+  public class HelloServlet extends HttpServlet {
+  }
+
+- Annotation-based configuration reduces the need for web.xml
+
+------------------------------------------------------------
+SERVLET INITIALIZATION PARAMETERS
+
+- Servlet-specific initialization parameters can be configured using @WebInitParam annotation and <init-param> in web.xml.
+- These are servlet-wide initialization parameters and defined inside the <servlet> tag in web.xml
+- Example:
+
+  @WebServlet(
+  	value = "/hello",
+  	initParams = {
+  	@WebInitParam(name = "environment", value = "prod")
+  	}
+  )
+  public class HelloServlet extends HttpServlet {
+  }
+
+		(or)
   <servlet>
       <servlet-name>HelloServlet</servlet-name>
       <servlet-class>com.example.HelloServlet</servlet-class>
@@ -724,35 +777,7 @@ Example:
       <url-pattern>/hello</url-pattern>
   </servlet-mapping>
 
-------------------------------------------------------------
-ANNOTATION-BASED CONFIGURATION
-
-- Modern Servlet applications commonly use annotations instead of XML for many configuration tasks.
-
-- Example:
-
-  @WebServlet("/hello")
-  public class HelloServlet extends HttpServlet {
-  }
-
-- Annotation-based configuration reduces the need for web.xml.
-
-------------------------------------------------------------
-SERVLET INITIALIZATION PARAMETERS
-
-- Servlet-specific initialization parameters can be configured for a Servlet.
 - These parameters are accessed through ServletConfig.
-
-- Example:
-
-  @WebServlet(
-  	value = "/hello",
-  	initParams = {
-  	@WebInitParam(name = "environment", value = "prod")
-  	}
-  )
-  public class HelloServlet extends HttpServlet {
-  }
 
 ------------------------------------------------------------
 SERVLETCONFIG
@@ -776,8 +801,44 @@ SERVLETCONFIG
   ↓
   Context for the entire Web Application
 
+------------------------------------------------------------
+APPLICATION-WIDE INITIALIZATION PARAMETERS:
+
+- Application-wide initialization parameters can be configured using <context-param> in web.xml.
+- These are defined outside the <servlet> tag in web.xml
+- Example:
+
+  <context-param>
+      <param-name>environment</param-name>
+      <param-value>prod</param-value>
+  </context-param>
+
+- They can be accessed through ServletContext
+
+------------------------------------------------------------
+SERVLETCONTEXT
+
+- Application-wide initialization parameters belong to the Web Application as a whole
+
+  ServletContext context = getServletContext();
+  String environment = context.getInitParameter("environment");
+
+- Retrieve it:
+
+  String databaseUrl = getServletContext().getInitParameter("databaseUrl");
+
+- Important distinction:
+
+  ServletConfig
+  ↓
+  Configuration for one Servlet
+
+  ServletContext
+  ↓
+  Configuration and shared context for the entire Web Application
+
 =============================================================================================================================================================================
-SERVLET SCOPES & CONTEXT
+SERVLET SCOPES
 =============================================================================================================================================================================
 
 - Different scopes determine:
@@ -887,8 +948,7 @@ APPLICATION SCOPE
 
 - Obtain the application context:
 
-  ServletContext context =
-  getServletContext();
+  ServletContext context = getServletContext();
 
 - Store application-wide data:
 
@@ -896,8 +956,7 @@ APPLICATION SCOPE
 
 - Retrieve application-wide data:
 
-  Object config =
-  context.getAttribute("config");
+  Object config = context.getAttribute("config");
 
 - The same ServletContext represents the Web Application as a whole.
 - Application-scope attributes can therefore be accessed by multiple components.
@@ -1080,8 +1139,9 @@ REDIRECT
        ↓
   Servlet B / JSP
 
-------------------------------------------------------------
+=============================================================================================================================================================================
 SERVLET FILTERS
+=============================================================================================================================================================================
 
 - A Servlet Filter is a web component that can intercept requests and/or responses before and after a target resource executes.
 - Conceptual flow:
@@ -1109,7 +1169,79 @@ SERVLET FILTERS
 
   chain.doFilter(request, response);
 
+- If chain.doFilter() is not called, the request does not continue to the next component in the chain.
 - Filters are particularly important in modern Spring applications because technologies such as Spring Security use the Servlet filter chain extensively.
+
+------------------------------------------------------------
+SERVLET FILTERS — CONFIGURATION
+
+- A Filter can be configured using annotations or web.xml.
+- XML-based configuration uses <filter> and <filter-mapping>.
+
+  <filter>
+      <filter-name>LoggingFilter</filter-name>
+      <filter-class>com.example.LoggingFilter</filter-class>
+  </filter>
+
+  <filter-mapping>
+      <filter-name>LoggingFilter</filter-name>
+      <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+- Annotation-based configuration:
+- @WebFilter can define the URL patterns to which the Filter applies.
+
+  @WebFilter(urlPatterns = "/products/*")
+  public class LoggingFilter implements Filter {
+
+    // filter implementation
+  }
+
+------------------------------------------------------------
+- The two important mapping options are:
+
+<url-pattern>
+    ↓
+Apply filter based on URL
+
+
+<servlet-name>
+    ↓
+Apply filter based on Servlet
+
+- In the above examples, the filters are mapped to URL patterns
+- We can also map a Filter to a particular Servlet
+
+<filter>
+    <filter-name>LoggingFilter</filter-name>
+    <filter-class>com.example.LoggingFilter</filter-class>
+</filter>
+
+<filter-mapping>
+    <filter-name>LoggingFilter</filter-name>
+    <servlet-name>ProductServlet</servlet-name>
+</filter-mapping>
+
+- Here, the Filter applies specifically to requests handled by ProductServlet
+
+------------------------------------------------------------
+- Multiple Filters can be configured for the same request.
+
+Client
+↓
+Filter 1
+↓
+Filter 2
+↓
+Servlet
+↓
+Filter 2
+↓
+Filter 1
+↓
+Client
+
+- Servlet Container follows the order of the filters configured in the web.xml, hence it is prefered to configure the filters in web.xml rather than using @WebFilter
 
 =============================================================================================================================================================================
 JSP — JAVASERVER PAGES

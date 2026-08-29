@@ -1,0 +1,470 @@
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+									REST APIs - Servlet Based Implementation
+=============================================================================================================================================================================
+Supporting Infrastructure:
+
+Servlet
+HttpServlet
+HttpServletRequest
+HttpServletResponse
+Web Server
+Servlet Container
+Application Server
+Request Scope
+Session Scope
+Application Scope
+ServletConfig
+ServletContext
+HTTP Methods
+HTTP Status Codes
+Request Headers
+Response Headers
+Request Parameters
+Path Parameters
+Query Parameters
+Request Body
+Response Body
+Content-Type
+Accept
+JSON
+XML
+Jackson
+Serialization
+Deserialization
+
+=============================================================================================================================================================================
+
+
+=============================================================================================================================================================================
+REST API IMPLEMENTATION USING SERVLETS
+=============================================================================================================================================================================
+
+- A REST API can be implemented directly using the Servlet API.
+- A Servlet can act as the REST Controller.
+- The Servlet receives the HTTP request and produces the REST response.
+
+- Typical structure:
+
+  Client
+  ↓
+  HTTP Request
+  ↓
+  ProductServlet
+  ↓
+  ProductService
+  ↓
+  ProductRepository / DAO
+  ↓
+  Database
+
+=============================================================================================================================================================================
+REST API APPLICATION STRUCTURE
+=============================================================================================================================================================================
+
+- A traditional Java REST application can be structured as:
+
+  Java Web Application
+  │
+  ├── Controller
+  │   └── ProductServlet
+  │
+  ├── Service
+  │   └── ProductService
+  │
+  ├── Repository / DAO
+  │   └── ProductRepository
+  │
+  └── Model
+  └── Product
+
+- The Controller handles HTTP communication.
+
+- The Service contains business logic.
+
+- The Repository / DAO handles data access.
+
+- The Model represents application data.
+
+- JSON/XML represents the data transferred between the server and client.
+
+=============================================================================================================================================================================
+REST API SERVLET EXAMPLE
+=============================================================================================================================================================================
+
+- Example endpoint:
+
+  GET /products/101
+
+- Servlet mapping:
+
+  @WebServlet("/products/*")
+
+- The Servlet can obtain the path information using:
+
+  String path = request.getPathInfo();
+
+- For:
+
+  /products/101
+
+  `getPathInfo()` can return:
+
+  /101
+
+- The Servlet can then obtain the resource identifier and call the service layer.
+
+- Example:
+
+  @WebServlet("/products/*")
+  public class ProductServlet extends HttpServlet {
+
+  private ProductService productService;
+
+  	@Override
+  	protected void doGet(
+  	        HttpServletRequest request,
+          	HttpServletResponse response)
+          	throws IOException {
+
+      		String path = request.getPathInfo();
+
+      		String id = path.substring(1);
+
+      		Product product = productService.getProduct(Long.parseLong(id));
+
+      		response.setContentType("application/json");
+
+      		// Serialize product to JSON
+      		// and write it to the response.
+  	}
+  }
+
+=============================================================================================================================================================================
+REST API REQUEST FLOW
+=============================================================================================================================================================================
+
+- Example:
+
+  GET /products/101
+
+  Accept: application/json
+
+
+  ProductServlet
+  ↓
+  Extract product ID
+  ↓
+  ProductService
+  ↓
+  ProductRepository
+  ↓
+  Database
+  ↓
+  Product object
+  ↓
+  Jackson serialization
+  ↓
+  JSON response
+  ↓
+  Client
+
+=============================================================================================================================================================================
+JACKSON
+=============================================================================================================================================================================
+
+- Jackson is a popular Java library for processing JSON.
+
+- It converts between Java objects and JSON.
+
+- Two important operations are:
+
+  Serialization
+  ↓
+  Java Object → JSON
+
+  Deserialization
+  ↓
+  JSON → Java Object
+
+------------------------------------------------------------
+JACKSON — SERIALIZATION
+
+- Serialization converts a Java object into JSON.
+
+- Example:
+
+  Product product =
+  new Product(101L, "Laptop", 75000);
+
+- Using Jackson:
+
+  ObjectMapper mapper = new ObjectMapper();
+
+  String json =
+  mapper.writeValueAsString(product);
+
+- Result:
+
+  {
+  "id": 101,
+  "name": "Laptop",
+  "price": 75000.0
+  }
+
+- `writeValueAsString()` performs serialization.
+
+------------------------------------------------------------
+JACKSON — DESERIALIZATION
+
+- Deserialization converts JSON into a Java object.
+
+- Example JSON:
+
+  {
+  "id": 101,
+  "name": "Laptop",
+  "price": 75000
+  }
+
+- Using Jackson:
+
+  ObjectMapper mapper = new ObjectMapper();
+
+  Product product =
+  mapper.readValue(json, Product.class);
+
+- `readValue()` performs deserialization.
+
+------------------------------------------------------------
+JACKSON — COLLECTIONS
+
+- Jackson can also serialize and deserialize collections and nested Java objects.
+
+- Example:
+
+  List<Product> products
+
+  can be serialized into:
+
+  [
+  	{
+  		"id": 101,
+  		"name": "Laptop"
+  	},
+  	{
+  		"id": 102,
+  		"name": "Phone"
+  	}
+  ]
+
+- Jackson can also deserialize JSON arrays into Java collections.
+
+=============================================================================================================================================================================
+REST VS MVC / SSR
+=============================================================================================================================================================================
+
+- MVC/SSR commonly generates an HTML representation on the server.
+
+  Client
+  ↓
+  Controller
+  ↓
+  Service
+  ↓
+  JSP
+  ↓
+  HTML
+  ↓
+  Client
+
+- REST APIs commonly return a data representation.
+
+  Client
+  ↓
+  REST Controller
+  ↓
+  Service
+  ↓
+  JSON / XML
+  ↓
+  Client
+
+- MVC/SSR:
+
+  - Server generates the UI representation.
+  - JSP can be used as the View.
+  - Browser receives HTML.
+
+- REST:
+
+  - Server exposes resources and their representations.
+  - JSON/XML is commonly returned.
+  - The client is responsible for presenting the data.
+
+=============================================================================================================================================================================
+
+
+
+
+
+===============================================================================================================================================================================
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< REST APIs - Jersey (JAX-RS) >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+===============================================================================================================================================================================
+
+Supporting Infrastructure:
+
+JAX-RS
+Jersey
+JAX-RS Resource
+JAX-RS Annotations
+
+===============================================================================================================================================================================
+web.xml
+===============================================================================================================================================================================
+The web.xml routes all the https requests matching the url-pattern /webapi/* to ServletContainer which then searches for the responses/logic under the specified package "com.webApiApp.student" and its sub packages by matching the URL with the @path("students").
+
+
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+    <servlet>
+        <servlet-name>Jersey Web Application</servlet-name>
+        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+        <init-param>
+            <param-name>jersey.config.server.provider.packages</param-name>
+            <param-value>com.webApiApp.student</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Jersey Web Application</servlet-name>
+        <url-pattern>/webapi/*</url-pattern>
+    </servlet-mapping>
+</web-app>
+
+===============================================================================================================================================================================
+Package Structure:
+===============================================================================================================================================================================
+
+com.example.api.resources		: Contains your JAX-RS resource classes with @Path.
+com.example.api.service			: Contains business logic.
+com.example.api.dao (or repository)	: Data access code.
+com.example.api.model			: Entities and data objects.
+com.example.api.config			: Your ResourceConfig setup
+
+===============================================================================================================================================================================
+Resource package:
+===============================================================================================================================================================================
+In the Resource package (the web layer) of a Jersey application, annotations are used to define how Java methods map to HTTP requests.
+
+1. Routing & Mapping Annotations:
+These define where your API lives and what "actions" it can perform.
+
+	@Path("/your-path")	: Defines the URI path for a class or method. It can be applied at the class level (root path) or method level (sub-path).
+	@GET			: For fetching data.
+	@POST			: For creating new data.
+	@PUT			: For updating existing data.
+	@DELETE			: For removing data.
+
+
+
+2. Content Negotiation Annotations:
+These define the format of the data being sent or received (e.g., JSON, XML, Plain Text).
+
+	@Produces(MediaType.APPLICATION_JSON): Specifies the format of the response sent to the client.
+	@Consumes(MediaType.APPLICATION_JSON): Specifies the format of the request body expected from the client.
+
+
+
+3. Parameter Injection Annotations:
+These "pull" data out of the incoming request and inject them into your method arguments.
+
+	@PathParam("id")		: Extracts values directly from the URI path (e.g., /users/{id}).
+		Best Use	: Identifying a specific, unique resource.
+		URL Syntax	: https://api.com/12
+
+	@QueryParam("search")		: Extracts values from the URL query string (e.g., ?search=java).
+		Best Use	: Filtering, sorting, pagination, or optional fields.
+		URL Syntax	: https://api.com?param1=value1&param2=value2
+
+	@HeaderParam("User-Agent")	: Extracts metadata from HTTP request headers.
+		Best Use	: Authentication tokens, API keys, client types, or content preferences.
+		URL Syntax	: https://api.com (Data is hidden as metadata in the request header).
+
+	@Context			: Injects special web-related objects like UriInfo or HttpServletRequest.
+
+
+
+Example Snippet:
+
+public class OrderResource {
+
+    @GET
+    @Path("/{orderId}") // Full path: /orders/123
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getOrderDetails(@PathParam("orderId") String id) {
+        // Logic to fetch order using 'id'
+        return Response.ok(new Order(id, "Pizza")).build();
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createOrder(Order newOrder) {
+        // Jersey automatically converts JSON body into 'newOrder' object (deserializing)
+        return Response.status(Response.Status.CREATED).entity(newOrder).build();
+    }
+}
+
+===============================================================================================================================================================================
+Service Package:
+===============================================================================================================================================================================
+
+Business Logic Hub: This is where you perform calculations, filter data, check permissions, and handle complex "if/then" rules.
+
+===============================================================================================================================================================================
+DAO / Repository Layer:
+===============================================================================================================================================================================
+
+A DAO is "table-centric." You usually create one DAO for every database table. It contains the raw logic to perform CRUD (Create, Read, Update, Delete) operations.
+
+===============================================================================================================================================================================
+Model Layer:
+===============================================================================================================================================================================
+Purpose: This is the version of the object you send over the network (JSON).
+
+Serialization: Jersey uses libraries like Jackson or Moxy to turn these Java objects into JSON. For this to work, your models must have:
+	- A public no-argument constructor.
+	- Getters and Setters for all fields.
+
+Common Annotations:
+	@XmlRootElement			: Used for XML serialization
+	@JsonProperty("user_name")	: Changes the name of the field in the JSON output.
+	@JsonIgnore			: Prevents a field from being sent in the JSON (great for sensitive data).
+	@NotNull / @Size		: Used for validating input data.
+
+===============================================================================================================================================================================
+Application Config:
+===============================================================================================================================================================================
+
+To tell Jersey where your resources are, you use a class that extends ResourceConfig or Application.
+
+Responsibility: Registering resource packages and features (like JSON support).java@ApplicationPath("/api")
+
+Example snippet:
+
+public class MyConfig extends ResourceConfig {
+    public MyConfig() {
+        packages("com.example.rest.resources"); // Scans this package for @Path
+    }
+}
+
+===============================================================================================================================================================================
+
+Uncomment the Moxy dependency in pom.xml for JSON serialization:
+
+<dependency>
+	<groupId>org.glassfish.jersey.media</groupId>
+	<artifactId>jersey-media-moxy</artifactId>
+</dependency>
+
+===============================================================================================================================================================================

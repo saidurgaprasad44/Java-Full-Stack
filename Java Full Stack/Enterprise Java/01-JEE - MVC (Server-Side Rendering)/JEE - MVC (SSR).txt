@@ -2,6 +2,38 @@
 =============================================================================================================================================================================
 									MVC - Server-Side Rendering
 =============================================================================================================================================================================
+
+Supporting Servlet infrastructure:
+
+Servlet
+HttpServlet
+HttpSession
+HttpServletRequest
+HttpServletResponse
+Web server
+Servlet Container
+Application server
+Request Scope
+Session Scope
+Application Scope
+RequestDispatcher
+Forward
+Include
+Redirect
+Filters
+ServletConfig
+ServletContext
+JSP
+JSP Lifecycle
+JSP Expressions
+JSP Scriptlets
+JSP Declarations
+JSP Directives
+MVC Pattern
+Model
+View
+Controller
+
 =============================================================================================================================================================================
 MVC / SSR FOUNDATION
 =============================================================================================================================================================================
@@ -256,6 +288,8 @@ REQUEST FLOW IN MVC
 
 - A typical traditional Java Web MVC request flow is:
 
+
+
   Browser
   ↓
   HTTP Request
@@ -279,6 +313,8 @@ REQUEST FLOW IN MVC
   HTTP Response
   ↓
   Browser
+
+
 
 - Example request:
 
@@ -478,7 +514,7 @@ DEPLOYMENT STRUCTURE
 - The server-side application can access/forward to appropriate resources under WEB-INF.
 
 =============================================================================================================================================================================
-JAVA WEB APPLICATION STRUCTURE
+JAVA WEB APPLICATION PROJECT COMPONENTS
 =============================================================================================================================================================================
 
 - A traditional Java Web Application commonly contains:
