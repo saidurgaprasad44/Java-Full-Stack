@@ -1191,6 +1191,34 @@ Flush
 ↓
 Rollback
 
+        
+Example:
+
+	EntityTransaction tx = em.getTransaction();
+
+        try {
+        	tx.begin();
+        		
+        	// 1. Your database operations here (e.g., em.persist, em.merge)
+
+		// 2. Force immediate synchronization with the database
+    		em.flush(); 
+            
+        	tx.commit();
+        }
+        catch(Exception e) {
+		// 3. Rollback the active transaction on failure
+    		if (tx != null && tx.isActive()) {
+        		tx.rollback(); 
+    		}
+    		e.printStackTrace(); 
+	}
+	finally {
+		if (em != null && em.isOpen()) {
+        		em.close(); 
+			emf.close();
+    		}
+	}
 ------------------------------------------------------------
 FLUSH VS COMMIT
 
@@ -1214,7 +1242,7 @@ Example:
 - Database can now contain salary = 70000.
 - But if the transaction has not committed, it can still be rolled back.
 
-  em.rollback();
+  tx.rollback();
 
 - The uncommitted transaction changes are undone.
 - After successful commit(), that transaction cannot be rolled back.
@@ -2300,6 +2328,25 @@ Disadvantages:
 - Large offsets can become inefficient.
 - Results can shift when records are inserted or deleted between requests.
 
+
+Implementation:
+
+[Write the code implementation / usage of implementation in Java 
+
+
+
+
+
+
+
+
+
+
+
+
+
+]
+
 ------------------------------------------------------------
 CURSOR / KEYSET PAGINATION
 
@@ -2341,6 +2388,23 @@ Disadvantages:
 - Arbitrary page-number navigation is not natural.
 - Requires a suitable ordering/key.
 
+Implementation:
+
+[Write the code implementation / usage of implementation in Java 
+
+
+
+
+
+
+
+
+
+
+
+
+
+]
 ------------------------------------------------------------
 OFFSET VS CURSOR
 
@@ -2375,6 +2439,23 @@ id > 40
 - Offset asks the database to position itself based on how many rows to skip.
 - Cursor/keyset asks the database to continue after a known position.
 
+Implementation:
+
+[Write the code implementation / usage of implementation in Java 
+
+
+
+
+
+
+
+
+
+
+
+
+
+]
 =======================================================================================================================================================================
 Hibernate/JPA performance basics
 =======================================================================================================================================================================

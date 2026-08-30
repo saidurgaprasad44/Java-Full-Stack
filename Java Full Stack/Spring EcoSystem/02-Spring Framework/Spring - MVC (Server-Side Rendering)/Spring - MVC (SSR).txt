@@ -512,39 +512,99 @@ ViewResolver
 JSP
     → Generates HTML
 
+
+=======================================================================================================================================================================
+FILTERS
+=======================================================================================================================================================================
+
+[To be added — Servlet Filter concepts and configuration]
+
+
+=======================================================================================================================================================================
+INTERCEPTORS
+=======================================================================================================================================================================
+
+[To be added — Spring MVC Interceptor concepts and configuration]
+
+
 =======================================================================================================================================================================
 SPRING MVC (SSR) - CONFIGURATION
 =======================================================================================================================================================================
 
-Spring MVC Configuration 
- 	DispatcherServlet configuration 
- 	web.xml 
- 	Java-based configuration 
- 	@EnableWebMvc 
- 	@ComponentScan 
- 	ViewResolver configuration 
+- Traditional Spring MVC applications require explicit configuration for the web layer and Spring MVC infrastructure.
+- Configuration can be done using:
 
+  - XML-based configuration
+  - Java-based configuration
 
-- Before Spring Boot, Spring MVC applications required more explicit configuration.
-- The developer typically needed to configure or register:
+- The main configuration areas are:
 
   - DispatcherServlet
-  - Servlet mappings
-  - Spring MVC configuration
+  - WebApplicationContext
+  - Spring MVC infrastructure
   - Component scanning
   - ViewResolver
-  - View-related configuration
+  - Filters
+  - Interceptors
 
-- Spring Boot reduces much of this explicit configuration through auto-configuration.
+- Spring Boot can automatically configure much of this infrastructure through auto-configuration.
+
+------------------------------------------------------------
+XML-BASED CONFIGURATION
+------------------------------------------------------------
+
+web.xml
+    → Servlet-container configuration
+    → DispatcherServlet registration
+    → Root context creation
+    → Filters
+
+root-context.xml
+    → Configuration for Root ApplicationContext
+    → Services / Repositories / DB / Transactions / ...
+
+dispatcher-servlet.xml
+    → DispatcherServlet's child WebApplicationContext
+    → Spring MVC infrastructure
+    → Controllers
+    → ViewResolver
+    → Interceptors
+
+------------------------------------------------------------
+JAVA-BASED CONFIGURATION
+------------------------------------------------------------
+
+WebAppInitializer.java
+    → Servlet-container bootstrap
+    → DispatcherServlet registration
+    → Root + Child context connection
+    → Filters
+
+RootConfig.java
+    → Configuration for Root ApplicationContext
+    → Services / Repositories / DB / Transactions / ...
+
+WebConfig.java
+    → DispatcherServlet's child WebApplicationContext
+    → Spring MVC infrastructure
+    → Controllers
+    → ViewResolver
+    → Interceptors
 
 ------------------------------------------------------------
 DISPATCHERSERVLET CONFIGURATION
-
+------------------------------------------------------------
 
 - The Servlet container must know about the `DispatcherServlet`.
-- Traditionally, this was commonly configured using `web.xml`.
+- The DispatcherServlet must be registered so that the Servlet Container forwards the requests to DispatcherServlet.
+- Traditionally, this registration was commonly done using `web.xml`.
+- With Java-based configuration, the Servlet can be registered programmatically.
 
-- Example:
+
+XML-based configuration:
+
+- Configure in `web.xml`.
+
 
 <servlet>
     <servlet-name>dispatcher</servlet-name>
@@ -559,57 +619,186 @@ DISPATCHERSERVLET CONFIGURATION
     <url-pattern>/</url-pattern>
 </servlet-mapping>
 
-- The servlet mapping determines which requests are routed to the DispatcherServlet.
+
+- `/` means requests are mapped to the `DispatcherServlet` according to Servlet URL-mapping rules.
+- By convention, when no explicit context configuration location is provided, the DispatcherServlet looks for: dispatcher-servlet.xml
+
+
+Java-based configuration:
+
+- Configure in `WebAppInitializer.java`.
+
+public class WebAppInitializer
+        extends AbstractAnnotationConfigDispatcherServletInitializer {
+
+    @Override
+    protected Class<?>[] getServletConfigClasses() {
+        return new Class<?>[] { WebConfig.class };
+    }
+
+    @Override
+    protected String[] getServletMappings() {
+        return new String[] { "/" };
+    }
+}
+
+- `AbstractAnnotationConfigDispatcherServletInitializer` allows the DispatcherServlet and its WebApplicationContext to be configured without `web.xml`.
+- The Servlet container discovers the initializer through Servlet 3+ container startup mechanisms.
+
 
 ------------------------------------------------------------
-WEB.XML
+WEBAPPLICATIONCONTEXT
+------------------------------------------------------------
+
+- `WebApplicationContext` is a web-aware implementation of Spring's `ApplicationContext`.
+- `DispatcherServlet` requires a `WebApplicationContext`.
+- The WebApplicationContext contains the Spring MVC web-layer beans and can also contain application beans.
+
+- A traditional Spring MVC application can have:
+
+  - Only the DispatcherServlet's WebApplicationContext
+  - A root WebApplicationContext + a child WebApplicationContext
+
+- A separate root context is optional.
 
 
-- `web.xml` is the traditional deployment descriptor for Java web applications.
-- It can be used to configure:
+Without a root context:
 
-  - Servlets
-  - Servlet mappings
-  - Filters
-  - Listeners
-  - Other web application configuration (Component scan, Enablement of Spring MVC, ViewResolver)
+Tomcat
+   ↓
+DispatcherServlet
+   ↓
+WebApplicationContext
+   ├── Controllers
+   ├── Services
+   ├── Repositories
+   └── MVC infrastructure
 
 
-- Modern Spring applications use Java-based configuration instead.
+With a root and child context:
+
+Root WebApplicationContext
+   ├── Services
+   ├── Repositories
+   ├── DataSource
+   └── Transaction infrastructure
+              ↑
+              │ parent
+              │
+Child WebApplicationContext
+   ├── Controllers
+   ├── HandlerMappings
+   ├── HandlerAdapters
+   └── ViewResolvers
+
+- The child WebApplicationContext can access beans from the root context.
+- The root context normally does not access beans from its child.
+- The root context is commonly used for application/business infrastructure.
+- The DispatcherServlet's child context is commonly used for web/MVC infrastructure.
+
+
+XML-based root context configuration:
+
+- Configure the root context in `root-context.xml`.
+- Configure `ContextLoaderListener` and the root context location in `web.xml`.
+
+
+web.xml:
+
+<context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>classpath:root-context.xml</param-value>
+</context-param>
+
+<listener>
+    <listener-class>
+        org.springframework.web.context.ContextLoaderListener
+    </listener-class>
+</listener>
+
+- `ContextLoaderListener` creates the root WebApplicationContext.
+- `root-context.xml` contains the bean definitions for that root context.
+
+
+
+Java-based root context configuration:
+
+- Configure the root context in `RootConfig.java`.
+- Tell `WebAppInitializer.java` to use `RootConfig`.
+
+public class WebAppInitializer
+        extends AbstractAnnotationConfigDispatcherServletInitializer {
+
+    // 1. Point to your root application context configuration (Services, Security, Repositories)
+    @Override
+    protected Class<?>[] getRootConfigClasses() {
+        return new Class<?>[] { RootConfig.class };
+    }
+
+    // 2. Point to your Web/MVC configuration class (ViewResolvers, Controllers, Interceptors)
+    @Override
+    protected Class<?>[] getServletConfigClasses() {
+        return new Class<?>[] { WebConfig.class };
+    }
+
+    // 3. This replaces your <servlet-mapping> <url-pattern>/</url-pattern> block
+    @Override
+    protected String[] getServletMappings() {
+        return new String[] { "/" };
+    }
+}
+
+- `getRootConfigClasses()` defines configuration for the root context.
+- `getServletConfigClasses()` defines configuration for the DispatcherServlet's child WebApplicationContext.
+
 
 ------------------------------------------------------------
-JAVA-BASED CONFIGURATION
+ENABLE SPRING MVC INFRASTRUCTURE
+------------------------------------------------------------
+
+- Spring MVC infrastructure must be enabled so that Spring can configure the infrastructure required for annotation-based MVC processing.
+
+- This includes infrastructure responsible for things such as:
+  - Request mappings
+  - Controller method invocation
+  - Handler processing
+  - Other annotation-based MVC support
 
 
-- Spring MVC configuration can be defined using Java configuration instead of XML.
+XML-based configuration:
 
-- Example:
+- Configure in `dispatcher-servlet.xml`.
+
+<mvc:annotation-driven />
+
+- The XML configuration requires the Spring MVC namespace.
+
+<beans xmlns:mvc="http://www.springframework.org/schema/mvc"...>
+    <mvc:annotation-driven />
+</beans>
+
+
+
+Java-based configuration:
+
+- Configure in `WebConfig.java`.
 
 @Configuration
 @EnableWebMvc
-@ComponentScan("com.example")
 public class WebConfig {
 }
 
-- `@Configuration` identifies the class as a source of Spring bean configuration.
 - `@EnableWebMvc` enables Spring MVC configuration support.
-- `@ComponentScan` enables component scanning for the specified package.
+
+- `@EnableWebMvc` / `<mvc:annotation-driven>` enables the annotation-based MVC infrastructure required for mappings and controller method processing.
+
 
 ------------------------------------------------------------
-@ENABLEWEBMVC
-
-
-- `@EnableWebMvc` enables Spring MVC configuration support.
-- It registers/configures the MVC infrastructure required by Spring MVC.
-- It is commonly used in traditional Java-based Spring MVC applications.
-- Spring Boot provides additional auto-configuration that can configure MVC infrastructure automatically.
-
+COMPONENT SCAN
 ------------------------------------------------------------
-@COMPONENTSCAN
 
-
-- `@ComponentScan` tells Spring which packages to scan for Spring components.
-- Spring discovers classes annotated with component stereotypes and registers them as Spring beans.
+- Component Scan tells Spring which packages to scan for Spring components.
+- Spring discovers component classes and registers them as Spring beans.
 
 - Common component annotations:
 
@@ -618,32 +807,88 @@ public class WebConfig {
 @Repository
 @Component
 
-- Example:
 
-@ComponentScan("com.example")
+XML-based configuration:
+
+- Configure in the appropriate Spring XML context.
+
+- Controllers are normally scanned in `dispatcher-servlet.xml`:
+
+<context:component-scan base-package="com.example.controller"/>
+
+- Services and Repositories are commonly scanned in `root-context.xml`:
+
+<context:component-scan base-package="com.example.service,com.example.repository"/>
+
+- The XML configuration requires the Spring Context namespace.
+
+
+Java-based configuration:
+
+- Controllers are normally scanned in `WebConfig.java`:
+
+@Configuration
+@EnableWebMvc
+@ComponentScan("com.example.controller")
+public class WebConfig {
+}
+
+- Services and Repositories are commonly scanned in `RootConfig.java`:
+
+@Configuration
+@ComponentScan("com.example.service")
+public class RootConfig {
+}
 
 - Conceptually:
 
-@ComponentScan
-      ↓
-Package scanning
-      ↓
-Find EmployeeController
-      ↓
-Register EmployeeController as Spring Bean
+@ComponentScan / <context:component-scan>
+                  ↓
+             Package scanning
+                  ↓
+          Find Spring components
+                  ↓
+       Register components as Beans
+
 
 ------------------------------------------------------------
 VIEWRESOLVER CONFIGURATION
+------------------------------------------------------------
+
+- A ViewResolver maps a logical view name returned by a controller to an actual View.
+- In SSR applications, the View is commonly a JSP.
+
+- Configure the ViewResolver in the DispatcherServlet's child context.
 
 
-- Traditional Spring MVC applications can explicitly configure a ViewResolver.
+- XML:
+  - Configure in `dispatcher-servlet.xml`.
 
-- Example:
+- Java:
+  - Configure in `WebConfig.java`.
+
+
+- Example controller:
+
+return "employees";
+
+- If the prefix is `/WEB-INF/views/` and suffix is `.jsp`:
+
+"employees"
+     ↓
+/WEB-INF/views/employees.jsp
+
+
+
+Java-based configuration:
+
+- Configure in `WebConfig.java`.
 
 @Bean
 public InternalResourceViewResolver viewResolver() {
 
-    InternalResourceViewResolver resolver = new InternalResourceViewResolver();
+    InternalResourceViewResolver resolver =
+            new InternalResourceViewResolver();
 
     resolver.setPrefix("/WEB-INF/views/");
     resolver.setSuffix(".jsp");
@@ -651,13 +896,201 @@ public InternalResourceViewResolver viewResolver() {
     return resolver;
 }
 
-- Then:
 
-return "employees";
 
-- resolves conceptually to:
+XML-based configuration:
 
-/WEB-INF/views/employees.jsp
+- Configure in `dispatcher-servlet.xml`.
+
+<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+    <property name="prefix" value="/WEB-INF/views/" />
+    <property name="suffix" value=".jsp" />
+</bean>
+
+- The controller does not need to know the physical JSP location.
+
+
+------------------------------------------------------------
+FILTER CONFIGURATION
+------------------------------------------------------------
+
+- Filters are Servlet API components.
+- They are configured at the Servlet-container level rather than through Spring MVC's HandlerMapping/HandlerAdapter mechanism.
+- A Filter can be configured using:
+  - `web.xml`
+  - Java-based Servlet configuration
+
+
+XML-based configuration:
+
+- Configure in `web.xml`.
+
+<filter>
+    <filter-name>loggingFilter</filter-name>
+    <filter-class>
+        com.example.filter.LoggingFilter
+    </filter-class>
+</filter>
+
+<filter-mapping>
+    <filter-name>loggingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+</filter-mapping>
+
+
+Java-based configuration:
+
+- Configure in `WebAppInitializer.java`.
+
+public class WebAppInitializer
+        extends AbstractAnnotationConfigDispatcherServletInitializer {
+
+    @Override
+    protected Filter[] getServletFilters() {
+        return new Filter[] {
+            new LoggingFilter()
+        };
+    }
+
+    ...
+}
+
+- Filter configuration determines which requests pass through the Filter.
+- Filters can therefore execute before and/or after the DispatcherServlet processing.
+
+
+------------------------------------------------------------
+INTERCEPTOR CONFIGURATION
+------------------------------------------------------------
+
+- Spring MVC Interceptors are configured as part of Spring MVC configuration.
+- They are associated with Spring MVC request processing.
+- Interceptors are configured using:
+  - XML-based Spring MVC configuration
+  - Java-based Spring MVC configuration
+
+- XML:
+  - Configure in `dispatcher-servlet.xml`.
+
+- Java:
+  - Configure in `WebConfig.java`.
+
+
+Java-based configuration:
+
+@Configuration
+@EnableWebMvc
+public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addInterceptors(
+            InterceptorRegistry registry) {
+
+        registry.addInterceptor(
+                new LoggingInterceptor());
+    }
+}
+
+
+XML-based configuration:
+
+<mvc:interceptors>
+    <bean class="com.example.interceptor.LoggingInterceptor"/>
+</mvc:interceptors>
+
+
+- Interceptors can also be configured for specific URL patterns.
+
+Java-based example:
+
+registry.addInterceptor(new LoggingInterceptor())
+        .addPathPatterns("/employees/**");
+
+
+XML-based example:
+
+<mvc:interceptor>
+    <mvc:mapping path="/employees/**"/>
+
+    <bean class="com.example.interceptor.LoggingInterceptor"/>
+</mvc:interceptor>
+
+
+- Interceptor configuration is part of Spring MVC configuration, unlike Servlet Filters which belong to the Servlet container layer.
+
+
+------------------------------------------------------------
+TRADITIONAL SPRING MVC CONFIGURATION - COMPLETE VIEW
+------------------------------------------------------------
+
+- A traditional Spring MVC application can therefore be configured using a combination of Servlet-container configuration and Spring configuration.
+
+- XML-based approach:
+
+web.xml
+   ↓
+Servlet / Filter / Listener registration
+   ↓
+DispatcherServlet
+   ↓
+Spring MVC XML configuration
+   ├── Component scanning
+   ├── MVC annotation support
+   ├── ViewResolver
+   └── Interceptors
+
+- Java-based approach:
+
+WebAppInitializer
+   ↓
+DispatcherServlet registration
+   ↓
+RootConfig
+   ├── Services
+   ├── Repositories
+   └── Application infrastructure
+          +
+WebConfig
+   ├── @EnableWebMvc
+   ├── @ComponentScan
+   ├── ViewResolver
+   └── Interceptors
+
+- Filters remain Servlet-container components even when Java-based configuration is used.
+
+
+------------------------------------------------------------
+SPRING MVC CONFIGURATION RESPONSIBILITIES
+------------------------------------------------------------
+
+- DispatcherServlet:
+  - Central entry point for Spring MVC requests.
+
+- WebApplicationContext:
+  - Spring container associated with the web layer.
+  - Contains MVC-related Spring beans.
+
+- @EnableWebMvc / <mvc:annotation-driven>:
+  - Enables Spring MVC infrastructure for annotation-based controllers.
+
+- @ComponentScan / <context:component-scan>:
+  - Discovers and registers Spring components.
+
+- ViewResolver:
+  - Resolves logical view names to actual views.
+
+- Filter:
+  - Servlet-container-level request processing component.
+
+- Interceptor:
+  - Spring MVC request processing component.
+
+- Root WebApplicationContext:
+  - Optional parent context for application/business infrastructure.
+
+- Child WebApplicationContext:
+  - Context associated with a DispatcherServlet and commonly used for web-layer components.
+
 
 =======================================================================================================================================================================
 EXCEPTION HANDLING

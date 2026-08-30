@@ -1,4 +1,1467 @@
+=======================================================================================================================================================================
+=======================================================================================================================================================================
+										Spring - REST
+=======================================================================================================================================================================
+=======================================================================================================================================================================
 
+
+
+
+=======================================================================================================================================================================
+SPRING REST ARCHITECTURE
+=======================================================================================================================================================================
+
+- Spring MVC provides the infrastructure for mapping HTTP requests to Java controller methods.
+- The same infrastructure is used by REST controllers.
+- The main difference is how the controller's return value is interpreted.
+- A REST controller normally returns data while, MVC applications return server-rendered views
+- REST-specific behavior mainly comes from:
+  - REST controller annotations
+  - HTTP message conversion
+  - HTTP response handling
+  - exception handling
+  - validation
+  - REST API design
+
+
+Typical Flow:
+
+
+- A REST request generally follows this sequence:
+
+    Client
+         |HTTP Request
+         v
+    Servlet Container
+         |
+         v
+    DispatcherServlet
+         |
+         v
+    HandlerMapping
+         |
+         v
+    HandlerAdapter
+         |
+         v
+    Rest Controller Method 
+         |
+         v
+    Service
+         |
+         v
+    Repository
+         |
+         v
+    Database
+
+- The response travels back in the opposite direction:
+
+    Database
+       |
+       v
+    Repository
+       |
+       v
+    Service
+       |
+       v
+    REST Controller
+       |
+       v
+    Return Value
+       |
+       v
+    HttpMessageConverter
+       |
+       | HTTP Response (JSON/XML)
+       v
+    Client
+
+
+- REST controllers expose resources through HTTP endpoints.
+
+=======================================================================================================================================================================
+DispatcherServlet
+=======================================================================================================================================================================
+
+- DispatcherServlet is the central servlet through which Spring MVC requests are processed.
+- It acts as the front controller for Spring MVC and Spring REST applications.
+- The servlet container receives the HTTP request and forwards it to DispatcherServlet according to its servlet mapping.
+- DispatcherServlet coordinates:
+  - finding the appropriate handler
+  - invoking the handler
+  - processing the return value
+  - producing the HTTP response
+- DispatcherServlet does not contain application-specific business logic.
+
+=======================================================================================================================================================================
+REST Controller
+=======================================================================================================================================================================
+
+- @RestController is a convenience annotation for REST-oriented controllers.
+- Conceptually, it combines:
+
+    @Controller
+    @ResponseBody
+
+- @Controller registers the class as a Spring MVC controller.
+- @ResponseBody causes handler method return values to be written as HTTP response data.
+- Therefore, @RestController makes response-body semantics the default for all handler methods in the class.
+- @RequestMapping maps HTTP requests to specific handler methods or classes in Spring MVC controllers.
+ 
+Example:
+
+    @RestController
+    @RequestMapping("/users")
+    public class UserController {
+
+        @GetMapping
+        public List<User> getUsers() {
+            return userService.findAll();
+        }
+    }
+
+- The returned List<User> is treated as response data.
+- It is not interpreted as a view name.
+
+------------------------------------------------------------
+@Controller + @ResponseBody
+------------------------------------------------------------
+
+- REST behavior can also be created using @Controller with @ResponseBody.
+
+Example:
+
+    @Controller
+    public class UserController {
+
+        @GetMapping("/users")
+        @ResponseBody
+        public List<User> getUsers() {
+            return userService.findAll();
+        }
+    }
+
+- @ResponseBody can be applied to individual methods.
+- It can also be applied at class level.
+
+    @Controller
+    @ResponseBody
+    public class UserController {
+    }
+
+- @RestController is therefore the convenient form for controllers whose methods are intended to return response bodies.
+
+------------------------------------------------------------
+Controller Method Execution
+------------------------------------------------------------
+
+- A controller method becomes a request handler through request mapping metadata.
+- Spring identifies the matching handler method and resolves its parameters before invoking it.
+- The controller method can receive values from different parts of the HTTP request.
+
+Example:
+
+    @GetMapping("/users/{id}")
+    public User getUser(@PathVariable Long id) {
+        return userService.findById(id);
+    }
+
+Request:
+
+    GET /users/10
+
+Spring resolves:
+
+    id = 10L
+
+and invokes the method with that value.
+
+------------------------------------------------------------
+Request Mapping Annotations
+------------------------------------------------------------
+
+- @RequestMapping can define mappings at class or method level.
+- HTTP-method-specific annotations are commonly preferred:
+
+    @GetMapping
+    @PostMapping
+    @PutMapping
+    @PatchMapping
+    @DeleteMapping
+
+Example:
+
+    @RestController
+    @RequestMapping("/users")
+    public class UserController {
+
+        @GetMapping
+        public List<User> getUsers() {
+            return userService.findAll();
+        }
+
+        @PostMapping
+        public User createUser(@RequestBody User user) {
+            return userService.create(user);
+        }
+    }
+
+- A mapping can use conditions such as:
+  - URL path
+  - HTTP method
+  - query parameters
+  - request headers
+  - request content type
+  - accepted response type
+
+=======================================================================================================================================================================
+Request Data Binding
+=======================================================================================================================================================================
+
+- Request data binding means making HTTP request data available as Java method parameters or Java objects.
+- Spring resolves controller method arguments from the appropriate part of the request.
+
+------------------------------------------------------------
+@PathVariable
+------------------------------------------------------------
+
+- @PathVariable binds a value from a URI template variable.
+
+Example:
+
+    @GetMapping("/users/{id}")
+    public User getUser(@PathVariable Long id) {
+        return userService.findById(id);
+    }
+
+Request:
+
+    GET /users/25
+
+Result:
+
+    id = 25
+
+- Path variables are commonly used when the value identifies a particular resource.
+
+Multiple variables:
+
+    @GetMapping("/users/{userId}/orders/{orderId}")
+    public Order getOrder(
+            @PathVariable Long userId,
+            @PathVariable Long orderId) {
+
+        return orderService.find(userId, orderId);
+    }
+
+------------------------------------------------------------
+@RequestParam
+------------------------------------------------------------
+
+- @RequestParam binds a value from the query string.
+
+Example:
+
+    @GetMapping("/users")
+    public List<User> getUsers(@RequestParam String role) {
+        return userService.findByRole(role);
+    }
+
+Request:
+
+    GET /users?role=admin
+
+Result:
+
+    role = "admin"
+
+- Query parameters are commonly used for:
+  - filtering
+  - searching
+  - sorting
+  - pagination
+  - optional retrieval criteria
+
+Example:
+
+    @GetMapping("/users")
+    public List<User> getUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        return userService.find(page, size);
+    }
+
+- @RequestParam values are required by default.
+- Optional parameters can be declared:
+
+    @RequestParam(required = false) String role
+
+------------------------------------------------------------
+@RequestHeader
+------------------------------------------------------------
+
+- @RequestHeader binds a value from an HTTP request header.
+
+Example:
+
+    @GetMapping("/users")
+    public List<User> getUsers(
+            @RequestHeader("Authorization") String authorization) {
+
+        return userService.findAll();
+    }
+
+Request:
+
+    Authorization: Bearer abc123
+
+Result:
+
+    authorization = "Bearer abc123"
+
+- Headers commonly contain request metadata such as:
+  - authorization information
+  - client information
+  - correlation IDs
+  - content negotiation information
+
+------------------------------------------------------------
+@RequestBody
+------------------------------------------------------------
+
+- @RequestBody binds the HTTP request body to a Java object.
+- REST APIs commonly use JSON request bodies.
+
+Request:
+
+    POST /users
+    Content-Type: application/json
+
+    {
+        "name": "Sai",
+        "age": 28
+    }
+
+Controller:
+
+    @PostMapping("/users")
+    public User createUser(@RequestBody User user) {
+        return userService.create(user);
+    }
+
+- Spring uses an HttpMessageConverter to convert the request body into the required Java type.
+- @RequestBody itself does not parse JSON.
+
+Conceptually:
+
+    JSON
+      |
+      v
+    HttpMessageConverter
+      |
+      v
+    User object
+
+------------------------------------------------------------
+@ModelAttribute
+------------------------------------------------------------
+
+- @ModelAttribute binds request parameters to a Java object.
+- It is commonly used for form-style data or groups of query parameters.
+
+Example:
+
+    public class UserSearch {
+
+        private String name;
+        private String role;
+
+        // getters and setters
+    }
+
+Controller:
+
+    @GetMapping("/users")
+    public List<User> searchUsers(
+            @ModelAttribute UserSearch search) {
+
+        return userService.search(search);
+    }
+
+Request:
+
+    GET /users?name=Sai&role=admin
+
+Result:
+
+    UserSearch
+    {
+        name = "Sai"
+        role = "admin"
+    }
+
+- @ModelAttribute and @RequestBody represent different binding mechanisms.
+
+    @ModelAttribute
+        Request parameters/form data → Java object
+
+    @RequestBody
+        HTTP request body → Java object
+
+------------------------------------------------------------
+Request Data → Java Object
+------------------------------------------------------------
+
+    HTTP Request
+        |
+        +--> URI path       → @PathVariable
+        |
+        +--> Query string   → @RequestParam
+        |
+        +--> Header         → @RequestHeader
+        |
+        +--> Request body   → @RequestBody
+        |
+        +--> Parameters     → @ModelAttribute
+
+=======================================================================================================================================================================
+Response Handling
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+@ResponseBody
+------------------------------------------------------------
+
+- @ResponseBody tells Spring that a controller method's return value represents HTTP response data.
+- The return value is not interpreted as a view name.
+- The response data is processed through the message-conversion mechanism when applicable.
+
+Example:
+
+    @Controller
+    public class UserController {
+
+        @GetMapping("/users/1")
+        @ResponseBody
+        public User getUser() {
+            return new User(1L, "Sai");
+        }
+    }
+
+- The User object becomes the response body representation, such as JSON.
+
+------------------------------------------------------------
+Return Value → HTTP Response Body
+------------------------------------------------------------
+
+Example:
+
+    @RestController
+    public class UserController {
+
+        @GetMapping("/users/1")
+        public User getUser() {
+            return new User(1L, "Sai");
+        }
+    }
+
+- The controller returns a Java object.
+- Spring processes that return value as response data.
+- An appropriate HttpMessageConverter converts the object into the selected representation.
+
+Conceptually:
+
+    User object
+        |
+        v
+    HttpMessageConverter
+        |
+        v
+    JSON
+        |
+        v
+    HTTP Response Body
+
+Possible response:
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+    {
+        "id": 1,
+        "name": "Sai"
+    }
+
+------------------------------------------------------------
+ResponseEntity
+------------------------------------------------------------
+
+- ResponseEntity<T> represents an HTTP response with explicit control over:
+  - status code
+  - headers
+  - response body
+
+Example:
+
+    @GetMapping("/users/{id}")
+    public ResponseEntity<User> getUser(@PathVariable Long id) {
+
+        User user = userService.findById(id);
+        return ResponseEntity.ok(user);
+    }
+
+- A different status can be explicitly selected:
+
+    return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(user);
+
+- Headers can also be supplied:
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("X-Request-Source", "user-service");
+
+    return new ResponseEntity<>(
+            user,
+            headers,
+            HttpStatus.OK
+    );
+
+- ResponseEntity is useful when the endpoint needs explicit HTTP response control.
+- It is not necessary when Spring's default status, headers, and body handling are sufficient.
+
+------------------------------------------------------------
+HTTP Status Codes
+------------------------------------------------------------
+
+- HTTP status codes communicate the result of the request.
+- Common REST API statuses include:
+
+    200 OK
+        Successful request
+
+    201 Created
+        Resource successfully created
+
+    204 No Content
+        Successful operation with no response body
+
+    400 Bad Request
+        Invalid request or input
+
+    401 Unauthorized
+        Authentication is required or failed
+
+    403 Forbidden
+        Client is not allowed to perform the operation
+
+    404 Not Found
+        Requested resource does not exist
+
+    409 Conflict
+        Request conflicts with the current resource state
+
+    500 Internal Server Error
+        Unexpected server-side failure
+
+- The status code is part of the API contract and should describe the actual result of the operation.
+
+------------------------------------------------------------
+Response Headers
+------------------------------------------------------------
+
+- Response headers provide metadata about the HTTP response.
+- ResponseEntity can be used when custom headers are required.
+
+Example:
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("X-Request-Source", "user-service");
+
+    return new ResponseEntity<>(
+            user,
+            headers,
+            HttpStatus.OK
+    );
+
+- Headers are separate from the response body.
+- Examples include:
+  - Content-Type
+  - Location
+  - Cache-Control
+  - custom application headers
+
+------------------------------------------------------------
+Response Body
+------------------------------------------------------------
+
+- The response body contains the representation of the result returned by the API.
+- JSON is the most common representation in REST APIs.
+
+Example:
+
+    {
+        "id": 10,
+        "name": "Sai"
+    }
+
+- A response body may contain:
+  - a single object
+  - a collection
+  - a DTO
+  - an error representation
+  - no content
+
+=======================================================================================================================================================================
+Message Converters
+=======================================================================================================================================================================
+
+- HttpMessageConverter is Spring MVC's mechanism for converting HTTP message bodies between external representations and Java objects.
+- It is primarily involved with:
+  - @RequestBody
+  - @ResponseBody
+  - @RestController response handling
+- It removes the need for controller code to manually parse or construct common message formats.
+
+Two directions:
+
+    HTTP Request Body
+           |
+           v
+    HttpMessageConverter
+           |
+           v
+    Java Object
+
+
+    Java Object
+           |
+           v
+    HttpMessageConverter
+           |
+           v
+    HTTP Response Body
+
+------------------------------------------------------------
+HttpMessageConverter
+------------------------------------------------------------
+
+- HttpMessageConverter<T> defines how a Java type can be read from or written to an HTTP message body.
+- Spring provides converters for common representations such as:
+  - JSON
+  - XML
+  - plain text
+  - byte arrays
+  - form data
+- The converter selected depends on factors such as:
+  - Java target/return type
+  - request Content-Type
+  - response media type
+  - configured converters
+
+------------------------------------------------------------
+Jackson Integration
+------------------------------------------------------------
+
+- Jackson is a commonly used Java library for JSON processing.
+- Serialization means:
+
+    Java Object → JSON
+
+- Deserialization means:
+
+    JSON → Java Object
+
+- Spring integrates Jackson through a Jackson-based HttpMessageConverter.
+- Therefore, controller code normally works with Java objects while Spring handles JSON conversion.
+
+Example:
+
+    @PostMapping("/users")
+    public User create(@RequestBody User user) {
+        return userService.create(user);
+    }
+
+Request:
+
+    {
+        "name": "Sai",
+        "age": 28
+    }
+
+- Spring can use Jackson through the message-conversion infrastructure to create the User object.
+
+------------------------------------------------------------
+Content-Type
+------------------------------------------------------------
+
+- Content-Type identifies the media type of the message body.
+
+Example:
+
+    Content-Type: application/json
+
+- For a request, it tells the server how the request body is represented.
+- For a response, it tells the client how the response body is represented.
+
+Example:
+
+    POST /users
+    Content-Type: application/json
+
+    {
+        "name": "Sai"
+    }
+
+- Spring uses the request Content-Type when selecting a suitable message converter for reading the body.
+
+------------------------------------------------------------
+Accept
+------------------------------------------------------------
+
+- Accept indicates which response media types the client can accept.
+
+Example:
+
+    GET /users/10
+    Accept: application/json
+
+- Spring uses the Accept header as one input when determining the response representation.
+
+Possible response:
+
+    Content-Type: application/json
+
+Important distinction:
+
+    Content-Type
+        = Media type of the body being sent
+
+    Accept
+        = Media type the client wants in the response
+
+------------------------------------------------------------
+Content Negotiation
+------------------------------------------------------------
+
+- Content negotiation is the process of determining the representation used for an HTTP response.
+- The client's Accept header is an important part of this process.
+- Spring considers the requested media type and the representations supported by the application.
+
+Example:
+
+    Client
+        |
+        | Accept: application/json
+        v
+    Spring
+        |
+        | Select JSON representation
+        v
+    Response
+        |
+        | Content-Type: application/json
+        v
+    Client
+
+- Message converters provide the mechanism for converting the selected representation to and from Java objects.
+
+=======================================================================================================================================================================
+Spring REST Request Flow
+=======================================================================================================================================================================
+
+Example request:
+
+    POST /users
+    Content-Type: application/json
+
+    {
+        "name": "Sai",
+        "age": 28
+    }
+
+The request processing can be represented as:
+
+    HTTP Request
+         |
+         v
+    Servlet Container
+         |
+         v
+    DispatcherServlet
+         |
+         v
+    HandlerMapping
+         |
+         v
+    HandlerAdapter
+         |
+         v
+    Controller Method
+         |
+         v
+    Service
+         |
+         v
+    Controller Return Value
+         |
+         v
+    HttpMessageConverter
+         |
+         v
+    HTTP Response
+
+------------------------------------------------------------
+HandlerMapping
+------------------------------------------------------------
+
+- HandlerMapping determines which handler should process the incoming request.
+- It considers mapping information such as:
+  - URL
+  - HTTP method
+  - request parameters
+  - headers
+  - other mapping conditions
+
+Example:
+
+    POST /users
+
+may map to:
+
+    UserController.createUser(...)
+
+------------------------------------------------------------
+HandlerAdapter
+------------------------------------------------------------
+
+- HandlerAdapter invokes the handler selected by HandlerMapping.
+- It also participates in preparing the arguments required by the controller method.
+- For a method such as:
+
+    public User createUser(@RequestBody User user)
+
+the request body must be converted into User before the method can execute.
+
+------------------------------------------------------------
+Controller
+------------------------------------------------------------
+
+- The controller handles the web/API request.
+- It normally delegates business operations to the service layer.
+
+Example:
+
+    @PostMapping("/users")
+    public User createUser(@RequestBody User user) {
+        return userService.create(user);
+    }
+
+- The controller receives a Java object.
+- The service performs the application operation.
+- The controller returns the result.
+
+------------------------------------------------------------
+Request Body Processing
+------------------------------------------------------------
+
+For:
+
+    @RequestBody User user
+
+the relevant processing is conceptually:
+
+    JSON Request Body
+          |
+          v
+    HttpMessageConverter
+          |
+          v
+    User object
+          |
+          v
+    Controller Method
+
+- This conversion happens before the controller method executes.
+
+------------------------------------------------------------
+Response Processing
+------------------------------------------------------------
+
+After the controller returns:
+
+    User object
+          |
+          v
+    HttpMessageConverter
+          |
+          v
+    JSON
+          |
+          v
+    HTTP Response Body
+
+- The response Content-Type identifies the representation sent to the client.
+
+=======================================================================================================================================================================
+Exception Handling
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+@ExceptionHandler
+------------------------------------------------------------
+
+- @ExceptionHandler identifies a method that handles specific exceptions.
+- It can be declared inside a controller.
+
+Example:
+
+    @RestController
+    public class UserController {
+
+        @GetMapping("/users/{id}")
+        public User getUser(@PathVariable Long id) {
+            return userService.findById(id);
+        }
+
+        @ExceptionHandler(UserNotFoundException.class)
+        public ResponseEntity<String> handleUserNotFound(
+                UserNotFoundException ex) {
+
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(ex.getMessage());
+        }
+    }
+
+- The handler is used when the matching exception occurs during request processing for that controller.
+
+------------------------------------------------------------
+@ControllerAdvice
+------------------------------------------------------------
+
+- @ControllerAdvice allows exception-handling methods to be shared across multiple controllers.
+- It is useful for centralized exception handling.
+
+Example:
+
+    @ControllerAdvice
+    public class GlobalExceptionHandler {
+
+        @ExceptionHandler(UserNotFoundException.class)
+        public ResponseEntity<String> handleUserNotFound(
+                UserNotFoundException ex) {
+
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(ex.getMessage());
+        }
+    }
+
+------------------------------------------------------------
+@RestControllerAdvice
+------------------------------------------------------------
+
+- @RestControllerAdvice is the REST-oriented form of @ControllerAdvice.
+- Conceptually, it combines controller advice behavior with response-body semantics.
+
+Example:
+
+    @RestControllerAdvice
+    public class GlobalExceptionHandler {
+
+        @ExceptionHandler(UserNotFoundException.class)
+        public ResponseEntity<ErrorResponse> handleUserNotFound(
+                UserNotFoundException ex) {
+
+            ErrorResponse error =
+                    new ErrorResponse(
+                            "USER_NOT_FOUND",
+                            ex.getMessage()
+                    );
+
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(error);
+        }
+    }
+
+- It is commonly used when exception handlers should return JSON/XML error bodies.
+
+------------------------------------------------------------
+Global Exception Handling
+------------------------------------------------------------
+
+- Global exception handling centralizes common API error handling.
+
+    Controller A ----\
+    Controller B -----+--> GlobalExceptionHandler
+    Controller C ----/              |
+                                    v
+                              Error Response
+
+- This avoids duplicating the same exception-handling methods across controllers.
+- Controller-specific @ExceptionHandler methods can still be used when behavior is specific to one controller.
+
+------------------------------------------------------------
+Error Response Body
+------------------------------------------------------------
+
+- REST APIs should generally return a structured error representation.
+
+Example:
+
+    public class ErrorResponse {
+
+        private String code;
+        private String message;
+
+        public ErrorResponse(String code, String message) {
+            this.code = code;
+            this.message = message;
+        }
+
+        // getters
+    }
+
+Possible response:
+
+    HTTP/1.1 404 Not Found
+    Content-Type: application/json
+
+    {
+        "code": "USER_NOT_FOUND",
+        "message": "User 25 was not found"
+    }
+
+- A consistent error structure gives clients predictable information about failures.
+
+------------------------------------------------------------
+HTTP Status for Exceptions
+------------------------------------------------------------
+
+- Exceptions should be mapped to meaningful HTTP statuses where appropriate.
+
+    UserNotFoundException
+            |
+            v
+    404 Not Found
+
+    InvalidRequestException
+            |
+            v
+    400 Bad Request
+
+    DuplicateUserException
+            |
+            v
+    409 Conflict
+
+    UnexpectedException
+            |
+            v
+    500 Internal Server Error
+
+- An exception does not automatically mean that every API response should be 500.
+- Known application exceptions can be translated into appropriate HTTP responses.
+
+=======================================================================================================================================================================
+REST Validation
+=======================================================================================================================================================================
+
+- Bean Validation provides declarative constraints for validating Java objects.
+- Common constraints include:
+  - @NotNull
+  - @NotBlank
+  - @Size
+  - @Min
+  - @Max
+  - @Email
+- Constraints are commonly placed on request DTOs.
+
+Example:
+
+    public class CreateUserRequest {
+
+        @NotBlank
+        private String name;
+
+        @Email
+        private String email;
+
+        @Min(18)
+        private int age;
+
+        // getters and setters
+    }
+
+------------------------------------------------------------
+@Valid
+------------------------------------------------------------
+
+- @Valid triggers validation of a bound object.
+
+Example:
+
+    @PostMapping("/users")
+    public User create(
+            @Valid @RequestBody CreateUserRequest request) {
+
+        return userService.create(request);
+    }
+
+Request:
+
+    {
+        "name": "",
+        "email": "invalid",
+        "age": 15
+    }
+
+- Spring first binds the request body to CreateUserRequest.
+- Bean Validation then checks the declared constraints.
+- If validation fails, the controller method does not continue with normal execution.
+- A validation exception can be handled by the application's exception-handling mechanism.
+
+------------------------------------------------------------
+@Validated
+------------------------------------------------------------
+
+- @Validated is a Spring-specific validation annotation.
+- It supports validation groups and is also used for method-level validation scenarios.
+- It can be placed at class or method level depending on the validation requirement.
+
+Example:
+
+    @RestController
+    @Validated
+    public class UserController {
+    }
+
+- @Valid is commonly used for validating an object such as an @RequestBody.
+- @Validated provides additional Spring validation capabilities, particularly validation groups.
+
+------------------------------------------------------------
+Validation Errors
+------------------------------------------------------------
+
+- Validation can produce multiple errors for different fields.
+
+Example:
+
+    public class CreateUserRequest {
+
+        @NotBlank
+        private String name;
+
+        @Email
+        private String email;
+    }
+
+Request:
+
+    {
+        "name": "",
+        "email": "abc"
+    }
+
+Possible validation results:
+
+    name
+        → must not be blank
+
+    email
+        → must be a well-formed email address
+
+------------------------------------------------------------
+Handling Validation Exceptions
+------------------------------------------------------------
+
+- Validation failures should normally be converted into a meaningful REST response.
+
+Example:
+
+    @RestControllerAdvice
+    public class GlobalExceptionHandler {
+
+        @ExceptionHandler(MethodArgumentNotValidException.class)
+        public ResponseEntity<Map<String, String>> handleValidation(
+                MethodArgumentNotValidException ex) {
+
+            Map<String, String> errors = new HashMap<>();
+
+            ex.getBindingResult()
+              .getFieldErrors()
+              .forEach(error ->
+                  errors.put(
+                      error.getField(),
+                      error.getDefaultMessage()
+                  ));
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(errors);
+        }
+    }
+
+Possible response:
+
+    {
+        "name": "must not be blank",
+        "email": "must be a well-formed email address"
+    }
+
+- Input validation should be distinguished from business validation.
+- Example:
+  - Checking whether an email has valid syntax → input validation.
+  - Checking whether the email is already registered → business/application logic.
+
+=======================================================================================================================================================================
+REST Configuration
+=======================================================================================================================================================================
+
+Configure the following:
+
+------------------------------------------------------------
+DispatcherServlet Configuration
+------------------------------------------------------------
+
+------------------------------------------------------------
+WebApplicationContext
+------------------------------------------------------------
+
+------------------------------------------------------------
+Enable Spring Web MVC Infrastructure
+------------------------------------------------------------
+
+------------------------------------------------------------
+Component Scan
+------------------------------------------------------------
+
+------------------------------------------------------------
+MessageConverter Configuration
+------------------------------------------------------------
+
+- Message converters can be configured when the application needs to customize message conversion.
+- For example, a Jackson converter can be explicitly configured.
+
+Example:
+
+    @Configuration
+    @EnableWebMvc
+    public class WebConfig implements WebMvcConfigurer {
+
+        @Override
+        public void configureMessageConverters(
+                List<HttpMessageConverter<?>> converters) {
+
+            converters.add(
+                new MappingJackson2HttpMessageConverter()
+            );
+        }
+    }
+
+- Custom converters can also be registered for application-specific representations.
+- Care should be taken when overriding converter configuration because replacing the converter list can affect default converters.
+
+------------------------------------------------------------
+Content Negotiation Configuration
+------------------------------------------------------------
+
+- Spring MVC provides configuration options for content negotiation.
+- Content negotiation determines the representation used for a response based on factors such as:
+  - client's Accept header
+  - supported media types
+  - configured message converters
+
+- The goal is to select a representation that both the client requests and the server can produce.
+
+------------------------------------------------------------
+Exception Handling Configuration
+------------------------------------------------------------
+
+- Exception handling can be configured through:
+  - @ExceptionHandler
+  - @ControllerAdvice
+  - @RestControllerAdvice
+- REST APIs commonly use @RestControllerAdvice for centralized error responses.
+
+Example:
+
+    @RestControllerAdvice
+    public class GlobalExceptionHandler {
+
+        @ExceptionHandler(UserNotFoundException.class)
+        public ResponseEntity<ErrorResponse> handleUserNotFound(
+                UserNotFoundException ex) {
+
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse(
+                            "USER_NOT_FOUND",
+                            ex.getMessage()
+                    ));
+        }
+    }
+
+=======================================================================================================================================================================
+REST API Design Considerations
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+Resource-Oriented URLs
+------------------------------------------------------------
+
+- REST URLs should generally identify resources rather than actions.
+- Resource names are commonly represented using nouns.
+
+Preferred:
+
+    GET    /users
+    GET    /users/10
+    POST   /users
+    PUT    /users/10
+    DELETE /users/10
+
+------------------------------------------------------------
+HTTP Methods
+------------------------------------------------------------
+
+- HTTP methods should be used according to their defined semantics.
+
+    GET
+        Retrieve a resource or collection
+
+    POST
+        Create a resource or perform a non-idempotent operation
+
+    PUT
+        Replace a resource
+
+    PATCH
+        Partially modify a resource
+
+    DELETE
+        Delete a resource
+
+------------------------------------------------------------
+HTTP Status Codes
+------------------------------------------------------------
+
+- Use a status that accurately represents the result instead of returning 200 for every situation.
+
+------------------------------------------------------------
+Path Variables
+------------------------------------------------------------
+
+- Path variables are appropriate when a value identifies a specific resource.
+
+------------------------------------------------------------
+Query Parameters
+------------------------------------------------------------
+
+- They are commonly used for:
+  - filtering
+  - searching
+  - sorting
+  - pagination
+
+------------------------------------------------------------
+Request/Response DTOs
+------------------------------------------------------------
+
+- DTO stands for Data Transfer Object.
+- DTOs define the data exchanged through the API.
+- Request and response DTOs can be different because clients may send and receive different data.
+
+Example request DTO:
+
+    public class CreateUserRequest {
+
+        private String name;
+        private String email;
+
+        // getters and setters
+    }
+
+Example response DTO:
+
+    public class UserResponse {
+
+        private Long id;
+        private String name;
+
+        // getters and setters
+    }
+
+Controller:
+
+    @PostMapping("/users")
+    public UserResponse create(
+            @RequestBody CreateUserRequest request) {
+
+        return userService.create(request);
+    }
+
+- DTOs prevent internal domain or persistence objects from automatically becoming the external API contract.
+- They allow the API to expose only the fields appropriate for clients.
+- They also allow the request and response structures to evolve independently.
+
+------------------------------------------------------------
+Idempotency
+------------------------------------------------------------
+
+- An operation is idempotent when repeating the same request has the same intended effect on server state as performing it once.
+
+Typical HTTP semantics:
+
+    GET
+        Generally idempotent
+
+    PUT
+        Generally idempotent
+
+    DELETE
+        Generally idempotent
+
+    POST
+        Generally not idempotent
+
+    PATCH
+        Depends on the operation
+
+Example:
+
+    PUT /users/10
+
+    {
+        "name": "Sai"
+    }
+
+- Repeating the same PUT request should leave user 10 with the same intended state:
+
+    name = "Sai"
+
+Example:
+
+    POST /users
+
+    {
+        "name": "Sai"
+    }
+
+- Repeating the POST may create multiple users.
+
+Important distinction:
+
+- Idempotent does not mean that every response must be byte-for-byte identical.
+- It means repeated identical requests have the same intended effect on the server's state.
+- A method can therefore be idempotent even if response metadata or other externally observable details differ between requests.
+
+=======================================================================================================================================================================
 
 
 
@@ -62,4 +1525,91 @@ DispatcherServlet
 Configure Application Context - Application@EnableWebMVC, @Configuration, @ComponentScan("com.example")
 HttpMessageConverter, Jackson
 Configure application beans
+
+
+
+
+
+
+SPRING REST
+
+1. Spring REST Architecture
+   - Spring MVC as the foundation for Spring REST
+   - DispatcherServlet
+   - REST Controller
+   - Request processing flow
+
+2. REST Controller
+   - @RestController
+   - @Controller + @ResponseBody
+   - Controller method execution
+   - Request mapping annotations
+
+3. Request Data Binding
+   - @PathVariable
+   - @RequestParam
+   - @RequestHeader
+   - @RequestBody
+   - @ModelAttribute
+   - Request data → Java object
+
+4. Response Handling
+   - @ResponseBody
+   - Return value → HTTP response body
+   - ResponseEntity
+   - HTTP status codes
+   - Response headers
+   - Response body
+
+5. Message Converters
+   - Purpose
+   - Java object → JSON
+   - JSON → Java object
+   - HttpMessageConverter
+   - Jackson integration
+   - Content-Type
+   - Accept
+
+6. Spring REST Request Flow
+   - HTTP Request
+   - DispatcherServlet
+   - HandlerMapping
+   - HandlerAdapter
+   - Controller
+   - MessageConverter
+   - HTTP Response
+
+7. Exception Handling
+   - @ExceptionHandler
+   - @ControllerAdvice
+   - @RestControllerAdvice
+   - Global exception handling
+   - Error response body
+   - HTTP status for exceptions
+
+8. REST Validation
+   - Bean Validation
+   - @Valid
+   - @Validated
+   - Validation errors
+   - Handling validation exceptions
+
+9. REST Configuration
+   - DispatcherServlet
+   - WebApplicationContext
+   - @EnableWebMvc
+   - @ComponentScan
+   - MessageConverter configuration
+   - Content negotiation
+   - Exception handling configuration
+
+10. REST API Design Considerations
+    - Resource-oriented URLs
+    - HTTP methods
+    - HTTP status codes
+    - Path variables
+    - Query parameters
+    - Request/response DTOs
+    - Idempotency
+
 

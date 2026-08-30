@@ -434,35 +434,35 @@ TYPICAL JAVA WEB MVC/SSR STRUCTURE
   application/
   │
   ├── src/main/java/
-  │   │
-  │   └── com/example/
-  │       ├── controller/
-  │       │   └── ProductServlet.java
-  │       │
-  │       ├── service/
-  │       │   └── ProductService.java
-  │       │
-  │       ├── repository/
-  │       │   └── ProductRepository.java
-  │       │
-  │       └── model/
-  │           └── Product.java
+  │         │
+  │         └── com/example/
+  │                  ├── controller/
+  │                  │       └── ProductServlet.java
+  │                  │
+  │                  ├── service/
+  │                  │       └── ProductService.java
+  │                  │
+  │                  ├── repository/
+  │                  │       └── ProductRepository.java
+  │                  │
+  │                  └── model/
+  │                          └── Product.java
   │
   └── src/main/webapp/
-  │
-  ├── css/
-  │   └── style.css
-  │
-  ├── js/
-  │   └── app.js
-  │
-  └── WEB-INF/
-  ├── web.xml
-  │
-  └── views/
-  ├── home.jsp
-  ├── product.jsp
-  └── login.jsp
+             │
+             ├── css/
+             │     └── style.css
+             │
+             ├── js/
+             │   └── app.js
+             │
+             └── WEB-INF/
+                    ├── web.xml
+                    │
+                    └── views/
+                           ├── home.jsp
+                           ├── product.jsp
+                           └── login.jsp
 
 =============================================================================================================================================================================
 DEPLOYMENT STRUCTURE
@@ -477,20 +477,20 @@ DEPLOYMENT STRUCTURE
   ├── WEB-INF/
   │   ├── web.xml
   │   ├── classes/
-  │   │   └── compiled Java classes
+  │   │      └── compiled Java classes
   │   ├── lib/
-  │   │   └── dependency JARs
+  │   │      └── dependency JARs
   │   └── views/
-  │       └── JSP files
+  │          └── JSP files
   │
   ├── css/
-  │   └── style.css
+  │     └── style.css
   │
   ├── js/
-  │   └── app.js
+  │     └── app.js
   │
   └── images/
-  └── logo.png
+        └── logo.png
 
 - Important directories:
 
