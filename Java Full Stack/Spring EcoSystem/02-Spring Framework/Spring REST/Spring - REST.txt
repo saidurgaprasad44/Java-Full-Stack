@@ -1220,7 +1220,7 @@ Possible response:
   - Checking whether the email is already registered → business/application logic.
 
 =======================================================================================================================================================================
-REST Configuration
+Configuration
 =======================================================================================================================================================================
 
 Configure the following:
@@ -1306,6 +1306,26 @@ Example:
                     ));
         }
     }
+
+
+=======================================================================================================================================================================
+Customizing Default Spring Configurations
+=======================================================================================================================================================================
+
+HandlerMapping
+HandlerAdapter
+MessageConverters
+Content Negotiation
+Exception Resolution / Exception Handlers
+Argument Resolvers
+Return Value Handlers
+ViewResolver — mainly MVC SSR
+Resource Handling — static resources
+CORS configuration
+Interceptors
+Formatters / Converters
+Validation configuration
+Path Matching / URL mapping strategy
 
 =======================================================================================================================================================================
 REST API Design Considerations
@@ -1462,154 +1482,3 @@ Important distinction:
 - A method can therefore be idempotent even if response metadata or other externally observable details differ between requests.
 
 =======================================================================================================================================================================
-
-
-
-
-
-
-Browser
-   |
-   | HTTP request
-   v
-Servlet Container (Tomcat)
-   |
-   v
-DispatcherServlet
-   |
-   +--> HandlerMapping
-   |       |
-   |       v
-   |   Controller method
-   |
-   +--> HandlerAdapter
-   |
-   v
-Controller <--> Service <--> Repository <--> Database
-   |
-   v
-HttpMessageConverter (Jackson)
-   |
-   |Json/xml
-   v
-ResponseEntity
-   |
-   v
-Browser
-
-
-=======================================================================================================================================================================
-
-ResponseEntity
-   |
-   +-- HTTP status
-   +-- headers
-   +-- body
-
-
-return ResponseEntity<>(employee, HttpStatus.OK);
-
-return ResponseEntity.ok(employee);
-
-return ResponseEntity.status(HttpStatus.OK).
-
-=======================================================================================================================================================================
-
-@ExceptionHandler / @ControllerAdvice / @RestControllerAdvice / GlobalExceptionHandler
-
-=======================================================================================================================================================================
-
-Required Configuration:
-
-DispatcherServlet
-Configure Application Context - Application@EnableWebMVC, @Configuration, @ComponentScan("com.example")
-HttpMessageConverter, Jackson
-Configure application beans
-
-
-
-
-
-
-SPRING REST
-
-1. Spring REST Architecture
-   - Spring MVC as the foundation for Spring REST
-   - DispatcherServlet
-   - REST Controller
-   - Request processing flow
-
-2. REST Controller
-   - @RestController
-   - @Controller + @ResponseBody
-   - Controller method execution
-   - Request mapping annotations
-
-3. Request Data Binding
-   - @PathVariable
-   - @RequestParam
-   - @RequestHeader
-   - @RequestBody
-   - @ModelAttribute
-   - Request data → Java object
-
-4. Response Handling
-   - @ResponseBody
-   - Return value → HTTP response body
-   - ResponseEntity
-   - HTTP status codes
-   - Response headers
-   - Response body
-
-5. Message Converters
-   - Purpose
-   - Java object → JSON
-   - JSON → Java object
-   - HttpMessageConverter
-   - Jackson integration
-   - Content-Type
-   - Accept
-
-6. Spring REST Request Flow
-   - HTTP Request
-   - DispatcherServlet
-   - HandlerMapping
-   - HandlerAdapter
-   - Controller
-   - MessageConverter
-   - HTTP Response
-
-7. Exception Handling
-   - @ExceptionHandler
-   - @ControllerAdvice
-   - @RestControllerAdvice
-   - Global exception handling
-   - Error response body
-   - HTTP status for exceptions
-
-8. REST Validation
-   - Bean Validation
-   - @Valid
-   - @Validated
-   - Validation errors
-   - Handling validation exceptions
-
-9. REST Configuration
-   - DispatcherServlet
-   - WebApplicationContext
-   - @EnableWebMvc
-   - @ComponentScan
-   - MessageConverter configuration
-   - Content negotiation
-   - Exception handling configuration
-
-10. REST API Design Considerations
-    - Resource-oriented URLs
-    - HTTP methods
-    - HTTP status codes
-    - Path variables
-    - Query parameters
-    - Request/response DTOs
-    - Idempotency
-
-

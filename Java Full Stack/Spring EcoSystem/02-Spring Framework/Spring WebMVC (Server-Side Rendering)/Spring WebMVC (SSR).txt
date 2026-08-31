@@ -237,7 +237,7 @@ model.addAttribute("employees", employees);
 
 Model
 ┌──────────────────────────────┐
-│ "employees" → List<Employee> │
+│ "employees" → List<Employee>          │
 └──────────────────────────────┘
 
 ------------------------------------------------------------
@@ -528,7 +528,7 @@ INTERCEPTORS
 
 
 =======================================================================================================================================================================
-SPRING MVC (SSR) - CONFIGURATION
+CONFIGURATION
 =======================================================================================================================================================================
 
 - Traditional Spring MVC applications require explicit configuration for the web layer and Spring MVC infrastructure.
@@ -650,16 +650,19 @@ public class WebAppInitializer
 WEBAPPLICATIONCONTEXT
 ------------------------------------------------------------
 
+- Spring's ApplicationContext is the container that creates and manages the application's Spring beans.
 - `WebApplicationContext` is a web-aware implementation of Spring's `ApplicationContext`.
-- `DispatcherServlet` requires a `WebApplicationContext`.
-- The WebApplicationContext contains the Spring MVC web-layer beans and can also contain application beans.
+- Spring Web MVC applications (both SSR & REST) can contain TWO WebApplicationContexts
+
+  - DispatcherServlet's WebApplicationContext: It contains the Spring MVC web-layer beans and can also contain application beans if Root Context is not configured.
+  - Root WebApplicationContext (Optional): It is to maintain the application level infrastructure like Services, Repositories, DB, Transactions, etc.,
 
 - A traditional Spring MVC application can have:
 
   - Only the DispatcherServlet's WebApplicationContext
-  - A root WebApplicationContext + a child WebApplicationContext
+  - A root WebApplicationContext + a DispatcherServlet's child WebApplicationContext
 
-- A separate root context is optional.
+- A separate root context is optional and created manually by configuring the ContextLoaderListener
 
 
 Without a root context:
@@ -707,7 +710,11 @@ web.xml:
 
 <context-param>
     <param-name>contextConfigLocation</param-name>
-    <param-value>classpath:root-context.xml</param-value>
+    <param-value>
+	classpath:application-config.xml
+	classpath:Jpa-Config.xml
+    </param-value>
+    
 </context-param>
 
 <listener>
@@ -723,16 +730,16 @@ web.xml:
 
 Java-based root context configuration:
 
-- Configure the root context in `RootConfig.java`.
+- Configure the root context in `RootConfig.java` or in multiple config classes like AppConfig.java, JpaConfig.java etc.,
 - Tell `WebAppInitializer.java` to use `RootConfig`.
 
-public class WebAppInitializer
-        extends AbstractAnnotationConfigDispatcherServletInitializer {
+public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
     // 1. Point to your root application context configuration (Services, Security, Repositories)
     @Override
     protected Class<?>[] getRootConfigClasses() {
-        return new Class<?>[] { RootConfig.class };
+        return new Class<?>[] { RootConfig.java };
+        //return new Class<?>[] { AppConfig.java, JpaConfig.java };
     }
 
     // 2. Point to your Web/MVC configuration class (ViewResolvers, Controllers, Interceptors)
@@ -1091,6 +1098,21 @@ SPRING MVC CONFIGURATION RESPONSIBILITIES
 - Child WebApplicationContext:
   - Context associated with a DispatcherServlet and commonly used for web-layer components.
 
+=======================================================================================================================================================================
+Customizing Default Spring Configurations
+=======================================================================================================================================================================
+
+HandlerMapping
+HandlerAdapter
+Exception Resolution / Exception Handlers
+Argument Resolvers
+Return Value Handlers
+ViewResolver — mainly MVC SSR
+Resource Handling — static resources
+CORS configuration
+Interceptors
+Formatters / Converters
+Path Matching / URL mapping strategy
 
 =======================================================================================================================================================================
 EXCEPTION HANDLING

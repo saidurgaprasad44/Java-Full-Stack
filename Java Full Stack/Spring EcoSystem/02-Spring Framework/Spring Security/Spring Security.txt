@@ -1,0 +1,264 @@
+============================================================
+SPRING SECURITY
+============================================================
+
+1. SPRING SECURITY FUNDAMENTALS
+------------------------------------------------------------
+1.1 What Spring Security Provides
+1.2 Authentication
+1.3 Authorization
+1.4 SecurityContext
+1.5 Authentication
+1.6 GrantedAuthority
+1.7 Roles vs Authorities
+
+
+2. SPRING SECURITY ARCHITECTURE
+------------------------------------------------------------
+2.1 Security Filter Chain
+2.2 DelegatingFilterProxy
+2.3 FilterChainProxy
+2.4 Security Filters
+2.5 SecurityContextHolder
+2.6 AuthenticationManager
+2.7 AuthenticationProvider
+2.8 UserDetailsService
+2.9 PasswordEncoder
+2.10 How Authentication Flows Through Spring Security
+
+
+3. SECURITY CONFIGURATION
+------------------------------------------------------------
+3.1 SecurityFilterChain
+3.2 HttpSecurity
+3.3 Request Authorization
+3.4 Public vs Protected Endpoints
+3.5 Authentication Configuration
+3.6 Multiple SecurityFilterChains
+3.7 Security Configuration Ordering
+
+
+4. USER AUTHENTICATION
+------------------------------------------------------------
+4.1 UserDetails
+4.2 UserDetailsService
+4.3 In-Memory Users
+4.4 Database-backed Users
+4.5 Custom UserDetails
+4.6 PasswordEncoder
+4.7 AuthenticationProvider
+4.8 Custom AuthenticationProvider
+
+
+5. FORM / SESSION AUTHENTICATION
+------------------------------------------------------------
+5.1 Form Login
+5.2 Authentication Flow
+5.3 SecurityContext and HTTP Session
+5.4 JSESSIONID
+5.5 Session Creation Policies
+5.6 Stateless vs Stateful Applications
+5.7 Session Fixation Protection
+5.8 Concurrent Sessions
+5.9 Logout
+5.10 Remember-Me
+
+
+6. HTTP BASIC AUTHENTICATION
+------------------------------------------------------------
+6.1 Basic Authentication in Spring Security
+6.2 Authentication Flow
+6.3 BasicAuthenticationFilter
+6.4 WWW-Authenticate
+6.5 Basic Auth and Sessions
+6.6 Basic Auth for REST APIs
+
+
+7. JWT AUTHENTICATION
+------------------------------------------------------------
+7.1 JWT Authentication Architecture
+7.2 Resource Server
+7.3 Bearer Token Authentication
+7.4 JwtDecoder
+7.5 JWT Validation
+7.6 Authentication from JWT Claims
+7.7 JWT Authorities
+7.8 SecurityContext Population
+7.9 Stateless JWT APIs
+7.10 Access Tokens and Refresh Tokens
+7.11 Token Expiration
+7.12 JWT Authentication vs Session Authentication
+
+
+8. AUTHORIZATION
+------------------------------------------------------------
+8.1 Request-level Authorization
+8.2 Method-level Authorization
+8.3 @PreAuthorize
+8.4 @PostAuthorize
+8.5 @Secured
+8.6 Role-based Authorization
+8.7 Authority-based Authorization
+8.8 Custom Authorization Logic
+8.9 Authorization Flow
+
+
+9. EXCEPTION HANDLING
+------------------------------------------------------------
+9.1 AuthenticationException
+9.2 AccessDeniedException
+9.3 AuthenticationEntryPoint
+9.4 AccessDeniedHandler
+9.5 401 Unauthorized
+9.6 403 Forbidden
+9.7 ExceptionTranslationFilter
+
+
+10. CSRF PROTECTION
+------------------------------------------------------------
+10.1 CSRF in Spring Security
+10.2 CsrfFilter
+10.3 CSRF Token
+10.4 CSRF Token Repositories
+10.5 Cookie-based CSRF Tokens
+10.6 CSRF with Session Authentication
+10.7 CSRF with JWT
+10.8 When CSRF Protection Should Be Enabled
+10.9 When CSRF Protection Can Be Disabled
+
+
+11. CORS
+------------------------------------------------------------
+11.1 CORS in Spring Security
+11.2 CorsFilter
+11.3 Preflight Requests
+11.4 CorsConfiguration
+11.5 Allowed Origins
+11.6 Allowed Methods
+11.7 Allowed Headers
+11.8 Credentials
+11.9 CORS Configuration
+11.10 CORS vs CSRF
+
+
+12. SECURITY HEADERS
+------------------------------------------------------------
+12.1 Security HTTP Response Headers
+12.2 Content-Security-Policy
+12.3 X-Content-Type-Options
+12.4 Referrer-Policy
+12.5 HSTS
+12.6 Frame Protection
+12.7 Custom Security Headers
+
+
+13. OAUTH 2.0
+------------------------------------------------------------
+13.1 OAuth 2.0 Purpose
+13.2 OAuth 2.0 Roles
+13.3 Client
+13.4 Resource Owner
+13.5 Authorization Server
+13.6 Resource Server
+13.7 Access Tokens
+13.8 Scopes
+13.9 Authorization Code Flow
+13.10 Client Credentials Flow
+13.11 PKCE
+13.12 Spring Security OAuth2 Client
+13.13 Spring Security OAuth2 Resource Server
+
+
+14. OPENID CONNECT
+------------------------------------------------------------
+14.1 OAuth 2.0 vs OpenID Connect
+14.2 ID Token
+14.3 UserInfo Endpoint
+14.4 OpenID Connect Login
+14.5 Spring Security OAuth2 Login
+14.6 JWT ID Tokens
+
+
+15. METHOD / SERVICE SECURITY
+------------------------------------------------------------
+15.1 Method Security
+15.2 @EnableMethodSecurity
+15.3 Securing Service Methods
+15.4 Authorization Based on Method Arguments
+15.5 Custom Authorization
+
+
+16. APPLICATION SECURITY CUSTOMIZATION
+------------------------------------------------------------
+16.1 Custom Filters
+16.2 OncePerRequestFilter
+16.3 Filter Ordering
+16.4 Custom Authentication
+16.5 Custom AuthenticationProvider
+16.6 Custom AuthenticationEntryPoint
+16.7 Custom AccessDeniedHandler
+16.8 Custom UserDetailsService
+16.9 Custom SecurityContext Handling
+
+
+17. PASSWORD & CREDENTIAL SECURITY
+------------------------------------------------------------
+17.1 Password Hashing
+17.2 BCrypt
+17.3 DelegatingPasswordEncoder
+17.4 Password Storage
+17.5 Password Verification
+17.6 Credential Handling Best Practices
+
+
+18. SPRING SECURITY FOR REST APIs
+------------------------------------------------------------
+18.1 Stateless API Security
+18.2 JWT Resource Server
+18.3 Basic Authentication APIs
+18.4 Session-based APIs
+18.5 Securing API Endpoints
+18.6 Authentication vs Authorization
+18.7 Error Responses
+18.8 CORS Configuration
+18.9 CSRF Considerations
+18.10 Security Headers
+
+
+19. ADVANCED SECURITY ARCHITECTURE
+------------------------------------------------------------
+19.1 SecurityContext Propagation
+19.2 Async Execution and SecurityContext
+19.3 SecurityContext Persistence
+19.4 Session vs Stateless Security
+19.5 Multiple Authentication Mechanisms
+19.6 Multiple SecurityFilterChains
+19.7 Security in Microservices
+19.8 API Gateway and Spring Security
+19.9 Resource Server Architecture
+
+
+20. TESTING & DEBUGGING
+------------------------------------------------------------
+20.1 Spring Security Test Support
+20.2 Testing Authentication
+20.3 Testing Authorization
+20.4 Testing CSRF
+20.5 Testing JWT APIs
+20.6 Debugging SecurityFilterChain
+20.7 Understanding 401 vs 403
+20.8 Debugging Authentication Failures
+20.9 Debugging CORS Issues
+
+
+21. SPRING SECURITY ARCHITECTURE IN PRACTICE
+------------------------------------------------------------
+21.1 Session-based Web Application
+21.2 Basic Authentication API
+21.3 JWT-secured REST API
+21.4 OAuth2 Login
+21.5 OAuth2 Resource Server
+21.6 Role-based API Authorization
+21.7 CORS + CSRF Configuration
+21.8 Production Security Configuration
+============================================================

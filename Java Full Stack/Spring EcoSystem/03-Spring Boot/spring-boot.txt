@@ -1,0 +1,1349 @@
+=======================================================================================================================================================================
+=======================================================================================================================================================================
+										SPRING BOOT
+=======================================================================================================================================================================
+=======================================================================================================================================================================
+
+
+
+=======================================================================================================================================================================
+Spring Boot Fundamentals
+=======================================================================================================================================================================
+
+- Spring Boot is built on top of the Spring Framework and simplifies the creation and configuration of Spring applications.
+- Its main purpose is to reduce manual configuration by providing:
+  - Auto-configuration
+  - Opinionated defaults
+  - Starter dependencies
+  - Embedded servers
+  - Externalized configuration
+  - Production-oriented features
+
+Spring Framework:
+
+    Provides the application framework
+        |
+        +--> IoC / DI
+        +--> AOP
+        +--> MVC
+        +--> Transactions
+        +--> Data access
+        +--> etc.
+
+Spring Boot:
+
+    Simplifies using Spring
+        |
+        +--> Auto-configuration
+        +--> Starters
+        +--> Defaults
+        +--> Embedded servers
+        +--> Externalized configuration
+        +--> Production features
+
+
+------------------------------------------------------------
+Why Spring Boot
+------------------------------------------------------------
+
+- Traditional Spring applications often require explicit configuration of infrastructure.
+- Spring Boot uses conventions and sensible defaults to reduce this configuration.
+- The goal is not to remove configuration completely, but to configure common cases automatically.
+
+Traditional Spring:
+
+    Developer
+       |
+       +--> Configure infrastructure
+       +--> Configure dependencies
+       +--> Configure server
+       +--> Configure beans
+       +--> Configure properties
+       |
+       v
+    Application
+
+Spring Boot:
+
+    Developer
+       |
+       +--> Declare dependencies
+       +--> Write application code
+       +--> Customize only when necessary
+       |
+       v
+    Spring Boot
+       |
+       +--> Auto-configures common infrastructure
+       |
+       v
+    Application
+
+
+------------------------------------------------------------
+Convention Over Configuration
+------------------------------------------------------------
+
+- Convention over configuration means that common application decisions can use sensible defaults instead of requiring explicit configuration.
+- Boot makes assumptions based on:
+  - Dependencies present on the classpath
+  - Existing beans
+  - Application properties
+  - Application type
+
+Example:
+
+- A web-related starter is added.
+- Boot detects the relevant web libraries.
+- Boot automatically configures the required web infrastructure and an embedded server.
+
+- Developers only need to explicitly configure behavior that differs from the defaults.
+
+
+------------------------------------------------------------
+Opinionated Defaults
+------------------------------------------------------------
+
+- Spring Boot provides predefined defaults for common application requirements.
+- These defaults are chosen to make common applications work with minimal configuration.
+
+Examples:
+
+  * Embedded Tomcat
+  * Default logging
+  * Default application configuration
+  * Default component scanning
+  * Default auto-configuration
+
+- "Opinionated" does not mean that the defaults cannot be changed.
+- Boot allows application-specific configuration when the defaults are not suitable.
+
+
+=======================================================================================================================================================================
+Spring Boot Application
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+@SpringBootApplication
+------------------------------------------------------------
+
+- @SpringBootApplication is the commonly used entry-point annotation for a Spring Boot application.
+
+Example:
+
+    @SpringBootApplication
+    public class Application {
+
+        public static void main(String[] args) {
+
+            SpringApplication.run(Application.class,args);
+        }
+    }
+
+- It combines three important annotations:
+
+    @SpringBootConfiguration
+    @EnableAutoConfiguration
+    @ComponentScan
+
+
+------------------------------------------------------------
+@SpringBootConfiguration
+------------------------------------------------------------
+
+- @SpringBootConfiguration identifies the class as a Spring Boot configuration class.
+- It is a specialized form of @Configuration.
+
+Conceptually:
+
+    @SpringBootConfiguration
+            |
+            v
+       @Configuration
+
+- A typical Boot application has one main configuration class annotated with @SpringBootApplication.
+
+
+------------------------------------------------------------
+@EnableAutoConfiguration
+------------------------------------------------------------
+
+- @EnableAutoConfiguration tells Spring Boot to automatically configure application infrastructure based on the application's environment.
+
+Example:
+
+    @EnableAutoConfiguration
+
+- Boot examines factors such as:
+  - Classes available on the classpath
+  - Existing beans
+  - Configuration properties
+  - Application type
+
+- And determines which auto-configurations should be applied.
+
+
+------------------------------------------------------------
+@ComponentScan
+------------------------------------------------------------
+
+- @ComponentScan tells Spring where to discover application components.
+
+Example:
+
+    @ComponentScan("com.example")
+
+It can discover:
+
+    @Component
+    @Service
+    @Repository
+    @Controller
+    @Configuration
+
+- When @SpringBootApplication is placed in the application's root package, its component scan commonly covers the application's subpackages.
+
+
+Conceptually:
+
+    @SpringBootApplication
+             |
+             +--> @SpringBootConfiguration
+             |       |
+             |       +--> Configuration class
+             |
+             +--> @EnableAutoConfiguration
+             |       |
+             |       +--> Boot infrastructure
+             |
+             +--> @ComponentScan
+                     |
+                     +--> Application components
+
+
+------------------------------------------------------------
+SpringApplication
+------------------------------------------------------------
+
+- SpringApplication is responsible for bootstrapping a Spring Boot application.
+
+Example:
+
+    SpringApplication.run(Application.class,args);
+
+
+- It broadly performs operations such as:
+
+    Create Spring environment
+          ↓
+    Create ApplicationContext
+          ↓
+    Apply configuration
+          ↓
+    Perform component scanning
+          ↓
+    Apply auto-configuration
+          ↓
+    Create Spring beans
+          ↓
+    Start required application infrastructure
+          ↓
+    Application ready
+
+
+------------------------------------------------------------
+Application Startup
+------------------------------------------------------------
+
+- The main() method starts the Boot application.
+
+Example:
+
+    public static void main(String[] args) {
+
+        SpringApplication.run(
+            Application.class,
+            args
+        );
+    }
+
+- SpringApplication bootstraps the Spring ApplicationContext.
+- During startup, configuration, component scanning, auto-configuration, and bean creation take place.
+- Depending on the application type, additional infrastructure such as an embedded server may also be started.
+
+
+=======================================================================================================================================================================
+Spring Boot Starters
+=======================================================================================================================================================================
+
+- A Spring Boot starter is a dependency descriptor that groups dependencies commonly required for a particular type of application.
+- It does not contain the implementation of every feature itself.
+- It brings the dependencies required for that application type.
+- It avoids manually selecting and managing a collection of related dependencies.
+
+Example:
+
+    spring-boot-starter-web
+
+Conceptually:
+
+    spring-boot-starter-web
+            |
+            +--> Spring MVC
+            +--> Embedded Tomcat
+            +--> JSON support
+            +--> Logging
+            +--> Other required dependencies
+
+
+------------------------------------------------------------
+Common Starters
+------------------------------------------------------------
+
+Examples include:
+
+    spring-boot-starter
+
+        → Core Spring Boot functionality
+
+    spring-boot-starter-web
+
+        → Web applications
+
+    spring-boot-starter-data-jpa
+
+        → Spring Data JPA applications
+
+    spring-boot-starter-test
+
+        → Testing support
+
+    spring-boot-starter-security
+
+        → Spring Security applications
+
+    spring-boot-starter-actuator
+
+        → Production monitoring and management
+
+
+------------------------------------------------------------
+Dependency Management
+------------------------------------------------------------
+
+- Spring Boot provides dependency management for many commonly used libraries.
+- This allows applications to omit explicit versions for dependencies managed by Boot.
+
+Example:
+
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+- The application normally does not need to specify the version when using Boot's dependency management.
+- This helps maintain compatible versions across the application's dependency set.
+
+
+=======================================================================================================================================================================
+Auto-Configuration
+=======================================================================================================================================================================
+
+- Auto-configuration automatically configures Spring infrastructure based on the application's environment.
+- It is one of the main features that distinguishes Spring Boot from traditional manual Spring configuration.
+
+Conceptually:
+
+    Dependencies
+         +
+    Application configuration
+         +
+    Existing beans
+         |
+         v
+    Spring Boot Auto-Configuration
+         |
+         v
+    Appropriate Spring infrastructure
+
+
+------------------------------------------------------------
+How Auto-Configuration Makes Decisions
+------------------------------------------------------------
+
+- Boot does not blindly configure everything.
+- Auto-configuration uses conditions to determine whether a configuration should be applied.
+
+Common factors include:
+
+    Is a required class available?
+    Is a particular bean already defined?
+    Is a property enabled?
+    What type of application is running?
+
+Example:
+
+    Required library present?
+          |
+      Yes ↓
+    Is custom bean already present?
+          |
+       No ↓
+    Apply Boot's default configuration
+
+
+------------------------------------------------------------
+Conditional Configuration
+------------------------------------------------------------
+
+- Spring Boot uses conditional configuration extensively.
+- Conditions allow Boot to apply configuration only when specific requirements are satisfied.
+
+Common conditional annotations include:
+
+    @ConditionalOnClass
+    @ConditionalOnMissingBean
+    @ConditionalOnBean
+    @ConditionalOnProperty
+    @ConditionalOnMissingClass
+
+Examples:
+
+    @ConditionalOnClass
+        → Configure when a particular class exists
+
+    @ConditionalOnMissingBean
+        → Configure when a particular bean does not already exist
+
+    @ConditionalOnProperty
+        → Configure when a property has the required value
+
+
+------------------------------------------------------------
+Classpath-Based Auto-Configuration
+------------------------------------------------------------
+
+- Dependencies present on the classpath influence which auto-configurations Boot considers.
+
+Example:
+
+    Add database-related dependencies
+              |
+              v
+    Boot detects database infrastructure
+              |
+              v
+    Relevant auto-configuration can be activated
+
+- Therefore, simply adding a dependency can cause Boot to configure related infrastructure.
+
+
+------------------------------------------------------------
+Existing Bean-Based Auto-Configuration
+------------------------------------------------------------
+
+- Boot often checks whether the application has already defined a bean.
+- If the application provides its own bean, Boot can back away from creating its default bean.
+
+Example:
+
+    Boot default bean
+          |
+          v
+    @ConditionalOnMissingBean
+          |
+          v
+    Is custom bean present?
+          |
+       Yes → Do not create Boot default
+       No  → Create Boot default
+
+
+------------------------------------------------------------
+Property-Based Auto-Configuration
+------------------------------------------------------------
+
+- Configuration properties can influence whether and how auto-configuration is applied.
+
+Example:
+
+    some.feature.enabled=true
+
+- Boot can use such properties through conditional configuration and configuration binding.
+
+
+------------------------------------------------------------
+Auto-Configuration Back-Off
+------------------------------------------------------------
+
+- Auto-configuration is designed to back off when the application explicitly provides an appropriate configuration.
+- This allows Boot's defaults to be replaced or customized.
+
+Conceptually:
+
+    Boot default
+         |
+         v
+    Custom configuration?
+       /       \
+     No         Yes
+     |           |
+     v           v
+    Use        Back off
+    default    where applicable
+
+
+------------------------------------------------------------
+Manual Configuration vs Auto-Configuration
+------------------------------------------------------------
+
+Traditional Spring:
+
+    Developer
+       |
+       +--> Explicitly configure infrastructure
+       |
+       v
+    Spring
+
+Spring Boot:
+
+    Developer
+       |
+       +--> Dependencies
+       +--> Properties
+       +--> Custom configuration when required
+       |
+       v
+    Boot auto-configuration
+       |
+       v
+    Spring infrastructure
+
+- Auto-configuration does not prevent explicit configuration.
+- It provides defaults that can be customized when necessary.
+
+
+=======================================================================================================================================================================
+Embedded Servers
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+Embedded Server Concept
+------------------------------------------------------------
+
+- Spring Boot can package the application together with an embedded server.
+- The application can therefore be started directly instead of being deployed to a separately installed application server.
+
+Traditional deployment:
+
+    Application
+         |
+         v
+    External Server
+         |
+         v
+    Run application
+
+Spring Boot:
+
+    Application
+         +
+    Embedded Server
+         |
+         v
+    Run application
+
+
+------------------------------------------------------------
+Embedded Tomcat
+------------------------------------------------------------
+
+- For common web applications, Spring Boot can provide an embedded Tomcat server through the appropriate starter.
+- Tomcat runs inside the application process.
+
+Example:
+
+    java -jar application.jar
+
+Conceptually:
+
+    JVM
+     |
+     +--> Spring Boot application
+     |
+     +--> Spring ApplicationContext
+     |
+     +--> Embedded Tomcat
+
+
+------------------------------------------------------------
+Application Startup with Embedded Server
+------------------------------------------------------------
+
+- When a web-based Boot application starts:
+  - SpringApplication bootstraps the application.
+  - The ApplicationContext is created.
+  - Required web infrastructure is configured.
+  - The embedded server is created and started.
+
+Conceptually:
+
+    main()
+      ↓
+    SpringApplication.run()
+      ↓
+    ApplicationContext
+      ↓
+    Auto-configuration
+      ↓
+    Embedded server
+      ↓
+    Application ready
+
+
+------------------------------------------------------------
+Server Port
+------------------------------------------------------------
+
+- The default server port is commonly 8080.
+- It can be changed using externalized configuration.
+
+Example:
+
+    server.port=9090
+
+- The application then starts the embedded server on port 9090.
+
+
+------------------------------------------------------------
+Context Path
+------------------------------------------------------------
+
+- The context path defines a base path for the application.
+
+Example:
+
+    server.servlet.context-path=/app
+
+An application endpoint such as:
+
+    /users
+
+is then accessed under:
+
+    /app/users
+
+
+------------------------------------------------------------
+Embedded Server Customization
+------------------------------------------------------------
+
+- Boot's embedded server configuration can be customized through properties or programmatic configuration.
+
+Examples of configurable areas include:
+
+    Port
+    Context path
+    Server error behavior
+    Session settings
+    SSL
+    Compression
+
+- The exact properties depend on the server and Boot version.
+
+
+=======================================================================================================================================================================
+Externalized Configuration
+=======================================================================================================================================================================
+
+- Externalized configuration separates application configuration from application code.
+- The same application artifact can therefore run in different environments with different settings.
+
+Example:
+
+    Development
+        → localhost database
+
+    Testing
+        → test database
+
+    Production
+        → production database
+
+- The application code does not need to be changed for each environment.
+
+
+------------------------------------------------------------
+application.properties
+------------------------------------------------------------
+
+- application.properties is a common location for Boot application configuration.
+
+Example:
+
+    server.port=9090
+    app.name=MyApplication
+
+
+------------------------------------------------------------
+application.yml
+------------------------------------------------------------
+
+- YAML can also be used for hierarchical configuration.
+
+Example:
+
+    server:
+      port: 9090
+
+    app:
+      name: MyApplication
+
+- properties and YAML provide the same general configuration mechanism, with different syntax.
+
+
+------------------------------------------------------------
+Configuration Properties
+------------------------------------------------------------
+
+- Spring Boot reads configuration properties from supported property sources and makes them available to the application.
+
+Example:
+
+    app.name=MyApplication
+
+The value can be injected using:
+
+    @Value("${app.name}")
+    private String applicationName;
+
+
+------------------------------------------------------------
+@ConfigurationProperties
+------------------------------------------------------------
+
+- @ConfigurationProperties binds a group of related configuration properties to a Java object.
+
+Example:
+
+    @ConfigurationProperties(prefix = "app")
+    public class AppProperties {
+
+        private String name;
+        private String version;
+
+        // getters and setters
+    }
+
+Configuration:
+
+    app.name=MyApplication
+    app.version=1.0
+
+- This is useful when an application has multiple related configuration values.
+- It provides structured configuration rather than many individual @Value fields.
+
+
+------------------------------------------------------------
+Environment Variables
+------------------------------------------------------------
+
+- Configuration can be supplied through environment variables.
+
+Example:
+
+    SERVER_PORT=9090
+
+- This is useful when configuration must be supplied by the deployment environment rather than packaged inside the application.
+
+
+------------------------------------------------------------
+System Properties
+------------------------------------------------------------
+
+- Java system properties can also provide configuration values.
+
+Example:
+
+    java -Dserver.port=9090 -jar application.jar
+
+
+------------------------------------------------------------
+Command-Line Arguments
+------------------------------------------------------------
+
+- Spring Boot can treat command-line arguments as configuration properties.
+
+Example:
+
+    java -jar application.jar --server.port=9090
+
+- This allows deployment-time configuration without modifying the application artifact.
+
+
+------------------------------------------------------------
+Property Precedence
+------------------------------------------------------------
+
+- Spring Boot supports multiple configuration sources.
+- When the same property is defined in multiple sources, Boot applies a defined precedence order.
+
+
+| Priority | Configuration source             | Example                                          |
+| -------: | -------------------------------- | ------------------------------------------------ |
+|        1 | Default properties               | `SpringApplication.setDefaultProperties(...)`    |
+|        2 | `@PropertySource`                | `@PropertySource("classpath:custom.properties")` |
+|        3 | Config data                      | `application.properties`, `application.yml`      |
+|        4 | `RandomValuePropertySource`      | `random.*`                                       |
+|        5 | OS environment variables         | `SERVER_PORT=9090`                               |
+|        6 | Java System properties           | `-Dserver.port=9090`                             |
+|        7 | JNDI attributes                  | `java:comp/env/...`                              |
+|        8 | `ServletContext` init parameters | Web application configuration                    |
+|        9 | `ServletConfig` init parameters  | DispatcherServlet configuration                  |
+|       10 | `SPRING_APPLICATION_JSON`        | JSON supplied through env/system property        |
+|       11 | Command-line arguments           | `--server.port=9090`                             |
+|       12 | Test `properties`                | `@SpringBootTest(properties = "...")`            |
+|       13 | `@DynamicPropertySource`         | Integration tests                                |
+|       14 | `@TestPropertySource`            | Test property files                              |
+|       15 | DevTools global settings         | DevTools-specific configuration                  |
+
+
+- This allows deployment-specific values to override packaged defaults.
+
+
+=======================================================================================================================================================================
+Profiles
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+Spring Profiles
+------------------------------------------------------------
+
+- Profiles allow different configuration and beans to be activated for different environments.
+
+Common examples:
+
+    dev
+    test
+    prod
+
+- Profiles are useful when the application needs environment-specific behavior.
+
+
+------------------------------------------------------------
+@Profile
+------------------------------------------------------------
+
+- @Profile restricts a configuration class or bean to specific profiles.
+
+Example:
+
+    @Bean
+    @Profile("dev")
+    public SomeService devService() {
+        return new SomeService();
+    }
+
+- This bean is created only when the dev profile is active.
+
+
+------------------------------------------------------------
+Profile-Specific Configuration Files
+------------------------------------------------------------
+
+- Spring Boot supports profile-specific configuration files.
+
+Example:
+
+    application.properties
+    application-dev.properties
+    application-test.properties
+    application-prod.properties
+
+- The common configuration can remain in application.properties.
+- Environment-specific values can be placed in the corresponding profile file.
+
+
+------------------------------------------------------------
+Activating a Profile
+------------------------------------------------------------
+
+- A profile can be activated through configuration.
+
+Example:
+
+    spring.profiles.active=dev
+
+- It can also be supplied externally.
+
+Example:
+
+    java -jar application.jar \
+        --spring.profiles.active=prod
+
+- External activation is useful because the same application artifact can be deployed to different environments.
+
+
+=======================================================================================================================================================================
+Bean Configuration and Customization
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+@Bean
+------------------------------------------------------------
+
+- @Bean explicitly registers an object as a Spring bean.
+
+Example:
+
+    @Bean
+    public SomeService someService() {
+        return new SomeService();
+    }
+
+- Boot auto-configuration does not prevent applications from defining their own beans.
+
+
+------------------------------------------------------------
+@Configuration
+------------------------------------------------------------
+
+- @Configuration identifies a class containing Spring bean configuration.
+
+Example:
+
+    @Configuration
+    public class AppConfig {
+
+        @Bean
+        public SomeService someService() {
+            return new SomeService();
+        }
+    }
+
+
+------------------------------------------------------------
+Customizing Boot Defaults
+------------------------------------------------------------
+
+- Boot's auto-configuration provides defaults, but applications can customize them.
+- Customization can be done through:
+  - application properties
+  - YAML
+  - custom @Bean definitions
+  - configuration classes
+  - framework-specific customization interfaces
+
+Conceptually:
+
+    Boot default
+         |
+         +--> Sufficient?
+         |       |
+         |      Yes
+         |       ↓
+         |    Keep default
+         |
+         +--> No
+                 |
+                 v
+          Add customization
+
+
+------------------------------------------------------------
+Custom Bean and Auto-Configuration
+------------------------------------------------------------
+
+- Many Boot auto-configurations use conditions such as @ConditionalOnMissingBean.
+- If the application provides the relevant bean, Boot can avoid creating its default.
+
+Example:
+
+    Application
+        |
+        +--> Defines CustomService
+        |
+        v
+    Boot checks:
+        "Does CustomService already exist?"
+        |
+       Yes
+        |
+        v
+    Boot does not create its default
+    where the auto-configuration is
+    conditional on the bean being missing.
+
+
+=======================================================================================================================================================================
+Spring Boot Application Lifecycle
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+Application Startup
+------------------------------------------------------------
+
+A simplified startup sequence is:
+
+    main()
+      ↓
+    SpringApplication.run()
+      ↓
+    Environment created
+      ↓
+    ApplicationContext created
+      ↓
+    Configuration discovered
+      ↓
+    Component scanning
+      ↓
+    Auto-configuration
+      ↓
+    Bean creation
+      ↓
+    Application started
+      ↓
+    ApplicationReadyEvent
+
+
+------------------------------------------------------------
+Environment
+------------------------------------------------------------
+
+- The Spring Environment represents the application's configuration environment.
+- It provides access to properties and active profiles.
+
+Conceptually:
+
+    Environment
+        |
+        +--> application.properties
+        +--> YAML
+        +--> Environment variables
+        +--> System properties
+        +--> Command-line arguments
+        +--> Active profiles
+
+
+------------------------------------------------------------
+Bean Creation
+------------------------------------------------------------
+
+- During ApplicationContext initialization, Spring creates the required beans.
+- Dependency injection is performed as part of bean creation.
+- Auto-configured beans and application-defined beans become part of the same ApplicationContext.
+
+
+------------------------------------------------------------
+ApplicationReadyEvent
+------------------------------------------------------------
+
+- ApplicationReadyEvent is published when the application has completed startup and is ready to serve application requests.
+
+Example:
+
+    @EventListener
+    public void onApplicationReady(
+            ApplicationReadyEvent event) {
+
+        System.out.println(
+            "Application is ready"
+        );
+    }
+
+
+------------------------------------------------------------
+Application Shutdown
+------------------------------------------------------------
+
+- Spring manages application shutdown and invokes appropriate bean destruction callbacks.
+- This allows resources to be released cleanly.
+
+Examples of resources that may require cleanup:
+
+    Database connections
+    Thread pools
+    File resources
+    External connections
+
+
+=======================================================================================================================================================================
+Spring Boot Dependency and Configuration Model
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+Convention Over Configuration
+------------------------------------------------------------
+
+- Boot starts with sensible defaults instead of requiring every infrastructure component to be explicitly configured.
+- Applications only need to customize behavior that differs from those defaults.
+
+
+------------------------------------------------------------
+Defaults
+------------------------------------------------------------
+
+- Boot provides default implementations/configuration for common application requirements.
+- Defaults are selected based on the application's dependencies and environment.
+
+
+------------------------------------------------------------
+Auto-Configuration
+------------------------------------------------------------
+
+- Auto-configuration determines which defaults should be applied.
+- It is conditional rather than unconditional.
+- This allows Boot to adapt to the application's dependencies and existing configuration.
+
+
+------------------------------------------------------------
+Explicit Configuration
+------------------------------------------------------------
+
+- Application-defined configuration takes precedence where Boot's auto-configuration is designed to back off.
+- Developers can explicitly define beans or properties when the defaults are insufficient.
+
+
+------------------------------------------------------------
+Configuration Precedence
+------------------------------------------------------------
+
+- Configuration can come from several sources.
+- Higher-priority property sources can override lower-priority values.
+- This allows the same application artifact to be configured differently in different environments.
+
+
+------------------------------------------------------------
+Customization Without Replacing Everything
+------------------------------------------------------------
+
+- Customization does not normally require disabling all of Boot's auto-configuration.
+- The preferred approach is generally to change only the specific behavior that differs from the Boot default.
+
+Conceptually:
+
+    Boot auto-configuration
+             |
+             v
+       Application needs
+             |
+             +--> Default is suitable
+             |       ↓
+             |    Keep it
+             |
+             +--> Small change needed
+             |       ↓
+             |    Customize it
+             |
+             +--> Completely different setup
+                     ↓
+                Replace/disable
+                specific auto-config
+
+
+=======================================================================================================================================================================
+Spring Boot Actuator
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+What Actuator Provides
+------------------------------------------------------------
+
+- Spring Boot Actuator provides production-oriented monitoring and management capabilities.
+- It exposes information about the running application through management endpoints.
+
+Examples include:
+
+  * Health
+  * Metrics
+  * Application information
+  * Environment information
+
+
+------------------------------------------------------------
+Actuator Dependency
+------------------------------------------------------------
+
+- Actuator functionality is added through:
+
+    spring-boot-starter-actuator
+
+- Adding the starter makes Actuator's infrastructure available to the application.
+
+
+------------------------------------------------------------
+Management Endpoints
+------------------------------------------------------------
+
+- Actuator provides endpoints for inspecting and monitoring the application.
+
+Examples:
+
+    /actuator/health
+    /actuator/info
+    /actuator/metrics
+
+- Endpoint availability and exposure can be configured.
+
+
+------------------------------------------------------------
+Health
+------------------------------------------------------------
+
+- The health endpoint provides information about application health and relevant dependencies.
+
+Example:
+
+    /actuator/health
+
+- Health information is commonly used by deployment and orchestration systems to determine whether an application is healthy.
+
+
+------------------------------------------------------------
+Metrics
+------------------------------------------------------------
+
+- Metrics provide measurements about application and system behavior.
+
+Examples can include:
+
+    JVM memory
+    CPU usage
+    HTTP request metrics
+    Database-related metrics
+
+- Metrics can be consumed by monitoring systems.
+
+
+------------------------------------------------------------
+Application Information
+------------------------------------------------------------
+
+- The info endpoint can expose application information configured by the application.
+
+Example:
+
+    /actuator/info
+
+
+------------------------------------------------------------
+Endpoint Exposure
+------------------------------------------------------------
+
+- Actuator does not necessarily expose every management endpoint over HTTP by default.
+- Endpoint exposure can be configured.
+
+Example:
+
+    management.endpoints.web.exposure.include=health,info
+
+- Exposing management endpoints should be done deliberately because some endpoints can expose sensitive information.
+
+
+=======================================================================================================================================================================
+Spring Boot Project Structure
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+Main Application Class
+------------------------------------------------------------
+
+A typical Boot project contains a main application class:
+
+    @SpringBootApplication
+    public class Application {
+
+        public static void main(String[] args) {
+
+            SpringApplication.run(
+                Application.class,
+                args
+            );
+        }
+    }
+
+
+------------------------------------------------------------
+Configuration Classes
+------------------------------------------------------------
+
+- Configuration classes contain explicit application configuration.
+
+Example:
+
+    @Configuration
+    public class AppConfig {
+        ...
+    }
+
+
+------------------------------------------------------------
+Application Components
+------------------------------------------------------------
+
+Typical application components may include:
+
+    @Controller
+    @Service
+    @Repository
+    @Component
+
+
+------------------------------------------------------------
+Resources
+------------------------------------------------------------
+
+Typical resources include:
+
+    src/main/resources
+        |
+        +-- application.properties
+        +-- application.yml
+        +-- static/
+        +-- templates/
+
+
+------------------------------------------------------------
+Build Configuration
+------------------------------------------------------------
+
+Typical Maven project:
+
+    pom.xml
+
+Typical Gradle project:
+
+    build.gradle
+    build.gradle.kts
+
+- Build configuration defines application dependencies and build behavior.
+
+
+------------------------------------------------------------
+Typical Project Structure
+------------------------------------------------------------
+
+    project
+       |
+       +-- src/main/java
+       |      |
+       |      +-- com.example
+       |             |
+       |             +-- Application.java
+       |             +-- config/
+       |             +-- service/
+       |             +-- controller/
+       |             +-- repository/
+       |
+       +-- src/main/resources
+       |      |
+       |      +-- application.properties
+       |      +-- application.yml
+       |
+       +-- pom.xml
+       |       or
+       +-- build.gradle
+
+
+=======================================================================================================================================================================

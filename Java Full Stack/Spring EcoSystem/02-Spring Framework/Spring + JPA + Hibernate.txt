@@ -122,7 +122,7 @@ Typical flow:
 - The way the persistence infrastructure is created and managed has changed.
 
 =======================================================================================================================================================================
-Spring Configuration for JPA + Hibernate
+Configuration
 =======================================================================================================================================================================
 
 - Without Spring, JPA configuration is commonly defined through persistence.xml.
@@ -148,7 +148,12 @@ Example:
     public class JpaConfig {
 
         @Bean
-        public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+        public DataSource dataSource() {
+            // configure JDBC connection
+    	}
+
+        @Bean
+        public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
 
             LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
 
@@ -170,32 +175,61 @@ Example:
 - The exact configuration depends on the Spring version and application setup.
 - The important concept is that Spring creates and manages the JPA infrastructure as Spring beans.
 
+
+------------------------------------------------------------
+DataSource
+------------------------------------------------------------
+
+- DataSource defines how the application connects to the database.
+- It provides database connections to the JPA/Hibernate infrastructure.
+- Therefore, it is configured before the EntityManagerFactory.
+
+Example:
+
+    @Bean
+    public DataSource dataSource() {
+
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+
+        dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+
+        dataSource.setUrl("jdbc:mysql://localhost:3306/app");
+
+        dataSource.setUsername("root");
+        dataSource.setPassword("password");
+
+        return dataSource;
+    }
+
+
 ------------------------------------------------------------
 EntityManagerFactory
 ------------------------------------------------------------
 
-- EntityManagerFactory is still a JPA concept.
-- Spring manages the EntityManagerFactory instead of application code manually creating it.
+- EntityManagerFactory is the main JPA infrastructure object.
+- It creates EntityManagers used by the application to perform persistence operations.
+- In Spring, it is created and managed as part of the Spring configuration.
 
-Without Spring:
+- A common Spring configuration mechanism is:
 
-    Persistence
-        |
-        v
-    createEntityManagerFactory()
-        |
-        v
-    EntityManagerFactory
+    LocalContainerEntityManagerFactoryBean
 
-With Spring:
+Example:
 
-    Spring ApplicationContext
-        |
-        v
-    EntityManagerFactory Bean
+    @Bean
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
 
-- EntityManagerFactory is generally long-lived and shared by the application.
-- It is not created for every database operation.
+        LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
+
+        emf.setDataSource(dataSource);
+
+        ...
+
+        return emf;
+    }
+
+- This configuration is the central point where Spring connects the DataSource, entities, JPA provider, and JPA properties.
+- We still need to interact with EntityManagerFactory & EntityManager as we are implementing the repositories ourselves.
 
 ------------------------------------------------------------
 EntityManager
@@ -308,9 +342,27 @@ Conceptually:
 - It allows application code to use declarative transactions instead of manually controlling EntityTransaction.
 
 
-------------------------------------------------------------
+=======================================================================================================================================================================
+Customizing Default Spring Configurations
+=======================================================================================================================================================================
+
+EntityManagerFactory
+JPA provider properties
+Hibernate properties
+DataSource / connection pool
+Transaction management
+Persistence exception translation
+Entity scanning
+JPA repository configuration
+
+
+
+
+
+
+=======================================================================================================================================================================
 What Spring Changes
-------------------------------------------------------------
+=======================================================================================================================================================================
 
 - Spring changes how JPA/Hibernate is integrated into the application.
 
@@ -338,9 +390,9 @@ With Spring:
 - The actual JPA operations remain familiar.
 
 
-------------------------------------------------------------
+=======================================================================================================================================================================
 What Does NOT Change
-------------------------------------------------------------
+=======================================================================================================================================================================
 
 - The following remain JPA/Hibernate concepts:
 
@@ -398,9 +450,9 @@ What Does NOT Change
       +--> Integration with other Spring components
 
 
-------------------------------------------------------------
+=======================================================================================================================================================================
 Spring + JPA + Hibernate Application Flow
-------------------------------------------------------------
+=======================================================================================================================================================================
 
 Example:
 

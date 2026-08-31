@@ -1,0 +1,568 @@
+=======================================================================================================================================================================
+=======================================================================================================================================================================
+									SPRING BOOT — RESTFUL APIs
+=======================================================================================================================================================================
+=======================================================================================================================================================================
+
+- Spring Boot simplifies the setup and configuration of a Spring REST application.
+- The REST functionality itself is provided primarily by Spring MVC.
+- Spring Boot's role is to automatically configure the required infrastructure and provide sensible defaults.
+
+    Spring Boot
+         |
+         +--> Starter dependencies
+         +--> Auto-configuration
+         +--> Embedded Servlet Container
+         +--> MVC infrastructure configuration
+         +--> Message converter configuration
+         +--> Externalized configuration
+         +--> Easy customization
+         |
+         v
+    Spring REST Application
+
+
+------------------------------------------------------------
+Creating a REST Application
+------------------------------------------------------------
+
+- A typical Spring Boot REST application uses:
+
+    spring-boot-starter-web
+
+- This starter brings the dependencies required for a typical Spring web/REST application.
+
+Conceptually:
+
+    spring-boot-starter-web
+             |
+             +--> Spring MVC
+             +--> Embedded Tomcat
+             +--> Jackson
+             +--> Logging
+             +--> Required supporting dependencies
+
+- The application does not need to manually add and configure each of these dependencies for the common case.
+
+
+------------------------------------------------------------
+Spring Boot Application Class
+------------------------------------------------------------
+
+- A REST application uses the normal Spring Boot application class.
+
+
+    @SpringBootApplication
+    public class Application {
+
+        public static void main(String[] args) {
+
+            SpringApplication.run(
+                Application.class,
+                args
+            );
+        }
+    }
+
+- @SpringBootApplication enables:
+  - Spring Boot configuration
+  - Auto-configuration
+  - Component scanning
+
+- Therefore, controllers and other application components can be discovered automatically.
+
+
+=======================================================================================================================================================================
+Embedded Servlet Container
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+Embedded Tomcat
+------------------------------------------------------------
+
+- Spring Boot commonly runs REST applications using an embedded Tomcat server.
+- Tomcat is included through the web starter.
+
+    Application
+        +
+    Embedded Tomcat
+        |
+        v
+    Single executable application
+
+- The application can therefore be started directly.
+
+Example:
+
+    java -jar application.jar
+
+
+------------------------------------------------------------
+Embedded Server Configuration
+------------------------------------------------------------
+
+- Boot exposes many server settings through configuration properties.
+
+Examples:
+
+    server.port
+    server.servlet.context-path
+    server.ssl.*
+    server.compression.*
+
+- This allows common server configuration to remain outside Java configuration.
+
+
+=======================================================================================================================================================================
+Spring MVC Auto-Configuration
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+MVC Auto-Configuration
+------------------------------------------------------------
+
+- spring-boot-starter-web places Spring MVC on the classpath.
+- Boot detects this and activates the appropriate MVC auto-configuration.
+
+
+------------------------------------------------------------
+DispatcherServlet Auto-Configuration
+------------------------------------------------------------
+
+- Boot automatically registers and configures the DispatcherServlet.
+- The servlet is connected to the Spring ApplicationContext.
+- The application therefore does not need to manually create the servlet configuration for the normal case.
+
+
+------------------------------------------------------------
+HandlerMapping and HandlerAdapter Auto-Configuration
+------------------------------------------------------------
+
+- Spring MVC requires HandlerMapping and HandlerAdapter infrastructure to process controller requests.
+- Boot allows the normal Spring MVC configuration to be created automatically.
+
+- Their actual responsibilities belong to Spring MVC.
+- Spring Boot's responsibility here is primarily to provide their standard configuration automatically.
+
+
+------------------------------------------------------------
+HTTP Message Converter Auto-Configuration
+------------------------------------------------------------
+
+- In a Boot REST application, the required converters are automatically configured based on the application's dependencies.
+- spring-boot-starter-web normally brings Jackson for JSON processing.
+- Therefore, a typical REST application can exchange JSON without manually adding Jackson dependencies.
+
+Conceptually:
+
+    REST Application
+          |
+          v
+    spring-boot-starter-web
+          |
+          v
+       Jackson
+          |
+          v
+    HttpMessageConverters
+
+- However, when the default Jackson behavior is insufficient, it can be customized through Boot configuration properties or Java configuration, depending on the requirement.
+- For example, an application may need different:
+
+    Date/time formatting
+    Serialization rules
+    Deserialization rules
+    Naming conventions
+    Jackson modules
+
+- And, Boot's default message converters can also be customized when required.
+- For example, an application may need:
+  - An additional converter
+  - Different converter configuration
+  - Different serialization behavior
+
+- Such customization should normally modify the required part rather than replacing the entire MVC configuration.
+
+
+------------------------------------------------------------
+Auto-Configuration Conditions
+------------------------------------------------------------
+
+- REST/MVC auto-configuration is conditional.
+- Boot considers factors such as:
+  - Required classes being present
+  - Existing beans
+  - Application configuration
+  - Application type
+
+- Therefore, Boot does not simply configure every possible MVC feature unconditionally.
+
+
+=======================================================================================================================================================================
+Externalized REST Configuration
+=======================================================================================================================================================================
+
+- REST application configuration follows Spring Boot's general externalized configuration mechanism.
+- Configuration can come from:
+
+    application.properties
+    application.yml
+    Profile-specific configuration
+    Environment variables
+    System properties
+    Command-line arguments
+
+Example:
+
+    java -jar application.jar \
+        --server.port=9090
+
+- This allows the same REST application artifact to run with different configurations in different environments.
+
+
+------------------------------------------------------------
+Jackson-Related Boot Properties
+------------------------------------------------------------
+
+- Boot also exposes properties for common Jackson customization.
+
+| Property                                    | Default          | Common customization                    |
+| ------------------------------------------- | ---------------- | --------------------------------------- |
+| `spring.jackson.date-format`                | Not set          | `yyyy-MM-dd` / custom format            |
+| `spring.jackson.time-zone`                  | Not set          | `Asia/Kolkata`, `UTC`, etc.             |
+| `spring.jackson.locale`                     | Not set          | `en_IN`, `en_US`, etc.                  |
+| `spring.jackson.property-naming-strategy`   | Not set          | `SNAKE_CASE`, `LOWER_CAMEL_CASE`, etc.  |
+| `spring.jackson.default-property-inclusion` | Not set          | `NON_NULL`, `NON_EMPTY`, etc.           |
+| `spring.jackson.serialization.*`            | Jackson defaults | Enable/disable serialization features   |
+| `spring.jackson.deserialization.*`          | Jackson defaults | Enable/disable deserialization features |
+| `spring.jackson.mapper.*`                   | Jackson defaults | Enable/disable mapper features          |
+| `spring.jackson.visibility.*`               | Jackson defaults | Control property visibility             |
+
+- Properties are preferred when the required customization is directly supported by Boot.
+
+
+------------------------------------------------------------
+MVC-Related Boot Properties
+------------------------------------------------------------
+
+- Boot exposes configuration properties for many MVC-related behaviors.
+- These properties allow common changes without writing Java configuration.
+
+| Property                                        | Default               | Common customization       |
+| ----------------------------------------------- | --------------------- | -------------------------- |
+| `spring.mvc.servlet.path`                       | `/`                   | `/api`                     |
+| `spring.mvc.pathmatch.matching-strategy`        | `path-pattern-parser` | `ant-path-matcher`         |
+| `spring.mvc.async.request-timeout`              | Not set               | `30s`, `60s`, etc.         |
+| `spring.mvc.log-request-details`                | `false`               | `true`                     |
+| `spring.mvc.log-resolved-exception`             | `false`               | `true`                     |
+| `spring.mvc.dispatch-options-request`           | `true`                | `false`                    |
+| `spring.mvc.problemdetails.enabled`             | `false`               | `true`                     |
+| `spring.mvc.contentnegotiation.favor-parameter` | `false`               | `true`                     |
+| `spring.mvc.contentnegotiation.parameter-name`  | Not set               | `format`                   |
+| `spring.mvc.contentnegotiation.media-types.*`   | Not set               | Custom media-type mappings |
+
+- The exact available properties depend on the Spring Boot version and the feature being configured.
+
+
+=======================================================================================================================================================================
+Customizing Boot's MVC Defaults 
+=======================================================================================================================================================================
+
+- Boot's default MVC configuration can be customized using Spring MVC's WebMvcConfigurer.
+
+Example:
+
+    @Configuration
+    public class WebConfig implements WebMvcConfigurer {
+
+        @Override
+        public void addCorsMappings(
+                CorsRegistry registry) {
+
+            registry
+                .addMapping("/**")
+                .allowedOrigins("https://example.com");
+        }
+    }
+
+- This allows specific MVC behavior to be customized while retaining Boot's general auto-configuration.
+
+
+------------------------------------------------------------
+Adding MVC Customizations
+------------------------------------------------------------
+
+- WebMvcConfigurer can be used for specific customizations such as:
+
+    CORS
+    Formatters
+    Converters
+    Interceptors
+    Resource handling
+    Argument resolvers
+
+- The exact functionality belongs to Spring MVC.
+- Boot's role is to allow these customizations to coexist with its auto-configured MVC infrastructure.
+
+
+------------------------------------------------------------
+Custom Converters and Formatters
+------------------------------------------------------------
+
+- Application-specific converters or formatters can be registered when the default conversion behavior is insufficient.
+
+Example:
+
+    @Configuration
+    public class WebConfig implements WebMvcConfigurer {
+
+        @Override
+        public void addFormatters(
+                FormatterRegistry registry) {
+
+            registry.addConverter(
+                new MyConverter()
+            );
+        }
+    }
+
+
+------------------------------------------------------------
+CORS Configuration
+------------------------------------------------------------
+
+- CORS can be configured programmatically using Spring MVC configuration mechanisms.
+
+Example:
+
+    @Configuration
+    public class WebConfig
+            implements WebMvcConfigurer {
+
+        @Override
+        public void addCorsMappings(
+                CorsRegistry registry) {
+
+            registry
+                .addMapping("/api/**")
+                .allowedOrigins("https://example.com");
+        }
+    }
+
+- Boot does not require the application to replace its entire MVC configuration just to customize CORS.
+
+
+------------------------------------------------------------
+WebMvcConfigurer vs @EnableWebMvc
+------------------------------------------------------------
+
+- WebMvcConfigurer is generally used when an application wants to customize MVC behavior while retaining Boot's auto-configuration.
+
+- @EnableWebMvc activates explicit Spring MVC configuration.
+
+- In a Spring Boot application, adding @EnableWebMvc can cause Boot's MVC auto-configuration to back off.
+
+Conceptually:
+
+    Boot MVC Auto-Configuration
+             |
+             +--> Normal case
+             |       |
+             |       v
+             |   Boot defaults
+             |
+             +--> @EnableWebMvc
+                     |
+                     v
+                Boot MVC auto-config
+                backs off
+
+
+------------------------------------------------------------
+Preserving Boot Auto-Configuration
+------------------------------------------------------------
+
+- A common customization principle is:
+
+    Keep Boot defaults
+          +
+    Customize only what is required
+
+- This allows the application to continue benefiting from Boot's automatic configuration.
+
+
+=======================================================================================================================================================================
+Replacing / Overriding Auto-Configuration
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+Boot Defaults
+------------------------------------------------------------
+
+- Boot starts with its auto-configured defaults.
+- Applications can explicitly customize those defaults when necessary.
+
+
+------------------------------------------------------------
+Custom @Bean Configuration
+------------------------------------------------------------
+
+- A custom bean can replace or influence Boot's default configuration when the relevant auto-configuration is conditional on that bean being absent.
+
+Conceptually:
+
+    Boot Auto-Configuration
+             |
+             v
+    @ConditionalOnMissingBean
+             |
+             v
+    Custom bean exists?
+          /       \
+        No         Yes
+        |           |
+        v           v
+    Boot creates   Boot backs off
+    default        where applicable
+
+
+------------------------------------------------------------
+Auto-Configuration Back-Off
+------------------------------------------------------------
+
+- Back-off means Boot does not create a particular default configuration because the application has explicitly provided the required configuration.
+- Back-off is conditional and depends on how that particular auto-configuration is implemented.
+
+- Therefore:
+
+    Custom bean ≠ automatically disables all Boot auto-configuration
+
+- Usually only the relevant auto-configuration part backs off.
+
+
+=======================================================================================================================================================================
+REST Application Deployment
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+Executable JAR
+------------------------------------------------------------
+
+- A Spring Boot REST application can commonly be packaged as an executable JAR.
+- The JAR contains the application and the required runtime dependencies.
+
+Example:
+
+    java -jar application.jar
+
+
+------------------------------------------------------------
+Embedded Server Deployment
+------------------------------------------------------------
+
+- With an embedded servlet container, a separate Tomcat installation is not required for the normal executable-JAR deployment model.
+
+    application.jar
+         |
+         +--> Application
+         +--> Spring
+         +--> Dependencies
+         +--> Embedded Tomcat
+         |
+         v
+       JVM
+
+
+=======================================================================================================================================================================
+Production Configuration
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+Externalized Configuration
+------------------------------------------------------------
+
+- Production REST applications commonly keep environment-specific configuration outside the application code.
+
+Examples:
+
+    Server port
+    Database settings
+    External service URLs
+    Logging settings
+    Security-related configuration
+
+- This follows Spring Boot's general externalized configuration model.
+
+
+------------------------------------------------------------
+Profiles
+------------------------------------------------------------
+
+- Profiles allow different configurations to be activated for different environments.
+
+Example:
+
+    application.properties
+    application-dev.properties
+    application-prod.properties
+
+Activation:
+
+    spring.profiles.active=prod
+
+
+------------------------------------------------------------
+Server Configuration
+------------------------------------------------------------
+
+- Production server behavior can be configured through Boot properties.
+
+Examples include:
+
+    Port
+    SSL
+    Compression
+    Context path
+    Connection-related server settings
+
+
+------------------------------------------------------------
+Logging Configuration
+------------------------------------------------------------
+
+- Spring Boot provides default logging configuration.
+- Logging behavior can be customized through application properties or logging configuration files.
+
+- This avoids requiring manual logging setup for a typical application.
+
+
+------------------------------------------------------------
+Actuator for REST Applications
+------------------------------------------------------------
+
+- Spring Boot Actuator can be added to a REST application for production monitoring and management.
+
+Dependency:
+
+    spring-boot-starter-actuator
+
+- It can provide endpoints such as:
+
+    /actuator/health
+    /actuator/info
+    /actuator/metrics
+
+- These endpoints are separate from the application's business REST endpoints.
+
+
+------------------------------------------------------------
+Health and Metrics
+------------------------------------------------------------
+
+- Health information can be used by deployment infrastructure to determine whether the application is operational.
+- Metrics provide information about application and runtime behavior.
+
+- Actuator therefore complements a REST application's business API with operational endpoints.
+
+
+=======================================================================================================================================================================
