@@ -5,12 +5,11 @@ SPRING SECURITY
 1. SPRING SECURITY FUNDAMENTALS
 ------------------------------------------------------------
 1.1 What Spring Security Provides
-1.2 Authentication
-1.3 Authorization
-1.4 SecurityContext
-1.5 Authentication
-1.6 GrantedAuthority
-1.7 Roles vs Authorities
+1.2 Authentication vs Authorization
+1.3 SecurityContext
+1.4 Authentication Object
+1.5 GrantedAuthority
+1.6 Roles vs Authorities
 
 
 2. SPRING SECURITY ARCHITECTURE
@@ -262,3 +261,15 @@ SPRING SECURITY
 21.7 CORS + CSRF Configuration
 21.8 Production Security Configuration
 ============================================================
+
+
+JEE - MVC SSR
+JEE - REST API
+JEE - Microservice
+
+Spring - MVC SSR
+Spring - REST API
+Spring - Microservice
+
+
+

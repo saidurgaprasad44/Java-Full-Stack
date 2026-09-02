@@ -1,0 +1,59 @@
+
+
+--- Web Application starts
+| 
+| --- ServletContext created
+| | 
+| | --- DispatcherServlet created
+| | | 
+| | | --- Spring WebApplicationContext created
+| | | | 
+| | | | --- Controllers, Services, Repositories, EntityMangerFactory created
+| | | | |
+| | | | |
+| | | | |
+| | | | | --- TRANSATION 1 begins
+| | | | | | 
+| | | | | | --- EntityManger created
+| | | | | | | 
+| | | | | | | --- PersistenceContext created
+| | | | | | | |
+| | | | | | | |---- Entity instance 1
+| | | | | | | |
+| | | | | | | |---- Entity instance 2
+| | | | | | | |
+| | | | | | | --- PersistenceContext destroyed
+| | | | | | | 
+| | | | | | --- EntityManger destroyed
+| | | | | | 
+| | | | | --- TRANSACTION 1 ends
+| | | | | 
+| | | | | 
+| | | | | 
+| | | | | --- TRANSATION 2 begins
+| | | | | |
+| | | | | | --- EntityManger created
+| | | | | | |
+| | | | | | | --- PersistenceContext created
+| | | | | | | |
+| | | | | | | |--- Entity instance 1
+| | | | | | | | 
+| | | | | | | |--- Entity instance 2
+| | | | | | | |
+| | | | | | | --- PersistenceContext destroyed
+| | | | | | |
+| | | | | | --- EntityManger destroyed
+| | | | | |
+| | | | | --- TRANSACTION 2 ends
+| | | | |
+| | | | |
+| | | | |
+| | | | --- Controllers, Services, Repositories, EntityMangerFactory destroyed
+| | | | 
+| | | --- Spring ApplicationContext destroyed
+| | | 
+| | --- DispatcherServlet destroyed
+| | 
+| --- ServletContext destroyed
+| 
+--- Web Application stops
