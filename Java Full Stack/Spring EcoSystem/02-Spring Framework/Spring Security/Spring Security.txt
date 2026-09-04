@@ -263,7 +263,7 @@ SPRING SECURITY
 ============================================================
 
 
-JEE - MVC SSR
+JEE - SSR
 JEE - REST API
 JEE - Microservice
 

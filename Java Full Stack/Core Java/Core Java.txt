@@ -76,8 +76,8 @@ Memory management in java:
 Java memory management is automatic, handled by the JVM
 With the crucial Garbage Collector (GC) cleaning up unused objects from the Heap, freeing developers from manual deallocation like in C/C++. 
 Focusing on main areas: 
-	- The Stack (for temporary method data) and
-	- The Heap (for objects and String literals)
+	- The Stack (for temporary method execution state and stack frames for each thread) and
+	- The Heap (for objects and String literals shared by the threads)
 You create objects with new (Heap), while method calls / local variables use the Stack (auto-cleared)
 
 ===============================================================================================================================================================================
@@ -1131,12 +1131,6 @@ I/O Streams:
 
 
 ===============================================================================================================================================================================
-Multi-threading:
-===============================================================================================================================================================================
-
-
-
-===============================================================================================================================================================================
 RegEx:
 ===============================================================================================================================================================================
 
@@ -1289,8 +1283,4 @@ public class TextBlockDemo {
     }
 }
 
-
-
-
-
-
+===============================================================================================================================================================================
