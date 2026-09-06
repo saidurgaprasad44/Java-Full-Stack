@@ -260,8 +260,9 @@ SPRING SECURITY
 21.6 Role-based API Authorization
 21.7 CORS + CSRF Configuration
 21.8 Production Security Configuration
-============================================================
 
+
+============================================================
 
 JEE - SSR
 JEE - REST API
@@ -270,6 +271,134 @@ JEE - Microservice
 Spring - MVC SSR
 Spring - REST API
 Spring - Microservice
+
+============================================================
+
+	request
+
+	ServletContainer 
+
+----- DelegatingFilterProxy -----  -----> ServletFilter
+|	FilterChainProxy	|
+|	SecurityFilterChain(s)	|
+|	SecurityFilters		|
+|	Authentication Filter	|
+|	AuthenticationManager	|
+|	ProviderManager		|
+|	AuthenticationProvider	|
+|	UserDetailsService	|
+|	PasswordEncoder		|
+|	Authentication		|
+|	SecurityContext		|
+|	SecurityContextHolder	|
+|	Authorization Filter	|
+----- DispatcherServlet ---------  -----> Servlet
+	
+	HandlerMapper
+	HandlerAdaptor
+
+	Controller
+	Service
+	Repository
+	Entity
+	EntityManager
+
+============================================================
+
+SPRING SECURITY — ROADMAP
+- Spring Security Fundamentals 
+    Authentication 
+    Authorization 
+    SecurityContext 
+    Authentication object 
+    GrantedAuthority 
+    Roles vs Authorities 
+
+- Spring Security Architecture 
+    Servlet filters 
+    DelegatingFilterProxy 
+    FilterChainProxy 
+    SecurityFilterChain 
+    Security filters 
+    SecurityContextHolder 
+    SecurityContextHolderStrategy 
+    AuthenticationManager 
+    AuthenticationProvider 
+    UserDetailsService 
+    PasswordEncoder 
+    Authentication flow 
+    SecurityContext persistence 
+
+- Authentication & User Management 
+    UserDetails 
+    UserDetailsService 
+    PasswordEncoder 
+    AuthenticationProvider 
+    Custom authentication 
+
+- Session & Basic Authentication 
+    Form Login 
+    Session management 
+    Logout 
+    Session fixation 
+    Basic Authentication 
+
+- JWT & Bearer Token Authentication 
+    Bearer tokens 
+    JWT 
+    Resource Server 
+    JWT validation 
+    Authorities 
+    Stateless authentication 
+    Access/refresh tokens 
+
+- Authorization 
+    Request authorization 
+    Roles 
+    Authorities 
+    Method security 
+    @PreAuthorize 
+    Custom authorization 
+
+- CSRF & CORS 
+    CSRF protection 
+    CSRF tokens 
+    CORS 
+    Preflight 
+    Credentials 
+    CORS vs CSRF 
+
+- OAuth 2.0 & OIDC 
+    OAuth2 concepts 
+    Authorization Code 
+    PKCE 
+    Client Credentials 
+    Resource Server 
+    OAuth2 Client 
+    OIDC 
+    OAuth2 Login 
+
+- Security Customization & Other Mechanisms 
+    Custom filters 
+    OncePerRequestFilter 
+    Custom AuthenticationProvider 
+    API Keys 
+    HMAC 
+    mTLS 
+    Multiple SecurityFilterChains 
+    Exception handling 
+    Security headers 
+
+- Testing, Debugging & Production 
+    Security testing 
+    401 vs 403 
+    Debugging 
+    REST API security 
+    Production configuration 
+    Common security mistakes
+
+
+
 
 
 
