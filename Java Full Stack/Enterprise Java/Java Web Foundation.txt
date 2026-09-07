@@ -208,8 +208,8 @@ REQUEST → PROCESSING → RESPONSE
   Content-Type: application/json
 
   {
-  "id": 101,
-  "name": "Laptop"
+  	"id": 101,
+  	"name": "Laptop"
   }
 
 =============================================================================================================================================================================
@@ -534,8 +534,7 @@ REQUEST DISPATCHER
 
 - Obtain one using:
 
-  RequestDispatcher dispatcher =
-  request.getRequestDispatcher("/home");
+  RequestDispatcher dispatcher = request.getRequestDispatcher("/home");
 
 - Forward the request:
 
