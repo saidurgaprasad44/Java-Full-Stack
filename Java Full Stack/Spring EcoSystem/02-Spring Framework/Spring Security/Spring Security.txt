@@ -187,6 +187,7 @@ SPRING SECURITY
 15.5 Custom Authorization
 
 
+
 16. APPLICATION SECURITY CUSTOMIZATION
 ------------------------------------------------------------
 16.1 Custom Filters
@@ -274,25 +275,25 @@ Spring - Microservice
 
 ============================================================
 
-	request
+	Request - username & password form parameters
 
 	ServletContainer 
 
------ DelegatingFilterProxy -----  -----> ServletFilter
+----- DelegatingFilterProxy ------> ServletFilter
 |	FilterChainProxy	|
-|	SecurityFilterChain(s)	|
-|	SecurityFilters		|
-|	Authentication Filter	|
-|	AuthenticationManager	|
+|	SecurityFilterChain	| ----------> UsernamePasswordAuthenticationFilter
+|	SecurityFilters		| 
+|-------Authentication Filter---| 
+|	AuthenticationManager	| 
 |	ProviderManager		|
-|	AuthenticationProvider	|
-|	UserDetailsService	|
-|	PasswordEncoder		|
-|	Authentication		|
-|	SecurityContext		|
-|	SecurityContextHolder	|
-|	Authorization Filter	|
------ DispatcherServlet ---------  -----> Servlet
+|	AuthenticationProvider	| ----------> DaoAuthenticationProvider
+|	UserDetailsService	| ----------> InMemoryUserDetailsManager for development and testing, CustomUserDetailsService implementing UserDetailsService
+|	PasswordEncoder		| ----------> BCryptPasswordEncoder, DelegatingPasswordEncoder, etc
+|	Authentication		| 
+|	SecurityContext		| ----------> Persisted in HttpSession
+|	SecurityContextHolder	| 
+|-------Authorization Filter----|
+----- DispatcherServlet ----------> Servlet
 	
 	HandlerMapper
 	HandlerAdaptor
@@ -377,6 +378,13 @@ SPRING SECURITY — ROADMAP
     OAuth2 Client 
     OIDC 
     OAuth2 Login 
+
+- External Identity & Authentication Provider Integration
+    LDAP
+    Okta
+    Other external Identity Providers
+    How Spring Security integrates with them
+    Where AuthenticationProvider / UserDetailsService fit
 
 - Security Customization & Other Mechanisms 
     Custom filters 
