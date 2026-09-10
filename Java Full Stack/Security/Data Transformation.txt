@@ -1,0 +1,45 @@
+Data transformation concepts like Encoding, Encryption, and Hashing serve completely different purposes ranging from system compatibility to security and verification.
+Here is the breakdown of how these data conversion methods work and when they are used:
+
+=============================================================================================================================================================================
+Encoding (For Usability and Compatibility):
+
+Encoding changes data from one public format into another so different systems can read it safely.
+
+- Purpose: Ensures correct transmission across different protocols; it has no security or secrecy goals.
+- Key Usage: No secret key is required. [1]
+- Reversibility: Always 100% reversible back to the original form using the same public rules.
+- Common Examples:
+  - Base64: Converts binary files (like images) into text for emails.
+  - ASCII / UTF-8: Translates text characters into computer-readable numbers.
+  - URL Encoding: Replaces unsafe characters in web links with safe codes (like %20 for spaces).
+
+=============================================================================================================================================================================
+Encryption (For Confidentiality and Security):
+
+Encryption scrambles readable text (plaintext) into an unreadable format (ciphertext) to block unauthorized access.
+
+- Purpose: Keeps data private and secure during storage or transit.
+- Key Usage: Requires a secret key to lock (encrypt) and unlock (decrypt) the data.
+- Reversibility: Reversible, but only if you have the correct key.
+- Common Types & Examples:
+  - Symmetric Encryption: Uses the same key to lock and unlock data quickly (e.g., AES).
+  - Asymmetric Encryption: Uses a public key to lock data and a private key to unlock it (e.g., RSA).
+
+=============================================================================================================================================================================
+Hashing (For Data Integrity and Verification):
+
+Hashing takes an input of any size and converts it into a fixed-length, unique string of characters.
+
+- Purpose: Proves that data has not been changed or tampered with (data integrity) and safely checks passwords.
+- Key Usage: Uses no keys; it relies strictly on a mathematical formula.
+- Reversibility: Completely irreversible (one-way street). Even a tiny change in the input completely changes the output hash.
+- Common Examples: SHA-256 and MD5.
+
+=============================================================================================================================================================================
+Serialization and Compression:
+
+- Serialization: Converts a live programming object (like a user profile in memory) into a flat format like JSON or XML so it can be saved to a file or sent over a network.
+- Compression: Shrinks the physical size of data using algorithms (like ZIP or GZIP) so it takes up less storage and transfers faster.
+
+=============================================================================================================================================================================

@@ -1197,7 +1197,7 @@ SERVLET FILTERS — CONFIGURATION
   }
 
 ------------------------------------------------------------
-- The two important mapping options are:
+The two important mapping options are:
 
 <url-pattern>
     ↓
@@ -1224,23 +1224,51 @@ Apply filter based on Servlet
 - Here, the Filter applies specifically to requests handled by ProductServlet
 
 ------------------------------------------------------------
-- Multiple Filters can be configured for the same request.
+Multiple Filters can be configured.
 
-Client
+
+Example:
+
+<filter>
+        <filter-name>AuthenticationFilter</filter-name>
+        <filter-class>com.example.filter.AuthenticationFilter</filter-class>
+</filter>
+<filter>
+        <filter-name>AuthorizationFilter</filter-name>
+        <filter-class>com.example.filter.AuthorizationFilter</filter-class>
+</filter>
+
+
+<!-- 2. Form the Chain (Top-to-Bottom Execution) -->
+<!-- Authentication runs first for home and admin pages -->
+<filter-mapping>
+        <filter-name>AuthenticationFilter</filter-name>
+        <url-pattern>/home</url-pattern>
+        <url-pattern>/admin/*</url-pattern>
+</filter-mapping>
+<!-- Authorization runs second, only for admin pages -->
+<filter-mapping>
+        <filter-name>AuthorizationFilter</filter-name>
+        <url-pattern>/admin/*</url-pattern>
+</filter-mapping>
+
+
+
+Flow:
+
+Client requested for /admin
 ↓
-Filter 1
+AuthenticationFilter
 ↓
-Filter 2
+AuthorizationFilter
 ↓
 Servlet
 ↓
-Filter 2
-↓
-Filter 1
-↓
 Client
 
-- Servlet Container follows the order of the filters configured in the web.xml, hence it is prefered to configure the filters in web.xml rather than using @WebFilter
+- Before running any code, the servlet container looks at your web.xml mappings to see which filters match the exact URL requested (for example: /admin).
+- Therefore, for a request to /home, the container builds a filter chain with all the filters matching the URL requested.
+- Servlet Container follows the order of the filters configured in the web.xml from top to bottom. It is preferred to configure the filters in web.xml rather than using @WebFilter
 
 =============================================================================================================================================================================
 LISTENERS

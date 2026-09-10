@@ -275,6 +275,8 @@ Spring - Microservice
 
 ============================================================
 
+Session/Form Authentication:
+
 	Request - username & password form parameters
 
 	ServletContainer 
@@ -295,14 +297,33 @@ Spring - Microservice
 |-------Authorization Filter----|
 ----- DispatcherServlet ----------> Servlet
 	
-	HandlerMapper
-	HandlerAdaptor
 	Controller
 
-	Service
-	Repository
-	Entity
-	EntityManager
+============================================================
+
+Basic Authentication:
+
+	Request - Authorization Header - username:password Base64 Encoded
+
+	ServletContainer 
+
+----- DelegatingFilterProxy ------> ServletFilter
+|	FilterChainProxy	|
+|	SecurityFilterChain	| ----------> BasicAuthenticationFilter
+|	SecurityFilters		| 
+|-------Authentication Filter---| 
+|	AuthenticationManager	| 
+|	ProviderManager		|
+|	AuthenticationProvider	| ----------> DaoAuthenticationProvider
+|	UserDetailsService	| ----------> InMemoryUserDetailsManager for development and testing, CustomUserDetailsService implementing UserDetailsService
+|	PasswordEncoder		| ----------> BCryptPasswordEncoder, DelegatingPasswordEncoder, etc
+|	Authentication		| 
+|	SecurityContext		| ----------> Persisted in HttpSession
+|	SecurityContextHolder	| 
+|-------Authorization Filter----|
+----- DispatcherServlet ----------> Servlet
+	
+	Controller
 
 ============================================================
 
