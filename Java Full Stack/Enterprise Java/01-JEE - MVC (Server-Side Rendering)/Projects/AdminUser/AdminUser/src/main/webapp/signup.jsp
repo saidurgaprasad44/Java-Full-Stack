@@ -12,7 +12,7 @@
         Username: <input type="text" name="username" required/><br><br>
         Password: <input type="password" name="password" required/><br><br>
         Role: <input type="radio" name="role" value="admin" required/> Admin <input type="radio" name="role" value="basic" required/> Basic <br><br>
-        <input type="submit" value="Submit" />		<a href="login"> Go back to Login page</a>
+        <input type="submit" value="Submit" />		<a href="login">Login</a>
     </form>
     
     <p style="color:red">${errorMsg}</p>

@@ -15,6 +15,9 @@
         <input type="submit" value="Login" />		<a href="signup"><input type="button" value="Sing-Up" /></a>
     </form>
  
-    <p style="color:red">${errorMsg}</p>
+ <%if(request.getParameter("error")!=null){ %>
+    <p style="color:red">Invalid Credentials, try again</p>
+ <% } %>
+ 
 </body>
 </html>

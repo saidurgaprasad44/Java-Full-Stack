@@ -8,6 +8,6 @@
 <body>
 	<h2>Success</h2>
     <h3>New user ${username} is added</h3>
-    <a href="login.jsp">Login</a>
+    <a href="/login">Login</a>
 </body>
 </html>

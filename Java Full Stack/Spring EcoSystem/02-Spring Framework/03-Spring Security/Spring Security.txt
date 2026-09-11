@@ -88,6 +88,12 @@ SPRING SECURITY
 7.11 Token Expiration
 7.12 JWT Authentication vs Session Authentication
 
+Header: Algorithm (hs256/rs256/es256) 
+Payload: principal, roles, and other claims
+Signature: Sign(Base64URL(header) + "." + Base64URL(payload))
+
+JWT = encoded-header.encoded-payload.Signature
+
 
 8. AUTHORIZATION
 ------------------------------------------------------------
@@ -274,56 +280,164 @@ Spring - REST API
 Spring - Microservice
 
 ============================================================
-
 Session/Form Authentication:
 
-	Request - username & password form parameters
 
-	ServletContainer 
+First Request - username & password form parameters
+    |
+    v
+Servlet Container
+    |
+    |  DelegatingFilterProxy
+    v
+FilterChainProxy
+    |
+    |-- selects SecurityFilterChain
+    |
+    |-- Security Filters
+    |
+    |-- UsernamePasswordAuthenticationFilter
+    |       |
+    |       |-- extracts username & password
+    |       |
+    |       v
+    |   AuthenticationManager
+    |       |
+    |       v
+    |   ProviderManager
+    |       |
+    |       v
+    |   AuthenticationProvider
+    |       |
+    |       v
+    |   DaoAuthenticationProvider
+    |       |
+    |       |-- UserDetailsService
+    |       |      |
+    |       |      |-- InMemoryUserDetailsManager
+    |       |      |     (development/testing)
+    |       |      |
+    |       |      |-- CustomUserDetailsService
+    |       |            (DB/repository-backed)
+    |       |
+    |       |-- PasswordEncoder
+    |       |      |
+    |       |      |-- BCryptPasswordEncoder
+    |       |      |-- DelegatingPasswordEncoder
+    |       |      |-- etc.
+    |       |
+    |       v
+    |   Authentication
+    |       |
+    |       v
+    |   SecurityContext
+    |       |
+    |       |-- SecurityContextHolder
+    |       |      (current request/thread access)
+    |       |
+    |       |-- SecurityContextRepository
+    |              |
+    |              v
+    |          HttpSession
+    |              |
+    |              |-- SecurityContext persisted
+    |              |-- JSESSIONID associated with browser
+    |
+    |-- AuthorizationFilter
+    |       |
+    |       |-- checks Authentication/authorities
+    |       |-- allows or denies request
+    |
+    v
+DispatcherServlet
+    |
+    v
+Controller
 
------ DelegatingFilterProxy ------> ServletFilter
-|	FilterChainProxy	|
-|	SecurityFilterChain	| ----------> UsernamePasswordAuthenticationFilter
-|	SecurityFilters		| 
-|-------Authentication Filter---| 
-|	AuthenticationManager	| 
-|	ProviderManager		|
-|	AuthenticationProvider	| ----------> DaoAuthenticationProvider
-|	UserDetailsService	| ----------> InMemoryUserDetailsManager for development and testing, CustomUserDetailsService implementing UserDetailsService
-|	PasswordEncoder		| ----------> BCryptPasswordEncoder, DelegatingPasswordEncoder, etc
-|	Authentication		| 
-|	SecurityContext		| ----------> Persisted in HttpSession
-|	SecurityContextHolder	| 
-|-------Authorization Filter----|
------ DispatcherServlet ----------> Servlet
-	
-	Controller
+
+
+Subsequent Requests
+  ↓
+SecurityContextRepository
+  ↓
+HttpSession
+  ↓
+restore SecurityContext
+  ↓
+SecurityContextHolder
+  ↓
+SecurityContext
+  ↓
+Authentication
+  ↓
+AuthorizationFilter
+  ↓
+Controller
 
 ============================================================
-
 Basic Authentication:
 
-	Request - Authorization Header - username:password Base64 Encoded
-
-	ServletContainer 
-
------ DelegatingFilterProxy ------> ServletFilter
-|	FilterChainProxy	|
-|	SecurityFilterChain	| ----------> BasicAuthenticationFilter
-|	SecurityFilters		| 
-|-------Authentication Filter---| 
-|	AuthenticationManager	| 
-|	ProviderManager		|
-|	AuthenticationProvider	| ----------> DaoAuthenticationProvider
-|	UserDetailsService	| ----------> InMemoryUserDetailsManager for development and testing, CustomUserDetailsService implementing UserDetailsService
-|	PasswordEncoder		| ----------> BCryptPasswordEncoder, DelegatingPasswordEncoder, etc
-|	Authentication		| 
-|	SecurityContext		| ----------> Persisted in HttpSession
-|	SecurityContextHolder	| 
-|-------Authorization Filter----|
------ DispatcherServlet ----------> Servlet
-	
-	Controller
+Request - Authorization: Basic <Base64(username:password)>
+    |
+    v
+Servlet Container
+    |
+    |  DelegatingFilterProxy
+    v
+FilterChainProxy
+    |
+    |-- selects SecurityFilterChain
+    |
+    |-- Security Filters
+    |
+    |-- BasicAuthenticationFilter
+    |       |
+    |       |-- extracts Authorization header
+    |       |-- decodes Base64
+    |       |-- obtains username & password
+    |       |
+    |       v
+    |   AuthenticationManager
+    |       |
+    |       v
+    |   ProviderManager
+    |       |
+    |       v
+    |   AuthenticationProvider
+    |       |
+    |       v
+    |   DaoAuthenticationProvider
+    |       |
+    |       |-- UserDetailsService
+    |       |      |
+    |       |      |-- InMemoryUserDetailsManager
+    |       |      |-- CustomUserDetailsService
+    |       |
+    |       |-- PasswordEncoder
+    |       |      |
+    |       |      |-- BCryptPasswordEncoder
+    |       |      |-- DelegatingPasswordEncoder
+    |       |      |-- etc.
+    |       |
+    |       v
+    |   Authentication
+    |       |
+    |       v
+    |   SecurityContext
+    |       |
+    |       v
+    |   SecurityContextHolder
+    |
+    |-- AuthorizationFilter
+    |       |
+    |       |-- checks Authentication/authorities
+    |       |-- allows or denies request
+    |
+    v
+DispatcherServlet
+    |
+    v
+Controller
 
 ============================================================
 

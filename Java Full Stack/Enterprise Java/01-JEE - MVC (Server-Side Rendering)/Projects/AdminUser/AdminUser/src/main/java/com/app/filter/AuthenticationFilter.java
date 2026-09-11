@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 
-@WebFilter("/user")
 public class AuthenticationFilter implements Filter {
 
 	@Override
@@ -28,7 +27,9 @@ public class AuthenticationFilter implements Filter {
 			response.sendRedirect(request.getContextPath() + "/login");
 			return;
 		} 
-		chain.doFilter(arg0, arg1);
+		else{
+			chain.doFilter(arg0, arg1);
+		}
 	}
 
 }
