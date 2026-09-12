@@ -440,6 +440,71 @@ DispatcherServlet
 Controller
 
 ============================================================
+JWT Authentication:
+
+Request - Authorization: Bearer <JWT>
+    |
+    v
+Servlet Container
+    |
+    |  DelegatingFilterProxy
+    v
+FilterChainProxy
+    |
+    |-- selects SecurityFilterChain
+    |
+    |-- Security Filters
+    |
+    |-- BearerTokenAuthenticationFilter
+    |       |
+    |       |-- extracts Authorization header
+    |       |-- decodes Base64
+    |       |-- obtains username & password
+    |       |
+    |       v
+    |   AuthenticationManager
+    |       |
+    |       v
+    |   ProviderManager
+    |       |
+    |       v
+    |   AuthenticationProvider
+    |       |
+    |       v
+    |   JwtAuthenticationProvider
+    |       |
+    |       |-- UserDetailsService
+    |       |      |
+    |       |      |-- InMemoryUserDetailsManager
+    |       |      |-- CustomUserDetailsService
+    |       |
+    |       |-- PasswordEncoder
+    |       |      |
+    |       |      |-- BCryptPasswordEncoder
+    |       |      |-- DelegatingPasswordEncoder
+    |       |      |-- etc.
+    |       |
+    |       v
+    |   Authentication
+    |       |
+    |       v
+    |   SecurityContext
+    |       |
+    |       v
+    |   SecurityContextHolder
+    |
+    |-- AuthorizationFilter
+    |       |
+    |       |-- checks Authentication/authorities
+    |       |-- allows or denies request
+    |
+    v
+DispatcherServlet
+    |
+    v
+Controller
+
+============================================================
 
 SPRING SECURITY — ROADMAP
 - Spring Security Fundamentals 
@@ -539,6 +604,8 @@ SPRING SECURITY — ROADMAP
     REST API security 
     Production configuration 
     Common security mistakes
+
+
 
 
 
