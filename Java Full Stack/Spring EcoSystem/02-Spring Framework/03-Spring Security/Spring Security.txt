@@ -294,8 +294,6 @@ FilterChainProxy
     |
     |-- selects SecurityFilterChain
     |
-    |-- Security Filters
-    |
     |-- UsernamePasswordAuthenticationFilter
     |       |
     |       |-- extracts username & password
@@ -312,19 +310,8 @@ FilterChainProxy
     |       v
     |   DaoAuthenticationProvider
     |       |
-    |       |-- UserDetailsService
-    |       |      |
-    |       |      |-- InMemoryUserDetailsManager
-    |       |      |     (development/testing)
-    |       |      |
-    |       |      |-- CustomUserDetailsService
-    |       |            (DB/repository-backed)
-    |       |
-    |       |-- PasswordEncoder
-    |       |      |
-    |       |      |-- BCryptPasswordEncoder
-    |       |      |-- DelegatingPasswordEncoder
-    |       |      |-- etc.
+    |       |-- UserDetailsService - InMemoryUserDetailsManager (development/testing), CustomUserDetailsService (DB/repository-backed)
+    |       |-- PasswordEncoder - BCryptPasswordEncoder, DelegatingPasswordEncoder, etc.
     |       |
     |       v
     |   Authentication
@@ -332,20 +319,19 @@ FilterChainProxy
     |       v
     |   SecurityContext
     |       |
-    |       |-- SecurityContextHolder
-    |       |      (current request/thread access)
-    |       |
+    |       |-- SecurityContextHolder (current request/thread access)
     |       |-- SecurityContextRepository
-    |              |
-    |              v
-    |          HttpSession
-    |              |
-    |              |-- SecurityContext persisted
-    |              |-- JSESSIONID associated with browser
+    |       |
+    |       v
+    |   HttpSession (SecurityContext persisted)
+    |       |
+    |       v
+    |   JSESSIONID associated with browser
+    |
     |
     |-- AuthorizationFilter
     |       |
-    |       |-- checks Authentication/authorities
+    |       |-- AuthorizationManager (checks Authentication/authorities)
     |       |-- allows or denies request
     |
     v
@@ -388,14 +374,11 @@ FilterChainProxy
     |
     |-- selects SecurityFilterChain
     |
-    |-- Security Filters
-    |
     |-- BasicAuthenticationFilter
     |       |
     |       |-- extracts Authorization header
     |       |-- decodes Base64
     |       |-- obtains username & password
-    |       |
     |       v
     |   AuthenticationManager
     |       |
@@ -408,17 +391,8 @@ FilterChainProxy
     |       v
     |   DaoAuthenticationProvider
     |       |
-    |       |-- UserDetailsService
-    |       |      |
-    |       |      |-- InMemoryUserDetailsManager
-    |       |      |-- CustomUserDetailsService
-    |       |
-    |       |-- PasswordEncoder
-    |       |      |
-    |       |      |-- BCryptPasswordEncoder
-    |       |      |-- DelegatingPasswordEncoder
-    |       |      |-- etc.
-    |       |
+    |       |-- UserDetailsService - InMemoryUserDetailsManager, CustomUserDetailsService
+    |       |-- PasswordEncoder - BCryptPasswordEncoder, DelegatingPasswordEncoder, etc.
     |       v
     |   Authentication
     |       |
@@ -427,6 +401,7 @@ FilterChainProxy
     |       |
     |       v
     |   SecurityContextHolder
+    |
     |
     |-- AuthorizationFilter
     |       |
@@ -442,7 +417,7 @@ Controller
 ============================================================
 JWT Authentication:
 
-Request - Authorization: Bearer <JWT>
+First Request - username & password
     |
     v
 Servlet Container
@@ -453,14 +428,56 @@ FilterChainProxy
     |
     |-- selects SecurityFilterChain
     |
-    |-- Security Filters
+    |-- Login/Authentication mechanism (Authorization server)
+    |       |
+    |       |-- extracts username & password
+    |       v
+    |   AuthenticationManager
+    |       |
+    |       v
+    |   ProviderManager
+    |       |
+    |       v
+    |   AuthenticationProvider
+    |       |
+    |       v
+    |   DaoAuthenticationProvider
+    |       |
+    |       |-- UserDetailsService - InMemoryUserDetailsManager, CustomUserDetailsService
+    |       |-- PasswordEncoder - BCryptPasswordEncoder, DelegatingPasswordEncoder, etc.
+    |       v
+    |   Authentication
+    |       |
+    |       v
+    |   JWTEncoder
+    |       |
+    |       |-- Header
+    |       |-- Payload
+    |       |-- Signature
+    |       v
+    |   Return JWT to client
     |
-    |-- BearerTokenAuthenticationFilter
+    v
+Client stores JWT
+
+
+
+
+Subsequent Requests - Authorization: Bearer <JWT>
+    |
+    v
+Servlet Container
+    |
+    |  DelegatingFilterProxy
+    v
+FilterChainProxy
+    |
+    |-- selects SecurityFilterChain
+    |
+    |
+    |-- BearerTokenAuthenticationFilter (Resource server)
     |       |
-    |       |-- extracts Authorization header
-    |       |-- decodes Base64
-    |       |-- obtains username & password
-    |       |
+    |       |-- extracts Bearer token
     |       v
     |   AuthenticationManager
     |       |
@@ -473,17 +490,19 @@ FilterChainProxy
     |       v
     |   JwtAuthenticationProvider
     |       |
-    |       |-- UserDetailsService
-    |       |      |
-    |       |      |-- InMemoryUserDetailsManager
-    |       |      |-- CustomUserDetailsService
+    |       v
+    |   JwtDecoder
     |       |
-    |       |-- PasswordEncoder
-    |       |      |
-    |       |      |-- BCryptPasswordEncoder
-    |       |      |-- DelegatingPasswordEncoder
-    |       |      |-- etc.
+    |       |-- verifies signature
+    |       |-- validates JWT
+    |       v
+    |      Jwt
     |       |
+    |       v
+    |   JwtAuthenticationConverter
+    |       |
+    |       |-- converts JWT claims
+    |       |-- creates GrantedAuthorities
     |       v
     |   Authentication
     |       |
@@ -492,9 +511,11 @@ FilterChainProxy
     |       |
     |       v
     |   SecurityContextHolder
+    |       
     |
     |-- AuthorizationFilter
     |       |
+    |       |-- AuthorizationManager
     |       |-- checks Authentication/authorities
     |       |-- allows or denies request
     |
