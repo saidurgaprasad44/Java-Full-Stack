@@ -314,7 +314,7 @@ FilterChainProxy
     |       |-- PasswordEncoder - BCryptPasswordEncoder, DelegatingPasswordEncoder, etc.
     |       |
     |       v
-    |   Authentication
+    |   Authentication - UsernamePasswordAuthenticationToken
     |       |
     |       v
     |   SecurityContext
@@ -432,7 +432,7 @@ FilterChainProxy
     |       |
     |       |-- extracts username & password
     |       v
-    |   AuthenticationManager
+    |   Authentication Manager
     |       |
     |       v
     |   ProviderManager
@@ -441,7 +441,7 @@ FilterChainProxy
     |   AuthenticationProvider
     |       |
     |       v
-    |   DaoAuthenticationProvider
+    |   DaoAuthenticationProvider / Custom Authentication mechanism
     |       |
     |       |-- UserDetailsService - InMemoryUserDetailsManager, CustomUserDetailsService
     |       |-- PasswordEncoder - BCryptPasswordEncoder, DelegatingPasswordEncoder, etc.

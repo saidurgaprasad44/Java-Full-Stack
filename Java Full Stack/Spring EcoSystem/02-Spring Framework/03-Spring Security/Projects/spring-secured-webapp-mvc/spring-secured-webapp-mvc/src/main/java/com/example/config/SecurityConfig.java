@@ -15,6 +15,8 @@ import com.example.service.CustomUserDetailsService;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+	
+	// Configuration for Session based Security filter chain
 	@Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
