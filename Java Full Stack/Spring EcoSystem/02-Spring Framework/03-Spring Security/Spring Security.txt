@@ -432,7 +432,7 @@ FilterChainProxy
     |       |
     |       |-- extracts username & password
     |       v
-    |   Authentication Manager
+    |   AuthenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password))
     |       |
     |       v
     |   ProviderManager
