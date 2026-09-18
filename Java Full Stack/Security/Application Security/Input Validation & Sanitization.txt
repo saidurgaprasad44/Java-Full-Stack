@@ -1,0 +1,21 @@
+SQL Injection:
+
+
+
+
+
+Command Injection:
+
+
+
+
+
+
+Cross-Site Scripting (XSS):
+
+
+
+
+
+
+Parameterizing Queries & Escaping Outputs:

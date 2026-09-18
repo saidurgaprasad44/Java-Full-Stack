@@ -52,15 +52,14 @@ spring security		- spring security infrastructure, session, basic, jwt, authoriz
 caching			- redis, read through and write through techniques, TTL, eviction policies, @Cacheable
 event driven		- RabbitMQ message queues, kafka event streaming, @Async
 API communication	- websockets, webhooks, graphql, sse, polling, long polling, soap, rest
+microservices 		- api gateway, load balancer, microservices, inter service communication, service discovery, open feign, spring cloud
+microservices patterns	- saga pattern, mesh pattern
+system design concepts 	- sharding, partitions, replication, rate limiting, CDNs, reverse proxy, 
 
 Core Java		- java 8/11/17 features, exception handling, multi-threading, jvm architecture and garbage collection, modifiers/keywords, core java APIs like Optional, Serializable, Throwable, Object, Method, Runnable, Callable, Thread, Future,...
 Design principles/patterns- SOLID, KISS, DRY, creational, structural, behavioral, 
 DSA			- string, array, collections and map, linked list, queues, 
 sql & DBMS 		- querying, update/insert/delete, joins, table relationships, indexing, transactions, aggregations, order of writing and execution, stored procedures, deadlocks
-
-microservices 		- api gateway, load balancer, microservices, inter service communication, service discovery, open feign, spring cloud
-microservices patterns	- saga pattern, mesh pattern
-system design concepts 	- sharding, partitions, replication, rate limiting, CDNs, reverse proxy, 
 Version capabilities	- Java, hibernate, Spring core, Spring web mvc, spring data jpa, spring security, spring boot
 
 Cloud			- Azure cloud and its services
