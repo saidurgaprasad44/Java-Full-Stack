@@ -166,11 +166,12 @@ JWT = encoded-header.encoded-payload.Signature
 13.5 Authorization Server
 13.6 Resource Server
 13.7 Access Tokens
-refresh tokens
 13.8 Scopes - openid, profile, email
+consent
 authorization grant types
 13.9 Authorization Code Flow
 13.10 Client Credentials Flow
+refresh token flow
 13.11 PKCE
 13.12 Spring Security OAuth2 Client
 13.13 Spring Security OAuth2 Resource Server
@@ -189,6 +190,19 @@ JWKS and ID Token validation
 OIDC Logout
 14.5 Spring Security OAuth2 Login
 14.6 JWT ID Tokens
+important URIs:
+
+/quiz/callback
+/.well-known/oauth-authorization-server
+/.well-known/openid-configuration
+/oauth2/authorize
+/oauth2/token
+/oauth2/jwks
+/oauth2/introspect
+/oauth2/revoke
+/userinfo
+/logout
+
 
 15. METHOD / SERVICE SECURITY
 ------------------------------------------------------------

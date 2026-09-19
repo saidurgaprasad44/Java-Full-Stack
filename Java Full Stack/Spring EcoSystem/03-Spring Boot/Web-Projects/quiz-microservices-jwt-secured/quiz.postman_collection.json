@@ -1,0 +1,529 @@
+{
+  "info": {
+    "_postman_id": "5c86a62d-15f9-4847-8fdf-6a74f020df53",
+    "name": "quiz",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "52064126",
+    "_collection_link": "https://go.postman.co/collection/52064126-5c86a62d-15f9-4847-8fdf-6a74f020df53?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "quiz-service",
+      "item": [
+        {
+          "name": "login quiz",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"sai\",\r\n    \"password\": \"password123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8765/quiz-service/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8765",
+              "path": [
+                "quiz-service",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "test quiz service",
+          "request": {
+            "auth": {
+              "type": "bearer"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer ",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8765/quiz-service/quiz/test",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8765",
+              "path": [
+                "quiz-service",
+                "quiz",
+                "test"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create quiz",
+          "request": {
+            "auth": {
+              "type": "bearer"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer ",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"category\": \"\",\r\n    \"title\": \"\",\r\n    \"numberOfQuestions\": \r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8765/quiz-service/quiz",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8765",
+              "path": [
+                "quiz-service",
+                "quiz"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete quiz",
+          "request": {
+            "auth": {
+              "type": "bearer"
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer ",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8765/quiz-service/quiz/",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8765",
+              "path": [
+                "quiz-service",
+                "quiz",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get quiz",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer ",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8765/quiz-service/quiz/",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8765",
+              "path": [
+                "quiz-service",
+                "quiz",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "submit quiz",
+          "request": {
+            "auth": {
+              "type": "bearer"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer ",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\r\n    {\r\n        \"id\": 15,\r\n        \"response\": \"True\"\r\n    },\r\n    {\r\n        \"id\": 11,\r\n        \"response\": \"Tuple\"\r\n    },\r\n    {\r\n        \"id\": 9,\r\n        \"response\": \"len()\"\r\n    }\r\n]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8765/quiz-service/quiz/submit/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8765",
+              "path": [
+                "quiz-service",
+                "quiz",
+                "submit",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "question-service",
+      "item": [
+        {
+          "name": "test question service",
+          "request": {
+            "auth": {
+              "type": "bearer"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer ",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8765/question-service/questions/test",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8765",
+              "path": [
+                "question-service",
+                "questions",
+                "test"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get all questions",
+          "request": {
+            "auth": {
+              "type": "bearer"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer ",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8765/question-service/questions",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8765",
+              "path": [
+                "question-service",
+                "questions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get questions by category",
+          "request": {
+            "auth": {
+              "type": "bearer"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer ",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8765/question-service/questions/Java",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8765",
+              "path": [
+                "question-service",
+                "questions",
+                "Java"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create question",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer ",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"category\": \"\",\r\n    \"questionTitle\": \"\",\r\n    \"option_1\": \"\",\r\n    \"option_2\": \"\",\r\n    \"option_3\": \"\",\r\n    \"option_4\": \"\",\r\n    \"right_answer\": \"\",\r\n    \"difficulty_level\": \"\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8765/question-service/questions",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8765",
+              "path": [
+                "question-service",
+                "questions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete question",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer ",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8765/question-service/questions/",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8765",
+              "path": [
+                "question-service",
+                "questions",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "generate quiz",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer ",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8765/question-service/questions/generate?category=Java&numQ=4",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8765",
+              "path": [
+                "question-service",
+                "questions",
+                "generate"
+              ],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "Java"
+                },
+                {
+                  "key": "numQ",
+                  "value": "4"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get questions by ids list",
+          "request": {
+            "auth": {
+              "type": "bearer"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer ",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\r\n    5,\r\n    64,\r\n    6,\r\n    8\r\n]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8765/question-service/questions/quiz",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8765",
+              "path": [
+                "question-service",
+                "questions",
+                "quiz"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "calculate score",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer ",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\r\n    {\r\n        \"id\": 15,\r\n        \"response\": \"False\"\r\n    },\r\n    {\r\n        \"id\": 11,\r\n        \"response\": \"Tuple\"\r\n    },\r\n    {\r\n        \"id\": 9,\r\n        \"response\": \"len()\"\r\n    }\r\n]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8765/question-service/questions/calculatescore",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8765",
+              "path": [
+                "question-service",
+                "questions",
+                "calculatescore"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
