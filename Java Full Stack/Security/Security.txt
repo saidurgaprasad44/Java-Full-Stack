@@ -1,3 +1,165 @@
 OWASP - Open Worldwide Application Security Project (formerly Open Web Application Security Project)
 - It is a global open-source community and non-profit foundation dedicated to improving software and web application security through free tools, documents, and standards
 - OWASP Top 10: A standard awareness document that represents the most critical security risks to web applications
+
+=======================================================================================================================================================================
+Security Fundamentals
+=======================================================================================================================================================================
+
+- Authentication
+
+  * Authentication verifies who an entity is.
+  * The entity can be a human user, application, service, or device.
+  * Authentication answers: "Who are you?"
+  * Common mechanisms:
+    - Username/password
+    - Session authentication
+    - Basic Authentication
+    - API key
+    - HMAC
+    - mTLS
+    - OAuth2 access token
+    - JWT
+
+------------------------------------------------------------
+- Authorization
+
+  * Authorization determines what an authenticated entity is allowed to do.
+  * Authorization answers: "What are you allowed to do?"
+  * Authentication normally happens before authorization.
+  * Example:
+    - User successfully logs in → authenticated.
+    - User has ADMIN role → authorized to access `/admin`.
+
+------------------------------------------------------------
+- Identity
+
+  * Identity is the set of information representing an entity in a security system.
+  * An identity commonly contains a unique identifier such as username, user ID, service ID, or client ID.
+  * Authentication establishes that the entity presenting credentials belongs to that identity.
+
+------------------------------------------------------------
+- Principal
+
+  * Principal represents the entity that has been authenticated.
+  * It can represent a user or a machine/service.
+  * Example:
+    - User `alice` is authenticated → `alice` is the principal.
+    - Service `quiz-service` is authenticated → `quiz-service` is the principal.
+
+------------------------------------------------------------
+- Credentials
+
+  * Credentials are information used to prove an identity.
+  * Examples:
+    - Password
+    - API key
+    - Client secret
+    - Private key
+    - Certificate
+    - Access token
+  * Credentials should be protected because possession of valid credentials can allow authentication as that identity.
+
+------------------------------------------------------------
+- Permissions
+
+  * A permission represents a specific operation that an identity is allowed to perform.
+  * Examples:
+    - `question.read`
+    - `question.create`
+    - `question.delete`
+  * Permissions provide more precise access control than broad roles.
+
+------------------------------------------------------------
+- Roles
+
+  * A role is a logical grouping of permissions.
+  * Roles simplify authorization by assigning a set of permissions to an identity.
+  * Example:
+    - `TUTOR` → create, update and delete questions.
+    - `STUDENT` → read questions and submit answers.
+
+------------------------------------------------------------
+- Authorities
+
+  * An authority is a granted security capability used when making authorization decisions.
+  * An authority can represent a role, permission, scope, or other security attribute.
+  * Example:
+    - `ROLE_TUTOR`
+    - `question.read`
+    - `SCOPE_question.read`
+
+------------------------------------------------------------
+- Role vs Permission
+
+  * Role represents a broader responsibility or job function.
+  * Permission represents a specific capability.
+  * Example:
+    - Role: `TUTOR`
+    - Permissions: `question.create`, `question.update`, `question.delete`
+  * A role can therefore be mapped to multiple permissions.
+
+------------------------------------------------------------
+- Least Privilege
+
+  * Least privilege means granting an identity only the access required to perform its intended work.
+  * Excess permissions increase the potential impact of compromised credentials.
+  * Example:
+    - A reporting service that only reads reports should not receive database write permissions.
+
+------------------------------------------------------------
+- Defense in Depth
+
+  * Defense in depth means using multiple independent security controls instead of relying on one control.
+  * If one control fails, another control can still reduce the impact.
+  * Example:
+    - HTTPS
+    - Authentication
+    - Authorization
+    - Input validation
+    - Database permissions
+    - Security monitoring
+
+------------------------------------------------------------
+- Zero Trust
+
+  * Zero trust means access is not automatically trusted merely because an entity is inside a network or infrastructure boundary.
+  * Each access request should be evaluated using relevant identity, authentication, authorization, and security policies.
+  * Internal services should therefore authenticate and authorize other services when required.
+  * Example:
+    - `quiz-service` does not automatically trust `question-service` simply because both run inside the same network.
+
+------------------------------------------------------------
+- Stateful Security
+
+  * Stateful authentication maintains authentication-related state on the server.
+  * The client usually sends an identifier that allows the server to locate that state.
+  * Example:
+    - Server stores an authenticated session.
+    - Browser stores a session ID in a cookie.
+    - Browser sends the session ID with subsequent requests.
+  * Session-based authentication is a common stateful approach.
+
+------------------------------------------------------------
+- Stateless Security
+
+  * Stateless authentication does not require the server to maintain authentication state for every client session.
+  * Each request carries the information required to authenticate the caller.
+  * Example:
+    - Client sends a JWT access token with each request.
+    - Server validates the token and determines the authenticated identity.
+  * Stateless does not mean "no state anywhere"; other components such as token stores, databases, revocation systems, or authorization servers may still maintain state.
+
+------------------------------------------------------------
+- User Identity vs Application/Service Identity
+
+  * A user identity represents a human or user account.
+  * An application/service identity represents a software system acting on its own behalf.
+  * The authentication mechanism and authorization rules can differ between them.
+  * Example:
+    - User → Authorization Server → user access token → Question Service.
+    - Quiz Service → Authorization Server → service access token → Question Service.
+  * A user token represents the user.
+  * A client-credentials service token represents the application/service, not a human user.
+
+=======================================================================================================================================================================

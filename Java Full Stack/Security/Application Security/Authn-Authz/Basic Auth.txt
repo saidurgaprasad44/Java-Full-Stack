@@ -1,0 +1,190 @@
+=======================================================================================================================================================================
+Basic Authentication
+=======================================================================================================================================================================
+
+- HTTP Basic Authentication is an HTTP authentication mechanism where the client sends a username and password with requests.
+- The credentials are sent using the `Authorization` HTTP header.
+- Basic Authentication does not create a server-side login session by itself.
+- The client generally sends the credentials with each request that requires authentication.
+
+------------------------------------------------------------
+Authorization Header
+------------------------------------------------------------
+
+- The client sends credentials using:
+
+Authorization: Basic <base64-encoded-credentials>
+
+- The credentials before Base64 encoding are:
+
+username:password
+
+
+Example:
+
+username = alice
+password = secret123
+
+
+
+username:password
+        ↓
+Base64 encoding
+        ↓
+YWxpY2U6c2VjcmV0MTIz
+
+
+
+Request:
+
+GET /admin
+Authorization: Basic YWxpY2U6c2VjcmV0MTIz
+
+
+
+- The server decodes the Base64 value to obtain the username and password and then authenticates the credentials.
+
+------------------------------------------------------------
+Base64 Is Not Encryption
+------------------------------------------------------------
+
+- Base64 is an encoding mechanism, not an encryption mechanism.
+- Anyone who obtains the header can decode the Base64 value and recover the original username and password.
+- Therefore, Basic Authentication must normally be used over HTTPS.
+
+Misconception:
+
+- `Authorization: Basic ...` does not mean the credentials are encrypted.
+- TLS/HTTPS protects the HTTP request while it is transmitted.
+- Basic Authentication itself only defines how the credentials are represented and sent.
+
+------------------------------------------------------------
+Authentication Flow
+------------------------------------------------------------
+
+- A typical Basic Authentication flow is:
+
+  Client
+    ↓
+  Request
+  Authorization: Basic <credentials>
+    ↓
+  Server
+    ↓
+  Decode Base64
+    ↓
+  Extract username + password
+    ↓
+  Verify credentials
+    ↓
+  Authenticated / rejected
+
+- The server may respond with `401 Unauthorized` when authentication is required or the supplied credentials are invalid.
+- The server can include a `WWW-Authenticate` header indicating the authentication scheme.
+
+Example:
+
+HTTP/1.1 401 Unauthorized
+WWW-Authenticate: Basic realm="Application"
+
+- After obtaining valid credentials, the client can retry the request with the `Authorization` header.
+
+------------------------------------------------------------
+Credentials on Subsequent Requests
+------------------------------------------------------------
+
+- Basic Authentication is fundamentally request-oriented.
+- The client can send the same credentials with every protected request.
+- Unlike session authentication, Basic Authentication does not inherently require a server-side session to remember that the user has authenticated.
+
+Example:
+
+  Request 1:
+  GET /products
+  Authorization: Basic <credentials>
+
+  Request 2:
+  GET /orders
+  Authorization: Basic <credentials>
+
+  Request 3:
+  POST /orders
+  Authorization: Basic <credentials>
+
+- The server authenticates the supplied credentials for each request.
+
+Misconception:
+
+- Basic Authentication does not mean the server must create a session after the first successful request.
+- An application could build session behavior around it, but that would be additional application behavior rather than a property of Basic Authentication itself.
+
+------------------------------------------------------------
+HTTPS Requirement
+------------------------------------------------------------
+
+- Because Basic Authentication sends credentials in a reversible encoding, HTTPS is essential for protecting them during transport.
+- TLS provides:
+  - Encryption of the HTTP communication
+  - Server authentication
+  - Protection against modification of transmitted data
+
+Flow:
+
+  Client
+    ↓
+  HTTPS/TLS
+    ↓
+  Server
+
+  Inside protected TLS connection:
+    Authorization: Basic <credentials>
+
+- Without HTTPS, an attacker capable of observing network traffic could recover the credentials.
+
+------------------------------------------------------------
+Browser Behavior
+------------------------------------------------------------
+
+- Browsers have built-in support for HTTP Basic Authentication.
+- When a server responds with a suitable `401` response and `WWW-Authenticate: Basic`, a browser can display a username/password authentication prompt.
+- The browser can then resend the request with the `Authorization` header.
+- Modern applications can also send Basic Authentication programmatically without relying on the browser's built-in prompt.
+
+------------------------------------------------------------
+Basic Authentication vs Form Login
+------------------------------------------------------------
+
+| Aspect | Basic Authentication | Form Login |
+|---|---|---|
+| Credentials | HTTP `Authorization` header | HTML form |
+| Authentication state | No session required by mechanism | Commonly session-based |
+| Credential transmission | Sent with requests | Submitted during login |
+| Browser support | Built into HTTP clients/browsers | Implemented by application |
+| Typical use | APIs, internal services, simple protected endpoints | Server-rendered web applications |
+| Logout | No inherent login session to invalidate | Session can be invalidated |
+
+- Form login and Basic Authentication are different authentication mechanisms.
+- A form login application commonly creates a session after successful authentication.
+- Basic Authentication normally keeps sending credentials rather than relying on a login session.
+
+------------------------------------------------------------
+Advantages and Limitations
+------------------------------------------------------------
+
+- Advantages:
+  - Simple protocol
+  - Supported by many HTTP clients
+  - Easy to configure and test
+  - Useful for simple internal APIs and controlled integrations
+
+- Limitations:
+  - Credentials are sent repeatedly
+  - Requires HTTPS for secure transport
+  - Long-lived credentials can be risky if leaked
+  - Does not provide token expiration or scopes by itself
+  - Does not provide built-in authorization beyond identifying the caller
+  - Credential rotation can be operationally inconvenient
+
+- Basic Authentication is therefore commonly used where simplicity is more important than advanced token or authorization features.
+
+=======================================================================================================================================================================

@@ -1,0 +1,544 @@
+=======================================================================================================================================================================
+Token-Based Authentication
+=======================================================================================================================================================================
+
+- Token-based authentication uses a token as the credential presented by a client to authenticate requests.
+- The client first obtains a token through an authentication or authorization process.
+- The client then presents the token when accessing protected resources.
+- The server validates the token and determines the identity and/or permissions associated with it.
+
+------------------------------------------------------------
+Why Token-Based Authentication
+------------------------------------------------------------
+
+- Sending a username and password with every request exposes the long-term credential repeatedly.
+- Token-based authentication allows the client to use a separate credential for subsequent requests.
+- Tokens can have properties such as:
+  - Expiration
+  - Scope
+  - Audience
+  - Permissions
+  - Issuer
+- A leaked short-lived access token can have a smaller usable lifetime than a long-lived password or API credential.
+
+Misconception:
+
+- Token-based authentication does not automatically mean JWT.
+- A token can be:
+  - JWT
+  - Opaque random value
+  - Other provider-specific token format
+
+------------------------------------------------------------
+Access Token
+------------------------------------------------------------
+
+- An access token is a credential used to access protected resources.
+- It is normally issued by an authentication or authorization system after the client successfully completes the required authentication or authorization process.
+- The client presents the access token to the resource server.
+
+Example:
+
+  Client
+    ↓
+  Authorization Server
+    ↓
+  Access Token
+    ↓
+  Resource Server
+    ↓
+  Protected Resource
+
+- An access token represents the authorization granted to the caller according to the token's claims, scopes, permissions, audience, and other applicable policies.
+
+------------------------------------------------------------
+Bearer Token
+------------------------------------------------------------
+
+- A bearer token is a token where possession of the token is sufficient to use it.
+- The caller does not normally need to prove ownership of the token separately for each request.
+- A common HTTP representation is:
+
+Authorization: Bearer <access-token>
+
+- The resource server validates the token before allowing access.
+
+Misconception:
+
+- "Bearer" describes how the token is used, not its internal format.
+- A bearer token can be a JWT or an opaque token.
+- JWT and bearer are therefore not competing concepts.
+
+------------------------------------------------------------
+Token Lifecycle
+------------------------------------------------------------
+
+- A typical access-token lifecycle is:
+
+  Client
+    ↓
+  Request token
+    ↓
+  Authorization Server
+    ↓
+  Token issued
+    ↓
+  Client stores token
+    ↓
+  Client sends token
+    ↓
+  Resource Server validates token
+    ↓
+  Access granted/rejected
+    ↓
+  Token expires or is revoked
+
+- The lifecycle can also involve refreshing or obtaining a new access token after expiration.
+
+------------------------------------------------------------
+Token Expiration
+------------------------------------------------------------
+
+- Access tokens commonly have a limited lifetime.
+- Expiration limits the period during which a stolen token can normally be used.
+- After expiration, the resource server should reject the token.
+
+Example:
+
+  Token issued: 10:00
+  Expiration:   10:05
+
+  10:03 → token can be valid
+  10:06 → token is expired
+
+- Short-lived access tokens reduce the useful lifetime of a leaked token but may require the client to obtain new tokens more frequently.
+
+------------------------------------------------------------
+Token Revocation
+------------------------------------------------------------
+
+- Revocation means explicitly making a token unusable before its natural expiration.
+- This can be important when:
+  - A user logs out from all devices
+  - A credential is compromised
+  - Access is withdrawn
+  - A client is disabled
+
+- Whether immediate revocation is possible depends on the token design.
+- Opaque tokens can commonly be checked against server-side state.
+- Self-contained JWT access tokens can remain cryptographically valid until expiration unless additional revocation mechanisms are used.
+
+Misconception:
+
+- Token expiration and token revocation are different.
+- Expiration happens because the token reaches its configured lifetime.
+- Revocation is an explicit decision to invalidate a token before that point.
+
+------------------------------------------------------------
+Stateless Token Authentication
+------------------------------------------------------------
+
+- With a self-contained access token such as a JWT, the resource server can often authenticate a request without maintaining a server-side session for that user.
+- The token carries information required for validation and authorization.
+- The resource server validates the token independently for each request.
+
+Example:
+
+  Request 1 → JWT → validate → process
+  Request 2 → JWT → validate → process
+  Request 3 → JWT → validate → process
+
+- Different application instances can generally validate the same token without sharing per-user session state.
+
+Misconception:
+
+- Stateless does not mean the entire security system has no state.
+- An Authorization Server, user database, refresh-token store, revocation store, or other component can still maintain state.
+
+------------------------------------------------------------
+Token Storage
+------------------------------------------------------------
+
+- A token must be protected because possession of a bearer access token can provide access to protected resources.
+- Storage strategy depends on the client type and threat model.
+- Common considerations include:
+  - Browser applications
+  - Mobile applications
+  - Backend applications
+  - Service-to-service clients
+- Tokens should not be unnecessarily exposed to JavaScript, logs, URLs, error messages, or other systems.
+
+------------------------------------------------------------
+Token Leakage
+------------------------------------------------------------
+
+- Token leakage occurs when an access token becomes available to an unauthorized party.
+- Common leakage locations include:
+  - Application logs
+  - Browser history
+  - URLs
+  - Source code
+  - Error messages
+  - Client-side storage
+  - Network traffic without TLS
+- A leaked bearer token can normally be used by whoever possesses it until it expires or is otherwise invalidated.
+
+Protection includes:
+
+- HTTPS
+- Short token lifetimes
+- Secure token storage
+- Avoiding tokens in URLs
+- Preventing sensitive logging
+- Appropriate audience and scope restrictions
+
+=======================================================================================================================================================================
+JWT
+=======================================================================================================================================================================
+
+- JSON Web Token (JWT) is a compact token format commonly used to represent claims between parties.
+- JWT is commonly used as a self-contained access token.
+- A JWT can carry information such as the subject, issuer, audience, expiration time, scopes, and roles.
+- JWT is a token format, not an authentication protocol by itself.
+
+------------------------------------------------------------
+JWT Structure
+------------------------------------------------------------
+
+- A signed JWT normally contains three Base64URL-encoded parts separated by dots:
+
+  Header.Payload.Signature
+
+- Header contains metadata about the token.
+- Payload contains claims.
+- Signature allows the recipient to verify that the token was issued/signed by the expected party and has not been modified.
+
+Example:
+
+  eyJhbGciOiJSUzI1NiIsImtpZCI6IjEyMyJ9
+  .
+  eyJzdWIiOiJhbGljZSIsImlzcyI6Imh0dHA6Ly9hdXRoIn0
+  .
+  signature
+
+- The three parts are encoded, not encrypted.
+
+Misconception:
+
+- A signed JWT does not hide its payload.
+- Anyone who obtains the JWT can normally decode the header and payload.
+- Confidential information should not be placed in a JWT merely because the JWT is signed.
+
+------------------------------------------------------------
+JWT Header
+------------------------------------------------------------
+
+- The header contains information required to process the JWT.
+- Common fields include:
+  - `alg` — signing algorithm
+  - `kid` — key identifier
+  - `typ` — token type
+
+Example:
+
+{
+  "alg": "RS256",
+  "kid": "key-123",
+  "typ": "JWT"
+}
+
+- `kid` helps the receiver identify which public key should be used when multiple signing keys are available.
+
+------------------------------------------------------------
+JWT Payload and Claims
+------------------------------------------------------------
+
+- The payload contains claims.
+- A claim is a statement about the token, subject, authorization, or other relevant information.
+- Claims can be standardized or application-specific.
+
+Example:
+
+{
+  "sub": "alice",
+  "iss": "http://localhost:9000",
+  "aud": "question-service",
+  "scope": ["question.read"],
+  "exp": 1789837955
+}
+
+- Applications can define custom claims when required.
+
+Example:
+
+{
+  "sub": "alice",
+  "roles": ["TUTOR"]
+}
+
+------------------------------------------------------------
+Registered Claims
+------------------------------------------------------------
+
+- Common registered JWT claims include:
+
+| Claim | Meaning                          |
+|-------|----------------------------------|
+| `iss` | Issuer of the token              |
+| `sub` | Subject represented by the token |
+| `aud` | Intended audience                |
+| `exp` | Expiration time                  |
+| `iat` | Issued-at time                   |
+| `nbf` | Not-before time                  |
+| `jti` | Unique token identifier          |
+
+- These claims provide information that can be used during token validation and authorization.
+
+Misconception:
+
+- A claim is not automatically trusted merely because it exists in the payload.
+- The JWT signature must first be successfully validated by a trusted verification key.
+- Additional validation such as issuer, audience, and time checks may also be required.
+
+------------------------------------------------------------
+JWT Signing
+------------------------------------------------------------
+
+- Signing protects the integrity and authenticity of a JWT.
+- The issuer creates the signature using a signing key.
+- The receiver verifies the signature using the corresponding verification key.
+- If the payload or header is modified after signing, signature verification should fail.
+
+Flow:
+
+  JWT data
+      ↓
+  Signing key
+      ↓
+  Signature
+      ↓
+  JWT
+
+  Receiver
+      ↓
+  JWT
+      ↓
+  Verification key
+      ↓
+  Signature validation
+      ↓
+  Valid / Invalid
+
+------------------------------------------------------------
+Symmetric Signing
+------------------------------------------------------------
+
+- Symmetric signing uses the same secret for signing and verification.
+- The issuer and verifier must both possess the shared secret.
+- HMAC-based algorithms are examples of symmetric JWT signing.
+
+Example:
+
+  Issuer
+    ↓
+  shared secret
+    ↓
+  sign JWT
+
+  Resource Server
+    ↓
+  same shared secret
+    ↓
+  verify JWT
+
+- The secret must therefore be securely shared with every component that needs to verify the token.
+
+------------------------------------------------------------
+Asymmetric Signing
+------------------------------------------------------------
+
+- Asymmetric signing uses a private key for signing and a public key for verification.
+- The Authorization Server keeps the private key secret.
+- Resource Servers receive or obtain the public key.
+- Resource Servers can verify tokens without possessing the private signing key.
+
+Flow:
+
+  Authorization Server
+       |
+       | private key
+       ↓
+     Sign JWT
+       |
+       ↓
+     JWT
+       |
+       ↓
+  Resource Server
+       |
+       | public key
+       ↓
+  Verify signature
+
+- RSA-based signing such as RS256 is a common asymmetric JWT configuration.
+
+------------------------------------------------------------
+RS256 and RSA
+------------------------------------------------------------
+
+- RS256 is a JWT signing algorithm based on RSA and SHA-256.
+- The private RSA key signs the JWT.
+- The corresponding public RSA key verifies the JWT.
+- A Resource Server should receive only the public verification key, not the private signing key.
+
+Misconception:
+
+- The public key does not decrypt a normal signed JWT payload.
+- It is used to verify the digital signature.
+- JWT signing and JWT encryption are separate concepts.
+
+------------------------------------------------------------
+JWT Validation
+------------------------------------------------------------
+
+- JWT validation should verify more than just the presence of a signature.
+- Typical validation includes:
+  - Signature
+  - Trusted issuer
+  - Expiration
+  - Not-before time
+  - Intended audience
+  - Accepted signing algorithm
+  - Other application-specific constraints
+
+Flow:
+
+  Receive JWT
+      ↓
+  Parse JWT
+      ↓
+  Select verification key
+      ↓
+  Verify signature
+      ↓
+  Validate issuer
+      ↓
+  Validate audience
+      ↓
+  Validate time claims
+      ↓
+  Create authenticated identity
+      ↓
+  Authorization
+
+- A token that has a valid signature can still be unacceptable if its issuer, audience, or validity period is incorrect.
+
+------------------------------------------------------------
+kid
+------------------------------------------------------------
+
+- `kid` means key ID.
+- It identifies the signing key used for a JWT.
+- It is especially useful when an Authorization Server has multiple active signing keys.
+
+Example:
+
+  JWT header:
+  {
+    "alg": "RS256",
+    "kid": "key-2026-01"
+  }
+
+- The Resource Server can use the `kid` to select the matching public key.
+
+------------------------------------------------------------
+JWKS
+------------------------------------------------------------
+
+- JWKS means JSON Web Key Set.
+- A JWKS endpoint publishes public keys in a standardized JSON representation.
+- Resource Servers can obtain the issuer's public keys from the JWKS endpoint.
+- The `kid` in the JWT helps select the appropriate key.
+
+Flow:
+
+  Authorization Server
+       ↓
+  JWKS endpoint
+       ↓
+  Public keys
+       ↓
+  Resource Server
+
+  JWT
+   ↓
+  kid
+   ↓
+  Matching public key
+   ↓
+  Signature verification
+
+- JWKS allows public verification keys to be distributed without exposing private signing keys.
+
+------------------------------------------------------------
+Key Rotation
+------------------------------------------------------------
+
+- Key rotation means replacing signing keys periodically or when required.
+- During rotation, an Authorization Server can publish the new public key while tokens signed with the previous key may still need to be validated.
+- Resource Servers therefore commonly need to support multiple published keys.
+
+Example:
+
+  Old key → signs existing tokens
+  New key → signs new tokens
+
+  JWKS:
+    old public key
+    new public key
+
+- After old tokens expire and the old key is no longer needed, the old public key can eventually be removed.
+
+------------------------------------------------------------
+JWT vs Opaque Token
+------------------------------------------------------------
+
+| Aspect                     | JWT                                          | Opaque Token                                          |
+|----------------------------|----------------------------------------------|-------------------------------------------------------|
+| Contents                   | Contains claims                              | Usually contains no meaningful client-readable claims |
+| Validation                 | Can often be local                           | Commonly requires server-side lookup/introspection    |
+| Resource Server dependency | Can validate using signing keys              | Often depends on authorization server/token store     |
+| Scalability                | Local validation can reduce lookup traffic   | Central validation can introduce dependency           |
+| Revocation                 | More difficult to make immediately effective | Usually easier with server-side state                 |
+
+- JWTs are useful when resource servers need to validate tokens independently.
+- Opaque tokens are useful when the authorization system wants stronger centralized control over token state.
+
+------------------------------------------------------------
+JWT Limitations
+------------------------------------------------------------
+
+- JWTs are not automatically more secure than other token formats.
+- Self-contained claims can become stale before the token expires.
+- Immediate revocation is more difficult when resource servers validate JWTs locally.
+- Larger payloads increase request size.
+- Sensitive information should not be placed in a signed-but-unencrypted JWT.
+- Long-lived JWTs increase the impact of token theft.
+
+------------------------------------------------------------
+JWT Security Considerations
+------------------------------------------------------------
+
+- Use HTTPS when transmitting JWTs.
+- Keep access-token lifetimes appropriate to the application.
+- Validate the issuer.
+- Validate the audience where applicable.
+- Validate expiration and other relevant time claims.
+- Accept only intended signing algorithms.
+- Obtain verification keys from a trusted source.
+- Protect private signing keys.
+- Do not log complete access tokens unnecessarily.
+- Avoid placing sensitive information in JWT claims.
+- Use appropriate scopes, roles, and audiences to limit token usage.
+
+=======================================================================================================================================================================

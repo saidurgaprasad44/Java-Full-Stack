@@ -1,0 +1,224 @@
+
+7. API Keys
+API key authentication
+Client/application identity
+API key generation
+API key storage
+API key validation
+API key rotation
+API key revocation
+API key scope/permissions
+API key limitations
+API key vs access token
+
+
+8. HMAC Authentication
+Shared secret
+HMAC
+Request signing
+Signature generation
+Signature verification
+Request integrity
+Timestamp
+Nonce
+Replay attacks
+HMAC vs API key
+
+
+9. TLS & mTLS
+TLS fundamentals
+Server authentication
+Certificates
+Certificate chain
+Certificate authority
+Client certificates
+Mutual TLS
+mTLS authentication flow
+mTLS service identity
+mTLS vs API key
+mTLS vs HMAC
+mTLS vs OAuth2
+
+
+10. OAuth 2.0
+OAuth2 problem it solves
+Resource Owner
+Client
+Authorization Server
+Resource Server
+Access token
+Scope
+Authorization grant
+OAuth2 endpoints
+OAuth2 Grant Types
+Authorization Code
+PKCE
+Client Credentials
+Refresh Token
+Device Authorization Grant
+Other grant types at conceptual level
+Authorization Code Flow
+Authorization request
+User authentication
+Consent
+Authorization code
+Token request
+Access token
+Refresh token
+PKCE
+code_verifier
+code_challenge
+Client Credentials
+Service identity
+Client authentication
+Client ID
+Client secret
+Service access token
+Scopes
+Token expiration
+
+
+11. OpenID Connect
+Why OIDC exists
+OAuth2 vs OIDC
+Authentication vs authorization
+ID Token
+UserInfo endpoint
+openid scope
+OIDC claims
+Nonce
+auth_time
+azp
+OIDC discovery
+OIDC logout
+
+
+12. OAuth2 Security & Advanced Concepts
+Access token vs refresh token
+Refresh token rotation
+Refresh token expiration
+Token revocation
+Token introspection
+JWT vs opaque access tokens
+Audience
+Issuer
+Token exchange
+Public vs confidential clients
+Client authentication methods
+Consent
+Authorization Server key rotation
+JWKS
+OAuth2 security threats
+
+
+13. Authorization Concepts
+Role-based access control
+RBAC
+Permission-based authorization
+Scope-based authorization
+Claims-based authorization
+Resource-based authorization
+URL/resource authorization
+Method/business authorization
+Authentication vs authorization
+401 vs 403
+
+
+14. Web Security
+CORS
+Same-origin policy
+Origin
+CORS
+Simple requests
+Preflight requests
+OPTIONS
+Access-Control-Allow-Origin
+Allowed methods
+Allowed headers
+Credentials
+CORS security considerations
+CSRF
+What is CSRF?
+Why CSRF exists
+Browser cookies and CSRF
+CSRF attack flow
+CSRF token
+SameSite cookies
+CSRF vs CORS
+When CSRF protection is required
+Stateless APIs and CSRF
+XSS
+Reflected XSS
+Stored XSS
+DOM-based XSS
+Output encoding
+Input validation
+Content Security Policy
+HttpOnly cookies
+Clickjacking
+Frames
+X-Frame-Options
+CSP frame-ancestors
+
+
+15. Security Headers & Browser Security
+HSTS
+X-Content-Type-Options
+X-Frame-Options
+Content Security Policy
+Referrer Policy
+Permissions Policy
+Cache-Control
+Secure cookies
+HttpOnly cookies
+SameSite cookies
+
+
+16. Password Security
+Password storage problem
+Hashing vs encryption
+Salt
+Password hashing
+BCrypt
+Work factor
+Password verification
+Password reset
+Password reset tokens
+Password security mistakes
+Credential stuffing
+Brute-force protection
+
+
+17. Microservices Security
+User → service authentication
+Service → service authentication
+User token vs service token
+Token propagation
+Gateway security
+Gateway token relay
+Service identity
+Centralized authentication
+Distributed authorization
+Least privilege
+Service scopes
+Audience
+Zero-trust architecture
+mTLS in microservices
+
+
+18. Security Threats & Attacks
+Session hijacking
+Session fixation
+Replay attacks
+Credential theft
+Brute force
+Credential stuffing
+Token theft
+Token replay
+Man-in-the-middle
+CSRF
+XSS
+Clickjacking
+API abuse
+Secret leakage
+Broken authorization
