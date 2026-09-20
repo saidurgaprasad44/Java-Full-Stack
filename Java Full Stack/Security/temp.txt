@@ -78,21 +78,6 @@ Scopes
 Token expiration
 
 
-11. OpenID Connect
-Why OIDC exists
-OAuth2 vs OIDC
-Authentication vs authorization
-ID Token
-UserInfo endpoint
-openid scope
-OIDC claims
-Nonce
-auth_time
-azp
-OIDC discovery
-OIDC logout
-
-
 12. OAuth2 Security & Advanced Concepts
 Access token vs refresh token
 Refresh token rotation
@@ -111,7 +96,22 @@ JWKS
 OAuth2 security threats
 
 
-13. Authorization Concepts
+11. OpenID Connect
+Why OIDC exists
+OAuth2 vs OIDC
+Authentication vs authorization
+ID Token
+UserInfo endpoint
+openid scope
+OIDC claims
+Nonce
+auth_time
+azp
+OIDC discovery
+OIDC logout
+
+
+13. Authorization Concepts      - authorization
 Role-based access control
 RBAC
 Permission-based authorization
@@ -125,7 +125,8 @@ Authentication vs authorization
 
 
 14. Web Security
-CORS
+
+CORS  				- web security
 Same-origin policy
 Origin
 CORS
@@ -137,7 +138,8 @@ Allowed methods
 Allowed headers
 Credentials
 CORS security considerations
-CSRF
+
+CSRF				- web security
 What is CSRF?
 Why CSRF exists
 Browser cookies and CSRF
@@ -147,7 +149,8 @@ SameSite cookies
 CSRF vs CORS
 When CSRF protection is required
 Stateless APIs and CSRF
-XSS
+
+XSS                             - input validation & sanitization
 Reflected XSS
 Stored XSS
 DOM-based XSS
@@ -161,7 +164,7 @@ X-Frame-Options
 CSP frame-ancestors
 
 
-15. Security Headers & Browser Security
+15. Security Headers & Browser Security       - security
 HSTS
 X-Content-Type-Options
 X-Frame-Options
@@ -174,7 +177,7 @@ HttpOnly cookies
 SameSite cookies
 
 
-16. Password Security
+16. Password Security         - system design
 Password storage problem
 Hashing vs encryption
 Salt
@@ -189,7 +192,7 @@ Credential stuffing
 Brute-force protection
 
 
-17. Microservices Security
+17. Microservices Security      - system design
 User → service authentication
 Service → service authentication
 User token vs service token
@@ -206,7 +209,7 @@ Zero-trust architecture
 mTLS in microservices
 
 
-18. Security Threats & Attacks
+18. Security Threats & Attacks    - security
 Session hijacking
 Session fixation
 Replay attacks
