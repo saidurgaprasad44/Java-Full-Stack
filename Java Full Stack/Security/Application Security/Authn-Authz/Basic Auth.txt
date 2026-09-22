@@ -150,26 +150,33 @@ Browser Behavior
 - The browser can then resend the request with the `Authorization` header.
 - Modern applications can also send Basic Authentication programmatically without relying on the browser's built-in prompt.
 
-------------------------------------------------------------
-Basic Authentication vs Form Login
-------------------------------------------------------------
 
-| Aspect | Basic Authentication | Form Login |
-|---|---|---|
-| Credentials | HTTP `Authorization` header | HTML form |
-| Authentication state | No session required by mechanism | Commonly session-based |
-| Credential transmission | Sent with requests | Submitted during login |
-| Browser support | Built into HTTP clients/browsers | Implemented by application |
-| Typical use | APIs, internal services, simple protected endpoints | Server-rendered web applications |
-| Logout | No inherent login session to invalidate | Session can be invalidated |
 
-- Form login and Basic Authentication are different authentication mechanisms.
-- A form login application commonly creates a session after successful authentication.
-- Basic Authentication normally keeps sending credentials rather than relying on a login session.
 
-------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=======================================================================================================================================================================
 Advantages and Limitations
-------------------------------------------------------------
+=======================================================================================================================================================================
 
 - Advantages:
   - Simple protocol

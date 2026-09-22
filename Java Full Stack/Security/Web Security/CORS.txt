@@ -1,0 +1,803 @@
+=======================================================================================================================================================================
+CORS
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+Same-Origin Policy
+------------------------------------------------------------
+
+- Same-Origin Policy (SOP) is a browser security mechanism that restricts how a web page from one origin can interact with resources from another origin.
+
+- The browser considers two URLs to have the same origin only when all three are the same:
+
+    Scheme + Host + Port
+
+Example:
+
+    https://app.example.com:443
+
+    https://app.example.com:443
+    → Same origin
+
+    https://api.example.com:443
+    → Different origin
+
+    http://app.example.com:80
+    → Different origin
+
+    https://app.example.com:8443
+    → Different origin
+
+- SOP is primarily enforced by browsers.
+- It prevents a malicious website from freely reading sensitive responses from another origin using the user's browser context.
+
+Example:
+
+    User is logged into:
+
+    https://bank.example.com
+
+    User visits:
+
+    https://attacker.example.com
+
+- Without browser security restrictions, the attacker page could attempt to call:
+
+    https://bank.example.com/api/account
+
+- The browser therefore applies same-origin restrictions to protect the user.
+
+Important misconception:
+
+- SOP does not mean the browser cannot send any cross-origin request.
+- The important restriction is generally on whether the calling web page is allowed to read the cross-origin response.
+
+- CORS provides a controlled mechanism for a server to tell the browser:
+
+    "This particular cross-origin web application is allowed to read my response."
+
+------------------------------------------------------------
+Origin
+------------------------------------------------------------
+
+- An origin is defined by:
+
+    Scheme + Host + Port
+
+Example:
+
+    https://app.example.com:443
+
+    Scheme = https
+    Host   = app.example.com
+    Port   = 443
+
+- If any of these three values changes, the origin changes.
+
+Same-origin examples:
+
+    https://app.example.com/page1
+    https://app.example.com/page2
+
+    → Same origin
+
+    https://app.example.com:443
+    https://app.example.com:443/api
+
+    → Same origin
+
+Cross-origin examples:
+
+    https://app.example.com
+    https://api.example.com
+
+    → Different host
+
+    http://app.example.com
+    https://app.example.com
+
+    → Different scheme
+
+    https://app.example.com:443
+    https://app.example.com:8443
+
+    → Different port
+
+- Path is NOT part of the origin.
+
+Example:
+
+    https://example.com/app
+    https://example.com/api
+
+    → Same origin
+
+- Different paths do not create different origins.
+
+=======================================================================================================================================================================
+CORS
+=======================================================================================================================================================================
+
+- CORS stands for Cross-Origin Resource Sharing.
+- CORS is a browser security mechanism that allows a server to explicitly permit requests from selected origins.
+
+Example:
+
+    Frontend:
+    https://app.example.com
+
+    API:
+    https://api.example.com
+
+- These are different origins because the hosts are different.
+
+- JavaScript running on the frontend may attempt:
+
+    fetch("https://api.example.com/users")
+
+- The API server can respond with:
+
+    Access-Control-Allow-Origin: https://app.example.com
+
+- The browser sees that the API explicitly allows the frontend origin and allows the JavaScript code to access the response.
+
+Basic relationship:
+
+    Browser
+       |
+       | Cross-origin request
+       v
+    API Server
+       |
+       | CORS response headers
+       v
+    Browser
+       |
+       | Allow/Deny response access
+       v
+    JavaScript
+
+- CORS is therefore a cooperation between:
+  - Browser
+  - Cross-origin server
+
+Important misconception:
+
+- CORS is not an authentication mechanism.
+- CORS is not an authorization mechanism.
+- CORS does not determine whether a user is allowed to perform a business operation.
+
+Example:
+
+    CORS:
+    "Can JavaScript from app.example.com read this response?"
+
+    Authorization:
+    "Is this authenticated user allowed to delete this account?"
+
+- The server must still perform authentication and authorization independently.
+
+- CORS is primarily relevant to browser-based JavaScript requests.
+- Non-browser clients such as Postman or backend services are not restricted by browser CORS enforcement.
+
+=======================================================================================================================================================================
+Simple Requests
+=======================================================================================================================================================================
+
+- A simple request is a cross-origin request that satisfies the browser's conditions for being sent without a CORS preflight request.
+
+- Common simple request methods are:
+
+    GET
+    HEAD
+    POST
+
+- The request must also satisfy restrictions on request headers and certain request header values/content types.
+
+- Common CORS-safelisted request headers include:
+
+    Accept
+    Accept-Language
+    Content-Language
+    Content-Type
+
+- For `Content-Type`, only certain values qualify as safelisted, such as:
+
+    application/x-www-form-urlencoded
+    multipart/form-data
+    text/plain
+
+Example:
+
+    Frontend:
+
+    https://app.example.com
+
+    API:
+
+    https://api.example.com
+
+- JavaScript sends:
+
+    GET https://api.example.com/users
+
+    Origin: https://app.example.com
+
+- The browser can send the request directly without first sending OPTIONS.
+
+- The server responds:
+
+    HTTP/1.1 200 OK
+
+    Access-Control-Allow-Origin: https://app.example.com
+
+    {
+      "users": [...]
+    }
+
+- The browser checks the CORS response header.
+- If the origin is allowed, JavaScript can read the response.
+
+Simple request flow:
+
+    Browser
+       |
+       | GET /users
+       | Origin: https://app.example.com
+       v
+    API Server
+       |
+       | 200 OK
+       | Access-Control-Allow-Origin:
+       | https://app.example.com
+       v
+    Browser
+       |
+       v
+    JavaScript can read response
+
+Important misconception:
+
+- "Simple" does not mean "safe" or "same-origin".
+- A simple request can still be cross-origin.
+- Simple only means the request qualifies to be sent without a CORS preflight.
+
+=======================================================================================================================================================================
+Preflight Requests
+=======================================================================================================================================================================
+
+- A preflight request is a preliminary CORS request sent by the browser before the actual cross-origin request.
+
+- The browser uses preflight when the request does not qualify as a simple request.
+
+Example:
+
+    Frontend:
+    https://app.example.com
+
+    API:
+    https://api.example.com
+
+- JavaScript wants to send:
+
+    PUT https://api.example.com/users/123
+
+    Authorization: Bearer <token>
+    Content-Type: application/json
+
+- This request requires a preflight because:
+  - Method is PUT.
+  - Authorization is not a CORS-safelisted request header.
+  - application/json is not one of the simple request content types.
+
+- Browser first sends:
+
+    OPTIONS /users/123 HTTP/1.1
+    Host: api.example.com
+    Origin: https://app.example.com
+    Access-Control-Request-Method: PUT
+    Access-Control-Request-Headers: authorization, content-type
+
+- This is the browser asking:
+
+    "Will you allow https://app.example.com
+     to send a PUT request with
+     Authorization and Content-Type headers?"
+
+- Server responds:
+
+    HTTP/1.1 204 No Content
+
+    Access-Control-Allow-Origin: https://app.example.com
+    Access-Control-Allow-Methods: PUT
+    Access-Control-Allow-Headers: Authorization, Content-Type
+
+- Browser checks the response.
+
+- If the requested origin, method, and headers are allowed:
+
+    Preflight successful
+          |
+          v
+    Browser sends actual request
+
+Example actual request:
+
+    PUT /users/123 HTTP/1.1
+    Host: api.example.com
+    Origin: https://app.example.com
+    Authorization: Bearer <token>
+    Content-Type: application/json
+
+    {
+      "name": "Sai"
+    }
+
+- If preflight fails, the browser normally does not send the actual cross-origin request.
+
+Complete flow:
+
+    Browser
+       |
+       | OPTIONS /users/123
+       | Origin: app.example.com
+       | Access-Control-Request-Method: PUT
+       | Access-Control-Request-Headers: authorization, content-type
+       v
+    API Server
+       |
+       | Access-Control-Allow-Origin
+       | Access-Control-Allow-Methods: PUT
+       | Access-Control-Allow-Headers: Authorization, Content-Type
+       v
+    Browser
+       |
+       | Preflight allowed
+       v
+    Browser
+       |
+       | PUT /users/123
+       | Authorization: Bearer ...
+       | Content-Type: application/json
+       v
+    API Server
+
+Important misconception:
+
+- OPTIONS is not the actual API operation.
+- It is the browser's permission check before the actual request.
+
+=======================================================================================================================================================================
+OPTIONS
+=======================================================================================================================================================================
+
+- OPTIONS is an HTTP method.
+- CORS uses OPTIONS for preflight requests.
+
+Example:
+
+    OPTIONS /users/123 HTTP/1.1
+
+    Origin: https://app.example.com
+
+    Access-Control-Request-Method: PUT
+
+    Access-Control-Request-Headers:
+    authorization, content-type
+
+- `Origin`
+  - Identifies the web page's origin.
+
+- `Access-Control-Request-Method`
+  - Tells the server which HTTP method the browser wants to use for the actual request.
+
+- `Access-Control-Request-Headers`
+  - Tells the server which non-safelisted request headers the browser wants to send.
+
+Server response:
+
+    HTTP/1.1 204 No Content
+
+    Access-Control-Allow-Origin: https://app.example.com
+
+    Access-Control-Allow-Methods:
+    GET, POST, PUT, DELETE
+
+    Access-Control-Allow-Headers:
+    Authorization, Content-Type
+
+- Browser checks whether the requested method and headers are permitted.
+
+Important distinction:
+
+    OPTIONS
+       |
+       | "Can I send this request?"
+       v
+    CORS Preflight
+
+    PUT / POST / DELETE / GET
+       |
+       | Actual API operation
+       v
+    Resource Server
+
+- The server must correctly handle OPTIONS requests when preflight is required.
+
+=======================================================================================================================================================================
+Access-Control-Allow-Origin
+=======================================================================================================================================================================
+
+- `Access-Control-Allow-Origin` tells the browser which origin is allowed to access the response.
+
+Example:
+
+    Access-Control-Allow-Origin:
+    https://app.example.com
+
+- Browser request:
+
+    Origin: https://app.example.com
+
+- Server response:
+
+    Access-Control-Allow-Origin:
+    https://app.example.com
+
+- The origins match, so the browser can expose the response to JavaScript.
+
+Example of a different origin:
+
+    Request:
+
+    Origin: https://evil.example.com
+
+    Response:
+
+    Access-Control-Allow-Origin:
+    https://app.example.com
+
+- The origins do not match.
+- The browser blocks JavaScript from reading the response.
+
+- Wildcard:
+
+    Access-Control-Allow-Origin: *
+
+- `*` means any origin can access the response subject to the applicable CORS rules.
+
+Important:
+
+- `*` should not be used blindly.
+- It is often inappropriate for APIs containing sensitive user-specific data.
+
+- A server cannot generally return multiple origins in a single `Access-Control-Allow-Origin` value like:
+
+    Access-Control-Allow-Origin:
+    https://app.example.com, https://admin.example.com
+
+- Instead, the server can:
+  - Inspect the request's Origin.
+  - Check it against a trusted allowlist.
+  - Return that origin if it is allowed.
+
+Example:
+
+    Request:
+
+    Origin: https://app.example.com
+
+    Server:
+
+    if origin is trusted:
+        Access-Control-Allow-Origin:
+        https://app.example.com
+
+- CORS is therefore often implemented using an origin allowlist.
+
+=======================================================================================================================================================================
+Allowed Methods
+=======================================================================================================================================================================
+
+- `Access-Control-Allow-Methods` tells the browser which HTTP methods are allowed for the cross-origin request.
+
+Example:
+
+    Access-Control-Allow-Methods:
+    GET, POST, PUT, DELETE
+
+- During preflight:
+
+    Access-Control-Request-Method: PUT
+
+- Server responds:
+
+    Access-Control-Allow-Methods:
+    GET, POST, PUT, DELETE
+
+- Browser sees that PUT is allowed.
+
+Example:
+
+    Requested:
+
+    PATCH
+
+    Allowed:
+
+    GET, POST, PUT, DELETE
+
+- PATCH is not listed.
+- The browser does not proceed with the cross-origin request based on the failed preflight.
+
+- The server should allow only the methods required by the application.
+
+Example:
+
+    Read-only API:
+
+    Access-Control-Allow-Methods:
+    GET
+
+- There is no reason to expose unnecessary methods such as DELETE if the frontend does not need them.
+
+=======================================================================================================================================================================
+Allowed Headers
+=======================================================================================================================================================================
+
+- `Access-Control-Allow-Headers` tells the browser which request headers the client is allowed to send in a cross-origin request when preflight is required.
+
+Example:
+
+    Access-Control-Request-Headers:
+    authorization, content-type
+
+- Server responds:
+
+    Access-Control-Allow-Headers:
+    Authorization, Content-Type
+
+- Browser can then send the actual request with those headers.
+
+Example actual request:
+
+    POST /orders HTTP/1.1
+
+    Origin: https://app.example.com
+
+    Authorization: Bearer eyJ...
+
+    Content-Type: application/json
+
+    {
+      "productId": 101
+    }
+
+- `Authorization` is commonly important in API applications because bearer tokens are often sent using:
+
+    Authorization: Bearer <access_token>
+
+- `Content-Type: application/json` is also commonly seen in REST APIs.
+
+- Custom headers can also trigger preflight.
+
+Example:
+
+    X-Correlation-ID: abc123
+
+- If the browser preflights the request, the server must allow the requested header when appropriate.
+
+Important misconception:
+
+- `Access-Control-Allow-Headers` does not mean:
+  
+    "The server accepts these headers in every situation."
+
+- It specifically communicates which request headers the browser may send for the cross-origin request under CORS.
+
+=======================================================================================================================================================================
+Credentials
+=======================================================================================================================================================================
+
+- CORS credentials refer to browser credentials that can be included with cross-origin requests.
+
+Examples:
+
+    Cookies
+    HTTP authentication credentials
+    Client TLS credentials in applicable browser scenarios
+
+- Cookies are especially important for session-based applications.
+
+Example:
+
+    Browser has:
+
+    SESSIONID=abc123
+
+- Frontend calls:
+
+    https://api.example.com/profile
+
+- The browser may need explicit credential configuration for a cross-origin request.
+
+Example JavaScript:
+
+    fetch("https://api.example.com/profile", {
+        credentials: "include"
+    });
+
+- Server must explicitly allow credentials:
+
+    Access-Control-Allow-Credentials: true
+
+- The server must also return an appropriate specific origin.
+
+Example:
+
+    Access-Control-Allow-Origin:
+    https://app.example.com
+
+    Access-Control-Allow-Credentials:
+    true
+
+Important misconception:
+
+- This is not valid for credentialed CORS:
+
+    Access-Control-Allow-Origin: *
+
+    Access-Control-Allow-Credentials: true
+
+- When credentials are involved, the server must specify an explicit allowed origin rather than using `*`.
+
+Credentialed flow:
+
+    Browser
+       |
+       | Origin: https://app.example.com
+       | Cookie: SESSIONID=abc123
+       v
+    API Server
+       |
+       | Access-Control-Allow-Origin:
+       | https://app.example.com
+       |
+       | Access-Control-Allow-Credentials:
+       | true
+       v
+    Browser
+       |
+       v
+    JavaScript can access response
+
+- CORS credentials do not mean:
+
+    "The user is authenticated."
+
+- They mean that the browser is permitted to include/use applicable credentials in the cross-origin request when configured correctly.
+
+- Authentication is still handled by the application's authentication mechanism.
+
+Example:
+
+    Cookie
+       |
+       v
+    Session Authentication
+       |
+       v
+    User Identity
+
+    CORS
+       |
+       v
+    Browser permission to use/read
+    cross-origin response
+
+=======================================================================================================================================================================
+CORS Security Considerations
+=======================================================================================================================================================================
+
+- CORS is a browser security mechanism.
+- It should not be treated as the application's primary security boundary.
+
+- Authentication must still be enforced by the server.
+
+Example:
+
+    Request
+       |
+       v
+    Authentication
+       |
+       v
+    Authorization
+       |
+       v
+    Business Operation
+
+- CORS does not replace these checks.
+
+- Do not blindly configure:
+
+    Access-Control-Allow-Origin: *
+
+- Especially avoid overly broad CORS policies for sensitive APIs.
+
+- Prefer an explicit trusted-origin allowlist.
+
+Example:
+
+    Allowed:
+
+    https://app.example.com
+    https://admin.example.com
+
+    Not allowed:
+
+    https://evil.example.com
+
+- Allow only the HTTP methods actually required.
+
+Example:
+
+    Access-Control-Allow-Methods:
+    GET, POST
+
+- Avoid unnecessarily allowing:
+
+    PUT, PATCH, DELETE
+
+  if the frontend does not need them.
+
+- Allow only required request headers.
+
+Example:
+
+    Access-Control-Allow-Headers:
+    Authorization, Content-Type
+
+- Credentialed CORS requires special care.
+
+    Access-Control-Allow-Credentials: true
+
+  should be combined with a specific trusted origin rather than:
+
+    Access-Control-Allow-Origin: *
+
+- CSRF must still be considered for cookie-based authentication.
+
+Important distinction:
+
+    CORS
+      |
+      | Browser cross-origin access control
+      v
+    Browser
+
+    CSRF protection
+      |
+      | Prevent unwanted state-changing requests
+      v
+    Server/Application
+
+- CORS does not automatically solve CSRF.
+
+- HTTPS should be used for production APIs.
+- CORS does not replace TLS.
+
+- CORS does not protect the API from non-browser clients.
+
+Example:
+
+    Postman
+       |
+       | HTTP request
+       v
+    API
+
+- Postman is not subject to browser CORS enforcement.
+- Therefore, the API must still enforce authentication and authorization independently.
+
+=======================================================================================================================================================================

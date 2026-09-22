@@ -29,6 +29,39 @@ Example:
 - The client normally stores only the session ID, while the actual session state remains on the server.
 
 ------------------------------------------------------------
+Session-Based Authentication Flow
+------------------------------------------------------------
+
+- The typical authentication flow is:
+
+  Client
+    ↓
+  Credentials
+    ↓
+  Server authenticates
+    ↓
+  Session created and stored in Server
+    ↓
+  Session ID returned to client
+    ↓
+  Client stores session ID
+    ↓
+  Subsequent request
+    ↓
+  Session ID sent
+    ↓
+  Server retrieves session
+    ↓
+  Authenticated principal
+    ↓
+  Authorization
+    ↓
+  Resource
+
+- The credentials are normally required during authentication, not on every subsequent request.
+- The session allows the authenticated state to persist across requests.
+
+------------------------------------------------------------
 Session ID
 ------------------------------------------------------------
 
@@ -36,9 +69,6 @@ Session ID
 - It should be unpredictable and sufficiently random so that an attacker cannot guess another user's session ID.
 - Possession of a valid authenticated session ID can effectively allow an attacker to act as that user.
 - Therefore, a session ID must be treated as sensitive security information.
-
-Misconception:
-
 - A session ID does not normally contain the user's username, password, or complete authentication information.
 - It is primarily an identifier used by the server to locate the corresponding session state.
 
@@ -95,12 +125,13 @@ Flow:
      ↓
   Resource
 
-Misconception:
-
 - The session does not authenticate the user by itself.
 - The initial authentication establishes the user's identity.
 - The session preserves that authenticated state across subsequent requests.
 
+=======================================================================================================================================================================
+Session Management:
+=======================================================================================================================================================================
 ------------------------------------------------------------
 Session Expiration
 ------------------------------------------------------------
@@ -144,6 +175,31 @@ Example:
     ↓
   Old session ID becomes unusable
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=======================================================================================================================================================================
+Session Management Vulnerabilities:
+=======================================================================================================================================================================
 ------------------------------------------------------------
 Session Fixation
 ------------------------------------------------------------
@@ -166,9 +222,6 @@ Flow:
   Attacker reuses known session ID
 
 - A common defense is changing the session ID when authentication state changes.
-
-Misconception:
-
 - Session fixation is different from session hijacking.
 - Fixation involves an attacker getting the victim to use a session identifier known to the attacker.
 - Hijacking involves an attacker obtaining an already valid authenticated session identifier.
@@ -197,6 +250,9 @@ Common protections:
 - Session expiration
 - Session ID regeneration where appropriate
 
+=======================================================================================================================================================================
+Session in Different Systems/Architectures:
+=======================================================================================================================================================================
 ------------------------------------------------------------
 Concurrent Sessions
 ------------------------------------------------------------
@@ -246,43 +302,10 @@ Example:
 - Shared session storage generally provides better resilience when instances can be replaced or scaled.
 
 ------------------------------------------------------------
-Session-Based Authentication Flow
+Stateful Session-Based vs Stateless Token-Based Authentication
 ------------------------------------------------------------
 
-- The typical authentication flow is:
-
-  Client
-    ↓
-  Credentials
-    ↓
-  Server authenticates
-    ↓
-  Session created
-    ↓
-  Session ID returned
-    ↓
-  Client stores session ID
-    ↓
-  Subsequent request
-    ↓
-  Session ID sent
-    ↓
-  Server retrieves session
-    ↓
-  Authenticated principal
-    ↓
-  Authorization
-    ↓
-  Resource
-
-- The credentials are normally required during authentication, not on every subsequent request.
-- The session allows the authenticated state to persist across requests.
-
-------------------------------------------------------------
-Session-Based vs Stateless Token-Based Authentication
-------------------------------------------------------------
-
-| Aspect               | Session-Based                            | Stateless Token-Based                           |
+| Aspect               | Stateful Session-Based                   | Stateless Token-Based                           |
 |----------------------|------------------------------------------|-------------------------------------------------|
 | Authentication state | Maintained by server                     | Usually carried by token                        |
 | Client sends         | Session ID                               | Access token                                    |
@@ -295,25 +318,5 @@ Session-Based vs Stateless Token-Based Authentication
 - Stateless token authentication does not require a per-user server-side authentication session for normal token validation.
 - Stateless does not mean that no component anywhere maintains state.
 - Authorization servers, token stores, databases, revocation systems, and other components can still maintain state.
-
-------------------------------------------------------------
-Session ID vs Authentication State
-------------------------------------------------------------
-
-- Session ID identifies a session.
-- Authentication state represents the authenticated identity and related security information associated with that session.
-- They are separate concepts.
-
-Example:
-
-  Browser cookie:
-    SESSION=abc123
-
-  Server:
-    abc123
-      → principal = alice
-      → authenticated = true
-
-- If the session is invalidated, the session ID may still physically exist in the browser, but it should no longer map to a valid authenticated session.
 
 =======================================================================================================================================================================

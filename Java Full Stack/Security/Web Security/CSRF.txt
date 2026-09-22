@@ -1,0 +1,708 @@
+=======================================================================================================================================================================
+CSRF
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+What is CSRF?
+------------------------------------------------------------
+
+- CSRF stands for Cross-Site Request Forgery.
+- It is an attack where an attacker causes a victim's browser to send an unwanted request to a legitimate application where the victim is already authenticated.
+
+- The key problem is:
+
+    Browser automatically sends authentication credentials
+              +
+    Attacker causes the browser to send a request
+              =
+    Server may treat the forged request as authenticated
+
+Example:
+
+    User is logged into:
+
+    https://bank.example.com
+
+- The browser has a session cookie:
+
+    SESSIONID=abc123
+
+- User visits:
+
+    https://attacker.example.com
+
+- The attacker causes the browser to send:
+
+    POST https://bank.example.com/transfer
+
+- Browser may automatically include:
+
+    Cookie: SESSIONID=abc123
+
+- Bank server sees an authenticated session and may process the request.
+
+Important misconception:
+
+- CSRF does not require the attacker to know the user's password.
+- CSRF does not necessarily require the attacker to steal the session cookie.
+- The attacker abuses the browser's automatic credential behavior.
+
+------------------------------------------------------------
+Why CSRF Exists
+------------------------------------------------------------
+
+- Browsers automatically attach certain credentials to requests.
+- Cookies are the most important example.
+
+Example:
+
+    User logs into:
+
+    https://bank.example.com
+
+- Server responds:
+
+    Set-Cookie: SESSIONID=abc123
+
+- Browser stores the cookie.
+
+Later:
+
+    POST https://bank.example.com/transfer
+
+- Browser automatically sends:
+
+    Cookie: SESSIONID=abc123
+
+- The server uses the cookie to identify the authenticated user.
+
+The important problem is:
+
+    Server knows:
+    "This request belongs to Sai's authenticated session."
+
+    Server may not know:
+    "Did Sai intentionally initiate this request?"
+
+- Authentication answers:
+
+    "Who is making this request?"
+
+- CSRF is about:
+
+    "Did the user intentionally initiate this state-changing request?"
+
+Example:
+
+    Legitimate request:
+
+    Sai clicks "Transfer ₹10,000"
+
+    Browser
+       |
+       | authenticated request
+       v
+    Bank Server
+
+
+    Forged request:
+
+    Sai visits attacker.com
+
+    Attacker Page
+       |
+       | causes browser to send request
+       v
+    Bank Server
+
+- In both cases the browser may send the same authentication cookie.
+
+------------------------------------------------------------
+Browser Cookies and CSRF
+------------------------------------------------------------
+
+- Cookies are automatically associated with requests matching their cookie rules.
+- JavaScript does not need to manually add a normal cookie header.
+
+Example:
+
+    Server:
+
+    Set-Cookie: SESSIONID=abc123
+
+- Browser stores:
+
+    SESSIONID=abc123
+
+- Later request:
+
+    POST /transfer
+
+- Browser automatically sends:
+
+    Cookie: SESSIONID=abc123
+
+- This automatic behavior is useful for session authentication.
+
+Example:
+
+    Browser
+       |
+       | Cookie: SESSIONID=abc123
+       v
+    Bank Server
+
+- But the same behavior can create a CSRF opportunity.
+
+Example:
+
+    Attacker Website
+          |
+          | forged request
+          v
+    Browser
+          |
+          | automatically attaches
+          | SESSIONID=abc123
+          v
+    Bank Server
+
+- The attacker does not need to directly read the cookie.
+
+Important misconception:
+
+- CSRF is not primarily a cookie theft attack.
+- The attacker can succeed without knowing the cookie value.
+- The browser itself supplies the cookie.
+
+- This is why CSRF is strongly associated with cookie/session-based authentication.
+
+------------------------------------------------------------
+CSRF Attack Flow
+------------------------------------------------------------
+
+- Consider a banking application.
+
+Step 1: Victim logs in
+
+    POST https://bank.example.com/login
+
+    username=sai
+    password=********
+
+- Server creates a session.
+
+    Set-Cookie:
+    SESSIONID=abc123
+
+- Browser stores the cookie.
+
+Step 2: Victim visits attacker website
+
+    https://attacker.example.com
+
+Step 3: Attacker creates a forged request
+
+Example:
+
+    POST https://bank.example.com/transfer
+
+    amount=10000
+    &to=attacker-account
+
+- The attacker wants the victim's browser to send this request.
+
+Step 4: Browser sends the request
+
+    POST /transfer HTTP/1.1
+    Host: bank.example.com
+    Cookie: SESSIONID=abc123
+
+    amount=10000
+    &to=attacker-account
+
+- Browser automatically includes the session cookie.
+
+Step 5: Bank server processes the request
+
+- Server sees:
+
+    SESSIONID=abc123
+
+- Server identifies Sai's authenticated session.
+
+- If there is no CSRF protection, the server may process the transfer.
+
+Complete attack:
+
+    Sai
+      |
+      | Login
+      v
+    Bank
+      |
+      | SESSIONID=abc123
+      v
+    Browser
+      |
+      | Visit attacker.com
+      v
+    Attacker Website
+      |
+      | Forged POST /transfer
+      v
+    Browser
+      |
+      | Cookie: SESSIONID=abc123
+      v
+    Bank Server
+      |
+      v
+    Unwanted State Change
+
+- The important point is:
+
+    Attacker controls the request
+    but
+    Browser supplies the victim's credentials.
+
+Important misconception:
+
+- CSRF generally targets state-changing operations.
+
+Examples:
+
+    Change email
+    Change password
+    Transfer money
+    Delete account
+    Create order
+    Change account settings
+
+- GET requests should generally not perform state-changing operations.
+
+Bad design:
+
+    GET /deleteAccount?id=123
+
+- If GET changes state, it becomes much easier for an attacker to trigger the operation through a link, image, redirect, or other browser mechanism.
+
+Better design:
+
+    DELETE /account/123
+
+or:
+
+    POST /account/delete
+
+------------------------------------------------------------
+CSRF Token
+------------------------------------------------------------
+
+- A CSRF token is an unpredictable value that the server requires along with a state-changing request.
+
+- The attacker can cause the browser to send the session cookie.
+- But the attacker should not be able to obtain the legitimate CSRF token.
+
+Example:
+
+    Server generates:
+
+    CSRF_TOKEN=7f83a9d2...
+
+- Server provides the token to the legitimate application.
+
+Example HTML form:
+
+    <form method="POST" action="/transfer">
+
+        <input type="hidden"
+               name="csrf_token"
+               value="7f83a9d2...">
+
+        ...
+
+    </form>
+
+- When the legitimate user submits the form:
+
+    POST /transfer
+
+    Cookie: SESSIONID=abc123
+
+    csrf_token=7f83a9d2...
+
+- Server checks:
+
+    Session is valid
+          AND
+    CSRF token is valid
+
+- If both are valid:
+
+    Process request
+
+- If the token is missing or invalid:
+
+    Reject request
+
+Example attack:
+
+    Attacker Website
+         |
+         | POST /transfer
+         | Cookie: SESSIONID=abc123
+         |
+         | csrf_token = ????
+         v
+    Bank Server
+
+- Attacker may cause the browser to send the cookie.
+- But the attacker does not know the unpredictable CSRF token.
+- Server rejects the request.
+
+Basic flow:
+
+    Server
+       |
+       | Generate CSRF Token
+       v
+    Legitimate Page
+       |
+       | CSRF Token
+       v
+    Browser
+       |
+       | Cookie + CSRF Token
+       v
+    Server
+       |
+       | Validate both
+       v
+    Process Request
+
+- The CSRF token can be sent in:
+  - HTML form field
+  - Request header
+  - Other application-specific mechanisms
+
+Example API request:
+
+    POST /api/profile
+
+    Cookie: SESSIONID=abc123
+
+    X-CSRF-TOKEN: 7f83a9d2...
+
+- Server validates the token before performing the operation.
+
+Important misconception:
+
+- CSRF token is not the user's authentication credential.
+- Session cookie answers:
+
+    "Which authenticated session is this?"
+
+- CSRF token answers:
+
+    "Does this request contain the secret value that the legitimate application supplied?"
+
+- Both may be required.
+
+------------------------------------------------------------
+Synchronizer Token Pattern
+------------------------------------------------------------
+
+- In the synchronizer token pattern, the server generates a CSRF token and associates it with the user's session.
+
+Example:
+
+    Session:
+
+    SESSIONID=abc123
+
+    Associated CSRF token:
+
+    7f83a9d2...
+
+- Server renders the token into the legitimate page.
+
+Example:
+
+    <input type="hidden"
+           name="csrf_token"
+           value="7f83a9d2...">
+
+- Browser submits:
+
+    Cookie: SESSIONID=abc123
+
+    csrf_token=7f83a9d2...
+
+- Server retrieves the expected token associated with the session and compares it with the submitted token.
+
+    Submitted Token
+          |
+          | compare
+          v
+    Session's Expected Token
+
+- Match:
+
+    Allow
+
+- No match:
+
+    Reject
+
+------------------------------------------------------------
+SameSite Cookies
+------------------------------------------------------------
+
+- `SameSite` is a cookie attribute that controls whether a cookie is sent with cross-site requests.
+
+Example:
+
+    Set-Cookie:
+    SESSIONID=abc123;
+    SameSite=Lax
+
+- SameSite can reduce the ability of an attacker to cause authenticated cross-site requests.
+
+- Common values are:
+
+    Strict
+    Lax
+    None
+
+- `SameSite=Strict`
+  - Cookie is restricted more aggressively to same-site contexts.
+  - Provides strong protection against many cross-site cookie-sending scenarios.
+  - Can affect legitimate cross-site navigation/use cases.
+
+- `SameSite=Lax`
+  - Allows cookies in certain cross-site navigation scenarios.
+  - Commonly provides useful CSRF protection while being less restrictive than Strict.
+
+- `SameSite=None`
+  - Allows the cookie to be sent in cross-site contexts.
+  - Requires:
+
+    Secure
+
+Example:
+
+    Set-Cookie:
+    SESSIONID=abc123;
+    SameSite=None;
+    Secure
+
+- SameSite therefore changes when the browser sends the cookie.
+
+Conceptually:
+
+    SameSite=Strict
+
+    Cross-site request
+          |
+          v
+    Cookie generally not sent
+
+
+    SameSite=Lax
+
+    Cross-site request
+          |
+          v
+    Cookie sending is restricted
+    according to browser SameSite rules
+
+
+    SameSite=None
+
+    Cross-site request
+          |
+          v
+    Cookie can be sent
+    when other cookie/browser rules permit
+
+Important misconception:
+
+- SameSite reduces CSRF risk but should not automatically be treated as the only security control.
+- Applications should choose cookie settings based on their actual architecture and cross-site requirements.
+
+- SameSite and CSRF tokens can be used together as defense-in-depth.
+
+Example:
+
+    Session Cookie
+        +
+    SameSite=Lax
+        +
+    CSRF Token
+        |
+        v
+    Stronger CSRF protection
+
+------------------------------------------------------------
+When CSRF Protection is Required
+------------------------------------------------------------
+
+- CSRF protection is especially important when:
+  - Authentication uses cookies.
+  - Browser automatically sends those cookies.
+  - Requests change server-side state.
+  - The application accepts cross-site requests.
+
+Examples:
+
+    Session-based authentication
+    Cookie-based authentication
+    Traditional server-rendered web applications
+    Browser applications using cookie authentication
+
+- State-changing operations include:
+
+    POST
+    PUT
+    PATCH
+    DELETE
+
+Examples:
+
+    POST /transfer
+
+    POST /change-email
+
+    PUT /profile
+
+    DELETE /account
+
+- These operations should have appropriate CSRF protection when browser credentials are automatically attached.
+
+- GET should generally be safe and should not perform state changes.
+
+Bad:
+
+    GET /transfer?amount=10000&to=123
+
+Better:
+
+    POST /transfer
+
+- CSRF protection is particularly important for sensitive operations.
+
+Examples:
+
+    Transfer money
+    Change password
+    Change email
+    Delete account
+    Change security settings
+    Create or modify important resources
+
+Important misconception:
+
+- "It is an API" does not automatically mean CSRF protection is unnecessary.
+- The important question is:
+
+    "How is authentication credential supplied to the browser request?"
+
+------------------------------------------------------------
+Stateless APIs and CSRF
+------------------------------------------------------------
+
+- A stateless API does not maintain a server-side session between requests.
+- A common API authentication mechanism is a bearer access token sent explicitly in the Authorization header.
+
+Example:
+
+    GET /api/orders
+
+    Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
+
+- The browser does not normally automatically attach an Authorization header to arbitrary cross-origin requests.
+
+- The application must explicitly provide the token.
+
+Therefore:
+
+    Bearer Token
+          |
+          | explicitly added
+          v
+    Authorization Header
+          |
+          v
+    API
+
+- This is different from a session cookie.
+
+Cookie-based authentication:
+
+    Browser
+       |
+       | automatically sends cookie
+       v
+    Server
+
+Bearer token:
+
+    Application
+       |
+       | explicitly sends Authorization header
+       v
+    Server
+
+- This is why traditional CSRF attacks are generally not applicable to APIs where authentication is exclusively provided through a bearer token in the Authorization header.
+
+Important misconception:
+
+- Stateless does NOT automatically mean CSRF-safe.
+
+Example:
+
+    Stateless API
+         |
+         | JWT stored in cookie
+         v
+    Browser
+         |
+         | Cookie automatically sent
+         v
+    API
+
+- Even though the API is stateless, the browser automatically sends the authentication cookie.
+- Therefore, CSRF can still be relevant.
+
+The important distinction is:
+
+    Cookie-based authentication
+            |
+            v
+    Browser automatically supplies credential
+            |
+            v
+    CSRF risk exists
+
+
+    Authorization: Bearer <token>
+            |
+            v
+    Application explicitly supplies credential
+            |
+            v
+    Traditional CSRF risk is generally absent
+
+- However, bearer-token applications have other security concerns.
+
+Examples:
+
+    XSS
+    Token theft
+    Insecure token storage
+    Token leakage
+
+- CSRF and token theft are different problems.
+
+=======================================================================================================================================================================

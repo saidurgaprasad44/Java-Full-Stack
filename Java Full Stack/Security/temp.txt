@@ -40,41 +40,23 @@ mTLS vs HMAC
 mTLS vs OAuth2
 
 
+
+
+
+
+
 10. OAuth 2.0
 OAuth2 problem it solves
-Resource Owner
-Client
-Authorization Server
-Resource Server
+Actors: Resource Owner, Client, Authorization Server, Resource Server
 Access token
-Scope
+Scopes
 Authorization grant
 OAuth2 endpoints
 OAuth2 Grant Types
-Authorization Code
+Authorization Code Flow (for User authorization)
+Client Credentials Flow (for client authorization): Client Secret, JWT Assertion
 PKCE
-Client Credentials
 Refresh Token
-Device Authorization Grant
-Other grant types at conceptual level
-Authorization Code Flow
-Authorization request
-User authentication
-Consent
-Authorization code
-Token request
-Access token
-Refresh token
-PKCE
-code_verifier
-code_challenge
-Client Credentials
-Service identity
-Client authentication
-Client ID
-Client secret
-Service access token
-Scopes
 Token expiration
 
 
@@ -84,7 +66,6 @@ Refresh token rotation
 Refresh token expiration
 Token revocation
 Token introspection
-JWT vs opaque access tokens
 Audience
 Issuer
 Token exchange
@@ -124,31 +105,7 @@ Authentication vs authorization
 401 vs 403
 
 
-14. Web Security
 
-CORS  				- web security
-Same-origin policy
-Origin
-CORS
-Simple requests
-Preflight requests
-OPTIONS
-Access-Control-Allow-Origin
-Allowed methods
-Allowed headers
-Credentials
-CORS security considerations
-
-CSRF				- web security
-What is CSRF?
-Why CSRF exists
-Browser cookies and CSRF
-CSRF attack flow
-CSRF token
-SameSite cookies
-CSRF vs CORS
-When CSRF protection is required
-Stateless APIs and CSRF
 
 XSS                             - input validation & sanitization
 Reflected XSS

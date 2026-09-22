@@ -88,12 +88,6 @@ SPRING SECURITY
 7.11 Token Expiration
 7.12 JWT Authentication vs Session Authentication
 
-Header: Algorithm (hs256/rs256/es256) 
-Payload: principal, roles, and other claims
-Signature: Sign(Base64URL(header) + "." + Base64URL(payload))
-
-JWT = encoded-header.encoded-payload.Signature
-
 
 8. AUTHORIZATION
 ------------------------------------------------------------
@@ -190,18 +184,6 @@ JWKS and ID Token validation
 OIDC Logout
 14.5 Spring Security OAuth2 Login
 14.6 JWT ID Tokens
-important URIs:
-
-/quiz/callback
-/.well-known/oauth-authorization-server
-/.well-known/openid-configuration
-/oauth2/authorize
-/oauth2/token
-/oauth2/jwks
-/oauth2/introspect
-/oauth2/revoke
-/userinfo
-/logout
 
 
 15. METHOD / SERVICE SECURITY
@@ -236,33 +218,6 @@ important URIs:
 17.6 Credential Handling Best Practices
 
 
-18. SPRING SECURITY FOR REST APIs
-------------------------------------------------------------
-18.1 Stateless API Security
-18.2 JWT Resource Server
-18.3 Basic Authentication APIs
-18.4 Session-based APIs
-18.5 Securing API Endpoints
-18.6 Authentication vs Authorization
-18.7 Error Responses
-18.8 CORS Configuration
-18.9 CSRF Considerations
-18.10 Security Headers
-
-
-19. ADVANCED SECURITY ARCHITECTURE
-------------------------------------------------------------
-19.1 SecurityContext Propagation
-19.2 Async Execution and SecurityContext
-19.3 SecurityContext Persistence
-19.4 Session vs Stateless Security
-19.5 Multiple Authentication Mechanisms
-19.6 Multiple SecurityFilterChains
-19.7 Security in Microservices
-19.8 API Gateway and Spring Security
-19.9 Resource Server Architecture
-
-
 20. TESTING & DEBUGGING
 ------------------------------------------------------------
 20.1 Spring Security Test Support
@@ -274,18 +229,6 @@ important URIs:
 20.7 Understanding 401 vs 403
 20.8 Debugging Authentication Failures
 20.9 Debugging CORS Issues
-
-
-21. SPRING SECURITY ARCHITECTURE IN PRACTICE
-------------------------------------------------------------
-21.1 Session-based Web Application
-21.2 Basic Authentication API
-21.3 JWT-secured REST API
-21.4 OAuth2 Login
-21.5 OAuth2 Resource Server
-21.6 Role-based API Authorization
-21.7 CORS + CSRF Configuration
-21.8 Production Security Configuration
 
 
 ============================================================

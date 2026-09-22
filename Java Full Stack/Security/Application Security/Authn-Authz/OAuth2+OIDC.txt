@@ -1,0 +1,2175 @@
+=======================================================================================================================================================================
+=======================================================================================================================================================================
+								OAuth 2.0 and OpenID Connect
+=======================================================================================================================================================================
+=======================================================================================================================================================================
+
+
+=======================================================================================================================================================================
+OAuth 2.0
+=======================================================================================================================================================================
+
+=======================================================================================================================================================================
+OAuth 2.0 Fundamentals
+=======================================================================================================================================================================
+
+- OAuth 2.0 is an authorization framework that allows a client application to obtain limited access to protected resources on behalf of a resource owner.
+- The main problem OAuth solves is allowing an application to access a user's resources without giving that application the user's password.
+- OAuth separates the user's credentials from the credentials used by the client to access the resource.
+
+Example:
+
+- Sai has photos stored in a Photos API.
+- PhotoApp wants to read those photos.
+- Instead of Sai giving PhotoApp his Photos account password:
+  - PhotoApp asks for authorization.
+  - Authorization Server authenticates Sai.
+  - Sai grants `photos.read`.
+  - Authorization Server issues an access token.
+  - PhotoApp uses the token to access the Photos API.
+
+    Sai
+     |
+     | "Allow PhotoApp to read my photos"
+     v
+    Authorization Server
+     |
+     | Access Token
+     v
+    PhotoApp
+     |
+     | Authorization: Bearer <token>
+     v
+    Photos API
+
+- Authentication asks:
+  "Who is the user?"
+
+- Authorization asks:
+  "What is this client allowed to access?"
+
+- OAuth 2.0 primarily solves authorization.
+- OAuth 2.0 itself does not standardize user identity or provide an ID Token.
+- OpenID Connect adds authentication and identity on top of OAuth 2.0.
+
+Important misconception:
+
+- OAuth 2.0 login is not automatically authentication.
+- A client can receive an OAuth access token without receiving a standardized statement of who the user is.
+- OIDC is used when the application also needs standardized user authentication and identity information.
+
+=======================================================================================================================================================================
+OAuth 2.0 Roles
+=======================================================================================================================================================================
+
+- Resource Owner
+  - Entity that owns or controls the protected resource.
+  - Usually the end user.
+
+- Client
+  - Application requesting access to the protected resource.
+
+- Authorization Server
+  - Authenticates the resource owner.
+  - Obtains authorization/consent.
+  - Issues authorization codes and tokens.
+
+- Resource Server
+  - Hosts the protected resources.
+  - Accepts access tokens.
+  - Validates tokens and enforces authorization.
+
+Example:
+
+    Sai
+    Resource Owner
+         |
+         | authorization
+         v
+      PhotoApp
+        Client
+         |
+         | authorization request
+         v
+    Authorization Server
+         |
+         | access token
+         v
+      PhotoApp
+         |
+         | access token
+         v
+     Photos API
+    Resource Server
+
+=======================================================================================================================================================================
+OAuth 2.0 Client Types
+=======================================================================================================================================================================
+
+- Confidential client
+  - Can keep its credentials confidential.
+  - Typically runs on a controlled backend/server.
+  - Can authenticate itself using a client credential.
+
+- Public client
+  - Cannot safely keep a static client credential secret.
+  - Common examples:
+    - Browser-based applications
+    - Mobile applications
+    - Native applications
+
+- `client_id`
+  - Identifies the client.
+  - It is not a secret.
+
+- `client_secret`
+  - Credential used by a confidential client for client authentication.
+  - Must remain confidential.
+
+Example:
+
+    PhotoApp Backend
+          |
+          | client_id + client_secret
+          v
+    Authorization Server
+
+- A server-side application can protect its `client_secret`.
+- A mobile application cannot reliably do so because the application and its embedded credentials are available on the user's device.
+
+Important misconception:
+
+- A public client still has a `client_id`.
+- "Public" means it cannot safely keep a client secret, not that it is an unregistered or unidentified client.
+
+=======================================================================================================================================================================
+OAuth 2.0 Core Concepts
+=======================================================================================================================================================================
+
+- Protected resource
+  - Data/API that requires authorization.
+  - Example: `/api/photos`.
+
+- Client registration
+  - Establishes the client's identity and configuration with the Authorization Server.
+
+Example registration:
+
+    client_id:
+    photoapp-web
+
+    redirect_uri:
+    https://photoapp.example.com/oauth/callback
+
+- Client ID
+  - Identifier for the registered client.
+
+- Client authentication
+  - Authentication of the client itself.
+  - Different from user authentication.
+
+- Redirect URI
+  - Destination where the Authorization Server sends the browser after authorization.
+  - Example:
+
+    https://photoapp.example.com/oauth/callback
+
+- Scope
+  - Permission requested/granted by the client.
+  - OAuth scope values are space-delimited.
+
+Example:
+
+    scope=photos.read photos.write
+
+- Consent
+  - Resource owner's approval of the requested access.
+
+- Authorization request
+  - Request sent to the Authorization Endpoint asking for authorization.
+
+Example:
+
+    GET /authorize?
+        response_type=code
+        &client_id=photoapp-web
+        &redirect_uri=https%3A%2F%2Fphotoapp.example.com%2Foauth%2Fcallback
+        &scope=photos.read
+        &state=abc123
+
+- Authorization grant
+  - Credential representing the authorization obtained by the client.
+  - In Authorization Code flow, the authorization code is the grant.
+
+- Access token
+  - Credential used to access the protected resource.
+
+- Refresh token
+  - Credential used to obtain a new access token.
+
+- Authorization Endpoint
+  - Handles authorization requests.
+
+- Token Endpoint
+  - Handles token exchanges and token refresh requests.
+
+=======================================================================================================================================================================
+OAuth 2.0 Grant Types
+=======================================================================================================================================================================
+
+- Authorization Code Grant
+  - Used when a user authorizes a client.
+  - Client receives a temporary authorization code.
+  - Code is exchanged for tokens.
+
+- Authorization Code + PKCE
+  - Authorization Code flow with Proof Key for Code Exchange.
+  - Particularly important for public clients.
+  - Also commonly used for modern confidential clients.
+
+- Client Credentials Grant
+  - Used for machine-to-machine authorization.
+  - There is no end-user authorization step.
+
+- Refresh Token Grant
+  - Used to obtain a new access token using a refresh token.
+
+Important distinction:
+
+    Client Authentication
+            +
+    Grant Type
+
+are different concepts.
+
+- `client_id + client_secret` can authenticate a confidential client.
+- `grant_type=client_credentials` specifies that the client is requesting authorization on its own behalf.
+
+------------------------------------------------------------
+OAuth 2.0 Authorization Code Flow
+------------------------------------------------------------
+
+- Authorization Code flow is used when a client needs access to resources on behalf of a user.
+- The user's password is entered at the Authorization Server, not at PhotoApp.
+
+Step 1: Client starts authorization
+
+- User clicks:
+
+    "Connect my Photos account"
+
+- PhotoApp redirects the browser to the Authorization Endpoint.
+
+Example:
+
+    GET https://auth.example.com/authorize
+        ?response_type=code
+        &client_id=photoapp-web
+        &redirect_uri=https%3A%2F%2Fphotoapp.example.com%2Foauth%2Fcallback
+        &scope=photos.read%20photos.write
+        &state=abc123
+
+- `response_type=code`
+  - Requests an authorization code.
+
+- `client_id`
+  - Identifies PhotoApp.
+
+- `redirect_uri`
+  - Where the Authorization Server should return the browser.
+
+- `scope`
+  - Permissions PhotoApp is requesting.
+
+- `state`
+  - Value generated by the client to associate the response with the original request.
+
+Step 2: Authorization Server authenticates the user
+
+- Browser reaches the Authorization Server.
+- Authorization Server asks Sai to authenticate.
+- For example:
+
+    Username: sai@example.com
+    Password: ********
+
+- PhotoApp never sees these credentials.
+
+Step 3: Authorization Server obtains consent
+
+- Authorization Server displays something similar to:
+
+    PhotoApp wants:
+    ✓ Read your photos
+    ✓ Modify your photos
+
+- Sai approves or rejects the request.
+
+Step 4: Authorization Server creates an authorization code
+
+- After successful authentication and authorization, the Authorization Server creates a short-lived authorization code.
+- It redirects the browser to PhotoApp.
+
+Example:
+
+    HTTP/1.1 302 Found
+
+    Location:
+    https://photoapp.example.com/oauth/callback
+        ?code=SplxlOBeZQQYbYS6WxSbIA
+        &state=abc123
+
+- PhotoApp receives the code.
+- PhotoApp verifies that the returned `state` matches the value it originally generated.
+
+Step 5: Client exchanges the code
+
+- PhotoApp's backend sends the code to the Token Endpoint.
+
+Example:
+
+    POST https://auth.example.com/token
+
+    Content-Type: application/x-www-form-urlencoded
+
+    grant_type=authorization_code
+    &code=SplxlOBeZQQYbYS6WxSbIA
+    &redirect_uri=https%3A%2F%2Fphotoapp.example.com%2Foauth%2Fcallback
+
+- For a confidential client, client authentication is also performed.
+
+Example:
+
+    Authorization: Basic <client_id:client_secret>
+
+- The Token Endpoint verifies:
+  - authorization code
+  - client
+  - redirect URI
+  - code validity
+  - code expiration
+  - other applicable security requirements
+
+Step 6: Authorization Server issues tokens
+
+Example response:
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    Cache-Control: no-store
+
+    {
+      "access_token": "eyJhbGciOiJSUzI1NiIs...",
+      "token_type": "Bearer",
+      "expires_in": 3600,
+      "refresh_token": "8xLOxBtZp8",
+      "scope": "photos.read photos.write"
+    }
+
+Step 7: Client accesses the Resource Server
+
+- PhotoApp sends the access token to the Photos API.
+
+Example:
+
+    GET https://api.example.com/photos
+
+    Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
+
+- Resource Server validates the token.
+- It checks whether the token is valid and whether it has the required scope.
+- If authorized, the API returns the photos.
+
+Complete flow:
+
+    User
+      |
+      | Click "Connect Photos"
+      v
+    PhotoApp
+      |
+      | GET /authorize?...scope=photos.read
+      v
+    Authorization Server
+      |
+      | Authenticate + Consent
+      |
+      | 302 -> code=abc123
+      v
+    PhotoApp Callback
+      |
+      | POST /token
+      | grant_type=authorization_code
+      | code=abc123
+      v
+    Authorization Server
+      |
+      | access_token + refresh_token
+      v
+    PhotoApp
+      |
+      | Authorization: Bearer <access_token>
+      v
+    Photos API
+      |
+      v
+    Protected Photos
+
+Important misconception:
+
+- The browser receives the authorization code, not normally the access token in the Authorization Code flow.
+- The client exchanges the code at the Token Endpoint.
+- The access token is then used to access the Resource Server.
+
+------------------------------------------------------------
+Authorization Code Security
+------------------------------------------------------------
+
+- The authorization code is a temporary intermediate credential.
+- It is not intended to be used as an API access token.
+
+Why use a code?
+
+    Browser
+       |
+       | authorization code
+       v
+    Client
+       |
+       | server-to-server token request
+       v
+    Authorization Server
+       |
+       | access token
+       v
+    Client
+
+- This keeps the access token out of the browser redirect in the standard Authorization Code flow.
+
+- Authorization codes should be:
+  - Short-lived
+  - Single-use
+  - Bound to the appropriate client
+  - Associated with the registered redirect URI
+
+- Redirect URI validation prevents an attacker from changing the destination where the authorization response is sent.
+
+Code interception problem:
+
+    Authorization Server
+           |
+           | code=ABC
+           v
+       Attacker
+           |
+           | tries to exchange ABC
+           v
+       Token Endpoint
+
+- PKCE adds proof that the party exchanging the code possesses a secret generated when the authorization request started.
+
+PKCE flow:
+
+Step 1:
+
+    Client generates:
+
+    code_verifier = random-secret-value
+
+Step 2:
+
+    Client calculates:
+
+    code_challenge =
+    BASE64URL(SHA256(code_verifier))
+
+Step 3:
+
+- Authorization request contains:
+
+    GET /authorize?
+        response_type=code
+        &client_id=photoapp-mobile
+        &redirect_uri=...
+        &scope=photos.read
+        &code_challenge=XYZ
+        &code_challenge_method=S256
+
+Step 4:
+
+- Authorization Server returns:
+
+    https://photoapp.example.com/callback
+        ?code=ABC123
+
+Step 5:
+
+- Client sends:
+
+    POST /token
+
+    grant_type=authorization_code
+    &code=ABC123
+    &code_verifier=random-secret-value
+
+Step 6:
+
+- Authorization Server calculates the challenge from the supplied verifier.
+- If it matches the original challenge, the token exchange succeeds.
+
+    code_verifier
+         |
+         | SHA-256
+         v
+    code_challenge
+         |
+         | must match
+         v
+    Stored challenge
+
+Important misconception:
+
+- PKCE does not encrypt the authorization code.
+- PKCE does not authenticate the user.
+- PKCE proves possession of the verifier during code exchange.
+- It is especially important when the client cannot safely keep a client secret.
+
+------------------------------------------------------------
+Client Credentials Flow
+------------------------------------------------------------
+
+- Client Credentials is used when one application/service needs to access another protected service without an end user participating in the authorization request.
+
+Example:
+
+    Order Service
+         |
+         | "I need inventory.read"
+         v
+    Authorization Server
+         |
+         | Access Token
+         v
+    Order Service
+         |
+         | Bearer Token
+         v
+    Inventory API
+
+Step 1:
+
+- Order Service authenticates itself.
+
+Example:
+
+    POST https://auth.example.com/token
+
+    Authorization: Basic <client_id:client_secret>
+
+    Content-Type: application/x-www-form-urlencoded
+
+    grant_type=client_credentials
+    &scope=inventory.read
+
+Step 2:
+
+- Authorization Server authenticates the client.
+- It determines which scopes this client is allowed to receive.
+
+Step 3:
+
+- Authorization Server returns an access token.
+
+Example:
+
+    {
+      "access_token": "eyJhbGciOiJSUzI1NiIs...",
+      "token_type": "Bearer",
+      "expires_in": 3600,
+      "scope": "inventory.read"
+    }
+
+Step 4:
+
+- Order Service calls:
+
+    GET https://inventory.example.com/items
+
+    Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
+
+- Inventory API validates the token and serves the request.
+
+Important misconception:
+
+- There is no user login in Client Credentials.
+- The client itself is the authorization subject.
+- `client_id + client_secret` describes client authentication.
+- `grant_type=client_credentials` describes the OAuth grant being used.
+
+=======================================================================================================================================================================
+Access Tokens
+=======================================================================================================================================================================
+
+- Access token is the credential presented to the Resource Server.
+- It represents authorization granted to the client.
+
+Example API request:
+
+    GET /api/photos
+
+    Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
+
+- `Bearer` means possession of the token is sufficient to present it as the credential.
+- Therefore, a stolen bearer token can potentially be replayed until it expires or is otherwise invalidated.
+
+Access token lifetime:
+
+    Issued
+      |
+      v
+    Valid
+      |
+      | expires
+      v
+    Invalid
+
+- Shorter lifetimes reduce the useful lifetime of a stolen token.
+
+Scopes:
+
+    photos.read
+    photos.write
+
+- The Resource Server should not only ask:
+  "Is this token valid?"
+
+- It should also ask:
+  "Does this token authorize this operation?"
+
+Token audience:
+
+    aud = "photos-api"
+
+- Indicates the intended audience/resource server.
+
+Token issuer:
+
+    iss = "https://auth.example.com"
+
+- Identifies the Authorization Server that issued the token.
+
+JWT access token example:
+
+    Header:
+
+    {
+      "alg": "RS256",
+      "typ": "JWT",
+      "kid": "key-2026"
+    }
+
+    Payload:
+
+    {
+      "iss": "https://auth.example.com",
+      "sub": "user-123",
+      "aud": "photos-api",
+      "scope": "photos.read photos.write",
+      "exp": 1790003600,
+      "iat": 1790000000
+    }
+
+    Signature:
+
+    RS256-signature...
+
+- The JWT is signed so the Resource Server can verify that the contents have not been modified and were issued by a trusted issuer.
+
+Opaque token:
+
+    8f3a9c2d7e1b4...
+
+- The token itself does not expose meaningful claims.
+- Resource Server can use token introspection to ask the Authorization Server whether the token is active and what authorization information is associated with it.
+
+Important misconception:
+
+- OAuth 2.0 does not require JWT access tokens.
+- An access token can be opaque or JWT-based.
+- JWT describes a token format; OAuth describes the authorization framework.
+
+=======================================================================================================================================================================
+Refresh Tokens
+=======================================================================================================================================================================
+
+- Access tokens are often short-lived.
+- When an access token expires, the client can use a refresh token to obtain another access token without asking the user to authorize again.
+
+Normal flow:
+
+    Access Token
+         |
+         | expires
+         v
+    Client
+         |
+         | Refresh Token
+         v
+    Authorization Server
+         |
+         | New Access Token
+         v
+    Client
+
+Example:
+
+    POST https://auth.example.com/token
+
+    Content-Type: application/x-www-form-urlencoded
+
+    grant_type=refresh_token
+    &refresh_token=8xLOxBtZp8
+
+- A confidential client may also authenticate itself at the Token Endpoint.
+
+Example response:
+
+    {
+      "access_token": "new-access-token",
+      "token_type": "Bearer",
+      "expires_in": 3600,
+      "refresh_token": "new-refresh-token"
+    }
+
+- The Authorization Server may issue a new refresh token.
+- With refresh token rotation, the old refresh token is invalidated and the client uses the new one.
+
+Rotation:
+
+    Refresh Token A
+          |
+          v
+    Authorization Server
+          |
+          +----> Access Token B
+          |
+          +----> Refresh Token B
+
+    Refresh Token A → invalid
+    Refresh Token B → valid
+
+- Refresh tokens are normally sent only to the Authorization Server.
+- They should not be sent to the Resource Server.
+
+Important misconception:
+
+- Refresh token is not used to access APIs.
+- Access token is used to access APIs.
+- Refresh token is used to obtain another access token.
+
+=======================================================================================================================================================================
+Scopes and Consent
+=======================================================================================================================================================================
+
+- Scope represents a permission requested by the client.
+
+Example authorization request:
+
+    GET /authorize?
+        response_type=code
+        &client_id=photoapp-web
+        &scope=photos.read%20photos.write
+        &redirect_uri=https%3A%2F%2Fphotoapp.example.com%2Fcallback
+
+- The client is requesting:
+
+    photos.read
+    photos.write
+
+- Authorization Server may ask the user:
+
+    PhotoApp requests:
+
+    ✓ Read photos
+    ✓ Modify photos
+
+- User may grant both, reject both, or the Authorization Server may grant a narrower set according to its policy.
+
+Example:
+
+    Requested:
+    photos.read photos.write
+
+    Granted:
+    photos.read
+
+- The resulting access token may contain:
+
+    "scope": "photos.read"
+
+- Resource Server must enforce the granted scope.
+
+Example:
+
+    GET /api/photos/123
+    → requires photos.read
+
+    DELETE /api/photos/123
+    → requires photos.write
+
+- A valid token with only `photos.read` must not be sufficient for the DELETE operation.
+
+Important misconception:
+
+- Requested scope ≠ automatically granted scope.
+- Token validity ≠ permission for every operation.
+- Scope is an authorization concept, not an authentication concept.
+
+=======================================================================================================================================================================
+OAuth 2.0 Endpoints
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+- Authorization Endpoint
+  - Starts the user authorization process.
+
+Example:
+
+    GET https://auth.example.com/authorize
+        ?response_type=code
+        &client_id=photoapp-web
+        &scope=photos.read
+        &redirect_uri=...
+
+------------------------------------------------------------
+- Token Endpoint
+  - Exchanges authorization codes or refresh tokens for access tokens.
+
+Example:
+
+    POST https://auth.example.com/token
+
+    grant_type=authorization_code
+    &code=ABC123
+
+------------------------------------------------------------
+- Redirection Endpoint
+  - Client endpoint receiving the authorization response.
+
+Example:
+
+    https://photoapp.example.com/oauth/callback?code=ABC123&state=xyz
+
+------------------------------------------------------------
+- Resource Endpoint
+  - Protected API endpoint.
+
+Example:
+
+    GET https://api.example.com/photos
+
+    Authorization: Bearer <access_token>
+
+------------------------------------------------------------
+- Introspection Endpoint
+  - Used by an authorized party to ask the Authorization Server about a token.
+
+Example:
+
+    POST https://auth.example.com/introspect
+
+    token=opaque-token-value
+
+Example response:
+
+    {
+      "active": true,
+      "client_id": "photoapp-web",
+      "scope": "photos.read",
+      "sub": "user-123",
+      "aud": "photos-api",
+      "exp": 1790003600
+    }
+
+------------------------------------------------------------
+- Revocation Endpoint
+  - Used to request token revocation.
+
+Example:
+
+    POST https://auth.example.com/revoke
+
+    token=refresh-token-value
+
+Complete interaction:
+
+    User
+      |
+      v
+    PhotoApp
+      |
+      | GET /authorize
+      v
+    Authorization Endpoint
+      |
+      | code
+      v
+    PhotoApp Callback
+      |
+      | POST /token
+      v
+    Token Endpoint
+      |
+      | access_token
+      v
+    PhotoApp
+      |
+      | GET /photos
+      | Authorization: Bearer ...
+      v
+    Resource Endpoint
+      |
+      v
+    Photos
+
+=======================================================================================================================================================================
+OAuth 2.0 Security Considerations
+=======================================================================================================================================================================
+
+- Authorization code interception
+  - Use short-lived, single-use authorization codes.
+  - Use PKCE to bind the code exchange to the client instance/request.
+
+- Redirect URI attacks
+  - Register valid redirect URIs.
+  - Validate the redirect URI.
+  - Do not allow arbitrary attacker-controlled redirect destinations.
+
+- CSRF/state protection
+  - Client generates a random `state`.
+  - Client sends it with the authorization request.
+
+Example:
+
+    /authorize?
+        ...
+        &state=RANDOM_VALUE
+
+- Authorization Server returns:
+
+    /callback?
+        code=ABC123
+        &state=RANDOM_VALUE
+
+- Client verifies that the returned state matches the stored value.
+
+    Original state == Returned state
+             |
+            YES
+             |
+             v
+       Process response
+
+- Token leakage
+  - Treat access tokens and refresh tokens as credentials.
+  - Do not expose them unnecessarily in URLs, logs, browser history, error messages, or insecure storage.
+
+- Token replay
+  - A stolen bearer token can be replayed.
+  - Reduce exposure through:
+    - TLS
+    - Short token lifetime
+    - Limited scope
+    - Secure storage
+    - Sender-constrained token mechanisms where appropriate
+
+- Refresh token protection
+  - Refresh tokens are generally longer-lived and therefore highly sensitive.
+  - Protect them in storage and transit.
+  - Rotation can help detect reuse of compromised refresh tokens.
+
+- Scope limitation
+  - Request only required permissions.
+  - Authorization Server should avoid granting unnecessary permissions.
+  - Resource Server must enforce the granted scopes.
+
+- Secure token transport
+  - OAuth credentials must be protected using TLS.
+  - Tokens should not be transmitted over plain HTTP.
+
+Important misconceptions:
+
+- TLS protects the communication channel; it does not make a stolen token harmless.
+- PKCE protects the authorization-code exchange; it does not make a stolen bearer access token unusable.
+- `client_id` is not a secret.
+- `client_secret` authenticates the client; it is not the user's password.
+- Access token ≠ refresh token.
+- Authorization code ≠ access token.
+- Valid token ≠ unlimited authorization.
+- OAuth 2.0 ≠ user authentication.
+
+
+
+
+
+
+
+
+
+
+
+
+=======================================================================================================================================================================
+OpenID Connect
+=======================================================================================================================================================================
+
+=======================================================================================================================================================================
+OpenID Connect Fundamentals
+=======================================================================================================================================================================
+
+- OAuth 2.0 is primarily an authorization framework.
+- OAuth 2.0 allows a client to obtain an access token to access protected resources.
+- OAuth 2.0 does not define a standardized way for the client to know and verify the identity of the user who authorized the request.
+
+Example:
+
+    PhotoApp
+       |
+       | "Give me access to photos"
+       v
+    Authorization Server
+       |
+       | Access Token
+       v
+    PhotoApp
+       |
+       | Bearer Token
+       v
+    Photos API
+
+- PhotoApp can use the access token to call the Photos API.
+- However, simply having an access token does not automatically provide PhotoApp with a standardized authentication result such as:
+  
+    "This is user user-123."
+
+- OAuth 2.0 therefore should not be treated as a login/authentication protocol by itself.
+
+Important misconception:
+
+- OAuth 2.0 login is not automatically authentication.
+- OAuth 2.0 can be used in a user-delegated authorization scenario without providing the client with a standardized identity token.
+- A client should not simply take an OAuth access token and assume that it represents an authenticated user's identity.
+
+- OpenID Connect (OIDC) is an identity layer built on top of OAuth 2.0.
+- OIDC uses OAuth 2.0 mechanisms for authorization and adds standardized authentication and identity information.
+
+The relationship can be remembered as:
+
+    OAuth 2.0
+        |
+        | Authorization
+        v
+    Access Token
+        |
+        v
+    Resource Server
+
+
+    OAuth 2.0
+        +
+    OpenID Connect
+        |
+        | Authentication + Identity
+        v
+    ID Token
+        |
+        v
+    Client / Relying Party
+
+- Authentication asks:
+
+    "Who is the user?"
+
+- Authorization asks:
+
+    "What is this client allowed to access?"
+
+- OIDC provides the client with a standardized way to determine that a user was authenticated by the OpenID Provider.
+
+- OIDC also allows the client to obtain standardized identity information about the user.
+
+Example:
+
+    Sai
+      |
+      | Sign in
+      v
+    PhotoApp
+      |
+      | OIDC authentication request
+      v
+    OpenID Provider
+      |
+      | ID Token
+      v
+    PhotoApp
+
+- The ID Token contains identity and authentication-related claims about Sai.
+
+- OIDC uses the `openid` scope to indicate that the client is requesting OpenID Connect authentication.
+
+Example:
+
+    scope=openid profile email
+
+- `openid`
+  - Indicates that the request is an OIDC authentication request.
+
+- `profile`
+  - Requests standard profile-related information.
+
+- `email`
+  - Requests email-related information.
+
+- Identity information can include claims such as:
+
+    sub
+    name
+    email
+
+- Authentication information can include information about the authentication event, such as:
+
+    auth_time
+    nonce
+
+- The client can use the resulting identity information to establish its own application login/session.
+
+Example:
+
+    OpenID Provider
+          |
+          | "User user-123 authenticated"
+          v
+       PhotoApp
+          |
+          v
+    Application Session
+          |
+          v
+    "Welcome Sai"
+
+- OIDC therefore adds authentication and identity semantics to OAuth 2.0.
+
+=======================================================================================================================================================================
+OpenID Connect Roles and Components
+=======================================================================================================================================================================
+
+- End User
+  - Person whose identity is being authenticated.
+  - Example:
+
+    Sai
+
+- Relying Party (RP)
+  - Application that relies on the OpenID Provider to authenticate the user.
+  - In OAuth terminology, the Relying Party is also an OAuth client.
+
+Example:
+
+    PhotoApp
+       |
+       | OIDC authentication
+       v
+    OpenID Provider
+
+- OpenID Provider (OP)
+  - System that authenticates the End User.
+  - Provides identity information to the Relying Party.
+  - Usually also acts as the OAuth 2.0 Authorization Server.
+
+- Authorization Server relationship:
+
+    OpenID Provider
+          |
+          | performs OAuth authorization
+          v
+    Authorization Server behavior
+
+- An OpenID Provider is therefore typically an OAuth 2.0 Authorization Server plus OIDC identity functionality.
+
+Example:
+
+    OpenID Provider
+        |
+        +---- Authorization Endpoint
+        |
+        +---- Token Endpoint
+        |
+        +---- UserInfo Endpoint
+        |
+        +---- Discovery Endpoint
+        |
+        +---- JWKS Endpoint
+
+- Resource Server
+  - API that hosts protected resources.
+  - Receives and validates OAuth access tokens.
+
+Example:
+
+    PhotoApp
+       |
+       | Access Token
+       v
+    Photos API
+    Resource Server
+
+- The Resource Server is not necessarily the same system as the OpenID Provider.
+
+Example:
+
+    OpenID Provider
+        |
+        | Access Token
+        v
+    PhotoApp
+        |
+        | Access Token
+        v
+    Photos API
+    Resource Server
+
+- ID Token
+  - Issued by the OpenID Provider.
+  - Contains information about the authentication event and the authenticated user.
+  - Intended for the Relying Party.
+
+- Access Token
+  - Issued through OAuth 2.0.
+  - Used by the client to access protected resources.
+  - Intended for the Resource Server.
+
+- UserInfo Endpoint
+  - OAuth-protected endpoint provided by the OpenID Provider.
+  - Returns claims about the authenticated user.
+  - Called using an access token.
+
+Example:
+
+    GET https://id.example.com/userinfo
+
+    Authorization: Bearer <access_token>
+
+- The UserInfo response can contain:
+
+    {
+      "sub": "user-123",
+      "name": "Sai",
+      "email": "sai@example.com"
+    }
+
+Complete relationship:
+
+    End User
+        |
+        | Authentication
+        v
+    OpenID Provider
+        |
+        +------------------+
+        |                  |
+        | ID Token         | Access Token
+        v                  v
+    Relying Party      Resource Server
+        |                  |
+        |                  |
+        +------ User ------+
+               information
+
+Important distinction:
+
+- ID Token → intended for the Relying Party.
+- Access Token → intended for the Resource Server.
+- UserInfo Endpoint → provides additional user claims using an access token.
+
+=======================================================================================================================================================================
+ID Token
+=======================================================================================================================================================================
+
+- ID Token is one of the most important additions provided by OpenID Connect.
+- It is a security token issued by the OpenID Provider to the Relying Party.
+- It represents the result of user authentication and contains claims about the authenticated user and authentication event.
+
+Example:
+
+    {
+      "iss": "https://id.example.com",
+      "sub": "user-123",
+      "aud": "photoapp-web",
+      "exp": 1790003600,
+      "iat": 1790000000,
+      "auth_time": 1790000000,
+      "nonce": "abcXYZ"
+    }
+
+- OIDC ID Tokens are JWT-based.
+- JWT consists of three parts:
+
+    Header.Payload.Signature
+
+Example:
+
+    eyJhbGciOiJSUzI1NiIs...
+    .
+    eyJpc3MiOiJodHRwczovL2lk...
+    .
+    RS256-signature...
+
+- Header
+  - Contains information about how the JWT is protected.
+
+Example:
+
+    {
+      "alg": "RS256",
+      "typ": "JWT",
+      "kid": "key-2026"
+    }
+
+- `alg`
+  - Identifies the cryptographic algorithm used for the signature.
+
+- `typ`
+  - Indicates the token type.
+
+- `kid`
+  - Identifies the signing key used by the OpenID Provider.
+  - The client can use this value to select the corresponding public key from the provider's JWKS.
+
+- Payload
+  - Contains claims.
+
+Example:
+
+    {
+      "iss": "https://id.example.com",
+      "sub": "user-123",
+      "aud": "photoapp-web",
+      "exp": 1790003600,
+      "iat": 1790000000,
+      "auth_time": 1790000000,
+      "nonce": "abcXYZ"
+    }
+
+- Signature
+  - Cryptographically protects the token contents.
+  - Allows the Relying Party to verify that the token was issued by a trusted signer and was not modified.
+
+Example:
+
+    Header
+       +
+    Payload
+       |
+       | signing algorithm + private key
+       v
+    Signature
+
+- The Relying Party verifies the signature using the OpenID Provider's trusted public key.
+
+Important misconception:
+
+- JWT decoding is not JWT validation.
+- Anyone can Base64URL-decode the header and payload.
+- The Relying Party must verify the cryptographic signature and validate the relevant claims.
+
+------------------------------------------------------------
+ID Token vs Access Token
+------------------------------------------------------------
+
+- ID Token answers:
+
+    "Who authenticated?"
+
+- Access Token answers:
+
+    "What protected resource can this client access?"
+
+Example:
+
+    ID Token
+       |
+       v
+    PhotoApp
+
+    "User user-123 authenticated."
+
+    Access Token
+       |
+       v
+    Photos API
+
+    "This client has authorized access to photos.read."
+
+| ID Token                                | Access Token                             |
+| --------------------------------------- | ---------------------------------------- |
+| OIDC authentication                     | OAuth authorization                      |
+| Intended for Relying Party              | Intended for Resource Server             |
+| Contains identity/authentication claims | Represents resource access authorization |
+| JWT                                     | JWT or opaque                            |
+| Validated by client/Relying Party       | Validated by Resource Server             |
+
+Important misconception:
+
+- Do not send an ID Token to an API simply because it is a JWT.
+- An ID Token is intended for the OIDC client.
+- The access token is the credential intended for the Resource Server.
+
+=======================================================================================================================================================================
+ID Token Standard Claims
+=======================================================================================================================================================================
+
+- `iss`
+  - Issuer.
+  - Identifies the OpenID Provider that issued the ID Token.
+
+Example:
+
+    "iss": "https://id.example.com"
+
+- The Relying Party should verify that the issuer is the expected/trusted OpenID Provider.
+
+- `sub`
+  - Subject identifier.
+  - Identifies the authenticated user at the OpenID Provider.
+
+Example:
+
+    "sub": "user-123"
+
+- The Relying Party can use `sub` as the stable identifier for the user within the issuer/client context.
+
+Important:
+
+- `sub` is not necessarily the user's username or email address.
+- It is an identifier assigned by the OpenID Provider.
+
+- `aud`
+  - Audience.
+  - Identifies the intended recipient/client of the ID Token.
+
+Example:
+
+    "aud": "photoapp-web"
+
+- PhotoApp should verify that the ID Token was issued for PhotoApp.
+
+- `exp`
+  - Expiration time.
+
+Example:
+
+    "exp": 1790003600
+
+- The Relying Party must reject an expired ID Token.
+
+- `iat`
+  - Issued-at time.
+
+Example:
+
+    "iat": 1790000000
+
+- Indicates when the ID Token was issued.
+
+- `nonce`
+  - Value associated with the authentication request.
+  - The client generates the nonce and sends it in the authentication request.
+  - The OpenID Provider includes the nonce in the resulting ID Token.
+  - The client verifies that the returned nonce matches the value associated with the original authentication request.
+
+Example:
+
+    Authorization Request:
+
+    /authorize?
+        ...
+        &nonce=abcXYZ
+
+    ID Token:
+
+    {
+      ...
+      "nonce": "abcXYZ"
+    }
+
+- Authentication information
+  - ID Token can contain claims related to the authentication event.
+
+Example:
+
+    "auth_time": 1790000000
+
+- `auth_time`
+  - Indicates when the user's authentication occurred.
+
+Important misconception:
+
+- The ID Token is not simply a container for a username.
+- It provides a signed statement from the OpenID Provider containing identity and authentication-related claims.
+
+=======================================================================================================================================================================
+OpenID Connect Authorization Code Flow
+=======================================================================================================================================================================
+
+- OIDC commonly uses the OAuth 2.0 Authorization Code flow.
+- The main difference is that the authorization request includes the `openid` scope.
+- The token response includes an ID Token.
+
+Step 1: OIDC authorization request
+
+- User clicks:
+
+    "Sign in with Example"
+
+- PhotoApp redirects the browser to the OpenID Provider.
+
+Example:
+
+    GET https://id.example.com/authorize
+        ?response_type=code
+        &client_id=photoapp-web
+        &redirect_uri=https%3A%2F%2Fphotoapp.example.com%2Foidc%2Fcallback
+        &scope=openid%20profile%20email
+        &state=abc123
+        &nonce=n-0S6_WzA2Mj
+
+- `response_type=code`
+  - Requests an authorization code.
+
+- `client_id`
+  - Identifies PhotoApp.
+
+- `redirect_uri`
+  - Registered callback URL.
+
+- `scope=openid`
+  - Requests OpenID Connect authentication.
+
+- `scope=profile`
+  - Requests profile-related claims.
+
+- `scope=email`
+  - Requests email-related claims.
+
+- `state`
+  - Associates the authorization response with the original request and helps protect the authorization flow against CSRF-related attacks.
+
+- `nonce`
+  - Associates the resulting ID Token with the authentication request.
+
+Step 2: User authentication
+
+- Browser reaches the OpenID Provider.
+- The OpenID Provider authenticates the End User.
+
+Example:
+
+    Username: sai@example.com
+    Password: ********
+
+- The password is entered at the OpenID Provider.
+- PhotoApp does not receive the user's password.
+
+Step 3: User consent
+
+- Depending on the provider, requested permissions may be displayed to the user.
+
+Example:
+
+    PhotoApp wants:
+
+    ✓ Sign you in
+    ✓ Access your profile
+    ✓ Access your email
+
+- User approves or rejects the request.
+
+Important:
+
+- Authentication and consent are related but different concepts.
+- Authentication establishes who the user is.
+- Consent represents the user's authorization decision regarding requested access.
+
+Step 4: Authorization code
+
+- After successful authentication and authorization, the OpenID Provider creates a short-lived authorization code.
+
+Example:
+
+    HTTP/1.1 302 Found
+
+    Location:
+    https://photoapp.example.com/oidc/callback
+        ?code=ABC123
+        &state=abc123
+
+- PhotoApp receives:
+
+    code=ABC123
+    state=abc123
+
+- PhotoApp verifies:
+
+    Returned state == Original state
+
+Step 5: Token exchange
+
+- PhotoApp exchanges the authorization code at the Token Endpoint.
+
+Example:
+
+    POST https://id.example.com/token
+
+    Content-Type: application/x-www-form-urlencoded
+
+    grant_type=authorization_code
+    &code=ABC123
+    &redirect_uri=https%3A%2F%2Fphotoapp.example.com%2Foidc%2Fcallback
+
+- A confidential client also authenticates itself at the Token Endpoint.
+
+Example:
+
+    Authorization: Basic <client_id:client_secret>
+
+- The OpenID Provider validates the authorization code and applicable client/security information.
+
+Step 6: ID Token + Access Token
+
+- The OpenID Provider returns tokens.
+
+Example:
+
+    {
+      "access_token": "eyJhbGciOiJSUzI1NiIs...",
+      "token_type": "Bearer",
+      "expires_in": 3600,
+      "id_token": "eyJhbGciOiJSUzI1NiIs...",
+      "refresh_token": "8xLOxBtZp8"
+    }
+
+- ID Token:
+
+    "This user authenticated through this OpenID Provider."
+
+- Access Token:
+
+    "This client has authorization to access protected resources."
+
+- Refresh Token, when issued:
+
+    "This client can request another access token later."
+
+Step 7: ID Token validation
+
+- PhotoApp validates the ID Token.
+
+PhotoApp checks relevant properties such as:
+
+    Signature
+    iss
+    aud
+    exp
+    nonce
+    iat
+    auth_time where applicable
+
+Example:
+
+    {
+      "iss": "https://id.example.com",
+      "sub": "user-123",
+      "aud": "photoapp-web",
+      "exp": 1790003600,
+      "iat": 1790000000,
+      "nonce": "abcXYZ"
+    }
+
+- PhotoApp verifies:
+
+    iss == trusted OpenID Provider
+
+    aud == photoapp-web
+
+    exp > current time
+
+    nonce == original nonce
+
+- After successful validation, PhotoApp can establish its own authenticated application session.
+
+Example:
+
+    ID Token
+       |
+       | validated
+       v
+    PhotoApp
+       |
+       v
+    Application Session
+       |
+       v
+    "Welcome Sai"
+
+Step 8: UserInfo endpoint
+
+- PhotoApp may use the access token to call the UserInfo Endpoint.
+
+Example:
+
+    GET https://id.example.com/userinfo
+
+    Authorization: Bearer <access_token>
+
+- OpenID Provider returns user claims.
+
+Example:
+
+    {
+      "sub": "user-123",
+      "name": "Sai",
+      "email": "sai@example.com"
+    }
+
+Complete flow:
+
+    End User
+       |
+       | Login
+       v
+    Relying Party
+       |
+       | OIDC Authorization Request
+       | scope=openid profile email
+       v
+    OpenID Provider
+       |
+       | Authenticate User
+       | Consent
+       |
+       | Authorization Code
+       v
+    Relying Party
+       |
+       | POST /token
+       | code=ABC123
+       v
+    Token Endpoint
+       |
+       | ID Token + Access Token
+       v
+    Relying Party
+       |
+       | Validate ID Token
+       v
+    Authenticated Application User
+       |
+       | Access Token
+       v
+    UserInfo Endpoint
+       |
+       | User Claims
+       v
+    Relying Party
+
+=======================================================================================================================================================================
+OIDC UserInfo
+=======================================================================================================================================================================
+
+- UserInfo Endpoint is a protected endpoint defined by OpenID Connect.
+- It provides claims about the authenticated End User.
+
+Example:
+
+    GET https://id.example.com/userinfo
+
+    Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
+
+- The access token is sent in the Authorization header.
+
+- The OpenID Provider validates the access token before returning user information.
+
+Example response:
+
+    {
+      "sub": "user-123",
+      "name": "Sai",
+      "email": "sai@example.com"
+    }
+
+- UserInfo can provide claims such as:
+
+    sub
+    name
+    email
+    picture
+    locale
+
+- The exact claims returned depend on the scopes, provider configuration, and available user information.
+
+- `sub`
+  - Identifies the user.
+
+- `name`
+  - User's display name.
+
+- `email`
+  - User's email address.
+
+Important distinction:
+
+    ID Token
+        |
+        | Claims about authentication/user
+        v
+    Relying Party
+
+
+    Access Token
+        |
+        | request to UserInfo
+        v
+    UserInfo Endpoint
+        |
+        | User Claims
+        v
+    Relying Party
+
+- ID Token claims are received as part of the authentication result.
+- UserInfo claims are obtained by calling the UserInfo Endpoint.
+
+- Some information may appear in both places.
+
+Example:
+
+    ID Token:
+
+    {
+      "sub": "user-123"
+    }
+
+    UserInfo:
+
+    {
+      "sub": "user-123",
+      "name": "Sai",
+      "email": "sai@example.com"
+    }
+
+- The `sub` claim is particularly important because it identifies the same authenticated subject.
+
+Important misconception:
+
+- UserInfo is not an alternative Resource Server API for the application's business data.
+- It is an OIDC endpoint specifically intended to provide claims about the authenticated user.
+
+- UserInfo is protected information.
+- The client must possess a valid access token with the necessary authorization to call it.
+
+------------------------------------------------------------
+ID Token Claims vs UserInfo Claims
+------------------------------------------------------------
+
+- ID Token:
+  - Returned during the OIDC token exchange.
+  - Intended for the Relying Party.
+  - Contains authentication-related information and identity claims.
+
+- UserInfo:
+  - Retrieved using the access token.
+  - Provides user claims from the OpenID Provider.
+  - Can provide additional profile information.
+
+Example:
+
+    Token Response:
+
+    {
+      "id_token": "...",
+      "access_token": "..."
+    }
+
+    ID Token:
+
+    {
+      "iss": "https://id.example.com",
+      "sub": "user-123",
+      "aud": "photoapp-web",
+      "exp": 1790003600,
+      "nonce": "abcXYZ"
+    }
+
+    UserInfo:
+
+    {
+      "sub": "user-123",
+      "name": "Sai",
+      "email": "sai@example.com"
+    }
+
+- The Relying Party should use the ID Token for the authentication result and validate it appropriately.
+- The Relying Party can use UserInfo when it needs additional user claims.
+
+=======================================================================================================================================================================
+OIDC Discovery and Metadata
+=======================================================================================================================================================================
+
+- OpenID Connect provides a standard discovery mechanism.
+- A Relying Party can discover the OpenID Provider's configuration instead of manually configuring every endpoint.
+
+- Standard discovery endpoint:
+
+    GET https://id.example.com/.well-known/openid-configuration
+
+- The OpenID Provider returns a discovery document.
+
+Example:
+
+    {
+      "issuer": "https://id.example.com",
+
+      "authorization_endpoint":
+        "https://id.example.com/authorize",
+
+      "token_endpoint":
+        "https://id.example.com/token",
+
+      "userinfo_endpoint":
+        "https://id.example.com/userinfo",
+
+      "jwks_uri":
+        "https://id.example.com/jwks",
+
+      "scopes_supported":
+        [
+          "openid",
+          "profile",
+          "email"
+        ],
+
+      "response_types_supported":
+        [
+          "code"
+        ],
+
+      "subject_types_supported":
+        [
+          "public"
+        ],
+
+      "id_token_signing_alg_values_supported":
+        [
+          "RS256"
+        ],
+
+      "token_endpoint_auth_methods_supported":
+        [
+          "client_secret_basic",
+          "private_key_jwt"
+        ]
+    }
+
+- `issuer`
+  - Identifies the OpenID Provider.
+
+Example:
+
+    "issuer": "https://id.example.com"
+
+- `authorization_endpoint`
+  - Endpoint used to start the authorization/authentication request.
+
+- `token_endpoint`
+  - Endpoint used to exchange the authorization code for tokens.
+
+- `userinfo_endpoint`
+  - Endpoint used to obtain user claims.
+
+- `jwks_uri`
+  - Endpoint where the provider publishes its public signing keys.
+
+Example:
+
+    https://id.example.com/jwks
+
+- The Relying Party can use these public keys to validate signatures on ID Tokens.
+
+- `scopes_supported`
+  - Lists scopes supported by the provider.
+
+Example:
+
+    openid
+    profile
+    email
+
+- `response_types_supported`
+  - Describes supported authorization response types.
+
+Example:
+
+    code
+
+- `token_endpoint_auth_methods_supported`
+  - Describes how clients can authenticate at the Token Endpoint.
+
+Examples:
+
+    client_secret_basic
+    client_secret_post
+    private_key_jwt
+    tls_client_auth
+
+Important distinction:
+
+- Discovery tells the client how the OpenID Provider is configured.
+- It does not itself authenticate the user.
+- It provides metadata that allows the client to correctly communicate with the provider.
+
+=======================================================================================================================================================================
+OAuth 2.0 vs OpenID Connect
+=======================================================================================================================================================================
+
+- OAuth 2.0 is primarily about authorization.
+- OpenID Connect adds authentication and identity on top of OAuth 2.0.
+
+Authorization vs authentication:
+
+    OAuth 2.0
+        |
+        v
+    "What can this client access?"
+
+    OpenID Connect
+        |
+        v
+    "Who authenticated?"
+
+Access Token vs ID Token:
+
+    Access Token
+        |
+        v
+    Resource Server
+        |
+        v
+    Protected Resource
+
+
+    ID Token
+        |
+        v
+    Relying Party
+        |
+        v
+    Authentication + Identity
+
+OAuth 2.0 scopes:
+
+    photos.read
+    photos.write
+    inventory.read
+
+- These scopes describe authorization to access resources.
+
+OIDC `openid` scope:
+
+    scope=openid
+
+- This signals that the request is an OpenID Connect authentication request.
+
+Resource access vs identity information:
+
+    OAuth 2.0
+
+    Client
+       |
+       | Access Token
+       v
+    Resource Server
+       |
+       v
+    Protected Resource
+
+
+    OpenID Connect
+
+    Relying Party
+       |
+       | ID Token
+       v
+    Authentication + Identity
+
+Authorization Server vs OpenID Provider:
+
+    OAuth 2.0:
+
+    Authorization Server
+       |
+       | authorization
+       v
+    Client
+
+
+    OIDC:
+
+    OpenID Provider
+       |
+       +---- OAuth Authorization Server functionality
+       |
+       +---- User authentication
+       |
+       +---- ID Token
+       |
+       +---- UserInfo
+       |
+       +---- Discovery
+       |
+       +---- JWKS
+
+- An OpenID Provider normally acts as the OAuth 2.0 Authorization Server while adding OIDC functionality.
+
+Client vs Relying Party:
+
+    OAuth 2.0:
+    Client
+
+    OIDC:
+    Relying Party
+
+- In OIDC, the Relying Party is also an OAuth client.
+- The term Relying Party emphasizes that the application relies on the OpenID Provider for authentication and identity information.
+
+Core distinction:
+
+    OAuth 2.0
+        |
+        | Authorization
+        v
+    Access Token
+        |
+        v
+    Resource Access
+
+
+    OIDC
+        |
+        | Authentication + Identity
+        v
+    ID Token
+        |
+        v
+    User Identity
+
+=======================================================================================================================================================================
