@@ -49,6 +49,19 @@ SPRING SECURITY
 4.8 Custom AuthenticationProvider
 
 
+8. AUTHORIZATION
+------------------------------------------------------------
+8.1 Request-level Authorization
+8.2 Method-level Authorization
+8.3 @PreAuthorize
+8.4 @PostAuthorize
+8.5 @Secured
+8.6 Role-based Authorization
+8.7 Authority-based Authorization
+8.8 Custom Authorization Logic
+8.9 Authorization Flow
+
+
 5. FORM / SESSION AUTHENTICATION
 ------------------------------------------------------------
 5.1 Form Login
@@ -87,30 +100,6 @@ SPRING SECURITY
 7.10 Access Tokens and Refresh Tokens
 7.11 Token Expiration
 7.12 JWT Authentication vs Session Authentication
-
-
-8. AUTHORIZATION
-------------------------------------------------------------
-8.1 Request-level Authorization
-8.2 Method-level Authorization
-8.3 @PreAuthorize
-8.4 @PostAuthorize
-8.5 @Secured
-8.6 Role-based Authorization
-8.7 Authority-based Authorization
-8.8 Custom Authorization Logic
-8.9 Authorization Flow
-
-
-9. EXCEPTION HANDLING
-------------------------------------------------------------
-9.1 AuthenticationException
-9.2 AccessDeniedException
-9.3 AuthenticationEntryPoint
-9.4 AccessDeniedHandler
-9.5 401 Unauthorized
-9.6 403 Forbidden
-9.7 ExceptionTranslationFilter
 
 
 10. CSRF PROTECTION
@@ -170,6 +159,7 @@ refresh token flow
 13.12 Spring Security OAuth2 Client
 13.13 Spring Security OAuth2 Resource Server
 
+
 14. OPENID CONNECT
 ------------------------------------------------------------
 14.1 OAuth 2.0 vs OpenID Connect
@@ -193,6 +183,17 @@ OIDC Logout
 15.3 Securing Service Methods
 15.4 Authorization Based on Method Arguments
 15.5 Custom Authorization
+
+
+9. EXCEPTION HANDLING
+------------------------------------------------------------
+9.1 AuthenticationException
+9.2 AccessDeniedException
+9.3 AuthenticationEntryPoint
+9.4 AccessDeniedHandler
+9.5 401 Unauthorized
+9.6 403 Forbidden
+9.7 ExceptionTranslationFilter
 
 
 16. APPLICATION SECURITY CUSTOMIZATION
@@ -250,21 +251,20 @@ First Request - username & password form parameters
     v
 Servlet Container
     |
-    |  DelegatingFilterProxy
     v
-FilterChainProxy
+DelegatingFilterProxy
+    |  
+    v
+FilterChainProxy (selects SecurityFilterChain)
     |
-    |-- selects SecurityFilterChain
     |
     |-- UsernamePasswordAuthenticationFilter
     |       |
     |       |-- extracts username & password
+    |       |-- UsernamePasswordAuthenticationToken 
     |       |
     |       v
     |   AuthenticationManager
-    |       |
-    |       v
-    |   ProviderManager
     |       |
     |       v
     |   AuthenticationProvider
@@ -276,7 +276,7 @@ FilterChainProxy
     |       |-- PasswordEncoder - BCryptPasswordEncoder, DelegatingPasswordEncoder, etc.
     |       |
     |       v
-    |   Authentication - UsernamePasswordAuthenticationToken
+    |   Authentication
     |       |
     |       v
     |   SecurityContext
@@ -330,7 +330,9 @@ Request - Authorization: Basic <Base64(username:password)>
     v
 Servlet Container
     |
-    |  DelegatingFilterProxy
+    v
+DelegatingFilterProxy
+    |  
     v
 FilterChainProxy
     |
@@ -384,7 +386,9 @@ First Request - username & password
     v
 Servlet Container
     |
-    |  DelegatingFilterProxy
+    v
+DelegatingFilterProxy
+    |  
     v
 FilterChainProxy
     |
@@ -430,7 +434,9 @@ Subsequent Requests - Authorization: Bearer <JWT>
     v
 Servlet Container
     |
-    |  DelegatingFilterProxy
+    v
+DelegatingFilterProxy
+    |  
     v
 FilterChainProxy
     |

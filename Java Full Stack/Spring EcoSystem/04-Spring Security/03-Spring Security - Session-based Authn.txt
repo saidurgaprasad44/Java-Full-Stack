@@ -1,0 +1,412 @@
+=======================================================================================================================================================================
+FORM / SESSION AUTHENTICATION
+=======================================================================================================================================================================
+
+- Form Login
+
+  - Spring Security provides form-based authentication through formLogin().
+
+  - Example:
+
+    http.formLogin(form -> form
+        .loginPage("/login")
+        .loginProcessingUrl("/login")
+        .defaultSuccessUrl("/home")
+        .failureUrl("/login?error=true")
+    );
+
+  - loginPage()
+    - Defines the application login page.
+
+  - loginProcessingUrl()
+    - Defines the URL processed by Spring Security.
+    - The request does not need to reach the controller.
+    - UsernamePasswordAuthenticationFilter processes the request.
+
+  - defaultSuccessUrl()
+    - Defines where the user is redirected after successful authentication.
+
+  - failureUrl()
+    - Defines where the user is redirected after authentication failure.
+
+------------------------------------------------------------
+- Authentication Flow
+
+  - First request containing username/password form parameters:
+
+    Login Form
+        |
+        v
+    Servlet Container
+        |
+        v
+    DelegatingFilterProxy
+        |
+        v
+    FilterChainProxy
+        |
+        |-- selects SecurityFilterChain
+        |
+        v
+    UsernamePasswordAuthenticationFilter
+        |
+        |-- extracts username/password
+        |
+        v
+    UsernamePasswordAuthenticationToken
+        |
+        v
+    AuthenticationManager
+        |
+        v
+    ProviderManager
+        |
+        v
+    AuthenticationProvider
+        |
+        v
+    DaoAuthenticationProvider
+        |
+        |-- UserDetailsService
+        |       |
+        |       v
+        |   UserDetails
+        |
+        |-- PasswordEncoder
+        |       |
+        |       v
+        |   password verification
+        |
+        v
+    Authentication
+        |
+        v
+    SecurityContext
+        |
+        v
+    SecurityContextRepository
+        |
+        v
+    HttpSession
+        |
+        v
+    JSESSIONID associated with browser
+        |
+        v
+    Remaining Security Filters
+        |
+        v
+    AuthorizationFilter
+        |
+        v
+    DispatcherServlet
+        |
+        v
+    Controller
+        |
+        v
+    Response
+
+------------------------------------------------------------
+- SecurityContext and HTTP Session
+
+  - After successful authentication, Spring Security has an authenticated Authentication object.
+  - The Authentication is placed inside the SecurityContext.
+
+    Authentication
+        |
+        v
+    SecurityContext
+        |
+        v
+    SecurityContextHolder
+
+  - SecurityContextRepository is responsible for loading and saving the SecurityContext across requests.
+  - With session-based authentication, the SecurityContext can be persisted in the HTTP session.
+
+    SecurityContext
+        |
+        v
+    SecurityContextRepository
+        |
+        v
+    HttpSession
+
+  - The next request can therefore restore the previously authenticated SecurityContext instead of asking the user to authenticate again.
+
+------------------------------------------------------------
+- JSESSIONID
+
+  - JSESSIONID identifies the HTTP session associated with the browser.
+  - After session-based authentication:
+
+    Browser
+        |
+        | JSESSIONID
+        v
+    Tomcat HttpSession
+        |
+        v
+    SecurityContext
+        |
+        v
+    Authentication
+
+  - Subsequent requests containing the JSESSIONID can be associated with the same HTTP session.
+
+  - JSESSIONID itself does not contain the Authentication object.
+  - It identifies the server-side HTTP session containing the session state.
+
+------------------------------------------------------------
+- Subsequent Requests
+
+  - After successful login, the browser sends the JSESSIONID with subsequent requests.
+
+    Subsequent Request
+        |
+        v
+    Servlet Container
+        |
+        v
+    DelegatingFilterProxy
+        |
+        v
+    FilterChainProxy
+        |
+        v
+    SecurityContextRepository
+        |
+        v
+    HttpSession
+        |
+        v
+    Restore SecurityContext
+        |
+        v
+    SecurityContextHolder
+        |
+        v
+    SecurityContext
+        |
+        v
+    Authentication
+        |
+        v
+    AuthorizationFilter
+        |
+        |-- AuthorizationManager
+        |-- checks Authentication / GrantedAuthority
+        |
+        v
+    DispatcherServlet
+        |
+        v
+    Controller
+        |
+        v
+    Response
+
+------------------------------------------------------------
+- Session Creation Policies
+
+  - Spring Security controls session usage through SessionCreationPolicy.
+
+  - IF_REQUIRED
+    - Creates a session when required.
+    - Common choice for session-based applications.
+
+  - ALWAYS
+    - Creates an HTTP session if one does not already exist.
+
+  - NEVER
+    - Spring Security does not create a session.
+    - Existing sessions can still be used.
+
+  - STATELESS
+    - Spring Security does not use the HTTP session to obtain or store authentication.
+    - Authentication must be established independently for each request.
+
+------------------------------------------------------------
+- Stateless vs Stateful Applications
+
+  - Stateful session authentication:
+
+    Login
+      |
+      v
+    Authentication
+      |
+      v
+    SecurityContext
+      |
+      v
+    HttpSession
+      |
+      v
+    JSESSIONID
+      |
+      v
+    Subsequent Request
+      |
+      v
+    Restore SecurityContext
+      |
+      v
+    Authentication
+
+
+  - Stateless authentication:
+
+    Request
+      |
+      v
+    Authentication credentials/token
+      |
+      v
+    Authentication
+      |
+      v
+    SecurityContext
+      |
+      v
+    Authorization
+      |
+      v
+    Response
+
+  - With STATELESS, Spring Security does not persist the SecurityContext in the HTTP session for subsequent authentication.
+
+------------------------------------------------------------
+- Session Fixation Protection
+
+  - Spring Security protects against session fixation during authentication.
+  - The session identifier is changed or the session is replaced according to the configured session fixation strategy after successful authentication.
+
+  - Simplified flow:
+
+    Existing Session
+        |
+        v
+    Authentication
+        |
+        v
+    Session Fixation Protection
+        |
+        v
+    New / Changed Session ID
+        |
+        v
+    Authenticated Session
+
+------------------------------------------------------------
+- Concurrent Sessions
+
+  - Spring Security can restrict how many active sessions a user can have.
+
+  - Example configuration:
+
+    http.sessionManagement(session -> session
+        .maximumSessions(1)
+    );
+
+  - The configured session limit is enforced when authenticated sessions are created.
+
+  - Example:
+
+    User
+      |
+      +---- Browser A
+      |       |
+      |       v
+      |    Session A
+      |
+      +---- Browser B
+              |
+              v
+           Session B
+
+  - With a maximum session limit, Spring Security manages which authenticated sessions remain active.
+
+------------------------------------------------------------
+- Logout
+
+  - Spring Security processes logout through LogoutFilter.
+
+  - Example:
+
+    http.logout(logout -> logout
+        .logoutUrl("/logout")
+        .logoutSuccessUrl("/login?logout=true")
+    );
+
+  - Logout flow:
+
+    Logout Request
+        |
+        v
+    Servlet Container
+        |
+        v
+    DelegatingFilterProxy
+        |
+        v
+    FilterChainProxy
+        |
+        v
+    LogoutFilter
+        |
+        |-- LogoutHandler
+        |       |
+        |       +-- invalidate session
+        |       +-- clear security state
+        |
+        v
+    SecurityContext cleared
+        |
+        v
+    LogoutSuccessHandler
+        |
+        v
+    Response / Redirect
+
+------------------------------------------------------------
+- Remember-Me
+
+  - Spring Security provides remember-me authentication through rememberMe().
+  - Remember-me allows Spring Security to establish authentication after the normal session is no longer available, using the configured remember-me mechanism.
+  - Configuration is performed through HttpSecurity.
+
+    http.rememberMe(...);
+
+  - Basic flow:
+
+    Login
+        |
+        v
+    Successful Authentication
+        |
+        v
+    Remember-Me mechanism
+        |
+        v
+    Remember-Me cookie
+        |
+        v
+    Subsequent Request
+        |
+        v
+    Remember-Me Authentication
+        |
+        v
+    Authentication
+        |
+        v
+    SecurityContext
+        |
+        v
+    AuthorizationFilter
+        |
+        v
+    Controller
+
+=======================================================================================================================================================================

@@ -37,14 +37,14 @@ SPRING SECURITY FUNDAMENTALS
       v
     Response
 
-
+------------------------------------------------------------
 - Authentication
 
   - Determines whether Spring Security can establish an authenticated identity for the request.
   - A successful authentication results in an Authentication object.
   - The Authentication object is stored in the SecurityContext.
 
-
+------------------------------------------------------------
 - Authorization
 
   - Uses the current Authentication and its GrantedAuthority values to determine whether access is allowed.
@@ -54,7 +54,7 @@ SPRING SECURITY FUNDAMENTALS
     - Authenticated but unauthorized
     - Authenticated and authorized
 
-
+------------------------------------------------------------
 - Authentication vs Authorization
 
     Request
@@ -73,7 +73,7 @@ SPRING SECURITY FUNDAMENTALS
        |
        +----> Deny -----> 403 / AccessDeniedHandler
 
-
+------------------------------------------------------------
 - SecurityContext
 
   - SecurityContext represents the security state associated with the current request.
@@ -89,7 +89,7 @@ SPRING SECURITY FUNDAMENTALS
                        +---- Authorities
                        +---- Authentication state
 
-
+------------------------------------------------------------
 - SecurityContextHolder
 
   - SecurityContextHolder provides access to the current SecurityContext.
@@ -103,7 +103,7 @@ SPRING SECURITY FUNDAMENTALS
 
   - In the normal servlet request model, the SecurityContext is associated with the current thread during request processing.
 
-
+------------------------------------------------------------
 - Authentication stored in SecurityContext
 
   - After successful authentication:
@@ -118,7 +118,7 @@ SPRING SECURITY FUNDAMENTALS
 
   - Code executing during the request can retrieve the authenticated user through SecurityContextHolder.
 
-
+------------------------------------------------------------
 - Authentication Object
 
   - Authentication is the Spring Security representation of the currently authenticated identity.
@@ -131,7 +131,7 @@ SPRING SECURITY FUNDAMENTALS
   - During authentication, an authentication request token can initially represent the credentials supplied by the client.
   - After successful authentication, the Authentication object represents the authenticated identity.
 
-
+------------------------------------------------------------
 - Principal
 
   - Principal represents the authenticated user identity.
@@ -146,13 +146,13 @@ SPRING SECURITY FUNDAMENTALS
 
     Object principal = authentication.getPrincipal();
 
-
+------------------------------------------------------------
 - Authentication state
 
   - Authentication has an authenticated state.
   - Spring Security uses the resulting Authentication object throughout the request to perform authorization and provide access to the authenticated identity.
 
-
+------------------------------------------------------------
 - GrantedAuthority
 
   - GrantedAuthority represents an authority assigned to the authenticated user.
@@ -171,7 +171,7 @@ SPRING SECURITY FUNDAMENTALS
 
   - Authorization decisions use these authorities.
 
-
+------------------------------------------------------------
 - Roles vs Authorities
 
   - Spring Security ultimately works with GrantedAuthority values.
@@ -199,6 +199,47 @@ SPRING SECURITY FUNDAMENTALS
 SPRING SECURITY ARCHITECTURE
 =======================================================================================================================================================================
 
+- DelegatingFilterProxy
+
+  - DelegatingFilterProxy is the Servlet filter registered with the Servlet container.
+  - It delegates filter processing to a Spring-managed bean.
+  - Spring Security uses it to connect the Servlet container's filter mechanism with the Spring Security filter infrastructure.
+
+  - Flow:
+
+    Tomcat
+      |
+      v
+    DelegatingFilterProxy
+      |
+      v
+    Spring Security bean
+      |
+      v
+    FilterChainProxy
+
+------------------------------------------------------------
+- FilterChainProxy
+
+  - FilterChainProxy is the central Spring Security filter.
+  - It receives the request from DelegatingFilterProxy.
+  - It determines which SecurityFilterChain applies to the request.
+  - It then executes the filters belonging to that chain.
+
+  - Flow:
+
+    DelegatingFilterProxy
+            |
+            v
+      FilterChainProxy
+            |
+            v
+    Select SecurityFilterChain
+            |
+            v
+      Execute filters
+
+------------------------------------------------------------
 - Security Filter Chain
 
   - Spring Security implements request security primarily through Servlet filters.
@@ -222,55 +263,14 @@ SPRING SECURITY ARCHITECTURE
          v
     DispatcherServlet
 
-
-- DelegatingFilterProxy
-
-  - DelegatingFilterProxy is the Servlet filter registered with the Servlet container.
-  - It delegates filter processing to a Spring-managed bean.
-  - Spring Security uses it to connect the Servlet container's filter mechanism with the Spring Security filter infrastructure.
-
-  - Flow:
-
-    Tomcat
-      |
-      v
-    DelegatingFilterProxy
-      |
-      v
-    Spring Security bean
-      |
-      v
-    FilterChainProxy
-
-
-- FilterChainProxy
-
-  - FilterChainProxy is the central Spring Security filter.
-  - It receives the request from DelegatingFilterProxy.
-  - It determines which SecurityFilterChain applies to the request.
-  - It then executes the filters belonging to that chain.
-
-  - Flow:
-
-    DelegatingFilterProxy
-            |
-            v
-      FilterChainProxy
-            |
-            v
-    Select SecurityFilterChain
-            |
-            v
-      Execute filters
-
-
+------------------------------------------------------------
 - Multiple SecurityFilterChains
 
   - FilterChainProxy can contain multiple SecurityFilterChain instances.
   - It selects the appropriate chain based on request matching.
   - The selected chain processes the request.
 
-
+------------------------------------------------------------
 - Security Filters
 
   - Individual security features are implemented through filters.
@@ -317,7 +317,7 @@ SPRING SECURITY ARCHITECTURE
        v
     DispatcherServlet
 
-
+------------------------------------------------------------
 - SecurityContextHolder
 
   - SecurityContextHolder provides the current SecurityContext to Spring Security components and application code.
@@ -342,7 +342,7 @@ SPRING SECURITY ARCHITECTURE
 
   - The current thread can therefore access the Authentication established for that request.
 
-
+------------------------------------------------------------
 - AuthenticationManager
 
   - AuthenticationManager is responsible for processing an Authentication request.
@@ -365,7 +365,7 @@ SPRING SECURITY ARCHITECTURE
             v
     AuthenticationProvider
 
-
+------------------------------------------------------------
 - AuthenticationProvider
 
   - AuthenticationManager delegates authentication to one or more AuthenticationProvider implementations.
@@ -386,7 +386,7 @@ SPRING SECURITY ARCHITECTURE
             v
     Authenticated Authentication
 
-
+------------------------------------------------------------
 - UserDetailsService
 
   - UserDetailsService provides user information to an AuthenticationProvider.
@@ -405,7 +405,7 @@ SPRING SECURITY ARCHITECTURE
             v
     UserDetails
 
-
+------------------------------------------------------------
 - PasswordEncoder
 
   - PasswordEncoder is used by the AuthenticationProvider to verify the supplied password against the stored password representation.
@@ -424,74 +424,92 @@ SPRING SECURITY ARCHITECTURE
                        v
                   Password verification
 
-
+------------------------------------------------------------
 - How Authentication Flows Through Spring Security
 
-    HTTP Request
-         |
-         v
-    DelegatingFilterProxy
-         |
-         v
-    FilterChainProxy
-         |
-         v
-    SecurityFilterChain
-         |
-         v
-    Authentication Filter
-         |
-         v
-    Authentication Token
-         |
-         v
-    AuthenticationManager
-         |
-         v
-    AuthenticationProvider
-         |
-         +----> UserDetailsService
-         |
-         +----> PasswordEncoder
-         |
-         v
-    Authentication
-         |
-         v
-    SecurityContext
-         |
-         v
-    SecurityContextHolder
-         |
-         v
-    Remaining Security Filters
-         |
-         v
-    Authorization
-         |
-         +----> Allowed
-         |         |
-         |         v
-         |    DispatcherServlet
-         |         |
-         |         v
-         |      Controller
-         |         |
-         |         v
-         |      Response
-         |
-         +----> Denied
-                   |
-                   v
-             Security Exception Handling
-                   |
-                   v
-                Response
+General Spring Security Request Flow:
+
+
+HTTP Request
+    |
+    v
+Servlet Container
+    |
+    v
+DelegatingFilterProxy
+    |
+    v
+FilterChainProxy
+    |
+    |-- selects the matching SecurityFilterChain
+    |
+    v
+Security Filters
+    |
+    |-- SecurityContext handling
+    |       |
+    |       |-- SecurityContextRepository
+    |       |-- Checks if SecurityContext is available
+    |       |-- loads/restores SecurityContext if yes
+    |       |
+    |       v
+    |   SecurityContextHolder
+    |       |
+    |       v
+    |   SecurityContext
+    |       |
+    |       v
+    |   Authentication
+    |
+    |
+    |-- Authentication Filter
+    |       |
+    |       |-- authentication mechanism to extract User State
+    |       |-- creates Authentication token
+    |       |
+    |       v
+    |   AuthenticationManager
+    |       |
+    |       v
+    |   AuthenticationProvider
+    |       |
+    |       |-- authentication-specific processing
+    |       |
+    |       v
+    |   Authentication
+    |       |
+    |       v
+    |   SecurityContext
+    |
+    |
+    |-- AuthorizationFilter
+    |       |
+    |       |-- AuthorizationManager
+    |       |-- checks Authentication
+    |       |-- checks GrantedAuthority
+    |       |
+    |       +---- allows request
+    |       |
+    |       +---- denies request
+    |                   |
+    |                   v
+    |             AccessDeniedHandler
+    |
+    v
+DispatcherServlet
+    |
+    v
+Controller
+    |
+    v
+Response
+
 
 =======================================================================================================================================================================
 SECURITY CONFIGURATION
 =======================================================================================================================================================================
 
+------------------------------------------------------------
 - SecurityFilterChain
 
   - Spring Security configuration is commonly exposed as a SecurityFilterChain bean.
@@ -514,7 +532,7 @@ SECURITY CONFIGURATION
 
   - http.build() creates the configured SecurityFilterChain.
 
-
+------------------------------------------------------------
 - HttpSecurity
 
   - HttpSecurity is the main API used to configure Spring Security.
@@ -527,7 +545,7 @@ SECURITY CONFIGURATION
         .formLogin(...)
         .httpBasic(...);
 
-
+------------------------------------------------------------
 - Request Authorization
 
   - Request authorization is configured through authorizeHttpRequests().
@@ -541,7 +559,7 @@ SECURITY CONFIGURATION
         .anyRequest().authenticated()
     );
 
-
+------------------------------------------------------------
 - Public vs Protected Endpoints
 
   - permitAll():
@@ -568,7 +586,7 @@ SECURITY CONFIGURATION
        |
        +---- Not authenticated -> AuthenticationEntryPoint
 
-
+------------------------------------------------------------
 - Authentication Configuration
 
   - Authentication mechanisms are configured through HttpSecurity.
@@ -586,7 +604,7 @@ SECURITY CONFIGURATION
     - UserDetailsService
     - PasswordEncoder
 
-
+------------------------------------------------------------
 - Multiple SecurityFilterChains
 
   - Multiple SecurityFilterChain beans can be configured when different request groups require different security configurations.
@@ -606,7 +624,7 @@ SECURITY CONFIGURATION
        v
     Matching SecurityFilterChain
 
-
+------------------------------------------------------------
 - Security Configuration Ordering
 
   - Request matcher rules are evaluated according to their configured order.
@@ -619,201 +637,5 @@ SECURITY CONFIGURATION
 
   - If the broad rule is evaluated first, it can prevent the more specific rule from being reached.
   - With multiple SecurityFilterChains, chain ordering also determines which matching chain is selected.
-
-=======================================================================================================================================================================
-USER AUTHENTICATION
-=======================================================================================================================================================================
-
-- UserDetails
-
-  - UserDetails is Spring Security's representation of the authenticated user's account information used during authentication.
-
-  - It provides:
-    - Username
-    - Password
-    - Authorities
-    - Account status information
-
-  - AuthenticationProvider uses UserDetails during authentication.
-
-
-- UserDetailsService
-
-  - UserDetailsService is responsible for loading UserDetails.
-
-  - Main method:
-
-    UserDetails loadUserByUsername(String username)
-
-  - Typical flow:
-
-    AuthenticationProvider
-            |
-            v
-    UserDetailsService
-            |
-            v
-    UserDetails
-            |
-            v
-    AuthenticationProvider
-            |
-            v
-    Authentication
-
-
-- In-Memory Users
-
-  - InMemoryUserDetailsManager provides UserDetails from memory.
-
-  - Example:
-
-    @Bean
-    UserDetailsService userDetailsService(
-            PasswordEncoder passwordEncoder) {
-
-        UserDetails user =
-            User.withUsername("john")
-                .password(passwordEncoder.encode("password"))
-                .roles("USER")
-                .build();
-
-        return new InMemoryUserDetailsManager(user);
-    }
-
-
-- Database-backed Users
-
-  - A custom UserDetailsService can load the user from a repository/database.
-
-  - Flow:
-
-    AuthenticationProvider
-            |
-            v
-    Custom UserDetailsService
-            |
-            v
-    Repository
-            |
-            v
-    Database
-            |
-            v
-    Application User
-            |
-            v
-    UserDetails
-            |
-            v
-    AuthenticationProvider
-
-
-- Custom UserDetails
-
-  - Application-specific user data can be represented through a custom implementation of UserDetails.
-
-  - Example relationship:
-
-    Database User
-         |
-         v
-    Custom UserDetails
-         |
-         +---- username
-         +---- password
-         +---- authorities
-         +---- account status
-         |
-         v
-    AuthenticationProvider
-
-
-- PasswordEncoder
-
-  - PasswordEncoder is configured as a Spring bean and used by the authentication provider.
-
-  - Example:
-
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-  - During authentication:
-
-    Supplied password
-           |
-           v
-    PasswordEncoder.matches(...)
-           |
-           v
-    Stored password representation
-           |
-           v
-    Match / No Match
-
-
-- AuthenticationProvider
-
-  - DaoAuthenticationProvider is the standard provider used with UserDetailsService-based authentication.
-
-  - Typical configuration:
-
-    @Bean
-    AuthenticationProvider authenticationProvider(
-            UserDetailsService userDetailsService,
-            PasswordEncoder passwordEncoder) {
-
-        DaoAuthenticationProvider provider =
-            new DaoAuthenticationProvider();
-
-        provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder);
-
-        return provider;
-    }
-
-  - Authentication flow:
-
-    AuthenticationManager
-            |
-            v
-    DaoAuthenticationProvider
-            |
-            +----> UserDetailsService
-            |
-            +----> PasswordEncoder
-            |
-            v
-    Authentication
-
-
-- Custom AuthenticationProvider
-
-  - A custom AuthenticationProvider can implement application-specific authentication logic.
-
-  - Main methods:
-
-    authenticate(Authentication authentication)
-
-    supports(Class<?> authentication)
-
-  - Flow:
-
-    AuthenticationManager
-            |
-            v
-    Custom AuthenticationProvider
-            |
-            v
-    Custom authentication logic
-            |
-            v
-    Authentication
-            |
-            v
-    SecurityContext
-
 
 =======================================================================================================================================================================

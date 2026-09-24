@@ -1,0 +1,500 @@
+
+=======================================================================================================================================================================
+USER AUTHENTICATION
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+- UserDetails
+
+  - UserDetails is Spring Security's representation of the authenticated user's account information used during authentication.
+
+  - It provides:
+    - Username
+    - Password
+    - Authorities
+    - Account status information
+
+  - AuthenticationProvider uses UserDetails during authentication.
+
+------------------------------------------------------------
+- UserDetailsService
+
+  - UserDetailsService is responsible for loading UserDetails.
+
+  - Main method:
+
+    UserDetails loadUserByUsername(String username)
+
+  - Typical flow:
+
+    AuthenticationProvider
+            |
+            v
+    UserDetailsService
+            |
+            v
+    UserDetails
+            |
+            v
+    AuthenticationProvider
+            |
+            v
+    Authentication
+
+------------------------------------------------------------
+- In-Memory Users
+
+  - InMemoryUserDetailsManager provides UserDetails from memory.
+
+  - Example:
+
+    @Bean
+    UserDetailsService userDetailsService(
+            PasswordEncoder passwordEncoder) {
+
+        UserDetails user =
+            User.withUsername("john")
+                .password(passwordEncoder.encode("password"))
+                .roles("USER")
+                .build();
+
+        return new InMemoryUserDetailsManager(user);
+    }
+
+------------------------------------------------------------
+- Database-backed Users
+
+  - A custom UserDetailsService can load the user from a repository/database.
+
+  - Flow:
+
+    AuthenticationProvider
+            |
+            v
+    Custom UserDetailsService
+            |
+            v
+    Repository
+            |
+            v
+    Database
+            |
+            v
+    Application User
+            |
+            v
+    UserDetails
+            |
+            v
+    AuthenticationProvider
+
+------------------------------------------------------------
+- Custom UserDetails
+
+  - Application-specific user data can be represented through a custom implementation of UserDetails.
+
+  - Example relationship:
+
+    Database User
+         |
+         v
+    Custom UserDetails
+         |
+         +---- username
+         +---- password
+         +---- authorities
+         +---- account status
+         |
+         v
+    AuthenticationProvider
+
+------------------------------------------------------------
+- PasswordEncoder
+
+  - PasswordEncoder is configured as a Spring bean and used by the authentication provider.
+
+  - Example:
+
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+  - During authentication:
+
+    Supplied password
+           |
+           v
+    PasswordEncoder.matches(...)
+           |
+           v
+    Stored password representation
+           |
+           v
+    Match / No Match
+
+------------------------------------------------------------
+- AuthenticationProvider
+
+  - DaoAuthenticationProvider is the standard provider used with UserDetailsService-based authentication.
+
+  - Typical configuration:
+
+    @Bean
+    AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
+
+        return provider;
+    }
+
+  - Authentication flow:
+
+    AuthenticationManager
+            |
+            v
+    DaoAuthenticationProvider
+            |
+            +----> UserDetailsService
+            |
+            +----> PasswordEncoder
+            |
+            v
+    Authentication
+
+------------------------------------------------------------
+- Custom AuthenticationProvider
+
+  - A custom AuthenticationProvider can implement application-specific authentication logic.
+
+  - Main methods:
+
+    authenticate(Authentication authentication)
+
+    supports(Class<?> authentication)
+
+  - Flow:
+
+    AuthenticationManager
+            |
+            v
+    Custom AuthenticationProvider
+            |
+            v
+    Custom authentication logic
+            |
+            v
+    Authentication
+            |
+            v
+    SecurityContext
+
+
+=======================================================================================================================================================================
+AUTHORIZATION
+=======================================================================================================================================================================
+
+- Request-level Authorization
+
+  - Spring Security performs request authorization through AuthorizationFilter.
+  - AuthorizationFilter delegates the authorization decision to AuthorizationManager.
+  - AuthorizationManager uses the current Authentication and the configured authorization rules.
+
+  - Request flow:
+
+    HTTP Request
+        |
+        v
+    Security Filter Chain
+        |
+        v
+    AuthorizationFilter
+        |
+        v
+    AuthorizationManager
+        |
+        |-- gets Authentication
+        |-- evaluates authorization rules
+        |-- checks GrantedAuthority
+        |
+        +----> Authorization granted
+        |          |
+        |          v
+        |      DispatcherServlet
+        |          |
+        |          v
+        |      Controller
+        |
+        +----> Authorization denied
+                   |
+                   v
+             AccessDeniedException
+                   |
+                   v
+             Exception handling
+                   |
+                   v
+                  403
+
+
+- Request-level authorization configuration
+
+  - Configured through HttpSecurity.
+
+    http.authorizeHttpRequests(auth -> auth
+        .requestMatchers("/admin/**").hasRole("ADMIN")
+        .requestMatchers("/reports/**").hasAuthority("REPORT_READ")
+        .anyRequest().authenticated()
+    );
+
+  - authorizeHttpRequests() configures request authorization.
+  - requestMatchers() identifies the requests to which a rule applies.
+  - AuthorizationManager evaluates the rule for the current request.
+
+------------------------------------------------------------
+- Method-level Authorization
+
+  - Spring Security can perform authorization when a method is invoked.
+  - Method security is separate from request-level authorization.
+  - The authenticated Authentication is used to make the authorization decision.
+  - Enable Method Security with @EnableMethodSecurity on security config class
+
+  - Flow:
+
+    Controller
+        |
+        v
+    Service Method
+        |
+        v
+    Method Security
+        |
+        v
+    AuthorizationManager
+        |
+        |-- Authentication
+        |-- GrantedAuthority
+        |-- Authorization rules
+        |
+        +----> Allow ----> Method executes
+        |
+        +----> Deny -----> AccessDeniedException
+
+------------------------------------------------------------
+- @PreAuthorize
+
+  - Authorization is evaluated before the method executes.
+  - Spring Security evaluates the expression against the current Authentication and application context.
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteUser(Long id) {
+        ...
+    }
+
+  - Flow:
+
+    Method Invocation
+         |
+         v
+    @PreAuthorize
+         |
+         v
+    Authorization check
+         |
+         +----> Allowed
+         |        |
+         |        v
+         |    Method executes
+         |
+         +----> Denied
+                  |
+                  v
+            AccessDeniedException
+
+------------------------------------------------------------
+- @PostAuthorize
+
+  - Authorization is evaluated after the method executes.
+  - The authorization decision can use the returned object.
+
+    @PostAuthorize("returnObject.owner == authentication.name")
+    public Account getAccount(Long id) {
+        ...
+    }
+
+  - Flow:
+
+    Method Invocation
+         |
+         v
+    Method executes
+         |
+         v
+    Return Object
+         |
+         v
+    @PostAuthorize
+         |
+         v
+    Authorization check
+         |
+         +----> Allowed
+         |
+         +----> Denied
+                  |
+                  v
+            AccessDeniedException
+
+------------------------------------------------------------
+- @Secured
+
+  - Provides role/authority-based method authorization.
+  - Requires method security to be enabled.
+
+    @Secured("ROLE_ADMIN")
+    public void deleteUser(Long id) {
+        ...
+    }
+
+  - Spring Security checks the Authentication's GrantedAuthority values against the configured value.
+
+------------------------------------------------------------
+- Role-based Authorization
+
+  - Spring Security represents roles as GrantedAuthority values.
+  - Roles normally use the ROLE_ prefix.
+
+    User
+      |
+      v
+    Authentication
+      |
+      v
+    GrantedAuthority
+      |
+      +---- ROLE_ADMIN
+      +---- ROLE_USER
+
+  - hasRole("ADMIN") checks for:
+
+    ROLE_ADMIN
+
+  - Example:
+
+    .requestMatchers("/admin/**").hasRole("ADMIN")
+
+------------------------------------------------------------
+- Authority-based Authorization
+
+  - Authority-based authorization checks the GrantedAuthority value directly.
+
+  - Example:
+
+    .requestMatchers("/reports/**")
+        .hasAuthority("REPORT_READ")
+
+  - Flow:
+
+    Authentication
+         |
+         v
+    GrantedAuthority
+         |
+         +---- REPORT_READ
+         |
+         v
+    hasAuthority("REPORT_READ")
+         |
+         +----> Allow
+         |
+         +----> Deny
+
+------------------------------------------------------------
+- Custom Authorization Logic
+
+  - Spring Security allows authorization logic to be implemented through a custom AuthorizationManager.
+
+  - Custom AuthorizationManager can inspect:
+    - Authentication
+    - Request
+    - Application-specific data
+    - GrantedAuthority
+    - Other application conditions
+
+  - Flow:
+
+    Request / Method
+         |
+         v
+    Custom AuthorizationManager
+         |
+         |-- Authentication
+         |-- Application data
+         |-- Authorization rules
+         |
+         +----> Authorization granted
+         |
+         +----> Authorization denied
+
+------------------------------------------------------------
+- Authorization Flow
+
+    HTTP Request
+        |
+        v
+    DelegatingFilterProxy
+        |
+        v
+    FilterChainProxy
+        |
+        v
+    SecurityFilterChain
+        |
+        v
+    Authentication already available
+        |
+        v
+    SecurityContextHolder
+        |
+        v
+    SecurityContext
+        |
+        v
+    Authentication
+        |
+        v
+    AuthorizationFilter
+        |
+        v
+    AuthorizationManager
+        |
+        |-- checks Authentication
+        |-- checks GrantedAuthority
+        |-- evaluates authorization rule
+        |
+        +----> Allow
+        |        |
+        |        v
+        |    DispatcherServlet
+        |        |
+        |        v
+        |    Controller
+        |        |
+        |        v
+        |    Response
+        |
+        +----> Deny
+                 |
+                 v
+          AccessDeniedException
+                 |
+                 v
+          AccessDeniedHandler
+                 |
+                 v
+                403
+
+=======================================================================================================================================================================
