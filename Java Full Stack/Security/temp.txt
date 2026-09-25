@@ -45,52 +45,6 @@ mTLS vs OAuth2
 
 
 
-10. OAuth 2.0
-OAuth2 problem it solves
-Actors: Resource Owner, Client, Authorization Server, Resource Server
-Access token
-Scopes
-Authorization grant
-OAuth2 endpoints
-OAuth2 Grant Types
-Authorization Code Flow (for User authorization)
-Client Credentials Flow (for client authorization): Client Secret, JWT Assertion
-PKCE
-Refresh Token
-Token expiration
-
-
-12. OAuth2 Security & Advanced Concepts
-Access token vs refresh token
-Refresh token rotation
-Refresh token expiration
-Token revocation
-Token introspection
-Audience
-Issuer
-Token exchange
-Public vs confidential clients
-Client authentication methods
-Consent
-Authorization Server key rotation
-JWKS
-OAuth2 security threats
-
-
-11. OpenID Connect
-Why OIDC exists
-OAuth2 vs OIDC
-Authentication vs authorization
-ID Token
-UserInfo endpoint
-openid scope
-OIDC claims
-Nonce
-auth_time
-azp
-OIDC discovery
-OIDC logout
-
 
 13. Authorization Concepts      - authorization
 Role-based access control
@@ -134,7 +88,7 @@ HttpOnly cookies
 SameSite cookies
 
 
-16. Password Security         - system design
+16. Password Security         - application security
 Password storage problem
 Hashing vs encryption
 Salt

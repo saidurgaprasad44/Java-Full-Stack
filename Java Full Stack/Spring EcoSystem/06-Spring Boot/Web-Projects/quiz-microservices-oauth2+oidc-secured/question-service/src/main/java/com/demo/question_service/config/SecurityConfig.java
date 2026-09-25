@@ -51,6 +51,7 @@ public class SecurityConfig {
 	    return http.build();
 	}
     
+	
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
 

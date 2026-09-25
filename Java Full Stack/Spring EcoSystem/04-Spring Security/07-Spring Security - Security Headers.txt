@@ -1,0 +1,403 @@
+=======================================================================================================================================================================
+SECURITY HEADERS
+=======================================================================================================================================================================
+
+- Spring Security can add security-related HTTP response headers to application responses.
+- These headers are implemented through the Spring Security filter chain.
+- Header configuration is done through HttpSecurity.
+- Security headers protect the client/browser side of the application.
+- Security headers do not authenticate the user or determine the user's permissions.
+
+
+HTTP Request
+|
+v
+Servlet Container
+|
+v
+DelegatingFilterProxy
+|
+v
+FilterChainProxy
+|
+|-- selects the matching SecurityFilterChain
+|
+v
+Security Filters
+|
+|-- HeaderWriterFilter
+|       |
+|       |-- HeaderWriter
+|       |       |
+|       |       |-- X-Content-Type-Options
+|       |       |-- X-Frame-Options
+|       |       |-- Strict-Transport-Security
+|       |       |-- Referrer-Policy
+|       |       |-- Content-Security-Policy
+|       |       |-- Custom security headers
+|       |
+|       v
+|   writes security headers to HttpServletResponse
+|
+|-- Other Security Filters
+|       |
+|       |-- Authentication
+|       |-- Authorization
+|       |-- CSRF
+|       |-- etc.
+|
+v
+DispatcherServlet
+|
+v
+Controller
+|
+v
+Response
+|
+v
+Security Response Headers
+
+- HeaderWriterFilter is the Spring Security filter responsible for writing configured security headers to the HTTP response.
+- HeaderWriter implementations determine which headers are added.
+- Security headers are response-side protections.
+- They are independent of the authentication mechanism being used.
+
+------------------------------------------------------------
+SECURITY HTTP RESPONSE HEADERS
+
+- Spring Security provides support for several security-related HTTP response headers.
+- Some headers are enabled by default.
+- Other headers require explicit configuration because their correct values depend on the application.
+- Individual headers can be configured through HttpSecurity.
+
+Example:
+
+@Bean
+SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+    http.headers(headers -> {
+        // header configuration
+    });
+
+    return http.build();
+}
+
+Example response:
+
+HTTP/1.1 200 OK
+Content-Type: text/html
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Referrer-Policy: strict-origin-when-cross-origin
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+- The exact response headers depend on the Spring Security configuration and request context.
+- Content-Security-Policy is not enabled with an arbitrary default policy because the correct policy depends on the application's resources.
+
+------------------------------------------------------------
+X-CONTENT-TYPE-OPTIONS
+
+- Spring Security can add the following response header:
+
+  X-Content-Type-Options: nosniff
+
+- This tells the browser not to MIME-sniff the response away from the declared Content-Type.
+- The browser should respect the content type specified by the server.
+
+Example:
+
+Content-Type: text/css
+X-Content-Type-Options: nosniff
+
+Spring Security configuration:
+
+http.headers(headers ->
+    headers.contentTypeOptions(Customizer.withDefaults())
+);
+
+- This protection is part of Spring Security's default security-header configuration.
+
+------------------------------------------------------------
+FRAME PROTECTION
+
+- Frame protection controls whether an application page can be loaded inside an HTML frame or iframe.
+- Spring Security provides this through the X-Frame-Options response header.
+
+Example:
+
+X-Frame-Options: DENY
+
+- DENY means the response cannot be displayed inside a frame.
+
+Spring Security configuration:
+
+http.headers(headers ->
+    headers.frameOptions(frame ->
+        frame.deny()
+    )
+);
+
+- If the application legitimately needs to be framed by pages from the same origin:
+
+  http.headers(headers ->
+  headers.frameOptions(frame ->
+  frame.sameOrigin()
+  )
+  );
+
+- DENY
+
+  - The response cannot be displayed inside a frame.
+
+- SAMEORIGIN
+
+  - The response can be framed by a page from the same origin.
+
+- Frame protection helps protect against clickjacking attacks.
+
+------------------------------------------------------------
+CONTENT-SECURITY-POLICY
+
+- Content-Security-Policy (CSP) is configured through the Content-Security-Policy response header.
+- CSP allows the application to control which sources the browser can use for resources such as:
+
+  - Scripts
+  - Stylesheets
+  - Images
+  - Fonts
+  - Frames
+  - Connections
+
+- Spring Security does not enable an arbitrary CSP policy by default because the correct policy depends on the application's actual resource requirements.
+
+Example:
+
+Content-Security-Policy:
+default-src 'self';
+script-src 'self';
+style-src 'self';
+img-src 'self'
+
+
+Spring Security configuration:
+
+http.headers(headers ->
+    headers.contentSecurityPolicy(csp ->
+        csp.policyDirectives(
+            "default-src 'self'; " +
+            "script-src 'self'; " +
+            "style-src 'self'; " +
+            "img-src 'self'"
+        )
+    )
+);
+
+- The configured policy is added to the HTTP response.
+- The browser then enforces the policy when loading resources.
+
+Example:
+
+HTTP/1.1 200 OK
+Content-Type: text/html
+Content-Security-Policy: default-src 'self'; script-src 'self'
+
+- CSP can break legitimate application functionality if required resources are not included in the policy.
+- Therefore CSP should be designed according to the application's actual resource requirements.
+
+------------------------------------------------------------
+REFERRER-POLICY
+
+- Referrer-Policy controls how much referrer information the browser sends when navigating from one URL to another.
+
+Example:
+
+Referrer-Policy: strict-origin-when-cross-origin
+
+- This can prevent the browser from unnecessarily exposing the complete originating URL to another origin.
+
+Spring Security configuration:
+
+http.headers(headers ->
+    headers.referrerPolicy(referrer ->
+        referrer.policy(
+            ReferrerPolicyHeaderWriter.ReferrerPolicy
+                .STRICT_ORIGIN_WHEN_CROSS_ORIGIN
+        )
+    )
+);
+
+- The browser enforces the policy.
+- Spring Security adds the configured response header.
+
+------------------------------------------------------------
+HTTP STRICT TRANSPORT SECURITY
+
+- HTTP Strict Transport Security (HSTS) is implemented through the Strict-Transport-Security response header.
+
+Example:
+
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+- HSTS tells the browser that the application should subsequently be accessed using HTTPS for the specified period.
+
+Spring Security configuration:
+
+http.headers(headers ->
+    headers.httpStrictTransportSecurity(hsts ->
+        hsts
+            .maxAgeInSeconds(31536000)
+            .includeSubDomains(true)
+    )
+);
+
+- max-age
+
+  - Specifies how long the browser should remember the HTTPS requirement.
+
+- includeSubDomains
+
+  - Extends the HSTS policy to subdomains.
+
+Example:
+
+https://example.com
+https://api.example.com
+https://admin.example.com
+
+- HSTS is meaningful only when the application is accessed through HTTPS.
+- Spring Security therefore applies HSTS to secure requests.
+
+Important distinction:
+
+TLS
+ |
+ |-- protects the current HTTPS connection
+ |
+ v
+HSTS
+ |
+ |-- tells the browser to use HTTPS for future requests
+
+- HSTS does not replace TLS.
+- HSTS depends on HTTPS/TLS being correctly configured.
+
+------------------------------------------------------------
+CUSTOM SECURITY HEADERS
+
+- Applications can add custom response headers through Spring Security.
+- This is useful when an application requires a header that is not covered by the standard HttpSecurity header configuration.
+
+Example:
+
+http.headers(headers ->
+    headers.addHeaderWriter(
+        new StaticHeadersWriter(
+            "X-Custom-Security-Header",
+            "example-value"
+        )
+    )
+);
+
+Result:
+
+X-Custom-Security-Header: example-value
+
+- A custom header does not automatically provide security simply because its name contains "Security".
+- It should have a specific application or infrastructure purpose.
+
+------------------------------------------------------------
+DEFAULT HEADERS VS EXPLICIT CONFIGURATION
+
+- Spring Security provides several useful security headers through its default configuration.
+
+- Common default protections include:
+
+  - X-Content-Type-Options
+  - X-Frame-Options
+  - Cache-related headers
+  - HSTS for HTTPS requests
+
+- Content-Security-Policy requires explicit configuration because the appropriate policy is application-specific.
+
+- Other headers can also be explicitly configured when application requirements differ from the defaults.
+
+Example:
+
+http.headers(headers ->
+    headers
+        .contentSecurityPolicy(csp ->
+            csp.policyDirectives(
+                "default-src 'self'"
+            )
+        )
+        .frameOptions(frame ->
+            frame.deny()
+        )
+);
+
+
+- Do not assume that every possible security header is automatically enabled.
+- Verify the actual HTTP response when debugging.
+
+------------------------------------------------------------
+CHANGING OR DISABLING HEADERS
+
+- Individual security headers can be changed when application requirements demand it.
+
+Example:
+
+http.headers(headers ->
+    headers.frameOptions(frame ->
+        frame.sameOrigin()
+    )
+);
+
+
+- If a header is intentionally disabled, the security implication should be understood first.
+
+Example:
+
+http.headers(headers ->
+    headers.frameOptions(frame ->
+        frame.disable()
+    )
+);
+
+
+- Disabling frame protection may allow the application to be embedded in frames.
+- Such changes should be made only when there is a legitimate application requirement.
+
+------------------------------------------------------------
+SECURITY HEADERS DEBUGGING
+
+- When debugging security headers, inspect the actual HTTP response rather than relying only on Java configuration.
+
+Request:
+
+GET /home HTTP/1.1
+Host: example.com
+
+Response:
+
+HTTP/1.1 200 OK
+Content-Type: text/html
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Referrer-Policy: strict-origin-when-cross-origin
+Strict-Transport-Security: max-age=31536000
+
+
+- If an expected header is missing, check:
+
+  - Whether the corresponding Spring Security feature was configured.
+  - Whether the request matched the intended SecurityFilterChain.
+  - Whether multiple SecurityFilterChain configurations are involved.
+  - Whether another filter or infrastructure component modifies the response.
+  - Whether the request is HTTPS when checking HSTS.
+  - Whether the browser is displaying the final response received from the server.
+
+- Browser developer tools are useful for inspecting the final response headers.
+
+=======================================================================================================================================================================
+

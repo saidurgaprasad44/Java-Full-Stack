@@ -1,0 +1,597 @@
+=======================================================================================================================================================================
+APPLICATION SECURITY CUSTOMIZATION
+=======================================================================================================================================================================
+
+- Spring Security provides standard authentication, authorization, exception handling, and security-filter implementations.
+- Applications can customize these components when the default behavior does not match the application's requirements.
+- Most customization is done by:
+
+  - configuring the SecurityFilterChain
+  - adding custom filters
+  - providing custom authentication components
+  - customizing exception handling
+  - customizing user loading
+  - customizing SecurityContext handling
+
+- The important idea is that customization normally plugs into the existing Spring Security architecture rather than replacing the entire security framework.
+
+=======================================================================================================================================================================
+CUSTOM SECURITY FILTER
+=======================================================================================================================================================================
+
+- A custom security filter can inspect or modify a request before it reaches the application.
+- A common base class for request-based custom security logic is OncePerRequestFilter.
+- OncePerRequestFilter ensures that the filter logic is executed once for a request within the servlet request processing lifecycle.
+
+- Typical structure:
+
+HTTP Request
+|
+v
+DelegatingFilterProxy
+|
+v
+FilterChainProxy
+|
+v
+SecurityFilterChain
+|
++-- Standard Spring Security filters
+|
++-- Custom Security Filter
+|
+v
+DispatcherServlet
+|
+v
+Controller
+
+- Example:
+
+public class CustomSecurityFilter extends OncePerRequestFilter {
+
+
+@Override
+protected void doFilterInternal(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        FilterChain filterChain)
+        throws ServletException, IOException {
+
+    // custom security logic
+
+    filterChain.doFilter(request, response);
+}
+
+}
+
+- The filter must normally continue the chain by calling filterChain.doFilter().
+- If the custom filter determines that the request must be rejected, it can return an appropriate response without continuing the chain.
+
+------------------------------------------------------------
+FILTER ORDERING
+
+- The position of a custom filter matters because Spring Security filters perform different responsibilities at different stages of request processing.
+- Spring Security provides methods to position custom filters relative to existing filters.
+- Common configuration methods:
+
+addFilterBefore(...)
+addFilterAfter(...)
+addFilterAt(...)
+
+- Example:
+
+http.addFilterBefore(
+customSecurityFilter,
+UsernamePasswordAuthenticationFilter.class
+);
+
+- Conceptually:
+
+SecurityFilterChain
+|
++-- CustomSecurityFilter
+|
++-- UsernamePasswordAuthenticationFilter
+|
++-- other security filters
+
+- addFilterBefore() places the custom filter before the specified filter.
+- addFilterAfter() places it after the specified filter.
+- addFilterAt() places it at the position of the specified filter.
+- Filter ordering should be based on what security state the custom filter needs.
+- For example, a filter that needs the authenticated Authentication should execute after the authentication mechanism that establishes it.
+
+------------------------------------------------------------
+CUSTOM FILTER AND SECURITYCONTEXT
+
+- A custom filter can access the Authentication established by earlier security processing through SecurityContextHolder.
+
+- Example:
+
+SecurityContext context =
+SecurityContextHolder.getContext();
+
+Authentication authentication =
+context.getAuthentication();
+
+- Flow:
+
+Authentication Filter
+|
+v
+AuthenticationManager
+|
+v
+Authentication
+|
+v
+SecurityContextHolder
+|
+v
+Custom Security Filter
+|
+v
+Reads Authentication
+|
+v
+Custom security logic
+
+- If the custom filter executes before authentication has occurred, the Authentication may not yet be available.
+- Therefore, filter ordering directly affects what security information the custom filter can access.
+
+=======================================================================================================================================================================
+CUSTOM AUTHENTICATION
+=======================================================================================================================================================================
+
+- Spring Security allows applications to implement authentication mechanisms that are not provided by the standard authentication filters or providers.
+- Custom authentication usually involves defining:
+
+  - a custom authentication token
+  - a custom authentication filter
+  - a custom AuthenticationProvider
+  - optionally a custom AuthenticationManager configuration
+
+- Example architecture:
+
+HTTP Request
+|
+v
+Custom Authentication Filter
+|
+v
+Custom Authentication Token
+|
+v
+AuthenticationManager
+|
+v
+Custom AuthenticationProvider
+|
+v
+Authentication
+|
+v
+SecurityContext
+
+- The custom components still participate in the normal Spring Security authentication architecture.
+
+------------------------------------------------------------
+CUSTOM AUTHENTICATIONPROVIDER
+
+- AuthenticationProvider contains the actual authentication logic for a particular authentication mechanism.
+- A custom AuthenticationProvider is useful when authentication cannot be handled by standard providers such as DaoAuthenticationProvider.
+
+- Main methods:
+
+authenticate(Authentication authentication)
+supports(Class<?> authentication)
+
+- supports() tells Spring Security which Authentication type the provider can process.
+- authenticate() performs the authentication.
+
+- Example:
+
+public class CustomAuthenticationProvider
+implements AuthenticationProvider {
+
+
+@Override
+public Authentication authenticate(
+        Authentication authentication) {
+
+    // custom authentication logic
+
+    return authenticatedAuthentication;
+}
+
+@Override
+public boolean supports(
+        Class<?> authentication) {
+
+    return CustomAuthenticationToken.class
+            .isAssignableFrom(authentication);
+}
+
+
+}
+
+- Flow:
+
+Custom Authentication Filter
+|
+v
+CustomAuthenticationToken
+|
+v
+AuthenticationManager
+|
+v
+ProviderManager
+|
+v
+supports(...)
+|
+v
+CustomAuthenticationProvider
+|
+v
+authenticate(...)
+|
+v
+Authenticated Authentication
+|
+v
+SecurityContext
+
+=======================================================================================================================================================================
+CUSTOM USERDETAILSSERVICE
+=======================================================================================================================================================================
+
+- UserDetailsService is used when the application needs custom user-loading logic for username/password authentication.
+- The authentication mechanism remains the same; only the source of user information changes.
+
+- Example:
+
+public class CustomUserDetailsService
+implements UserDetailsService {
+
+
+@Override
+public UserDetails loadUserByUsername(
+        String username) {
+
+    // load user from database
+
+    return userDetails;
+}
+
+
+}
+
+- Flow:
+
+UsernamePasswordAuthenticationFilter
+|
+v
+AuthenticationManager
+|
+v
+DaoAuthenticationProvider
+|
+v
+CustomUserDetailsService
+|
+v
+UserDetails
+|
+v
+PasswordEncoder
+|
+v
+Authentication
+
+- This is different from creating a completely custom authentication mechanism.
+- DaoAuthenticationProvider still performs the authentication.
+- The custom UserDetailsService controls how the user is loaded.
+
+=======================================================================================================================================================================
+CUSTOM AUTHENTICATIONENTRYPOINT & ACCESSDENIEDHANDLER
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+CUSTOM AUTHENTICATIONENTRYPOINT
+
+- AuthenticationEntryPoint controls what happens when an unauthenticated request requires authentication.
+- Applications can provide their own implementation when the default response or login behavior is not suitable.
+
+- Example use cases:
+
+  - REST API returning a custom JSON 401 response
+  - custom login redirect
+  - custom authentication challenge
+
+- Flow:
+
+Unauthenticated Request
+|
+v
+Security Authorization
+|
+v
+Authentication required
+|
+v
+AuthenticationEntryPoint
+|
+v
+Custom HTTP Response
+
+- Example REST response:
+
+HTTP/1.1 401 Unauthorized
+
+{
+"error": "authentication_required"
+}
+
+------------------------------------------------------------
+CUSTOM ACCESSDENIEDHANDLER
+
+- AccessDeniedHandler controls the response when an authenticated user does not have sufficient authority.
+
+- Flow:
+
+Authenticated Request
+|
+v
+AuthorizationFilter
+|
+v
+AuthorizationManager
+|
+v
+Access denied
+|
+v
+AccessDeniedHandler
+|
+v
+Custom HTTP Response
+|
+v
+403 Forbidden
+
+- Example REST response:
+
+HTTP/1.1 403 Forbidden
+
+{
+"error": "access_denied"
+}
+
+- This is commonly useful for REST APIs that require a consistent JSON error format.
+
+=======================================================================================================================================================================
+CUSTOM SECURITYCONTEXT HANDLING
+=======================================================================================================================================================================
+
+- SecurityContext contains the Authentication associated with the current request.
+- Spring Security normally manages the SecurityContext lifecycle through its configured SecurityContextRepository and related infrastructure.
+- Applications can customize how the SecurityContext is created, loaded, saved, or persisted when the default behavior does not match the application's requirements.
+
+- Conceptually:
+
+Request
+|
+v
+SecurityContext handling
+|
+v
+SecurityContext
+|
+v
+Authentication
+|
+v
+SecurityContextHolder
+|
+v
+Security processing
+|
+v
+SecurityContext persistence
+
+- This is especially relevant when implementing custom authentication or custom security infrastructure.
+
+=======================================================================================================================================================================
+CUSTOM AUTHENTICATION FLOW
+=======================================================================================================================================================================
+
+- A complete custom authentication mechanism can still follow the standard Spring Security architecture.
+
+HTTP Request
+|
+v
+Servlet Container
+|
+v
+DelegatingFilterProxy
+|
+v
+FilterChainProxy
+|
+v
+SecurityFilterChain
+|
+v
+Custom Authentication Filter
+|
+|-- extracts custom credentials
+|
+v
+Custom Authentication Token
+|
+v
+AuthenticationManager
+|
+v
+ProviderManager
+|
+v
+Custom AuthenticationProvider
+|
+|-- validates credentials
+|-- loads required user information
+|-- creates authenticated result
+|
+v
+Authenticated Authentication
+|
+v
+SecurityContext
+|
+v
+SecurityContextHolder
+|
+v
+AuthorizationFilter
+|
+v
+AuthorizationManager
+|
+v
+DispatcherServlet
+|
+v
+Controller
+
+- The important point is that custom authentication still produces a standard Spring Security Authentication.
+- Once Authentication is placed into the SecurityContext, the rest of Spring Security can continue to work normally.
+- Authorization does not need to know how the user was authenticated.
+
+=======================================================================================================================================================================
+CUSTOMIZATION THROUGH SECURITYFILTERCHAIN
+=======================================================================================================================================================================
+
+- SecurityFilterChain is the main configuration point for assembling Spring Security behavior.
+- Application security customization can therefore combine standard Spring Security components with custom components.
+
+- Example:
+
+@Bean
+SecurityFilterChain securityFilterChain(HttpSecurity http)
+throws Exception {
+
+
+http
+    .authorizeHttpRequests(auth -> auth
+        .requestMatchers("/public/**").permitAll()
+        .anyRequest().authenticated()
+    )
+    .addFilterBefore(
+        customSecurityFilter,
+        UsernamePasswordAuthenticationFilter.class
+    )
+    .exceptionHandling(exception -> exception
+        .authenticationEntryPoint(customEntryPoint)
+        .accessDeniedHandler(customAccessDeniedHandler)
+    );
+
+return http.build();
+
+
+}
+
+- The SecurityFilterChain becomes the place where the application's security components are assembled.
+
+=======================================================================================================================================================================
+STANDARD COMPONENTS VS CUSTOM COMPONENTS
+=======================================================================================================================================================================
+
+- Spring Security can be customized at different levels.
+
+- User loading:
+
+UserDetailsService
+|
+v
+Customize where user information comes from
+
+- Password authentication:
+
+DaoAuthenticationProvider
+|
+v
+Customize UserDetailsService or PasswordEncoder
+
+- Completely custom authentication:
+
+Custom Filter
+|
+v
+Custom Authentication
+|
+v
+Custom AuthenticationProvider
+
+- Request processing:
+
+SecurityFilterChain
+|
+v
+Custom Filter
+
+- Authentication failure:
+
+AuthenticationEntryPoint
+|
+v
+Custom response
+
+- Authorization failure:
+
+AccessDeniedHandler
+|
+v
+Custom response
+
+- Security context lifecycle:
+
+SecurityContextRepository
+|
+v
+Custom persistence behavior
+
+=======================================================================================================================================================================
+CUSTOMIZATION PRINCIPLE
+=======================================================================================================================================================================
+
+- Prefer extending or replacing only the component whose behavior needs to change.
+- Do not implement a completely custom security mechanism when an existing Spring Security component already provides the required behavior.
+- A custom component should integrate with the existing Spring Security abstractions whenever possible.
+
+- The common pattern is:
+
+Custom Component
+|
+v
+Spring Security Abstraction
+|
+v
+Existing Security Architecture
+|
+v
+Authentication / Authorization / SecurityContext
+
+- Examples:
+
+  - Custom user source → UserDetailsService
+  - Custom password algorithm → PasswordEncoder
+  - Custom authentication mechanism → AuthenticationProvider + Authentication token + filter
+  - Custom request processing → OncePerRequestFilter
+  - Custom 401 response → AuthenticationEntryPoint
+  - Custom 403 response → AccessDeniedHandler
+  - Custom SecurityContext persistence → SecurityContextRepository
+
+=======================================================================================================================================================================

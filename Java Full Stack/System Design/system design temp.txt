@@ -1,0 +1,139 @@
+SYSTEM DESIGN
+│
+├── A. THINKING & REQUIREMENTS
+│   ├── Functional requirements
+│   ├── Non-functional requirements
+│   ├── Constraints
+│   ├── Assumptions
+│   ├── Trade-offs
+│   └── Requirement → Design decisions
+│
+├── B. SCALE & PERFORMANCE
+│   ├── Traffic
+│   ├── QPS
+│   ├── Capacity estimation
+│   ├── Latency
+│   ├── Throughput
+│   ├── Concurrency
+│   └── Bottlenecks
+│
+├── C. BASIC ARCHITECTURE
+│   ├── Client
+│   ├── DNS
+│   ├── Load Balancer
+│   ├── Application Servers
+│   ├── Database
+│   ├── Cache
+│   └── External Services
+│
+├── D. SCALING
+│   ├── Vertical scaling
+│   ├── Horizontal scaling
+│   ├── Stateless services
+│   ├── Load balancing
+│   └── Distributed state
+│
+├── E. DATA
+│   ├── SQL
+│   ├── Indexing
+│   ├── Transactions
+│   ├── Replication
+│   ├── Read replicas
+│   ├── Partitioning
+│   ├── Sharding
+│   └── NoSQL
+│
+├── F. CACHING
+│   ├── Why cache
+│   ├── Cache placement
+│   ├── Cache strategies
+│   ├── Eviction
+│   └── Distributed-cache problems
+│
+├── G. ASYNCHRONOUS SYSTEMS
+│   ├── Sync vs async
+│   ├── Queues
+│   ├── Pub/sub
+│   ├── Event streaming
+│   ├── Delivery semantics
+│   ├── Ordering
+│   └── Idempotency
+│
+├── H. DISTRIBUTED SYSTEMS
+│   ├── Partial failure
+│   ├── Consistency
+│   ├── CAP
+│   ├── Replication
+│   ├── Coordination
+│   ├── Distributed locks
+│   ├── Consensus
+│   └── Distributed transactions
+│
+├── I. RELIABILITY
+│   ├── Failure models
+│   ├── High availability
+│   ├── Failover
+│   ├── Timeout
+│   ├── Retry
+│   ├── Circuit breaker
+│   ├── Bulkhead
+│   ├── Rate limiting
+│   └── Disaster recovery
+│
+├── J. SERVICE ARCHITECTURE
+│   ├── Monolith
+│   ├── Modular monolith
+│   ├── Microservices
+│   ├── Service boundaries
+│   ├── API gateway
+│   ├── Service discovery
+│   └── Inter-service communication
+│
+├── K. EVENT-DRIVEN ARCHITECTURE
+│   ├── Events
+│   ├── Event streaming
+│   ├── Outbox
+│   ├── Saga
+│   ├── CQRS
+│   └── Event sourcing
+│
+├── L. SECURITY ARCHITECTURE
+│   ├── Authentication
+│   ├── Authorization
+│   ├── API security
+│   ├── Service identity
+│   ├── mTLS
+│   ├── Secrets
+│   ├── WAF
+│   └── Network security
+│
+├── M. OBSERVABILITY
+│   ├── Logs
+│   ├── Metrics
+│   ├── Traces
+│   ├── Correlation
+│   ├── SLIs
+│   ├── SLOs
+│   └── SLAs
+│
+├── N. CLOUD ARCHITECTURE
+│   ├── Compute
+│   ├── Containers
+│   ├── Kubernetes
+│   ├── Networking
+│   ├── Storage
+│   ├── Availability zones
+│   ├── Regions
+│   └── Multi-region architecture
+│
+└── O. END-TO-END DESIGN
+    ├── Requirement analysis
+    ├── Estimation
+    ├── Architecture
+    ├── Data model
+    ├── API design
+    ├── Scaling
+    ├── Reliability
+    ├── Security
+    ├── Observability
+    └── Trade-off analysis

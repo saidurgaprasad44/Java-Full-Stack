@@ -1,0 +1,540 @@
+=======================================================================================================================================================================
+EXCEPTION HANDLING
+=======================================================================================================================================================================
+
+- Spring Security handles authentication and authorization failures through specific exception types, filters, and handlers.
+- The two most important exceptions are:
+
+  - AuthenticationException
+  - AccessDeniedException
+- The main distinction is:
+
+  - Authentication failure → user is not successfully authenticated → normally HTTP 401
+  - Authorization failure → user is authenticated but not allowed to access the resource → normally HTTP 403
+
+------------------------------------------------------------
+AuthenticationException
+
+- AuthenticationException represents a failure during authentication.
+- It is used when Spring Security cannot establish a valid Authentication.
+
+- Common situations:
+
+  - Missing credentials
+  - Invalid username/password
+  - Invalid Basic credentials
+  - Invalid or expired JWT
+  - Invalid OAuth2 authentication
+
+- Authentication-specific filters generally detect the failure and delegate it to an AuthenticationFailureHandler or AuthenticationEntryPoint depending on the authentication mechanism and processing stage.
+
+- Examples:
+
+  - Form login with wrong username/password
+  - Basic authentication with invalid credentials
+  - JWT with an invalid signature
+  - JWT with an expired token
+
+------------------------------------------------------------
+AccessDeniedException
+
+- AccessDeniedException represents an authorization failure.
+- It normally occurs after Spring Security already has an authenticated Authentication.
+- The Authentication exists, but the user does not have sufficient GrantedAuthority for the requested resource.
+
+- Example:
+
+  - User is authenticated as USER.
+  - `/admin` requires ROLE_ADMIN.
+  - Authentication exists.
+  - Authorization check fails.
+  - Spring Security throws AccessDeniedException.
+  - The request is normally returned as HTTP 403 Forbidden.
+
+------------------------------------------------------------
+AuthenticationEntryPoint
+
+- AuthenticationEntryPoint is responsible for starting an authentication process when authentication is required but the request is not successfully authenticated.
+- Its main method is:
+
+commence(HttpServletRequest request,
+HttpServletResponse response,
+AuthenticationException authException)
+
+- The AuthenticationEntryPoint commonly produces HTTP 401 for REST APIs.
+- For browser-based form login, it can redirect the user to the login page.
+
+- Example:
+
+/orders
+
+- Endpoint requires authentication.
+- Request contains no valid authentication.
+- Spring Security invokes AuthenticationEntryPoint.
+- Entry point may return:
+
+HTTP/1.1 401 Unauthorized
+
+- Or, with form login, it may redirect:
+
+HTTP/1.1 302 Found
+Location: /login
+
+------------------------------------------------------------
+AccessDeniedHandler
+
+- AccessDeniedHandler handles authorization failures.
+
+- It is invoked when an authenticated user does not have sufficient permissions.
+
+- Its main method is:
+
+handle(HttpServletRequest request,
+HttpServletResponse response,
+AccessDeniedException accessDeniedException)
+
+- Typical REST API response:
+
+HTTP/1.1 403 Forbidden
+
+- Example:
+
+Authentication
+|
+v
+username = alice
+authorities = [ROLE_USER]
+|
+v
+Request: /admin
+|
+v
+Authorization check
+|
+v
+Required authority = ROLE_ADMIN
+|
+v
+ROLE_ADMIN not present
+|
+v
+AccessDeniedException
+|
+v
+AccessDeniedHandler
+|
+v
+HTTP 403 Forbidden
+
+------------------------------------------------------------
+ExceptionTranslationFilter
+
+- ExceptionTranslationFilter connects security exceptions with the appropriate HTTP response handling.
+- It does not perform authentication itself.
+- It does not perform authorization itself.
+- Its responsibility is to translate certain security exceptions into an HTTP response or authentication process.
+
+- The important exceptions it handles are:
+
+  - AuthenticationException
+  - AccessDeniedException
+
+- Simplified position in the security filter chain:
+
+HTTP Request
+|
+v
+Servlet Container
+|
+v
+DelegatingFilterProxy
+|
+v
+FilterChainProxy
+|
+v
+SecurityFilterChain
+|
+v
+Security Filters
+|
+|-- authentication filters
+|
+|-- AuthorizationFilter
+|
+|-- ExceptionTranslationFilter
+|
+v
+DispatcherServlet
+
+- Exact filter ordering can vary depending on the configured security features, so the important concept is the responsibility of ExceptionTranslationFilter rather than memorizing a universal filter position.
+
+------------------------------------------------------------
+Authentication Failure Flow
+
+- Authentication fails before a valid Authentication is established.
+- The authentication mechanism determines how the failure is handled.
+
+- Example: Basic Authentication
+
+HTTP Request
+|
+v
+Authorization: Basic <credentials>
+|
+v
+BasicAuthenticationFilter
+|
+v
+AuthenticationManager
+|
+v
+ProviderManager
+|
+v
+DaoAuthenticationProvider
+|
+|-- UserDetailsService
+|-- PasswordEncoder
+|
+v
+AuthenticationException
+|
+v
+Authentication failure handling
+|
+v
+AuthenticationEntryPoint
+|
+v
+HTTP 401 Unauthorized
+
+- For HTTP Basic, the response normally also contains:
+
+WWW-Authenticate: Basic realm="..."
+
+- This tells the client that authentication is required using the Basic authentication scheme.
+
+------------------------------------------------------------
+JWT Authentication Failure Flow
+
+- JWT authentication is normally stateless.
+- Spring Security does not first restore a server-side user session.
+- The request carries the access token.
+
+HTTP Request
+|
+v
+Authorization: Bearer <JWT>
+|
+v
+BearerTokenAuthenticationFilter
+|
+v
+BearerTokenAuthenticationToken
+|
+v
+AuthenticationManager
+|
+v
+ProviderManager
+|
+v
+JwtAuthenticationProvider
+|
+v
+JwtDecoder
+|
+|-- signature validation
+|-- expiration validation
+|-- issuer validation
+|-- other configured validation
+|
++------------------------------------------------------------- validation successful
+|
++------------------------------------------------------------- validation failed
+|
+v
+AuthenticationException
+|
+v
+AuthenticationEntryPoint
+|
+v
+HTTP 401 Unauthorized
+
+- Examples of authentication failure:
+
+  - No Bearer token
+  - Invalid JWT signature
+  - Expired JWT
+  - Invalid issuer
+  - Invalid token structure
+
+------------------------------------------------------------
+Authorization Failure Flow
+
+- Authorization failure happens after an Authentication has been established.
+
+HTTP Request
+|
+v
+SecurityFilterChain
+|
+v
+Authentication
+|
+v
+SecurityContextHolder
+|
+v
+AuthorizationFilter
+|
+v
+AuthorizationManager
+|
+v
+Checks GrantedAuthority
+|
++------------------------------------------------------------- allowed
+|       |
+|       v
+|   DispatcherServlet
+|       |
+|       v
+|   Controller
+|
++------------------------------------------------------------- denied
+|
+v
+AccessDeniedException
+|
+v
+AccessDeniedHandler
+|
+v
+HTTP 403 Forbidden
+
+------------------------------------------------------------
+401 Unauthorized vs 403 Forbidden
+
+- HTTP 401 means the request does not have a valid authentication.
+- HTTP 403 means the request is authenticated but is not authorized to perform the operation.
+
+- Typical distinction:
+
+401 Unauthorized
+|
+v
+Authentication problem
+|
++-- no credentials
++-- invalid credentials
++-- invalid token
++-- expired token
+
+403 Forbidden
+|
+v
+Authorization problem
+|
++-- authenticated user
++-- insufficient authority
++-- insufficient role
+
+- Example:
+
+GET /admin
+
+No authentication
+|
+v
+401 Unauthorized
+
+Authenticated as USER
+|
+v
+Requires ROLE_ADMIN
+|
+v
+403 Forbidden
+
+------------------------------------------------------------
+Request Authorization Failure
+
+- Request-level authorization is performed by AuthorizationFilter and its AuthorizationManager.
+- If the authorization decision is denied, Spring Security handles the resulting AccessDeniedException through the appropriate access-denied handling mechanism.
+
+- Example configuration:
+
+http.authorizeHttpRequests(auth -> auth
+.requestMatchers("/admin/**").hasRole("ADMIN")
+.anyRequest().authenticated()
+);
+
+- Request:
+
+GET /admin
+
+- If the user has:
+
+Authentication
+|
++-- principal = alice
++-- authorities = ROLE_USER
+
+- AuthorizationManager evaluates:
+
+Required = ROLE_ADMIN
+Actual   = ROLE_USER
+
+- Result:
+
+DENY
+|
+v
+AccessDeniedException
+|
+v
+AccessDeniedHandler
+|
+v
+403 Forbidden
+
+------------------------------------------------------------
+Method Security Exception Flow
+
+- Method security can also reject an authenticated user.
+- For example:
+
+@PreAuthorize("hasRole('ADMIN')")
+public void deleteOrder(Long orderId) {
+...
+}
+
+- If the current Authentication does not have ROLE_ADMIN:
+
+Controller
+|
+v
+Service Proxy
+|
+v
+Method Security Interceptor
+|
+v
+AuthorizationManager
+|
+v
+SecurityContextHolder
+|
+v
+Authentication
+|
+v
+GrantedAuthority check
+|
+v
+AccessDeniedException
+
+- The exception can then propagate through the application and be handled by the application's exception handling mechanism if it is not handled by a security-specific web handler.
+
+------------------------------------------------------------
+AuthenticationEntryPoint Configuration
+
+- A custom AuthenticationEntryPoint can be configured when an application wants a specific response for unauthenticated requests.
+
+- Example:
+
+http.exceptionHandling(exception -> exception
+.authenticationEntryPoint((request, response, authException) -> {
+response.sendError(
+HttpServletResponse.SC_UNAUTHORIZED,
+"Authentication required"
+);
+})
+);
+
+- This is especially useful for REST APIs where the application wants a consistent 401 response instead of a login-page redirect.
+
+------------------------------------------------------------
+AccessDeniedHandler Configuration
+
+- A custom AccessDeniedHandler can be configured for authorization failures.
+
+- Example:
+
+http.exceptionHandling(exception -> exception
+.accessDeniedHandler((request, response, accessDeniedException) -> {
+response.sendError(
+HttpServletResponse.SC_FORBIDDEN,
+"Access denied"
+);
+})
+);
+
+- This allows the application to control the response returned when an authenticated user lacks sufficient authority.
+
+------------------------------------------------------------
+Exception Handling Configuration
+
+- Spring Security provides exception handling configuration through HttpSecurity.
+
+- Common configuration:
+
+http.exceptionHandling(exception -> exception
+.authenticationEntryPoint(authenticationEntryPoint)
+.accessDeniedHandler(accessDeniedHandler)
+);
+
+- AuthenticationEntryPoint handles unauthenticated access.
+- AccessDeniedHandler handles authenticated-but-forbidden access.
+
+------------------------------------------------------------
+Authentication Failure vs Access Denied
+
+- Authentication failure:
+
+Request
+|
+v
+Authentication attempt
+|
+v
+Authentication fails
+|
+v
+AuthenticationException
+|
+v
+Authentication failure handling / AuthenticationEntryPoint
+|
+v
+401
+
+- Authorization failure:
+
+Request
+|
+v
+Authentication succeeds
+|
+v
+Authentication stored in SecurityContext
+|
+v
+Authorization check
+|
+v
+Access denied
+|
+v
+AccessDeniedException
+|
+v
+AccessDeniedHandler
+|
+v
+403
+
+=======================================================================================================================================================================

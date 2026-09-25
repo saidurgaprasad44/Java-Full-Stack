@@ -4,7 +4,7 @@ Database Query Languages: 	SQL, NoSQL etc.
 Database server/DBMS: 		MySQL, Oracle DB, PostgreSQL, Microsoft SQL Server, MongoDB etc.
 Database Client Tools (GUI): 	pgAdmin, Oracle SQL Developer, MySQL Workbench, etc.
 Database Shells(CUI): 		PSQL etc.
-JDBC:				JDBC, ORM, JPA, Hibernate, Spring JDBC, Spring Data JPA
+Database Connectivity:		JDBC, ORM, JPA/Hibernate, Spring Data JPA
 
 
 

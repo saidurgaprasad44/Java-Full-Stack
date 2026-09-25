@@ -1,0 +1,11 @@
+TESTING & DEBUGGING
+------------------------------------------------------------
+Spring Security Test Support
+Testing Authentication
+Testing Authorization
+Testing CSRF
+Testing JWT APIs
+Debugging SecurityFilterChain
+Understanding 401 vs 403
+Debugging Authentication Failures
+Debugging CORS Issues

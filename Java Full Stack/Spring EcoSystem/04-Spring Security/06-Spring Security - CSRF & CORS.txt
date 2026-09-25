@@ -1,0 +1,714 @@
+=======================================================================================================================================================================
+CSRF PROTECTION
+=======================================================================================================================================================================
+
+CSRF in Spring Security
+------------------------------------------------------------
+
+- Spring Security provides CSRF protection through CsrfFilter.
+- CSRF protection is primarily relevant to applications where the browser automatically sends authentication credentials with requests.
+- The most common example is session-based authentication using JSESSIONID.
+- Since the browser automatically sends the session cookie, an attacker can potentially cause the browser to send an authenticated request to the application.
+- Spring Security therefore requires a valid CSRF token for state-changing requests when CSRF protection is enabled.
+
+- Spring Security enables CSRF protection by default for typical web applications.
+- CSRF protection primarily applies to requests such as:
+  - POST
+  - PUT
+  - PATCH
+  - DELETE
+- Safe methods such as GET, HEAD, OPTIONS, and TRACE are generally not subject to CSRF token validation.
+
+CSRF Request Flow
+------------------------------------------------------------
+
+HTTP Request
+    |
+    v
+Servlet Container
+    |
+    v
+DelegatingFilterProxy
+    |
+    v
+FilterChainProxy
+    |
+    |-- selects the matching SecurityFilterChain
+    |
+    v
+Security Filters
+    |
+    |-- CsrfFilter
+    |       |
+    |       |-- checks whether request requires CSRF protection
+    |       |
+    |       |-- obtains expected CSRF token
+    |       |
+    |       |-- obtains token supplied by client
+    |       |
+    |       +---- token valid
+    |       |       |
+    |       |       v
+    |       |   continues filter chain
+    |       |
+    |       +---- token missing/invalid
+    |               |
+    |               v
+    |         AccessDeniedException
+    |               |
+    |               v
+    |         AccessDeniedHandler
+    |               |
+    |               v
+    |         HTTP 403 Forbidden
+    |
+    v
+Remaining Security Filters
+    |
+    v
+AuthorizationFilter
+    |
+    v
+DispatcherServlet
+    |
+    v
+Controller
+    |
+    v
+Response
+
+
+CSRF Token
+------------------------------------------------------------
+
+- A CSRF token is a value generated and associated with the user's security context/session according to the configured CsrfTokenRepository.
+- The client must provide the expected token with a protected request.
+- The attacker generally cannot obtain the legitimate CSRF token because the token is not automatically supplied by the browser in the same way as a session cookie.
+
+Example:
+
+    GET /account
+
+    Response:
+        Set-Cookie: JSESSIONID=abc123
+
+        CSRF token available to the legitimate application:
+        csrf-token = xyz789
+
+- A legitimate state-changing request supplies the CSRF token:
+
+    POST /account/update
+
+    Cookie: JSESSIONID=abc123
+    X-CSRF-TOKEN: xyz789
+
+- CsrfFilter compares the supplied token with the expected token.
+- If the token is valid, the request continues through the filter chain.
+- If the token is missing or invalid, the request is rejected.
+
+CSRF Token Repositories
+------------------------------------------------------------
+
+- CsrfTokenRepository determines how Spring Security creates, stores, and retrieves CSRF tokens.
+- Common implementations include:
+  - HttpSessionCsrfTokenRepository
+  - CookieCsrfTokenRepository
+
+- HttpSessionCsrfTokenRepository stores the CSRF token in the HTTP session.
+- CookieCsrfTokenRepository stores the CSRF token in a cookie and is commonly used by JavaScript-based clients.
+
+HttpSessionCsrfTokenRepository
+------------------------------------------------------------
+
+- The CSRF token is associated with the HTTP session.
+- The application can expose the token to the client.
+- The client sends the token back with a protected request.
+- JSESSIONID identifies the session containing the expected CSRF token.
+
+Example:
+
+    Browser
+        |
+        |-- JSESSIONID=abc123
+        |
+        v
+    HttpSession
+        |
+        |-- SecurityContext
+        |-- CSRF token
+        |
+        v
+    CsrfFilter
+
+CookieCsrfTokenRepository
+------------------------------------------------------------
+
+- The CSRF token can be made available to the client through a cookie.
+- A JavaScript client can read the token and send it in a request header.
+- A common configuration is:
+
+    http
+        .csrf(csrf -> csrf
+            .csrfTokenRepository(
+                CookieCsrfTokenRepository.withHttpOnlyFalse()
+            )
+        );
+
+- The HttpOnly flag is disabled in this configuration so browser JavaScript can read the CSRF cookie.
+- The application should then configure the client to send the token in the expected request header.
+
+Example:
+
+    Cookie:
+        XSRF-TOKEN=xyz789
+
+    Request:
+        X-XSRF-TOKEN: xyz789
+
+- The cookie itself is not automatically considered the request's CSRF token.
+- The client must send the token in the expected request location so CsrfFilter can validate it.
+
+CSRF with Session Authentication
+------------------------------------------------------------
+
+- CSRF protection is particularly important for session-based authentication.
+- The browser automatically sends JSESSIONID with requests.
+- Therefore, an attacker can potentially cause the browser to send a request that carries the user's session cookie.
+- CSRF protection adds a second value that the attacker should not be able to obtain and supply.
+
+Example:
+
+    Browser
+        |
+        |-- JSESSIONID automatically sent
+        |
+        v
+    Application
+
+- Without CSRF protection:
+
+    Attacker-controlled page
+        |
+        v
+    POST /transfer
+        |
+        |-- Browser automatically sends JSESSIONID
+        |
+        v
+    Application
+        |
+        v
+    Request may be authenticated
+
+- With CSRF protection:
+
+    Attacker-controlled page
+        |
+        v
+    POST /transfer
+        |
+        |-- JSESSIONID automatically sent
+        |-- CSRF token missing
+        |
+        v
+    CsrfFilter
+        |
+        v
+    HTTP 403 Forbidden
+
+CSRF with JWT Authentication
+------------------------------------------------------------
+
+- JWT APIs require a different consideration.
+- In a typical stateless JWT API, the client explicitly sends the access token:
+
+    Authorization: Bearer <JWT>
+
+- The browser does not automatically attach an Authorization header to a cross-site request in the same way it automatically sends cookies.
+- Therefore, a typical stateless Bearer-token API is generally not vulnerable to the traditional cookie-based CSRF scenario.
+- CSRF protection is commonly disabled for a stateless API that uses only an Authorization header for authentication.
+
+Example:
+
+    http
+        .csrf(csrf -> csrf.disable())
+        .sessionManagement(session -> session
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        )
+        .oauth2ResourceServer(oauth2 -> oauth2
+            .jwt(jwt -> {})
+        );
+
+- Disabling CSRF should be based on how authentication credentials are transported.
+- JWT itself does not automatically make an application immune to CSRF.
+- If the JWT is stored in a cookie and the browser automatically sends that cookie, CSRF considerations return.
+
+When CSRF Protection Should Be Enabled
+------------------------------------------------------------
+
+- CSRF protection is generally appropriate when:
+  - Browser-based session authentication is used.
+  - Authentication credentials are automatically attached to requests by the browser.
+  - The application performs state-changing operations through browser requests.
+
+- Example:
+
+    Browser
+        |
+        |-- JSESSIONID cookie
+        v
+    Spring MVC application
+        |
+        v
+    Session authentication
+
+- In this architecture, CSRF protection should normally remain enabled.
+
+When CSRF Protection Can Be Disabled
+------------------------------------------------------------
+
+- CSRF protection can commonly be disabled for a stateless API when:
+  - Authentication uses an Authorization header.
+  - The browser does not automatically attach the authentication credential.
+  - The API does not rely on cookie-based authentication.
+
+Example:
+
+    Client
+        |
+        |-- Authorization: Bearer <JWT>
+        v
+    Stateless API
+
+- The important distinction is not simply "JWT vs session".
+- The important question is whether the authentication credential is automatically sent by the browser.
+- Cookie-based JWT authentication can still require CSRF protection.
+
+CSRF Configuration
+------------------------------------------------------------
+
+- CSRF configuration is performed through HttpSecurity.
+
+Enable/default behavior:
+
+    http
+        .csrf(csrf -> {});
+
+Disable:
+
+    http
+        .csrf(csrf -> csrf.disable());
+
+Custom repository:
+
+    http
+        .csrf(csrf -> csrf
+            .csrfTokenRepository(
+                CookieCsrfTokenRepository.withHttpOnlyFalse()
+            )
+        );
+
+- CSRF protection can also be selectively ignored for specific endpoints when required.
+
+Example:
+
+    http
+        .csrf(csrf -> csrf
+            .ignoringRequestMatchers("/api/**")
+        );
+
+- Such exclusions should be based on the authentication and request model of those endpoints rather than applied blindly.
+
+
+=======================================================================================================================================================================
+CORS
+=======================================================================================================================================================================
+
+CORS in Spring Security
+------------------------------------------------------------
+
+- CORS controls whether a browser is allowed to make cross-origin requests to an application.
+- Spring Security integrates CORS processing into the Security Filter Chain.
+- CORS processing must occur before authentication and authorization decisions for requests that require CORS handling.
+- Spring Security can use Spring Web's CorsFilter and CorsConfiguration to determine whether a cross-origin request is allowed.
+
+CORS Request Flow
+------------------------------------------------------------
+
+Browser
+    |
+    |-- cross-origin HTTP request
+    |
+    v
+Servlet Container
+    |
+    v
+DelegatingFilterProxy
+    |
+    v
+FilterChainProxy
+    |
+    |-- selects the matching SecurityFilterChain
+    |
+    v
+Security Filters
+    |
+    |-- CORS processing
+    |       |
+    |       |-- CorsFilter
+    |       |-- CorsConfiguration
+    |       |
+    |       +---- allowed
+    |       |       |
+    |       |       v
+    |       |   continues request processing
+    |       |
+    |       +---- rejected
+    |               |
+    |               v
+    |           CORS response
+    |
+    v
+Authentication Filters
+    |
+    v
+AuthorizationFilter
+    |
+    v
+DispatcherServlet
+    |
+    v
+Controller
+    |
+    v
+Response
+
+CORS Configuration
+------------------------------------------------------------
+
+- CorsConfiguration defines which cross-origin requests are permitted.
+- Common configuration properties include:
+  - Allowed origins
+  - Allowed methods
+  - Allowed headers
+  - Exposed headers
+  - Credentials
+  - Max age
+
+Example:
+
+    CorsConfiguration configuration =
+        new CorsConfiguration();
+
+    configuration.setAllowedOrigins(
+        List.of("https://app.example.com")
+    );
+
+    configuration.setAllowedMethods(
+        List.of("GET", "POST", "PUT", "DELETE")
+    );
+
+    configuration.setAllowedHeaders(
+        List.of("Authorization", "Content-Type")
+    );
+
+- The configuration can then be registered using a CorsConfigurationSource.
+
+Example:
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration configuration =
+            new CorsConfiguration();
+
+        configuration.setAllowedOrigins(
+            List.of("https://app.example.com")
+        );
+
+        configuration.setAllowedMethods(
+            List.of("GET", "POST", "PUT", "DELETE")
+        );
+
+        configuration.setAllowedHeaders(
+            List.of("Authorization", "Content-Type")
+        );
+
+        UrlBasedCorsConfigurationSource source =
+            new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration(
+            "/**",
+            configuration
+        );
+
+        return source;
+    }
+
+- Security configuration can then enable CORS:
+
+    http
+        .cors(cors -> {});
+
+Allowed Origins
+------------------------------------------------------------
+
+- An origin consists of:
+
+    scheme + host + port
+
+- Example:
+
+    https://app.example.com
+
+- A frontend running at:
+
+    https://app.example.com
+
+  making a request to:
+
+    https://api.example.com
+
+  is making a cross-origin request because the origins differ.
+
+- The server can explicitly allow the frontend origin.
+
+    configuration.setAllowedOrigins(
+        List.of("https://app.example.com")
+    );
+
+- Avoid allowing arbitrary origins unless the application's security requirements genuinely permit it.
+
+Allowed Methods
+------------------------------------------------------------
+
+- CORS configuration can restrict which HTTP methods are permitted from a cross-origin browser request.
+
+Example:
+
+    configuration.setAllowedMethods(
+        List.of("GET", "POST", "PUT", "DELETE")
+    );
+
+- A browser can therefore determine whether the requested cross-origin method is permitted based on the server's CORS response.
+
+Allowed Headers
+------------------------------------------------------------
+
+- CORS configuration can control which request headers a browser is allowed to send cross-origin.
+
+Example:
+
+    configuration.setAllowedHeaders(
+        List.of("Authorization", "Content-Type")
+    );
+
+- This is particularly relevant to JWT APIs because the client commonly sends:
+
+    Authorization: Bearer <JWT>
+
+- The server must allow the Authorization header for a browser frontend to make the corresponding cross-origin request.
+
+Preflight Requests
+------------------------------------------------------------
+
+- Browsers may send an OPTIONS request before the actual request.
+- This is called a CORS preflight request.
+- The browser uses the preflight to determine whether the actual cross-origin request is permitted.
+
+Example:
+
+    OPTIONS /api/orders HTTP/1.1
+    Origin: https://app.example.com
+    Access-Control-Request-Method: POST
+    Access-Control-Request-Headers: Authorization, Content-Type
+
+- The server responds with the appropriate CORS headers when the request is allowed.
+
+Example response:
+
+    HTTP/1.1 200 OK
+    Access-Control-Allow-Origin: https://app.example.com
+    Access-Control-Allow-Methods: POST
+    Access-Control-Allow-Headers: Authorization, Content-Type
+
+- The browser can then send the actual request.
+
+Preflight Flow
+------------------------------------------------------------
+
+Browser
+    |
+    |-- OPTIONS /api/orders
+    |-- Origin: https://app.example.com
+    |-- Access-Control-Request-Method: POST
+    |-- Access-Control-Request-Headers: Authorization
+    |
+    v
+CorsFilter
+    |
+    v
+CorsConfiguration
+    |
+    +---- allowed
+    |       |
+    |       v
+    |   CORS response
+    |
+    +---- rejected
+            |
+            v
+        CORS rejection
+
+- The actual POST request is sent only after the browser accepts the preflight result.
+
+Credentials
+------------------------------------------------------------
+
+- CORS credentials control whether browser credentials such as cookies can be included in cross-origin requests.
+- Spring configuration can enable credentials:
+
+    configuration.setAllowCredentials(true);
+
+- When credentials are allowed, the server must use an appropriate explicit origin rather than an unrestricted wildcard origin.
+
+Example:
+
+    Access-Control-Allow-Origin:
+        https://app.example.com
+
+    Access-Control-Allow-Credentials:
+        true
+
+- This is particularly important when the application uses cookie-based authentication.
+
+CORS with Session Authentication
+------------------------------------------------------------
+
+- A browser frontend and backend may be hosted on different origins while authentication uses a session cookie.
+- The browser must be permitted to send the cookie cross-origin when the application's architecture requires it.
+- CORS therefore needs to allow the frontend origin and credentials.
+
+Example:
+
+    Frontend:
+        https://app.example.com
+
+    Backend:
+        https://api.example.com
+
+    Authentication:
+        JSESSIONID
+
+- CORS configuration:
+
+    configuration.setAllowedOrigins(
+        List.of("https://app.example.com")
+    );
+
+    configuration.setAllowCredentials(true);
+
+- CORS and CSRF may both be relevant in this architecture.
+- CORS controls whether the browser is permitted to make the cross-origin request.
+- CSRF protects state-changing operations from unauthorized cross-site requests when browser-managed credentials such as cookies are involved.
+
+CORS with JWT Authentication
+------------------------------------------------------------
+
+- A browser frontend commonly sends a JWT through the Authorization header.
+
+Example:
+
+    Authorization: Bearer <JWT>
+
+- For a cross-origin frontend, CORS must allow the frontend origin and the Authorization request header.
+
+Example:
+
+    configuration.setAllowedOrigins(
+        List.of("https://app.example.com")
+    );
+
+    configuration.setAllowedHeaders(
+        List.of("Authorization", "Content-Type")
+    );
+
+- A typical stateless JWT API may therefore use:
+
+    http
+        .cors(cors -> {})
+        .csrf(csrf -> csrf.disable())
+        .sessionManagement(session -> session
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        )
+        .oauth2ResourceServer(oauth2 -> oauth2
+            .jwt(jwt -> {})
+        );
+
+- CORS and CSRF solve different problems even though both commonly appear in browser-based API configurations.
+
+CORS vs CSRF
+------------------------------------------------------------
+
+- CORS:
+  - Browser cross-origin access control mechanism.
+  - Determines whether a browser is allowed to make/read a cross-origin request.
+  - Primarily controlled through server response headers and browser enforcement.
+  - Relevant to cross-origin frontend applications.
+  - Does not authenticate the user.
+
+- CSRF:
+  - Protection against unauthorized state-changing requests made using automatically supplied authentication credentials.
+  - Primarily important for cookie/session-based authentication.
+  - Uses a CSRF token to verify that the request originated from the legitimate application.
+  - Does not determine whether two origins are allowed to communicate.
+
+Example:
+
+    CORS
+
+    https://app.example.com
+            |
+            | cross-origin request
+            v
+    https://api.example.com
+            |
+            v
+    "Is this browser origin allowed?"
+
+
+    CSRF
+
+    Attacker Site
+            |
+            | state-changing request
+            v
+    https://api.example.com
+            |
+            v
+    "Does this request contain the valid CSRF token?"
+
+- A request can therefore involve both mechanisms.
+
+Example:
+
+    Browser
+        |
+        |-- cross-origin request
+        |
+        v
+    CORS
+        |
+        v
+    CSRF
+        |
+        v
+    Authentication
+        |
+        v
+    Authorization
+        |
+        v
+    Controller
+
+=======================================================================================================================================================================

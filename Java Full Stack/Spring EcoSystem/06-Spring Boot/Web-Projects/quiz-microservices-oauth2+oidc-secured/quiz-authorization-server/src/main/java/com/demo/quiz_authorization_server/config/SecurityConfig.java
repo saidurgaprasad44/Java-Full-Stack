@@ -83,7 +83,7 @@ public class SecurityConfig {
         				.withId(UUID.randomUUID().toString())
                         .clientId("quiz-frontend")
                         .clientAuthenticationMethod(
-                                ClientAuthenticationMethod.NONE //It is intentional because we're using Authorization Code + PKCE with a public client
+                                ClientAuthenticationMethod.NONE //It is intentional because we're using Authorization Code + PKCE with a public client only to authenticate user and not the client itself
                         )
                         .authorizationGrantType(
                                 AuthorizationGrantType.AUTHORIZATION_CODE //Authentication Code Grant Type is used for the Authorization Code Flow with PKCE

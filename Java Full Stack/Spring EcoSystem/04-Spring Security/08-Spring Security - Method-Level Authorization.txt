@@ -1,0 +1,470 @@
+=======================================================================================================================================================================
+METHOD / SERVICE SECURITY
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+METHOD SECURITY
+
+- Method Security allows Spring Security authorization rules to be applied directly to Java methods.
+- Request-level authorization protects an HTTP endpoint.
+- Method-level authorization is based on the Java method invocation and can additionally use:
+
+  - method arguments
+  - return values
+  - authentication information
+  - custom authorization logic.
+
+- Example:
+
+  @PreAuthorize("hasRole('ADMIN')")
+  public void deleteUser(Long userId) {
+    ...
+  }
+
+- The authorization check happens before the method is allowed to execute.
+- Method Security is commonly used at the service layer so that authorization is not dependent only on the controller or URL.
+
+@EnableMethodSecurity
+
+- Method Security is enabled using:
+
+  @EnableMethodSecurity
+
+- Example:
+
+  @Configuration
+  @EnableMethodSecurity
+  public class SecurityConfig {
+  }
+
+- This enables Spring Security's method-level authorization support.
+- After enabling it, annotations such as:
+
+  - @PreAuthorize
+  - @PostAuthorize
+  - @Secured
+
+  can be used on secured methods.
+
+- Method Security is separate from request-level configuration such as:
+
+  http.authorizeHttpRequests(...)
+
+- Request-level authorization controls whether a request can reach the application endpoint.
+- Method-level authorization controls whether a secured Java method can execute.
+
+------------------------------------------------------------
+SECURING SERVICE METHODS
+
+- A common application structure is:
+
+  HTTP Request
+  |
+  v
+  Controller
+  |
+  v
+  Service
+  |
+  v
+  Repository
+
+- Request-level authorization can protect the controller endpoint.
+- Method Security can additionally protect the service method.
+
+- Example:
+
+  @PreAuthorize("hasRole('ADMIN')")
+  public void deleteUser(Long userId) {
+  userRepository.deleteById(userId);
+  }
+
+- The controller can call the service normally:
+
+  userService.deleteUser(userId);
+
+- Spring Security intercepts the method invocation before the actual service method executes.
+- Therefore the security check is not implemented manually inside the method.
+- For a secured service method:
+
+  Controller
+  |
+  v
+  Service Proxy
+  |
+  v
+  Method Security Interceptor
+  |
+  v
+  AuthorizationManager
+  |
+  v
+  SecurityContextHolder
+  |
+  v
+  Authentication
+  |
+  v
+  GrantedAuthority
+  |
+  v
+  Authorization Decision
+  |
+  +---- allow ----> Actual Service Method
+  |
+  +---- deny -----> AccessDeniedException
+
+- The important point is that Spring Security checks the current Authentication from the SecurityContext.
+- The method itself does not need to manually retrieve the logged-in user and check the role.
+
+=======================================================================================================================================================================
+@PREAUTHORIZE
+=======================================================================================================================================================================
+
+- @PreAuthorize performs authorization before the method executes.
+
+- Example:
+
+  @PreAuthorize("hasRole('ADMIN')")
+  public void deleteUser(Long userId) {
+  ...
+  }
+
+- Flow:
+
+  Method Invocation
+  |
+  v
+  Method Security Interceptor
+  |
+  v
+  @PreAuthorize expression
+  |
+  v
+  AuthorizationManager
+  |
+  v
+  Authentication
+  |
+  v
+  GrantedAuthority
+  |
+  v
+  Decision
+  |
+  +---- allowed ----> Method executes
+  |
+  +---- denied -----> AccessDeniedException
+
+- If authorization fails, the actual method body is not executed.
+
+------------------------------------------------------------
+ROLE-BASED METHOD AUTHORIZATION
+
+- Example:
+
+  @PreAuthorize("hasRole('ADMIN')")
+  public void deleteUser(Long userId) {
+  ...
+  }
+
+- Authentication:
+
+  username = alice
+  authorities = [ROLE_ADMIN]
+
+- Result:
+
+  hasRole("ADMIN")
+  |
+  v
+  ROLE_ADMIN exists
+  |
+  v
+  method allowed
+
+- If the Authentication contains:
+
+  authorities = [ROLE_USER]
+
+- Then:
+
+  hasRole("ADMIN")
+  |
+  v
+  ROLE_ADMIN missing
+  |
+  v
+  AccessDeniedException
+
+------------------------------------------------------------
+AUTHORITY-BASED METHOD AUTHORIZATION
+
+- Method Security can check individual authorities instead of roles.
+
+- Example:
+
+  @PreAuthorize("hasAuthority('ORDER_READ')")
+  public Order getOrder(Long orderId) {
+  ...
+  }
+
+- Authentication:
+
+  authorities = [
+  ORDER_READ,
+  ORDER_CREATE
+  ]
+
+- Authorization succeeds because ORDER_READ is present.
+- Role-based authorization generally represents a broader role.
+- Authority-based authorization can represent more specific permissions.
+
+=======================================================================================================================================================================
+@POSTAUTHORIZE
+=======================================================================================================================================================================
+
+- @PostAuthorize performs authorization after the method has executed but before the result is returned to the caller.
+
+- Example:
+
+  @PostAuthorize("returnObject.owner == authentication.name")
+  public Order getOrder(Long orderId) {
+  return orderRepository.findById(orderId);
+  }
+
+- Flow:
+
+  Method Invocation
+  |
+  v
+  Method Security Interceptor
+  |
+  v
+  AuthorizationManager
+  |
+  v
+  Method executes
+  |
+  v
+  Return Object
+  |
+  v
+  Authorization check
+  |
+  +---- allowed ----> Return result
+  |
+  +---- denied -----> AccessDeniedException
+
+- @PostAuthorize is useful when the authorization decision depends on the returned object.
+- The method therefore executes before the authorization decision is completed.
+- This is different from @PreAuthorize, where the method is blocked before execution.
+
+=======================================================================================================================================================================
+@SECURED
+=======================================================================================================================================================================
+
+- @Secured provides a simpler role/authority-based method authorization mechanism.
+
+- Example:
+
+  @Secured("ROLE_ADMIN")
+  public void deleteUser(Long userId) {
+  ...
+  }
+
+- Method Security must be enabled for @Secured support.
+
+- Example:
+
+  @EnableMethodSecurity(securedEnabled = true)
+
+- @Secured directly specifies the required authority/role value.
+
+- Example:
+
+  @Secured("ROLE_ADMIN")
+
+- Spring Security checks whether the current Authentication contains the required authority.
+
+=======================================================================================================================================================================
+AUTHORIZATION BASED ON METHOD ARGUMENTS
+=======================================================================================================================================================================
+
+- @PreAuthorize can use method arguments when making the authorization decision.
+
+- Example:
+
+  @PreAuthorize("#userId == authentication.principal.id")
+  public User getUser(Long userId) {
+  ...
+  }
+
+- Here:
+
+  #userId
+  |
+  v
+  actual method argument
+
+- Spring Security evaluates the expression before the method executes.
+
+- Flow:
+
+  userId = 100
+  |
+  v
+  Method Security Interceptor
+  |
+  v
+  @PreAuthorize expression
+  |
+  v
+  Authentication.principal.id
+  |
+  v
+  compare values
+  |
+  v
+  Authorization Decision
+
+- This allows authorization rules to depend on both:
+
+  - the authenticated user
+  - the method arguments.
+
+=======================================================================================================================================================================
+CUSTOM AUTHORIZATION LOGIC
+=======================================================================================================================================================================
+
+- When a simple role/authority expression is not sufficient, method authorization can delegate to custom authorization logic.
+
+- Example requirement:
+
+  A user can update an order only when:
+
+  - the user owns the order
+  - the order belongs to the user's organization
+  - the user has the required permission
+
+- Instead of placing this logic directly inside the service method, the authorization expression can call a custom authorization component.
+
+- Example:
+
+  @PreAuthorize("@orderSecurity.canUpdate(authentication, #orderId)")
+  public void updateOrder(Long orderId) {
+  ...
+  }
+
+- Flow:
+
+  Method Invocation
+  |
+  v
+  Method Security Interceptor
+  |
+  v
+  AuthorizationManager
+  |
+  v
+  Authorization expression
+  |
+  v
+  Custom authorization component
+  |
+  v
+  Authorization Decision
+  |
+  +---- allowed ----> Service Method
+  |
+  +---- denied -----> AccessDeniedException
+
+- The service method remains focused on business logic while the authorization rule remains part of the security layer.
+
+=======================================================================================================================================================================
+WHY SERVICE-LEVEL SECURITY IS USEFUL
+=======================================================================================================================================================================
+
+- A controller endpoint is not necessarily the only caller of a service.
+
+- Example:
+
+  REST Controller
+  |
+  v
+  OrderService
+
+  Scheduled Job
+  |
+  v
+  OrderService
+
+  Another application component
+  |
+  v
+  OrderService
+
+- If authorization exists only at the HTTP endpoint, another internal caller may bypass that endpoint-level rule.
+- Method Security places the authorization rule directly around the protected service operation.
+
+- Example:
+
+  @PreAuthorize("hasAuthority('ORDER_DELETE')")
+  public void deleteOrder(Long orderId) {
+  ...
+  }
+
+- The security rule therefore travels with the protected method rather than only with one HTTP URL.
+
+IMPORTANT DISTINCTIONS
+
+- @PreAuthorize:
+
+  - authorization before method execution
+  - method does not execute when authorization fails
+
+- @PostAuthorize:
+
+  - authorization after method execution
+  - can use the returned object
+
+- @Secured:
+
+  - simpler role/authority-based method authorization
+  - requires secured method support to be enabled
+
+- hasRole("ADMIN"):
+
+  - checks ROLE_ADMIN
+
+- hasAuthority("ORDER_DELETE"):
+
+  - checks the exact ORDER_DELETE authority
+
+- Method Security does not replace the SecurityContext.
+- Method Security uses the Authentication already established by the authentication mechanism.
+- Method Security does not replace request-level authorization.
+
+- Both can be used together:
+
+  HTTP Request
+  |
+  v
+  Request Authorization
+  |
+  v
+  Controller
+  |
+  v
+  Method Authorization
+  |
+  v
+  Service
+  |
+  v
+  Repository
+
+- The authentication mechanism can be session, Basic, JWT, OAuth2 Login, or another supported mechanism.
+- Regardless of the authentication mechanism, the method-level authorization decision ultimately works with the current Authentication and its GrantedAuthority values.
+
+=======================================================================================================================================================================

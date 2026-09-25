@@ -58,7 +58,6 @@ public class QuestionController {
 	}
 	
 	
-	
 	//methods used by quiz-service
 	
 	//get random question ids for a new quiz

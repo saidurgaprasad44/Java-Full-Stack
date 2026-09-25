@@ -593,11 +593,11 @@ SECURITY CONFIGURATION
 
   - Examples:
 
-    http.formLogin(...);
+    http.formLogin(...); //session authentication
 
-    http.httpBasic(...);
-
-    http.oauth2ResourceServer(...);
+    http.httpBasic(...); //basic authentication
+ 
+    http.oauth2ResourceServer(...); //jwt authentication
 
   - Authentication components can also be configured through:
     - AuthenticationProvider

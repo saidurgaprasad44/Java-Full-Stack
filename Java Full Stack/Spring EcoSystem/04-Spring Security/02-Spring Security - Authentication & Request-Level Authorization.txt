@@ -255,113 +255,6 @@ AUTHORIZATION
   - AuthorizationManager evaluates the rule for the current request.
 
 ------------------------------------------------------------
-- Method-level Authorization
-
-  - Spring Security can perform authorization when a method is invoked.
-  - Method security is separate from request-level authorization.
-  - The authenticated Authentication is used to make the authorization decision.
-  - Enable Method Security with @EnableMethodSecurity on security config class
-
-  - Flow:
-
-    Controller
-        |
-        v
-    Service Method
-        |
-        v
-    Method Security
-        |
-        v
-    AuthorizationManager
-        |
-        |-- Authentication
-        |-- GrantedAuthority
-        |-- Authorization rules
-        |
-        +----> Allow ----> Method executes
-        |
-        +----> Deny -----> AccessDeniedException
-
-------------------------------------------------------------
-- @PreAuthorize
-
-  - Authorization is evaluated before the method executes.
-  - Spring Security evaluates the expression against the current Authentication and application context.
-
-    @PreAuthorize("hasRole('ADMIN')")
-    public void deleteUser(Long id) {
-        ...
-    }
-
-  - Flow:
-
-    Method Invocation
-         |
-         v
-    @PreAuthorize
-         |
-         v
-    Authorization check
-         |
-         +----> Allowed
-         |        |
-         |        v
-         |    Method executes
-         |
-         +----> Denied
-                  |
-                  v
-            AccessDeniedException
-
-------------------------------------------------------------
-- @PostAuthorize
-
-  - Authorization is evaluated after the method executes.
-  - The authorization decision can use the returned object.
-
-    @PostAuthorize("returnObject.owner == authentication.name")
-    public Account getAccount(Long id) {
-        ...
-    }
-
-  - Flow:
-
-    Method Invocation
-         |
-         v
-    Method executes
-         |
-         v
-    Return Object
-         |
-         v
-    @PostAuthorize
-         |
-         v
-    Authorization check
-         |
-         +----> Allowed
-         |
-         +----> Denied
-                  |
-                  v
-            AccessDeniedException
-
-------------------------------------------------------------
-- @Secured
-
-  - Provides role/authority-based method authorization.
-  - Requires method security to be enabled.
-
-    @Secured("ROLE_ADMIN")
-    public void deleteUser(Long id) {
-        ...
-    }
-
-  - Spring Security checks the Authentication's GrantedAuthority values against the configured value.
-
-------------------------------------------------------------
 - Role-based Authorization
 
   - Spring Security represents roles as GrantedAuthority values.
@@ -498,3 +391,111 @@ AUTHORIZATION
                 403
 
 =======================================================================================================================================================================
+
+
+------------------------------------------------------------
+- Method-level Authorization
+
+  - Spring Security can perform authorization when a method is invoked.
+  - Method security is separate from request-level authorization.
+  - The authenticated Authentication is used to make the authorization decision.
+  - Enable Method Security with @EnableMethodSecurity on security config class
+
+  - Flow:
+
+    Controller
+        |
+        v
+    Service Method
+        |
+        v
+    Method Security
+        |
+        v
+    AuthorizationManager
+        |
+        |-- Authentication
+        |-- GrantedAuthority
+        |-- Authorization rules
+        |
+        +----> Allow ----> Method executes
+        |
+        +----> Deny -----> AccessDeniedException
+
+------------------------------------------------------------
+- @PreAuthorize
+
+  - Authorization is evaluated before the method executes.
+  - Spring Security evaluates the expression against the current Authentication and application context.
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteUser(Long id) {
+        ...
+    }
+
+  - Flow:
+
+    Method Invocation
+         |
+         v
+    @PreAuthorize
+         |
+         v
+    Authorization check
+         |
+         +----> Allowed
+         |        |
+         |        v
+         |    Method executes
+         |
+         +----> Denied
+                  |
+                  v
+            AccessDeniedException
+
+------------------------------------------------------------
+- @PostAuthorize
+
+  - Authorization is evaluated after the method executes.
+  - The authorization decision can use the returned object.
+
+    @PostAuthorize("returnObject.owner == authentication.name")
+    public Account getAccount(Long id) {
+        ...
+    }
+
+  - Flow:
+
+    Method Invocation
+         |
+         v
+    Method executes
+         |
+         v
+    Return Object
+         |
+         v
+    @PostAuthorize
+         |
+         v
+    Authorization check
+         |
+         +----> Allowed
+         |
+         +----> Denied
+                  |
+                  v
+            AccessDeniedException
+
+------------------------------------------------------------
+- @Secured
+
+  - Provides role/authority-based method authorization.
+  - Requires method security to be enabled.
+
+    @Secured("ROLE_ADMIN")
+    public void deleteUser(Long id) {
+        ...
+    }
+
+  - Spring Security checks the Authentication's GrantedAuthority values against the configured value.

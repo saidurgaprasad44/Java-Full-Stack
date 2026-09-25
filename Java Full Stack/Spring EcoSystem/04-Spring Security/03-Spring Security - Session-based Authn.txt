@@ -32,80 +32,99 @@ FORM / SESSION AUTHENTICATION
 ------------------------------------------------------------
 - Authentication Flow
 
-  - First request containing username/password form parameters:
 
-    Login Form
-        |
-        v
-    Servlet Container
-        |
-        v
-    DelegatingFilterProxy
-        |
-        v
-    FilterChainProxy
-        |
-        |-- selects SecurityFilterChain
-        |
-        v
-    UsernamePasswordAuthenticationFilter
-        |
-        |-- extracts username/password
-        |
-        v
-    UsernamePasswordAuthenticationToken
-        |
-        v
-    AuthenticationManager
-        |
-        v
-    ProviderManager
-        |
-        v
-    AuthenticationProvider
-        |
-        v
-    DaoAuthenticationProvider
-        |
-        |-- UserDetailsService
-        |       |
-        |       v
-        |   UserDetails
-        |
-        |-- PasswordEncoder
-        |       |
-        |       v
-        |   password verification
-        |
-        v
-    Authentication
-        |
-        v
-    SecurityContext
-        |
-        v
-    SecurityContextRepository
-        |
-        v
-    HttpSession
-        |
-        v
-    JSESSIONID associated with browser
-        |
-        v
-    Remaining Security Filters
-        |
-        v
-    AuthorizationFilter
-        |
-        v
-    DispatcherServlet
-        |
-        v
-    Controller
-        |
-        v
-    Response
+HTTP Request
+    |
+    v
+Servlet Container
+    |
+    v
+DelegatingFilterProxy
+    |
+    v
+FilterChainProxy
+    |
+    |-- selects the matching SecurityFilterChain
+    |
+    v
+Security Filters
+    |
+    |-- SecurityContext handling
+    |       |
+    |       |-- SecurityContextRepository
+    |       |-- Checks if SecurityContext is available
+    |       |-- loads/restores SecurityContext if yes
+    |       |
+    |       v
+    |   SecurityContextHolder
+    |       |
+    |       v
+    |   SecurityContext
+    |       |
+    |       v
+    |   Authentication
+    |
+    |
+    |-- UsernamePasswordAuthenticationFilter
+    |       |
+    |       |-- extracts Username/password
+    |       |-- UsernamePasswordAuthenticationToken
+    |       |
+    |       v
+    |   AuthenticationManager
+    |       |
+    |       v
+    |   AuthenticationProvider
+    |       |
+    |       v
+    |   DaoAuthenticationProvider
+    |       |
+    |       |-- UserDetailsService
+    |       |          |
+    |       |          v
+    |       |      UserDetails
+    |       |
+    |       |-- PasswordEncoder
+    |       |          |
+    |       |          v
+    |       |   password verification
+    |       v
+    |   Authentication
+    |       |
+    |       v
+    |   SecurityContext
+    |       |
+    |       v
+    |   SecurityContextRepository
+    |       |
+    |       v
+    |   HttpSession
+    |       |
+    |       v
+    |   JSESSIONID associated with browser   
+    |
+    |
+    |-- AuthorizationFilter
+    |       |
+    |       |-- AuthorizationManager
+    |       |-- checks Authentication
+    |       |-- checks GrantedAuthority
+    |       |
+    |       +---- allows request
+    |       |
+    |       +---- denies request
+    |                   |
+    |                   v
+    |             AccessDeniedHandler
+    |
+    v
+DispatcherServlet
+    |
+    v
+Controller
+    |
+    v
+Response
 
 ------------------------------------------------------------
 - SecurityContext and HTTP Session

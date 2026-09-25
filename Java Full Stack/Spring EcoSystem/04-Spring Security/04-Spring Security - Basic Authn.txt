@@ -1,0 +1,305 @@
+=======================================================================================================================================================================
+HTTP BASIC AUTHENTICATION
+=======================================================================================================================================================================
+
+- Basic Authentication in Spring Security
+
+  - Spring Security enables HTTP Basic authentication through httpBasic().
+
+  - Example:
+
+    http.httpBasic(Customizer.withDefaults());
+
+  - Spring Security uses BasicAuthenticationFilter to process requests containing Basic authentication credentials.
+  - The credentials are supplied through the Authorization request header.
+  - The request is processed by the security filter chain before reaching DispatcherServlet.
+
+------------------------------------------------------------
+- Authentication Flow
+
+
+HTTP Request
+    |
+    v
+Servlet Container
+    |
+    v
+DelegatingFilterProxy
+    |
+    v
+FilterChainProxy
+    |
+    |-- selects the matching SecurityFilterChain
+    |
+    v
+Security Filters
+    |
+    |-- BasicAuthenticationFilter
+    |       |
+    |       |-- extracts Authorization header
+    |       |       |
+    |       |       |-- Authorization: Basic <Base64(username:password)>
+    |       |       |
+    |       |       v
+    |       |   decodes username/password
+    |       |
+    |       |-- UsernamePasswordAuthenticationToken
+    |       |
+    |       v
+    |   AuthenticationManager
+    |       |
+    |       v
+    |   ProviderManager
+    |       |
+    |       v
+    |   DaoAuthenticationProvider
+    |       |
+    |       |-- UserDetailsService
+    |       |          |
+    |       |          v
+    |       |      UserDetails
+    |       |
+    |       |-- PasswordEncoder
+    |       |          |
+    |       |          v
+    |       |   password verification
+    |       |
+    |       v
+    |   Authentication
+    |       |
+    |       v
+    |   SecurityContext
+    |       |
+    |       v
+    |   SecurityContextHolder
+    |
+    |
+    |-- AuthorizationFilter
+    |       |
+    |       |-- AuthorizationManager
+    |       |-- checks Authentication
+    |       |-- checks GrantedAuthority
+    |       |
+    |       +---- allows request
+    |       |
+    |       +---- denies request
+    |                   |
+    |                   v
+    |             AccessDeniedHandler
+    |
+    v
+DispatcherServlet
+    |
+    v
+Controller
+    |
+    v
+Response
+
+------------------------------------------------------------
+- BasicAuthenticationFilter
+
+  - BasicAuthenticationFilter is responsible for processing HTTP Basic authentication requests.
+
+  - It:
+    - Reads the Authorization header.
+    - Extracts the Basic credentials.
+    - Creates an Authentication token.
+    - Passes the token to AuthenticationManager.
+    - On successful authentication, places the resulting Authentication into the SecurityContext.
+
+  - Flow:
+
+    Authorization Header
+        |
+        v
+    BasicAuthenticationFilter
+        |
+        v
+    UsernamePasswordAuthenticationToken
+        |
+        v
+    AuthenticationManager
+        |
+        v
+    Authentication
+        |
+        v
+    SecurityContext
+
+------------------------------------------------------------
+- WWW-Authenticate
+
+  - When an unauthenticated request requires HTTP Basic authentication, Spring Security uses an AuthenticationEntryPoint.
+  - The Basic authentication entry point sends a 401 response containing the WWW-Authenticate header.
+
+    Request
+        |
+        v
+    Authorization required
+        |
+        v
+    AuthenticationEntryPoint
+        |
+        v
+    HTTP 401
+        |
+        +---- WWW-Authenticate: Basic
+
+
+  - Example response:
+
+    HTTP/1.1 401 Unauthorized
+    WWW-Authenticate: Basic realm="Realm"
+
+------------------------------------------------------------
+- Basic Auth and Sessions
+
+  - HTTP Basic authentication does not require an HTTP session to carry the authentication state.
+  - The client app normally sends the Authorization header with each request.
+
+  - Request flow:
+
+    Request
+        |
+        | Authorization: Basic <credentials>
+        v
+    BasicAuthenticationFilter
+        |
+        v
+    Authentication
+        |
+        v
+    SecurityContext
+        |
+        v
+    Authorization
+        |
+        v
+    Controller
+
+
+  - Session-based authentication:
+
+    First Request
+        |
+        v
+    Form Login
+        |
+        v
+    Authentication
+        |
+        v
+    SecurityContext
+        |
+        v
+    HttpSession
+        |
+        v
+    JSESSIONID
+        |
+        v
+    Subsequent Requests
+
+
+  - Basic authentication:
+
+    Request 1
+        |
+        v
+    Authorization Header
+        |
+        v
+    Authentication
+
+
+    Request 2
+        |
+        v
+    Authorization Header
+        |
+        v
+    Authentication
+
+
+  - Therefore, Basic authentication can work with stateless request processing.
+  - If session persistence is enabled, the resulting SecurityContext can also participate in the configured SecurityContext persistence mechanism.
+
+------------------------------------------------------------
+- Basic Auth for REST APIs
+
+  - HTTP Basic is commonly configured for REST endpoints through httpBasic().
+
+  - Example:
+
+    http
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/api/**").authenticated()
+            .anyRequest().permitAll()
+        )
+        .httpBasic(Customizer.withDefaults());
+
+
+  - Request:
+
+    GET /api/users HTTP/1.1
+    Host: example.com
+    Authorization: Basic <credentials>
+
+
+  - Processing:
+
+    Request
+        |
+        v
+    BasicAuthenticationFilter
+        |
+        v
+    AuthenticationManager
+        |
+        v
+    AuthenticationProvider
+        |
+        v
+    Authentication
+        |
+        v
+    SecurityContext
+        |
+        v
+    AuthorizationFilter
+        |
+        v
+    Controller
+
+
+  - Successful authentication:
+
+    HTTP 200 OK
+        |
+        v
+    REST response
+
+
+  - Missing or invalid authentication:
+
+    HTTP 401 Unauthorized
+        |
+        v
+    WWW-Authenticate: Basic
+
+
+  - Authenticated but insufficient authority:
+
+    Authentication
+        |
+        v
+    AuthorizationFilter
+        |
+        v
+    AccessDeniedHandler
+        |
+        v
+    HTTP 403 Forbidden
+
+=======================================================================================================================================================================

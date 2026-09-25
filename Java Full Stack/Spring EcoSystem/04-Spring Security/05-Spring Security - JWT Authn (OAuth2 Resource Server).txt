@@ -1,0 +1,472 @@
+=======================================================================================================================================================================
+JWT AUTHENTICATION
+=======================================================================================================================================================================
+
+JWT Authentication Architecture
+------------------------------------------------------------
+
+- Spring Security implements JWT authentication through OAuth 2.0 Resource Server support.
+- The application acts as a Resource Server that receives an access token and authenticates the request using that token.
+- Typical configuration:
+
+    http
+        .oauth2ResourceServer(oauth2 -> oauth2
+            .jwt(jwt -> {})
+        )
+        .sessionManagement(session -> session
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        );
+
+- JWT authentication is typically stateless.
+- The JWT supplied with each request is used to establish the Authentication for that request.
+- The resulting SecurityContext represents the authenticated state during the current request.
+- With STATELESS, the authenticated SecurityContext is not persisted in HttpSession for subsequent requests.
+
+JWT Authentication Flow
+------------------------------------------------------------
+
+HTTP Request
+    |
+    v
+Servlet Container
+    |
+    v
+DelegatingFilterProxy
+    |
+    v
+FilterChainProxy
+    |
+    |-- selects the matching SecurityFilterChain
+    |
+    v
+Security Filters
+    |
+    |-- BearerTokenAuthenticationFilter
+    |       |
+    |       |-- extracts Authorization header
+    |       |       |
+    |       |       |-- Authorization: Bearer <access-token>
+    |       |       |
+    |       |       v
+    |       |   BearerTokenResolver
+    |       |
+    |       |-- BearerTokenAuthenticationToken
+    |       |
+    |       v
+    |   AuthenticationManager
+    |       |
+    |       v
+    |   ProviderManager
+    |       |
+    |       v
+    |   JwtAuthenticationProvider
+    |       |
+    |       |-- JwtDecoder
+    |       |       |
+    |       |       |-- decodes JWT
+    |       |       |-- validates signature
+    |       |       |-- validates configured claims
+    |       |       |
+    |       |       v
+    |       |      Jwt
+    |       |
+    |       |-- JwtAuthenticationConverter
+    |       |       |
+    |       |       |-- converts JWT claims
+    |       |       |-- maps authorities
+    |       |       |
+    |       |       v
+    |       |   JwtAuthenticationToken
+    |       |
+    |       v
+    |   Authentication
+    |       |
+    |       v
+    |   SecurityContext
+    |       |
+    |       v
+    |   SecurityContextHolder
+    |
+    |
+    |-- AuthorizationFilter
+    |       |
+    |       |-- AuthorizationManager
+    |       |-- checks Authentication
+    |       |-- checks GrantedAuthority
+    |       |
+    |       +---- allows request
+    |       |
+    |       +---- denies request
+    |                   |
+    |                   v
+    |             AccessDeniedHandler
+    |
+    v
+DispatcherServlet
+    |
+    v
+Controller
+    |
+    v
+Response
+
+
+Bearer Token Authentication
+------------------------------------------------------------
+
+- BearerTokenAuthenticationFilter is responsible for processing Bearer tokens.
+- By default, Spring Security looks for the token in the Authorization header.
+- Example:
+
+    GET /api/orders HTTP/1.1
+    Host: example.com
+    Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
+
+- BearerTokenResolver resolves the Bearer token from the HTTP request.
+- DefaultBearerTokenResolver supports the standard Authorization header format.
+- After extracting the token, BearerTokenAuthenticationFilter creates a BearerTokenAuthenticationToken.
+- BearerTokenAuthenticationToken represents the authentication request containing the Bearer token.
+- It is not yet the authenticated user.
+- The token is passed to AuthenticationManager for authentication.
+
+
+AuthenticationManager and JWT Authentication
+------------------------------------------------------------
+
+- AuthenticationManager is the entry point for authentication processing.
+- ProviderManager is the default AuthenticationManager implementation.
+- ProviderManager delegates authentication to the configured AuthenticationProvider implementations.
+- JwtAuthenticationProvider is the provider used for JWT Resource Server authentication.
+- JwtAuthenticationProvider supports BearerTokenAuthenticationToken.
+- JwtAuthenticationProvider uses JwtDecoder to decode and validate the JWT.
+- After successful validation, JwtAuthenticationProvider uses JwtAuthenticationConverter to create the authenticated JwtAuthenticationToken.
+
+
+JWT Validation
+------------------------------------------------------------
+
+- JwtDecoder is responsible for decoding and validating the JWT.
+- Validation can include:
+  - Signature validation
+  - Expiration validation
+  - Not-before validation when applicable
+  - Issuer validation when configured
+  - Audience validation when configured
+  - Other configured JWT validators
+
+- The decoder obtains the cryptographic verification material according to the configured setup.
+- For example, when using an external Authorization Server, Spring Security can obtain public keys through the Authorization Server's JWKS endpoint.
+- A JWT that fails validation does not produce an authenticated Authentication.
+- Authentication failure normally results in HTTP 401 Unauthorized.
+
+Example:
+
+    Authorization: Bearer <expired-token>
+                         |
+                         v
+              BearerTokenAuthenticationFilter
+                         |
+                         v
+              BearerTokenAuthenticationToken
+                         |
+                         v
+                 AuthenticationManager
+                         |
+                         v
+              JwtAuthenticationProvider
+                         |
+                         v
+                    JwtDecoder
+                         |
+                         v
+                 validation fails
+                         |
+                         v
+              Authentication failure
+                         |
+                         v
+              AuthenticationEntryPoint
+                         |
+                         v
+                 HTTP 401 Unauthorized
+
+
+Authentication from JWT Claims
+------------------------------------------------------------
+
+- After successful JWT validation, Spring Security converts the validated Jwt into an authenticated Authentication.
+- JwtAuthenticationProvider uses JwtAuthenticationConverter for this conversion.
+- JwtAuthenticationConverter reads the relevant JWT claims and creates a JwtAuthenticationToken.
+- The resulting JwtAuthenticationToken contains:
+  - The validated Jwt
+  - The authenticated principal
+  - Granted authorities
+
+- The resulting JwtAuthenticationToken represents the authenticated user.
+
+Example:
+
+    Validated Jwt
+        |
+        |-- sub = "alice"
+        |-- iss = "https://auth.example.com"
+        |-- exp = ...
+        |-- scope = "orders.read orders.write"
+        |
+        v
+    JwtAuthenticationConverter
+        |
+        v
+    JwtAuthenticationToken
+        |
+        |-- principal
+        |-- authorities
+        |-- authenticated = true
+
+
+JWT Authorities
+------------------------------------------------------------
+
+- JWT claims can be converted into Spring Security GrantedAuthority objects.
+- By default, Resource Server JWT authentication commonly maps the scope or scp claim to authorities.
+- Scope values are normally converted using the SCOPE_ prefix.
+
+Example JWT claim:
+
+    {
+        "sub": "alice",
+        "scope": "orders.read orders.write"
+    }
+
+- Spring Security can represent these as:
+
+    SCOPE_orders.read
+    SCOPE_orders.write
+
+- These authorities can then be used by AuthorizationManager during request authorization.
+
+Example:
+
+    http
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/api/orders/**")
+            .hasAuthority("SCOPE_orders.read")
+            .anyRequest()
+            .authenticated()
+        );
+
+- Custom authority mapping can be implemented using a custom JwtAuthenticationConverter.
+
+Example custom claim:
+
+    {
+        "sub": "alice",
+        "roles": ["ADMIN", "USER"]
+    }
+
+- A custom converter can map these values to:
+
+    ROLE_ADMIN
+    ROLE_USER
+
+- Authorization then works through the normal Spring Security GrantedAuthority mechanism.
+
+
+SecurityContext Population
+------------------------------------------------------------
+
+- After successful JWT authentication, Spring Security obtains the authenticated JwtAuthenticationToken.
+- The authenticated Authentication is placed into the current SecurityContext.
+- SecurityContextHolder provides access to that SecurityContext during the current request.
+
+    JwtAuthenticationToken
+            |
+            v
+       Authentication
+            |
+            v
+       SecurityContext
+            |
+            v
+     SecurityContextHolder
+
+- Application code can access the authenticated user through:
+
+    SecurityContextHolder
+        -> SecurityContext
+        -> Authentication
+
+Example:
+
+    Authentication authentication =
+        SecurityContextHolder
+            .getContext()
+            .getAuthentication();
+
+- The controller therefore does not need to manually parse the JWT to determine the authenticated principal.
+
+
+Stateless JWT APIs
+------------------------------------------------------------
+
+- JWT Resource Server applications are commonly configured with:
+
+    SessionCreationPolicy.STATELESS
+
+- In this configuration, Spring Security does not use HttpSession to maintain authentication between requests.
+- Each request must provide its own valid access token.
+
+Request 1:
+
+    Request
+      |
+      |-- Authorization: Bearer <JWT>
+      |
+      v
+    JWT validation
+      |
+      v
+    Authentication
+      |
+      v
+    SecurityContext
+      |
+      v
+    Controller
+
+Request 2:
+
+    Request
+      |
+      |-- Authorization: Bearer <JWT>
+      |
+      v
+    JWT validation
+      |
+      v
+    Authentication
+      |
+      v
+    SecurityContext
+      |
+      v
+    Controller
+
+- The second request does not depend on the SecurityContext created during the first request.
+- The JWT is used again to establish authentication for the new request.
+
+- Session authentication restores previously persisted authentication:
+
+    Session Authentication
+
+    HTTP Request
+        |
+        v
+    SecurityContextRepository
+        |
+        v
+    HttpSession
+        |
+        v
+    restore SecurityContext
+        |
+        v
+    Authentication
+
+- Stateless JWT authentication establishes authentication from the token:
+
+    Stateless JWT Authentication
+
+    HTTP Request
+        |
+        v
+    BearerTokenAuthenticationFilter
+        |
+        v
+    JWT validation
+        |
+        v
+    JwtAuthenticationToken
+        |
+        v
+    SecurityContext
+
+
+Access Tokens and Refresh Tokens
+------------------------------------------------------------
+
+- A Resource Server primarily validates access tokens presented by clients.
+- Access-token issuance and refresh-token handling belong to the Authorization Server or OAuth2 Client side of the system.
+- BearerTokenAuthenticationFilter does not refresh an expired access token.
+- If an access token is expired or otherwise invalid, the Resource Server rejects the request.
+- The client must obtain a new access token through the appropriate OAuth 2.0 flow.
+
+    Client
+        |
+        |-- Access Token
+        v
+    Resource Server
+        |
+        |-- validates token
+        |
+        +---- valid ------> Controller
+        |
+        +---- invalid ----> 401
+
+- Refresh-token flow occurs separately:
+
+    Client
+        |
+        |-- Refresh Token
+        v
+    Authorization Server
+        |
+        v
+    New Access Token
+        |
+        v
+    Client
+        |
+        v
+    Resource Server
+
+- Resource Server JWT configuration therefore focuses on validating and authenticating access tokens, not issuing or refreshing them.
+
+
+Token Expiration
+------------------------------------------------------------
+
+- JWT expiration is normally represented by the exp claim.
+- JwtDecoder validates the configured JWT time-based validators.
+- An expired JWT fails authentication.
+- The request therefore does not reach the controller as an authenticated request.
+
+    HTTP Request
+        |
+        v
+    BearerTokenAuthenticationFilter
+        |
+        v
+    BearerTokenAuthenticationToken
+        |
+        v
+    AuthenticationManager
+        |
+        v
+    JwtAuthenticationProvider
+        |
+        v
+    JwtDecoder
+        |
+        |-- exp has expired
+        |
+        v
+    Authentication failure
+        |
+        v
+    HTTP 401 Unauthorized
+
+- 401 Unauthorized means authentication was not successfully established.
+- 403 Forbidden means authentication exists but authorization denies access.
+
+=======================================================================================================================================================================
