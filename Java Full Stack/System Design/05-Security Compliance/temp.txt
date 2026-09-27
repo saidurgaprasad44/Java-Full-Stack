@@ -1,0 +1,35 @@
+05-Security & Compliance
+│
+├── Authentication
+├── Authorization
+├── Encryption
+│   ├── TLS
+│   └── mTLS
+│
+├── API Security
+│   ├── API Keys
+│   ├── OAuth2
+│   ├── OIDC
+│   └── JWT
+│
+├── Service-to-Service Security
+│   ├── Service Identity
+│   ├── mTLS
+│   └── Secrets
+│
+├── Network Security
+│   ├── Firewall
+│   ├── WAF
+│   ├── Network Segmentation
+│   └── Private Networks
+│
+├── Security Architecture
+│   ├── Zero Trust
+│   ├── Least Privilege
+│   └── Defense in Depth
+│
+└── Compliance
+    ├── Audit Logging
+    ├── Data Protection
+    ├── Data Retention
+    └── Regulatory Requirements

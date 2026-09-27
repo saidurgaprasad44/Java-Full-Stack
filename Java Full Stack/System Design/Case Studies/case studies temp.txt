@@ -1,0 +1,26 @@
+Case Studies & Projects
+│
+├── Beginner
+│   ├── URL Shortener
+│   ├── Pastebin
+│   └── Rate Limiter
+│
+├── Intermediate
+│   ├── Notification System
+│   ├── E-Commerce
+│   ├── Food Delivery
+│   ├── Ride Booking
+│   └── Payment System
+│
+├── Advanced
+│   ├── Chat System
+│   ├── Social Media Feed
+│   ├── Video Streaming
+│   ├── Search System
+│   └── Distributed File Storage
+│
+└── Enterprise
+    ├── Banking System
+    ├── Order Management
+    ├── Healthcare Platform
+    └── Enterprise Workflow System

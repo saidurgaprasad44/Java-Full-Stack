@@ -1,0 +1,24 @@
+EDA
+ |
+ +-- Communication
+ |    +-- Pub/Sub
+ |    +-- Point-to-Point
+ |
+ +-- Event Design
+ |    +-- Event Notification
+ |    +-- Event-Carried State Transfer
+ |    +-- Event Contract
+ |
+ +-- Reliability
+ |    +-- Retry
+ |    +-- Dead Letter
+ |    +-- Idempotent Consumer
+ |    +-- Transactional Outbox
+ |
+ +-- Distributed Workflows
+ |    +-- Saga
+ |    +-- Compensation
+ |
+ +-- Data
+      +-- Event Sourcing
+      +-- CQRS

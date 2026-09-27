@@ -1,0 +1,127 @@
+============================================================
+EVENT-DRIVEN ARCHITECTURE — 10–12 HOUR ROADMAP
+============================================================
+
+EDA FUNDAMENTALS
+------------------------------------------------------------
+- What is Event-Driven Architecture?
+- Why EDA?
+- Synchronous vs asynchronous communication
+- EDA vs REST
+- Event, Producer, Consumer, Broker / Bus
+- Loose coupling
+- Temporal / location / dependency decoupling
+- When to use EDA
+- When not to use EDA
+- Benefits and trade-offs
+
+EVENTS & MESSAGING
+------------------------------------------------------------
+- Event vs Command
+- Event Notification
+- Event-Carried State Transfer
+- Event contract / schema
+- Event contract as a form of dependency
+- Publish/Subscribe
+- Point-to-Point Messaging
+- Topic vs Queue
+- Basic schema evolution
+
+DELIVERY & FAILURE BASICS
+------------------------------------------------------------
+- Acknowledgement
+- At-most-once
+- At-least-once
+- Exactly-once — conceptual understanding
+- Duplicate messages
+- Idempotent consumers
+- Retry
+- Dead-letter queue/topic
+- Consumer failure
+- Producer failure
+- Basic ordering
+- Backpressure / slow consumers
+
+KAFKA — ARCHITECTURE
+------------------------------------------------------------
+- Why Kafka?
+- Kafka Broker
+- Kafka Cluster
+- Topic
+- Partition
+- Producer
+- Consumer
+- Consumer Group
+- Offset
+- Partition Key
+- Ordering within partitions
+- Consumer scaling
+- Consumer lag
+
+KAFKA — IMPORTANT INTERNALS
+------------------------------------------------------------
+- Append-only log model
+- Partition as an ordered log
+- Why partitions provide scalability
+- Offset and replay
+- Retention
+- Basic replication
+- Leader / follower
+- Producer acknowledgements
+- Consumer offset / commit
+- Why Kafka provides high throughput
+
+RABBITMQ — ARCHITECTURE
+------------------------------------------------------------
+- Why RabbitMQ?
+- Broker
+- Producer
+- Exchange
+- Queue
+- Binding
+- Routing Key
+- Consumer
+- Acknowledgement
+- Prefetch
+- Competing Consumers
+- Dead-lettering
+
+KAFKA vs RABBITMQ
+------------------------------------------------------------
+- Core architectural model
+- Event streaming vs message queueing
+- Topic vs Exchange/Queue
+- Retention
+- Replay
+- Routing
+- Ordering
+- Consumer model
+- Scaling
+- Typical use cases
+- Choosing between them
+
+IMPORTANT EDA PATTERNS
+------------------------------------------------------------
+- Transactional Outbox
+- Dual-write problem
+- Saga — basic concept
+- Choreography vs Orchestration
+- Event Sourcing — basic concept
+- EDA vs Event Sourcing
+
+EDA SYSTEM DESIGN / CASE STUDY
+------------------------------------------------------------
+- Identify where asynchronous communication is useful
+- Identify events
+- Identify producers and consumers
+- Choose Kafka/RabbitMQ where appropriate
+- Design event flow
+- Handle failures
+- Handle duplicates
+- Handle retries
+- Handle ordering
+- Handle slow consumers
+- Identify eventual consistency
+- Identify scalability concerns
+- Identify trade-offs
+- Reverse-engineer an existing real-world architecture

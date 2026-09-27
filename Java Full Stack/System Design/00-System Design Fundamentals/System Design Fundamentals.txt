@@ -1,0 +1,12 @@
+Functional vs Non-Functional Requirements
+Scalability
+Availability
+Reliability
+Performance
+Latency & Throughput
+Consistency
+Durability
+Maintainability
+Fault Tolerance
+Trade-offs
+System Design Process
