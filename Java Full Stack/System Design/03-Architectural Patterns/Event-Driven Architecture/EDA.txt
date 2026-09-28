@@ -17,13 +17,13 @@ EDA FUNDAMENTALS
 
 EVENTS & MESSAGING
 ------------------------------------------------------------
-- Event vs Command
+- Event contract / schema
+- Event contract as a form of dependency in EDA
 - Event Notification
 - Event-Carried State Transfer
-- Event contract / schema
-- Event contract as a form of dependency
-- Publish/Subscribe
-- Point-to-Point Messaging
+- Event vs Command
+- Publish/Subscribe pattern
+- Point-to-Point Messaging pattern
 - Topic vs Queue
 - Basic schema evolution
 
@@ -32,9 +32,9 @@ DELIVERY & FAILURE BASICS
 - Acknowledgement
 - At-most-once
 - At-least-once
-- Exactly-once — conceptual understanding
+- Exactly-once - conceptual understanding
 - Duplicate messages
-- Idempotent consumers
+- Idempotent consumers - 4 strategies
 - Retry
 - Dead-letter queue/topic
 - Consumer failure
