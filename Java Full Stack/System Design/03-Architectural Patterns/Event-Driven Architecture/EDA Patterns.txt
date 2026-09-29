@@ -1,3 +1,31 @@
+IMPORTANT EDA PATTERNS
+------------------------------------------------------------
+- Transactional Outbox
+- Dual-write problem
+- Saga — basic concept
+- Choreography vs Orchestration
+- Event Sourcing — basic concept
+- EDA vs Event Sourcing
+
+
+EDA SYSTEM DESIGN / CASE STUDY
+------------------------------------------------------------
+- Identify where asynchronous communication is useful
+- Identify events
+- Identify producers and consumers
+- Choose Kafka/RabbitMQ where appropriate
+- Design event flow
+- Handle failures
+- Handle duplicates
+- Handle retries
+- Handle ordering
+- Handle slow consumers
+- Identify eventual consistency
+- Identify scalability concerns
+- Identify trade-offs
+- Reverse-engineer an existing real-world architecture
+
+
 EDA
  |
  +-- Communication

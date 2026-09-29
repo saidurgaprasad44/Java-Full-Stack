@@ -1,127 +1,824 @@
-============================================================
-EVENT-DRIVEN ARCHITECTURE — 10–12 HOUR ROADMAP
-============================================================
 
+
+EDA
+ │
+ ├── What event-driven systems are
+ ├── How events/messages work
+ ├── Contracts
+ ├── Delivery
+ ├── Idempotency
+ ├── Failure handling
+ ├── Ordering
+ └── Backpressure
+ │
+ ├───────────────┐
+ ↓                    ↓
+Kafka              RabbitMQ
+ │                    │
+Event Streaming    Message Queue
+ │                    │
+Kafka internals    RabbitMQ internals
+ │                    |
+ └───────┬───────┘
+           ↓
+      EDA Patterns
+
+
+EDA
+│
+├── EDA Fundamentals
+│   ├── What is Event-Driven Architecture?
+│   ├── Why EDA?
+│   ├── Synchronous vs Asynchronous Communication
+│   ├── EDA vs REST
+│   ├── Core EDA Components
+│   │   ├── Producer
+│   │   ├── Event
+│   │   ├── Broker / Event Bus
+│   │   └── Consumer
+│   ├── Decoupling
+│   │   ├── Temporal Decoupling
+│   │   ├── Location / Space Decoupling
+│   │   └── Dependency Decoupling
+│   ├── What EDA Actually Decouples
+│   ├── Benefits of EDA
+│   ├── Trade-offs of EDA
+│   ├── When to Use EDA
+│   └── When Not to Use EDA
+│
+├── Events & Messages
+│   ├── Message
+│   ├── Event
+│   ├── Command
+│   ├── Event vs Command
+│   ├── Event vs Message
+│   ├── Message Distribution Models
+│   │   ├── Publish / Subscribe
+│   │   └── Point-to-Point
+│   ├── Topic vs Queue
+│   ├── Event Notification
+│   └── Event-Carried State Transfer
+│
+├── Event Contracts & Schema
+│   ├── Event Contract
+│   ├── Message Contract
+│   ├── Event Contract as a Distributed Dependency
+│   ├── Event Structure
+│   │   ├── Event ID
+│   │   ├── Event Type
+│   │   ├── Timestamp
+│   │   ├── Version
+│   │   └── Business Data
+│   ├── Schema Evolution
+│   ├── Backward Compatibility
+│   ├── Forward Compatibility
+│   └── Breaking vs Non-Breaking Changes
+│
+├── Delivery Semantics
+│   ├── Acknowledgement
+│   ├── At-Most-Once Delivery
+│   ├── At-Least-Once Delivery
+│   ├── Exactly-Once — Conceptual Understanding
+│   ├── Why Duplicate Messages Happen
+│   └── Delivery Guarantee vs Business Effect
+│
+├── Idempotency & Duplicate Handling
+│   ├── Why Duplicates Happen
+│   ├── Idempotency
+│   ├── Deduplication vs Idempotency
+│   ├── Idempotent Consumer
+│   ├── Processed Message / Inbox
+│   ├── Unique Business Key
+│   ├── Idempotent State Transition
+│   ├── External API Idempotency Key
+│   └── Event ID vs Business ID vs Idempotency Key
+│
+├── Retry & Failure Handling
+│   ├── Processing Failure
+│   ├── Retryable vs Non-Retryable Failure
+│   ├── Retry
+│   ├── Immediate Retry
+│   ├── Exponential Backoff
+│   ├── Jitter
+│   ├── Retry Storm / Thundering Herd
+│   ├── Retry Topic / Queue — Concept
+│   ├── Dead Letter Queue / Dead Letter Topic
+│   └── Replay / Reprocessing
+│
+├── Producer & Consumer Reliability
+│   ├── Consumer Failure
+│   │   ├── Crash Before Processing
+│   │   ├── Crash After Processing but Before ACK
+│   │   └── ACK Before Processing
+│   ├── Producer Failure
+│   │   ├── Failure Before Publishing
+│   │   ├── Publish Uncertainty
+│   │   └── Duplicate Publication
+│   ├── Producer vs Consumer Failure
+│   └── Dual-Write Problem — Introduction
+│
+├── Ordering & Backpressure
+│   ├── Message Ordering
+│   ├── Why Global Ordering Is Difficult
+│   ├── Ordering Within a Partition / Ordered Channel
+│   ├── Business-Key-Based Ordering
+│   ├── Slow Consumer
+│   ├── Backpressure
+│   ├── Consumer Lag — Concept
+│   └── Consumer Scaling — Concept
+│
+└── EDA Mental Model
+    ├── Requirement
+    ├── Event Identification
+    ├── Producer
+    ├── Broker
+    ├── Consumer
+    ├── Delivery Semantics
+    ├── Failure Handling
+    ├── Idempotency
+    ├── Retry / DLQ
+    ├── Ordering
+    ├── Backpressure
+    └── Eventual Consistency
+
+
+
+
+=======================================================================================================================================================================
 EDA FUNDAMENTALS
-------------------------------------------------------------
-- What is Event-Driven Architecture?
-- Why EDA?
-- Synchronous vs asynchronous communication
-- EDA vs REST
-- Event, Producer, Consumer, Broker / Bus
-- Loose coupling
-- Temporal / location / dependency decoupling
-- When to use EDA
-- When not to use EDA
-- Benefits and trade-offs
+=======================================================================================================================================================================
 
-EVENTS & MESSAGING
-------------------------------------------------------------
-- Event contract / schema
-- Event contract as a form of dependency in EDA
-- Event Notification
-- Event-Carried State Transfer
-- Event vs Command
-- Publish/Subscribe pattern
-- Point-to-Point Messaging pattern
-- Topic vs Queue
-- Basic schema evolution
+What is Event-Driven Architecture?
 
-DELIVERY & FAILURE BASICS
-------------------------------------------------------------
-- Acknowledgement
-- At-most-once
-- At-least-once
-- Exactly-once - conceptual understanding
-- Duplicate messages
-- Idempotent consumers - 4 strategies
-- Retry
-- Dead-letter queue/topic
-- Consumer failure
-- Producer failure
-- Basic ordering
-- Backpressure / slow consumers
+- Event-Driven Architecture (EDA) is an architecture where components communicate by producing and consuming events.
+- An event represents a fact that something has happened.
 
-KAFKA — ARCHITECTURE
-------------------------------------------------------------
-- Why Kafka?
-- Kafka Broker
-- Kafka Cluster
-- Topic
-- Partition
-- Producer
-- Consumer
-- Consumer Group
-- Offset
-- Partition Key
-- Ordering within partitions
-- Consumer scaling
-- Consumer lag
+Examples:
 
-KAFKA — IMPORTANT INTERNALS
-------------------------------------------------------------
-- Append-only log model
-- Partition as an ordered log
-- Why partitions provide scalability
-- Offset and replay
-- Retention
-- Basic replication
-- Leader / follower
-- Producer acknowledgements
-- Consumer offset / commit
-- Why Kafka provides high throughput
+- `OrderCreated`
+- `PaymentCompleted`
+- `OrderShipped`
 
-RABBITMQ — ARCHITECTURE
-------------------------------------------------------------
-- Why RabbitMQ?
-- Broker
-- Producer
-- Exchange
-- Queue
-- Binding
-- Routing Key
-- Consumer
-- Acknowledgement
-- Prefetch
-- Competing Consumers
-- Dead-lettering
+- Basic flow:
 
-KAFKA vs RABBITMQ
-------------------------------------------------------------
-- Core architectural model
-- Event streaming vs message queueing
-- Topic vs Exchange/Queue
-- Retention
-- Replay
-- Routing
-- Ordering
-- Consumer model
-- Scaling
-- Typical use cases
-- Choosing between them
 
-IMPORTANT EDA PATTERNS
-------------------------------------------------------------
-- Transactional Outbox
-- Dual-write problem
-- Saga — basic concept
-- Choreography vs Orchestration
-- Event Sourcing — basic concept
-- EDA vs Event Sourcing
+Order Service
+      |
+      | OrderCreated
+      v
+    Broker
+    /  |  \
+   v   v   v
+Payment Inventory Notification
 
-EDA SYSTEM DESIGN / CASE STUDY
+
+- The producer publishes an event without directly calling every consumer.
+- The broker makes the event available to interested consumers.
+- Each consumer independently processes the event according to its responsibility.
+
 ------------------------------------------------------------
-- Identify where asynchronous communication is useful
-- Identify events
-- Identify producers and consumers
-- Choose Kafka/RabbitMQ where appropriate
-- Design event flow
-- Handle failures
-- Handle duplicates
-- Handle retries
-- Handle ordering
-- Handle slow consumers
-- Identify eventual consistency
-- Identify scalability concerns
-- Identify trade-offs
-- Reverse-engineer an existing real-world architecture
+Why EDA?
+
+- In a synchronous architecture, services directly depend on downstream services.
+
+
+Order → Payment → Inventory → Notification
+
+
+- If a downstream service is slow or unavailable, the upstream operation can be affected.
+- EDA separates the initial operation from subsequent processing.
+
+
+Order Service
+      |
+      | OrderCreated
+      v
+    Broker
+    /  |  \
+   v   v   v
+Payment Inventory Notification
+
+
+- The Order Service can complete its own responsibility without waiting for every consumer.
+- The broker can retain/buffer events so consumers can process them later, depending on the messaging system.
+
+=======================================================================================================================================================================
+Synchronous vs Asynchronous Communication
+=======================================================================================================================================================================
+
+- Synchronous communication means the caller waits for the called service to respond.
+
+
+Service A
+   |
+   | Request
+   v
+Service B
+   |
+   | Response
+   v
+Service A
+
+
+- Asynchronous communication means the sender publishes a message/event without waiting for the consumer to finish processing.
+
+
+Service A
+   |
+   | Event
+   v
+ Broker
+   |
+   v
+Service B
+
+
+- Synchronous communication is suitable when the caller immediately needs the result.
+- Asynchronous communication is suitable when processing can happen independently.
+- Both models can coexist in the same system.
+
+
+Client
+  |
+  | REST
+  v
+Order Service
+  |
+  | OrderCreated
+  v
+Broker
+  |
+  +----> Payment
+  +----> Inventory
+  +----> Notification
+
+------------------------------------------------------------
+EDA vs REST
+
+- REST commonly uses synchronous request-response communication.
+
+
+Client → HTTP Request → Service
+Client ← HTTP Response ← Service
+
+
+- EDA commonly uses asynchronous event communication.
+
+
+Producer → Event → Broker → Consumer(s)
+
+
+- REST generally communicates:
+
+
+"Give me this" / "Do this and return the result."
+
+
+- Event communication generally communicates:
+
+
+"This happened."
+
+
+- REST and EDA can therefore be used together rather than being mutually exclusive.
+
+------------------------------------------------------------
+Core EDA Components
+
+- Producer: creates and publishes an event.
+- Event: represents something that happened.
+- Broker / Event Bus: transports and manages events between producers and consumers.
+- Consumer: receives and processes an event.
+
+
+Producer
+   |
+   | Event
+   v
+Broker / Event Bus
+   |
+   +----> Consumer A
+   +----> Consumer B
+   +----> Consumer C
+
+=======================================================================================================================================================================
+Decoupling
+=======================================================================================================================================================================
+
+- EDA reduces direct runtime coupling between producers and consumers.
+- Instead of:
+
+
+Order Service → Payment
+             → Inventory
+             → Notification
+
+
+- The producer communicates through the broker:
+
+
+Order Service
+      |
+      | OrderCreated
+      v
+    Broker
+    /  |  \
+   v   v   v
+Payment Inventory Notification
+
+
+- The main forms of decoupling are temporal, location/space and dependency decoupling.
+
+------------------------------------------------------------
+Temporal Decoupling
+
+- Producer and consumer do not need to be available at exactly the same time.
+
+
+10:00  Order Service → Broker → OrderCreated
+10:01  Notification Service unavailable
+10:05  Notification Service available
+10:05  Notification Service processes OrderCreated
+
+
+- Broker retention/buffering enables this behavior.
+
+------------------------------------------------------------
+Location / Space Decoupling
+
+- The producer does not need to directly know the consumer's network location.
+
+
+Order Service → Broker → Payment Service
+
+
+- The producer publishes to the broker instead of directly addressing every consumer.
+
+------------------------------------------------------------
+Dependency Decoupling
+
+- The producer does not need a direct implementation-level dependency on every consumer.
+- The producer mainly depends on the event contract.
+- A new consumer can potentially subscribe to an existing event without changing the producer.
+
+Examples:
+
+- `OrderCreated` is initially consumed by Payment and Inventory.
+- Fraud Detection can later consume `OrderCreated` without Order Service adding a direct call to Fraud Detection.
+
+------------------------------------------------------------
+What EDA Actually Decouples
+
+- EDA can decouple:
+
+  - producer from consumer availability
+  - producer from consumer location
+  - producer from direct runtime calls
+  - producer from the number of consumers
+
+- EDA does not eliminate dependencies.
+- Consumers still depend on the event contract and its meaning.
+
+
+Order Service
+      |
+      | OrderCreated contract
+      v
+    Broker
+      |
+      +----> Consumer A
+      +----> Consumer B
+
+
+- EDA therefore replaces some direct runtime dependencies with asynchronous communication and event-contract dependencies.
+
+=======================================================================================================================================================================
+Benefits of EDA
+
+- Loose coupling between services.
+- Multiple consumers can independently react to the same event.
+- Consumers can be independently scaled.
+- Asynchronous processing reduces work that must happen inside a synchronous request.
+- Temporary consumer failures can sometimes be absorbed through broker retention.
+- New consumers can be added without requiring direct producer-to-consumer integration.
+
+------------------------------------------------------------
+Trade-offs of EDA
+
+- Processing becomes asynchronous, so the producer may not immediately know whether consumers succeeded.
+- Services can temporarily have different states, resulting in eventual consistency.
+- Duplicate delivery must be handled.
+- Failures require retry and dead-letter handling.
+- Ordering can become a concern.
+- Slow consumers can create backlog.
+- Debugging distributed asynchronous flows is more difficult than debugging simple synchronous calls.
+
+=======================================================================================================================================================================
+When to Use EDA
+
+- Use EDA when:
+
+  - processing can happen asynchronously
+  - multiple components need to react independently
+  - consumers need independent scaling
+  - temporary consumer unavailability should not block the producer
+  - loose coupling is valuable
+
+Examples:
+
+- `OrderCreated` triggers Payment, Inventory, Notification and Analytics independently.
+
+------------------------------------------------------------
+When Not to Use EDA
+
+- Prefer synchronous communication when:
+
+  - the caller immediately needs the result
+  - strong immediate consistency is required
+  - the operation is simple and asynchronous processing provides little benefit
+  - messaging infrastructure would add unnecessary complexity
+
+- Do not introduce EDA merely because a broker is available.
+
+=======================================================================================================================================================================
+EDA Mental Model
+
+
+Business Action
+      |
+      v
+Something Happens
+      |
+      v
+Producer publishes Event
+      |
+      v
+Broker / Event Bus
+      |
+      +----> Consumer
+      +----> Consumer
+      +----> Consumer
+             |
+             v
+      Independent Processing
+
+
+- Core idea:
+
+
+Producer:
+"Something happened."
+
+Broker:
+"Make the event available."
+
+Consumer:
+"I will independently react to it."
+
+
+- EDA is an architectural approach for asynchronous communication, independent processing and reduced direct coupling between components.
+
+=======================================================================================================================================================================
+EVENTS & MESSAGES
+=======================================================================================================================================================================
+
+Message
+
+- A message is a communication unit exchanged between components.
+- It is a general term that can represent different types of communication.
+
+
+MESSAGE
+   |
+   +---- Command → "Do this"
+   |
+   +---- Event   → "This happened"
+
+
+- Therefore, every event can be transported as a message, but not every message is an event.
+
+------------------------------------------------------------
+Event
+
+- An event represents a fact that has already happened.
+
+Examples:
+
+- `OrderCreated`
+- `PaymentCompleted`
+- `InventoryReserved`
+
+- Events are generally published for interested consumers to react independently.
+
+
+Order Service
+      |
+      | OrderCreated
+      v
+    Broker
+    /  |  \
+   v   v   v
+Payment Inventory Notification
+
+
+- The producer does not normally tell consumers what they must do with the event.
+
+------------------------------------------------------------
+Command
+
+- A command is a request or instruction to perform an action.
+
+Examples:
+
+- `ProcessPayment`
+- `ReserveInventory`
+- `GenerateInvoice`
+
+- A command normally has a specific intended recipient.
+
+
+Order Service
+      |
+      | ProcessPayment
+      v
+Payment Service
+
+
+- The Payment Service is being asked to perform an operation.
+
+------------------------------------------------------------
+Event vs Command
+
+- Event:
+
+"Something happened."
+
+
+- Command:
+
+"Do something."
+
+
+- Events are generally facts.
+- Commands are generally instructions.
+- Events can have multiple independent consumers.
+- Commands usually have a specific target responsible for performing the requested action.
+
+Examples:
+
+- `OrderCreated` → Event
+- `ProcessPayment` → Command
+- A command can result in an event after the requested operation succeeds.
+
+
+Order Service
+      |
+      | ProcessPayment
+      v
+Payment Service
+      |
+      | PaymentCompleted
+      v
+    Broker
+
+
+------------------------------------------------------------
+Event vs Message
+
+- Message describes the communication artifact.
+- Event describes the meaning of the information being communicated.
+
+
+Message
+   |
+   +---- metadata / headers
+   +---- event or command
+   +---- payload
+
+
+- Example:
+
+
+Message
+├── eventType = OrderCreated
+├── eventId = EVT-1001
+├── timestamp
+└── payload
+      ├── orderId
+      ├── customerId
+      └── total
+
+
+- In real systems, the terms message, event and record are sometimes used interchangeably.
+- Architecturally, it is useful to distinguish the business meaning from the transport representation.
+
+=======================================================================================================================================================================
+Message Distribution Models
+=======================================================================================================================================================================
+
+MESSAGE
+   |
+   +---- Meaning
+   |      |
+   |      +---- Event   → "This happened"
+   |      |
+   |      +---- Command → "Do this"
+   |
+   +---- Distribution
+          |
+          +---- Pub/Sub
+          |
+          +---- Point-to-Point
+
+------------------------------------------------------------
+Publish / Subscribe
+
+- In Publish/Subscribe, a producer publishes a message/event and multiple independent subscribers can receive it.
+
+
+Order Service
+      |
+      | OrderCreated
+      v
+    Topic
+    / | \
+   v  v  v
+Payment Inventory Notification
+
+
+- Each consumer receives the event for its own processing.
+- One consumer's processing does not normally prevent another subscriber from receiving the event.
+
+Examples:
+
+- Payment processes the order for payment.
+- Inventory reserves stock.
+- Notification sends an email.
+- Analytics records the business activity.
+
+------------------------------------------------------------
+Point-to-Point
+
+- In Point-to-Point communication, a message is placed into a queue and a consumer processes it as work.
+
+
+Producer
+    |
+    v
+  Queue
+  / | \
+ v  v  v
+W1  W2  W3
+
+
+- Multiple workers can compete for messages.
+- A particular message is normally processed by one worker rather than independently by every worker.
+
+Examples:
+
+- Invoice generation jobs.
+- Image processing jobs.
+- Background report generation.
+- The purpose is commonly distributing work across workers.
+
+=======================================================================================================================================================================
+Topic vs Queue
+=======================================================================================================================================================================
+
+- Topic-style distribution is commonly used when multiple consumers need their own copy of an event.
+
+
+OrderCreated
+     |
+    Topic
+   /  |  \
+  v   v   v
+ C1  C2  C3
+
+
+- Queue-style distribution is commonly used when multiple workers share a workload.
+
+
+Job
+ |
+Queue
+ |
++----> Worker 1
++----> Worker 2
++----> Worker 3
+
+
+- Do not assume:
+
+
+Topic = Event
+Queue = Command
+
+
+- Event/command describes message meaning.
+- Topic/queue describes distribution and consumption behavior.
+
+=======================================================================================================================================================================
+How Events Carry Business Information
+=======================================================================================================================================================================
+
+Event
+   |
+   +---- Event Notification
+   |       → "Something happened; here is an ID."
+   |
+   +---- Event-Carried State
+           → "Something happened; here is the relevant data."
+
+------------------------------------------------------------
+Event Notification:
+
+- Event Notification contains enough information to notify consumers that something happened, usually with an identifier.
+
+Example:
+
+
+OrderCreated
+orderId = ORD-1001
+
+
+- The consumer may then call the producer to retrieve additional information.
+
+
+Order Service
+      |
+      | OrderCreated { orderId }
+      v
+    Broker
+      |
+      v
+Inventory Service
+      |
+      | GET /orders/ORD-1001
+      v
+Order Service
+
+
+- Advantage:
+
+  - small event
+  - less duplicated business data
+
+- Trade-off:
+
+  - consumer may depend on the producer being available
+  - additional network call is required
+
+------------------------------------------------------------
+Event-Carried State Transfer
+
+- Event-Carried State Transfer places the information required by consumers directly inside the event.
+
+Example:
+
+
+OrderCreated
+{
+  orderId
+  customerId
+  items
+  total
+  currency
+}
+
+
+- The consumer can process the event without calling the producer simply to obtain the same information.
+
+
+Order Service
+      |
+      | OrderCreated + order data
+      v
+    Broker
+      |
+      v
+Inventory Service
+      |
+      v
+Processes required data
+
+
+- Advantage:
+
+  - reduces runtime dependency on producer
+  - fewer synchronous calls
+
+- Trade-off:
+
+  - events can become larger
+  - data may be duplicated if consumers persist their own copies
+  - consumers may temporarily hold stale information
+
+- Event-Carried State Transfer does not require consumers to permanently store the received data.
+- A consumer can simply use the data for processing and discard it.
+
+=======================================================================================================================================================================
+
+
+
+

@@ -1,0 +1,28 @@
+KAFKA — ARCHITECTURE
+------------------------------------------------------------
+- Why Kafka?
+- Kafka Broker
+- Kafka Cluster
+- Topic
+- Partition
+- Producer
+- Consumer
+- Consumer Group
+- Offset
+- Partition Key
+- Ordering within partitions
+- Consumer scaling
+- Consumer lag
+
+KAFKA — IMPORTANT INTERNALS
+------------------------------------------------------------
+- Append-only log model
+- Partition as an ordered log
+- Why partitions provide scalability
+- Offset and replay
+- Retention
+- Basic replication
+- Leader / follower
+- Producer acknowledgements
+- Consumer offset / commit
+- Why Kafka provides high throughput

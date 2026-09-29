@@ -1,0 +1,29 @@
+RABBITMQ — ARCHITECTURE
+------------------------------------------------------------
+- Why RabbitMQ?
+- Broker
+- Producer
+- Exchange
+- Queue
+- Binding
+- Routing Key
+- Consumer
+- Acknowledgement
+- Prefetch
+- Competing Consumers
+- Dead-lettering
+
+KAFKA vs RABBITMQ
+------------------------------------------------------------
+- Core architectural model
+- Event streaming vs message queueing
+- Topic vs Exchange/Queue
+- Retention
+- Replay
+- Routing
+- Ordering
+- Consumer model
+- Scaling
+- Typical use cases
+- Choosing between them
+
