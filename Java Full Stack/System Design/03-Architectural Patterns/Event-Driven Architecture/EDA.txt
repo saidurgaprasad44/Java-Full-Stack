@@ -1,4 +1,8 @@
-
+=======================================================================================================================================================================
+=======================================================================================================================================================================
+									Event-Driven Architecture
+=======================================================================================================================================================================
+=======================================================================================================================================================================
 
 EDA
  │
@@ -22,126 +26,6 @@ Kafka internals    RabbitMQ internals
  └───────┬───────┘
            ↓
       EDA Patterns
-
-
-EDA
-│
-├── EDA Fundamentals
-│   ├── What is Event-Driven Architecture?
-│   ├── Why EDA?
-│   ├── Synchronous vs Asynchronous Communication
-│   ├── EDA vs REST
-│   ├── Core EDA Components
-│   │   ├── Producer
-│   │   ├── Event
-│   │   ├── Broker / Event Bus
-│   │   └── Consumer
-│   ├── Decoupling
-│   │   ├── Temporal Decoupling
-│   │   ├── Location / Space Decoupling
-│   │   └── Dependency Decoupling
-│   ├── What EDA Actually Decouples
-│   ├── Benefits of EDA
-│   ├── Trade-offs of EDA
-│   ├── When to Use EDA
-│   └── When Not to Use EDA
-│
-├── Events & Messages
-│   ├── Message
-│   ├── Event
-│   ├── Command
-│   ├── Event vs Command
-│   ├── Event vs Message
-│   ├── Message Distribution Models
-│   │   ├── Publish / Subscribe
-│   │   └── Point-to-Point
-│   ├── Topic vs Queue
-│   ├── Event Notification
-│   └── Event-Carried State Transfer
-│
-├── Event Contracts & Schema
-│   ├── Event Contract
-│   ├── Message Contract
-│   ├── Event Contract as a Distributed Dependency
-│   ├── Event Structure
-│   │   ├── Event ID
-│   │   ├── Event Type
-│   │   ├── Timestamp
-│   │   ├── Version
-│   │   └── Business Data
-│   ├── Schema Evolution
-│   ├── Backward Compatibility
-│   ├── Forward Compatibility
-│   └── Breaking vs Non-Breaking Changes
-│
-├── Delivery Semantics
-│   ├── Acknowledgement
-│   ├── At-Most-Once Delivery
-│   ├── At-Least-Once Delivery
-│   ├── Exactly-Once — Conceptual Understanding
-│   ├── Why Duplicate Messages Happen
-│   └── Delivery Guarantee vs Business Effect
-│
-├── Idempotency & Duplicate Handling
-│   ├── Why Duplicates Happen
-│   ├── Idempotency
-│   ├── Deduplication vs Idempotency
-│   ├── Idempotent Consumer
-│   ├── Processed Message / Inbox
-│   ├── Unique Business Key
-│   ├── Idempotent State Transition
-│   ├── External API Idempotency Key
-│   └── Event ID vs Business ID vs Idempotency Key
-│
-├── Retry & Failure Handling
-│   ├── Processing Failure
-│   ├── Retryable vs Non-Retryable Failure
-│   ├── Retry
-│   ├── Immediate Retry
-│   ├── Exponential Backoff
-│   ├── Jitter
-│   ├── Retry Storm / Thundering Herd
-│   ├── Retry Topic / Queue — Concept
-│   ├── Dead Letter Queue / Dead Letter Topic
-│   └── Replay / Reprocessing
-│
-├── Producer & Consumer Reliability
-│   ├── Consumer Failure
-│   │   ├── Crash Before Processing
-│   │   ├── Crash After Processing but Before ACK
-│   │   └── ACK Before Processing
-│   ├── Producer Failure
-│   │   ├── Failure Before Publishing
-│   │   ├── Publish Uncertainty
-│   │   └── Duplicate Publication
-│   ├── Producer vs Consumer Failure
-│   └── Dual-Write Problem — Introduction
-│
-├── Ordering & Backpressure
-│   ├── Message Ordering
-│   ├── Why Global Ordering Is Difficult
-│   ├── Ordering Within a Partition / Ordered Channel
-│   ├── Business-Key-Based Ordering
-│   ├── Slow Consumer
-│   ├── Backpressure
-│   ├── Consumer Lag — Concept
-│   └── Consumer Scaling — Concept
-│
-└── EDA Mental Model
-    ├── Requirement
-    ├── Event Identification
-    ├── Producer
-    ├── Broker
-    ├── Consumer
-    ├── Delivery Semantics
-    ├── Failure Handling
-    ├── Idempotency
-    ├── Retry / DLQ
-    ├── Ordering
-    ├── Backpressure
-    └── Eventual Consistency
-
-
 
 
 =======================================================================================================================================================================
@@ -818,7 +702,1670 @@ Processes required data
 - A consumer can simply use the data for processing and discard it.
 
 =======================================================================================================================================================================
+EVENT CONTRACTS & SCHEMA
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+Event Contract
+
+- An event contract defines the structure and meaning of an event that producers publish and consumers rely on.
+- It specifies what information is available and what that information means.
+
+Example:
 
 
+OrderCreated
+├── eventId
+├── eventType
+├── occurredAt
+├── version
+└── data
+      ├── orderId
+      ├── customerId
+      ├── total
+      └── currency
 
 
+Example Event Structure:
+
+json
+{
+  "eventId": "EVT-1001",
+  "eventType": "OrderCreated",
+  "occurredAt": "2026-09-30T10:00:00Z",
+  "version": 1,
+  "data": {
+    "orderId": "ORD-5001",
+    "customerId": "CUS-101",
+    "total": 2500,
+    "currency": "INR"
+  }
+}
+
+
+- The contract is a shared agreement between the producer and its consumers.
+
+------------------------------------------------------------
+Message Contract
+
+- A message contract describes the broader communication structure used to transport information.
+
+
+Message
+├── headers / metadata
+├── key
+├── payload
+└── transport information
+
+
+- The payload may contain an event or command.
+- Therefore:
+
+Message = communication structure
+Event   = business meaning
+
+------------------------------------------------------------
+Event Contract as a Distributed Dependency
+
+- In EDA, the producer and consumers are independently deployed components.
+
+
+Order Service
+      |
+      | OrderCreated contract
+      v
+    Broker
+    /  |  \
+   v   v   v
+  C1  C2  C3
+
+
+- All consumers depend on the event contract.
+- An incompatible change by the producer can therefore affect multiple consumers.
+- The event contract becomes a distributed dependency even though the services are otherwise loosely coupled.
+
+=======================================================================================================================================================================
+Schema Evolution
+=======================================================================================================================================================================
+
+- Event schemas evolve as business requirements change.
+- Consumers and producers may not be deployed at exactly the same time.
+
+
+Producer v2
+     |
+     | new event schema
+     v
+   Broker
+     |
+     +----> Consumer v1
+     +----> Consumer v2
+
+
+- Therefore, schema changes should normally allow old and new versions to coexist safely.
+- Adding an optional field is generally safer than removing or changing an existing field.
+
+Example:
+
+
+v1:
+orderId
+customerId
+total
+
+v2:
+orderId
+customerId
+total
+currency
+
+
+- An older consumer can ignore the additional `currency` field.
+
+------------------------------------------------------------
+Backward Compatibility
+
+- Backward compatibility means the new producer/schema remains compatible with existing consumers.
+
+
+New Producer
+     |
+     | v2 event
+     v
+Old Consumer
+
+
+- The new event must still contain the information and structure expected by the old consumer.
+- Adding optional fields is a common backward-compatible change.
+
+------------------------------------------------------------
+Forward Compatibility
+
+- Forward compatibility means a new consumer can handle events produced using an older schema.
+
+
+Old Producer
+     |
+     | v1 event
+     v
+New Consumer
+
+
+- The new consumer should be able to operate when newer fields are absent.
+
+------------------------------------------------------------
+Breaking vs Non-Breaking Changes
+
+- Common non-breaking change:
+
+
+Add optional field
+
+
+- Common breaking changes:
+
+Remove field
+Rename field
+Change field type
+Make optional field mandatory
+Change the meaning of an existing field
+
+- Semantic changes can be breaking even when the data format itself remains valid.
+
+Example:
+
+
+v1:
+status = "PAID" → payment successfully completed
+
+v2:
+status = "PAID" → payment request submitted
+
+
+- The JSON may still parse correctly, but consumers can behave incorrectly because the meaning changed.
+
+------------------------------------------------------------
+Event Versioning
+
+- Versioning makes contract evolution explicit.
+
+Examples:
+
+
+OrderCreated.v1
+OrderCreated.v2
+
+
+or:
+
+
+{
+  "eventType": "OrderCreated",
+  "version": 2
+}
+
+
+- Versioning is useful when incompatible changes cannot be avoided.
+- The goal is to allow producers and consumers to evolve independently without unexpectedly breaking existing consumers.
+
+=======================================================================================================================================================================
+Delivery Semantics
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+Acknowledgement
+------------------------------------------------------------
+
+- An acknowledgement (ACK) is the consumer's confirmation to the broker that the message has reached the required processing point.
+- The position of the ACK in the processing flow is important because it determines whether failure can cause message loss or redelivery.
+
+Examples:
+
+* ACK after successful processing:
+
+  Broker → Consumer → Process → Business Effect → ACK
+
+* ACK before processing:
+
+  Broker → Consumer → ACK → Process → Business Effect
+
+
+------------------------------------------------------------
+At-Most-Once Delivery
+------------------------------------------------------------
+
+- At-most-once means a message is delivered zero or one time.
+- The system avoids redelivery, even if the message may be lost.
+- If the consumer acknowledges the message before processing and then fails, the broker considers the message completed.
+
+Examples:
+
+  Broker
+    |
+    | OrderCreated
+    v
+  Consumer
+    |
+    | ACK
+    v
+  Broker
+    |
+    | Message considered complete
+    v
+  Consumer
+    |
+    X Crash before processing
+
+- Result: the message is not normally redelivered.
+
+- Trade-off:
+  - Prevents duplicate delivery.
+  - Can lose messages.
+
+- Suitable when occasional loss is acceptable, such as non-critical telemetry or metrics.
+
+------------------------------------------------------------
+At-Least-Once Delivery
+------------------------------------------------------------
+
+- At-least-once means the system attempts to ensure that a message is processed successfully, even if that requires delivering it more than once.
+- The consumer normally acknowledges only after successful processing.
+
+Examples:
+
+  Broker
+    |
+    | OrderCreated
+    v
+  Consumer
+    |
+    | Process
+    v
+  Database updated
+    |
+    X Consumer crashes before ACK
+    |
+    v
+  Broker
+    |
+    | Redeliver
+    v
+  Consumer
+    |
+    | Process again
+    v
+  ACK
+
+- The same message can therefore be processed multiple times.
+- Duplicate delivery is an expected consequence of the reliability model, not necessarily a broker defect.
+- Because duplicate processing is possible, consumers should normally be idempotent.
+
+- Trade-off:
+  - Lower message-loss risk.
+  - Higher duplicate-processing risk.
+
+------------------------------------------------------------
+Exactly-Once — Conceptual Understanding
+------------------------------------------------------------
+
+- Exactly-once means the intended processing effect occurs once, even when failures or retries occur.
+- It is important to distinguish message delivery from business effect.
+
+Examples:
+
+* Message delivery:
+
+  Broker → Consumer → Consumer receives message
+
+* Business processing:
+
+  Consumer → Database → Order updated
+
+* External side effect:
+
+  Consumer → Payment Service → Payment charged
+
+- Exactly-once handling within one system boundary does not automatically make an external operation exactly-once.
+
+- Example:
+  - Consumer updates its database successfully.
+  - Consumer crashes before knowing whether an external payment API call succeeded.
+  - Retrying the event may cause uncertainty about whether the payment was already made.
+
+- Therefore, "exactly-once" must always be understood together with its technical and business boundary.
+- In distributed systems, exactly-once business effects often require additional mechanisms such as idempotency, transactional coordination, or an external operation's own idempotency support.
+
+------------------------------------------------------------
+Delivery Guarantee vs Business Effect
+------------------------------------------------------------
+
+- Delivery guarantee describes how many times a message may be delivered or processing may be attempted.
+- Business effect describes how many times the actual business operation takes effect.
+- These are different concerns.
+
+Examples:
+
+* At-least-once delivery:
+
+  OrderCreated
+       |
+       +---- Attempt 1 → Create order
+       |
+       +---- Attempt 2 → Same event delivered again
+       |
+       +---- Attempt 3 → Same event delivered again
+
+- Without idempotency:
+
+  Attempt 1 → Order created
+  Attempt 2 → Duplicate order created
+  Attempt 3 → Another duplicate order created
+
+- With idempotency:
+
+  Attempt 1 → Order created
+  Attempt 2 → Duplicate detected → No new effect
+  Attempt 3 → Duplicate detected → No new effect
+
+- Therefore:
+
+  Delivery semantics
+        ↓
+  Number of processing attempts
+        ↓
+  Idempotency
+        ↓
+  Number of business effects
+
+- A common reliable EDA design is:
+
+  At-Least-Once Delivery
+          +
+  Idempotent Consumer
+          ↓
+  Duplicate Delivery
+          +
+  Single Business Effect
+
+=======================================================================================================================================================================
+Idempotency & Duplicate Handling
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+Why Duplicates Happen
+------------------------------------------------------------
+
+- Duplicate messages are possible in reliable EDA, especially with at-least-once delivery.
+- A common cause is successful business processing followed by failure before ACK.
+- Other common causes:
+  - Consumer timeout.
+  - Network failure during acknowledgement.
+  - Consumer restart.
+  - Broker recovery.
+  - Producer retry after uncertain publication.
+  - Explicit replay or reprocessing.
+
+Examples:
+
+* Broker → Consumer → Database update succeeds → Consumer crashes → ACK not completed → Broker redelivers
+
+- Producer retries can also create duplicate publications when the producer cannot determine whether the original publication succeeded.
+- Replay and reprocessing can intentionally deliver an event again.
+- Therefore, consumers should assume that the same event may be received more than once.
+
+------------------------------------------------------------
+Idempotency
+------------------------------------------------------------
+
+- Idempotency means processing the same message multiple times produces the same intended business state as processing it once.
+- The goal is not necessarily to prevent duplicate delivery; the goal is to prevent duplicate business effects.
+
+Examples:
+
+* First processing:
+
+  OrderCreated
+      ↓
+  Create Order #1001
+      ↓
+  Order exists
+
+* Duplicate processing:
+
+  OrderCreated
+      ↓
+  Detect Order #1001 already processed
+      ↓
+  No additional creation
+      ↓
+  Order still exists once
+
+- Idempotency is therefore a business-processing property of the consumer.
+
+------------------------------------------------------------
+Deduplication vs Idempotency
+------------------------------------------------------------
+
+- Deduplication means detecting that a message has already been seen and avoiding processing it again.
+- Idempotency means repeated processing does not create an additional business effect.
+- Deduplication is one technique for achieving idempotent behavior, but they are not the same concept.
+
+Examples:
+
+* Deduplication:
+
+  eventId = E123
+       ↓
+  Already processed?
+       ↓
+  Yes → Skip message
+
+* Idempotent operation:
+
+  Set order status = PAID
+       ↓
+  Repeat same operation
+       ↓
+  Order remains PAID
+
+- An operation can be idempotent even without explicitly tracking processed messages.
+
+------------------------------------------------------------
+Idempotent Consumer
+------------------------------------------------------------
+
+- An idempotent consumer is designed so that repeated delivery of the same event does not create repeated business effects.
+
+Examples:
+
+* OrderCreated → create order only if the business record does not already exist.
+* OrderPaid → set payment status to PAID rather than creating another payment.
+* UserProfileUpdated → set the profile to the received state rather than blindly applying the same change multiple times.
+
+- The consumer must identify what makes two processing attempts represent the same business operation.
+
+------------------------------------------------------------
+Processed Message / Inbox
+------------------------------------------------------------
+
+- A processed-message or inbox mechanism stores identifiers of messages that have already been successfully handled.
+
+Examples:
+
+* Incoming event:
+
+  eventId = E123
+  eventType = OrderCreated
+  orderId = O100
+
+       ↓
+
+  Check Inbox
+
+       ↓
+  E123 already exists?
+       |
+       +---- Yes → Ignore duplicate
+       |
+       +---- No
+              ↓
+         Process event
+              ↓
+         Store E123 as processed
+              ↓
+         Commit transaction
+
+- The processed-message record and the business change should ideally be committed atomically when they belong to the same database.
+- This prevents a failure between "business update" and "mark message as processed" from creating inconsistent state.
+
+Examples:
+
+* Database transaction:
+
+  BEGIN
+     ↓
+  Check eventId
+     ↓
+  Update business data
+     ↓
+  Insert eventId into Inbox
+     ↓
+  COMMIT
+
+- A unique constraint on the event ID can also protect against concurrent duplicate processing.
+
+------------------------------------------------------------
+Unique Business Key
+------------------------------------------------------------
+
+- A business key identifies the business operation or entity independently of a particular message delivery.
+- It can sometimes provide idempotency without maintaining a separate processed-message table.
+
+Examples:
+
+* OrderCreated:
+
+  business key = orderId
+
+  Consumer receives:
+  OrderCreated(orderId=O100)
+
+  If O100 already exists:
+      do not create another order.
+
+- This works when the business operation naturally has a unique identity.
+- A business key is not always sufficient because different events may legitimately refer to the same business entity.
+
+------------------------------------------------------------
+Idempotent State Transition
+------------------------------------------------------------
+
+- An idempotent state transition produces the same final state when the same transition is applied repeatedly.
+
+Examples:
+
+* Idempotent:
+
+  Set order status = PAID
+
+  PAID → PAID → PAID
+
+  Final state = PAID
+
+* Potentially non-idempotent:
+
+  Increase account balance by ₹100
+
+  ₹1000 → ₹1100 → ₹1200
+
+- Therefore, "update to a known state" is often easier to make idempotent than "apply an increment."
+- For non-idempotent operations, the consumer may need an event ID, business key, sequence number, or other mechanism to prevent repeated effects.
+
+------------------------------------------------------------
+External API Idempotency Key
+------------------------------------------------------------
+
+- When a consumer calls an external API, duplicate event processing can create duplicate external operations.
+- An idempotency key allows the external service to recognize repeated requests representing the same operation.
+
+Examples:
+
+* Consumer receives PaymentRequested:
+
+  eventId = E500
+       |
+       v
+  Consumer
+       |
+       | POST /payments
+       | Idempotency-Key: E500
+       v
+  Payment Service
+
+- If the consumer retries with the same idempotency key, the payment service can recognize the request as the same operation instead of creating another payment.
+- This is especially important for operations such as payments, orders, reservations, and other externally visible side effects.
+
+=======================================================================================================================================================================
+Retry & Failure Handling
+=======================================================================================================================================================================
+
+- In EDA, message processing can fail because of temporary infrastructure problems, downstream failures, invalid data, business-rule failures, or application bugs.
+- The failure-handling strategy determines whether the message should be retried, moved aside, or permanently rejected.
+- The main goal is to recover from temporary failures without creating duplicate side effects, retry storms, or permanently blocked processing.
+
+------------------------------------------------------------
+Processing Failure
+
+- Processing failure means the consumer received the message but could not successfully complete its required processing.
+- Examples include:
+  - Database temporarily unavailable
+  - Downstream service timeout
+  - Network failure
+  - Temporary connection pool exhaustion
+  - Invalid event structure
+  - Business validation failure
+  - Application bug
+
+- Not every failure should be retried.
+- The first architectural decision is whether the failure is temporary or permanent.
+
+Example:
+
+OrderCreated
+    ↓
+Consumer
+    ↓
+Update Order DB
+    ↓
+DB unavailable
+    ↓
+Processing Failure
+
+------------------------------------------------------------
+Retryable vs Non-Retryable Failure
+
+- Retryable failure:
+  - Failure may disappear if the operation is attempted again.
+  - Examples:
+    * Database temporarily unavailable
+    * HTTP 503 from downstream service
+    * Network timeout
+    * Temporary connection failure
+
+- Non-retryable failure:
+  - Repeating the same message is unlikely to succeed without changing the message or application.
+  - Examples:
+    * Invalid event schema
+    * Missing required field
+    * Unsupported event version
+    * Invalid business data
+    * Permanent authorization failure
+
+- Retrying a non-retryable message wastes resources and can repeatedly fail the same message.
+
+General decision:
+
+Message
+   ↓
+Processing fails
+   ↓
+Is failure retryable?
+   ├── Yes → Retry
+   └── No  → Reject / DLQ
+
+------------------------------------------------------------
+Retry
+------------------------------------------------------------
+
+- Retry means attempting the same message processing operation again after a failure.
+- Retry is useful when failure is temporary.
+- A retry does not automatically make processing safe.
+- If the previous attempt may have partially succeeded, the consumer still needs idempotent processing.
+
+Example:
+
+Consumer
+   ↓
+Process OrderCreated
+   ↓
+DB timeout
+   ↓
+Retry
+   ↓
+Process again
+   ↓
+Success
+   ↓
+ACK
+
+- If the first attempt actually committed the DB change but the consumer did not know about it, the retry may execute against an already-applied operation.
+- Therefore retry and idempotency work together.
+
+------------------------------------------------------------
+Immediate Retry
+
+- Immediate retry means retrying immediately after failure.
+- Useful for very short-lived failures.
+- Example:
+  - First database connection attempt fails
+  - Retry immediately
+  - Connection succeeds
+
+Flow:
+
+Process
+   ↓
+Failure
+   ↓
+Retry immediately
+   ↓
+Success
+
+- Immediate retry should normally be limited.
+- Repeated immediate retries can continuously hit an unhealthy dependency.
+
+------------------------------------------------------------
+Exponential Backoff
+
+- Exponential backoff increases the delay between successive retries.
+- Instead of retrying continuously, the consumer gives the failing dependency time to recover.
+
+Example:
+
+Attempt 1 → failure → wait 1s
+Attempt 2 → failure → wait 2s
+Attempt 3 → failure → wait 4s
+Attempt 4 → failure → wait 8s
+
+- Typical delay can follow a pattern such as:
+
+delay = initialDelay × 2^retryCount
+
+- A maximum delay is usually applied so that the wait does not grow indefinitely.
+- Backoff reduces pressure on an already unhealthy dependency.
+
+------------------------------------------------------------
+Jitter
+
+- Jitter adds controlled randomness to retry delays.
+- Without jitter, many consumers that fail at the same time may retry at the same time.
+
+Without jitter:
+
+Consumers
+   ↓
+Dependency fails
+   ↓
+All wait 5 seconds
+   ↓
+All retry together
+   ↓
+Dependency overloaded again
+
+- With jitter, retry times are spread out.
+
+Consumer A → retry after 4.7s
+Consumer B → retry after 5.3s
+Consumer C → retry after 6.1s
+
+- Jitter is especially useful in distributed systems where many consumers experience the same failure simultaneously.
+
+------------------------------------------------------------
+Retry Storm / Thundering Herd
+------------------------------------------------------------
+
+- A retry storm occurs when large numbers of failed operations are retried aggressively against the same dependency.
+- The retries themselves can overload the dependency and prevent recovery.
+
+Example:
+
+1000 consumers
+     ↓
+Database becomes unavailable
+     ↓
+1000 immediate retries
+     ↓
+Database recovers partially
+     ↓
+1000 requests arrive simultaneously
+     ↓
+Database becomes overloaded again
+     ↓
+More failures
+     ↓
+More retries
+
+- Exponential backoff and jitter reduce this effect.
+- Retry limits also prevent unlimited attempts.
+- Retry should protect the failing dependency, not continuously attack it.
+
+------------------------------------------------------------
+Retry Topic / Queue
+------------------------------------------------------------
+
+- A retry topic or retry queue is a separate messaging destination used to delay failed messages before another processing attempt.
+- Instead of keeping the consumer blocked while waiting, the failed message can be moved to a retry destination.
+
+Flow:
+
+Main Topic / Queue
+        ↓
+    Consumer
+        ↓
+     Failure
+        ↓
+ Retry Topic / Queue
+        ↓
+   Delay / Wait
+        ↓
+ Consumer retries
+        ↓
+     Success
+
+- This is useful when retry delays are longer than the consumer should reasonably wait.
+- Multiple retry levels can be used.
+
+Example:
+
+Main
+ ↓
+Retry-1 → wait 10s
+ ↓
+Retry-2 → wait 1m
+ ↓
+Retry-3 → wait 5m
+ ↓
+DLQ
+
+- Exact implementation differs between messaging technologies.
+
+------------------------------------------------------------
+Dead Letter Queue / Dead Letter Topic
+------------------------------------------------------------
+
+- A Dead Letter Queue (DLQ) or Dead Letter Topic (DLT) is a separate destination for messages that cannot be successfully processed through the normal processing path.
+- A message may be moved there after:
+  - Retry limit is exhausted
+  - Non-retryable failure is detected
+  - Message is considered invalid or poisoned
+
+Flow:
+
+Main Topic
+    ↓
+Consumer
+    ↓
+Failure
+    ↓
+Retry
+    ↓
+Retry
+    ↓
+Retry limit reached
+    ↓
+DLQ / DLT
+
+- DLQ prevents one permanently failing message from repeatedly consuming normal processing capacity.
+- The message is preserved for investigation, correction, or controlled reprocessing.
+- DLQ does not mean the message is automatically fixed or successfully processed.
+
+------------------------------------------------------------
+Replay / Reprocessing
+------------------------------------------------------------
+
+- Replay means processing a previously retained message again.
+- Reprocessing is useful after:
+  - Consumer bug is fixed
+  - Downstream dependency is restored
+  - Invalid configuration is corrected
+  - Business processing needs to be performed again
+
+Flow:
+
+DLQ / Retained Messages
+          ↓
+     Fix the problem
+          ↓
+      Replay message
+          ↓
+       Consumer
+          ↓
+       Success
+
+- Replay must be designed with idempotency because the business operation may already have partially or completely succeeded during an earlier attempt.
+- Replay should normally be controlled rather than blindly sending all failed messages back at once.
+
+------------------------------------------------------------
+Retry vs Replay
+
+- Retry:
+  - Part of normal failure handling.
+  - Usually happens automatically after a temporary processing failure.
+  - Intended to recover from transient failures.
+
+- Replay:
+  - Deliberately processes a previously retained message again.
+  - Usually happens after investigation, correction, or recovery.
+  - Can be manual or controlled operational automation.
+
+Example:
+
+DB temporarily unavailable
+→ automatic retry
+
+Consumer bug fixed after 2 hours
+→ replay affected messages
+
+------------------------------------------------------------
+
+Message
+   ↓
+Consumer processing
+   ↓
+Success ───────────────→ ACK
+   │
+   └── Failure
+        ↓
+   Retryable?
+   ├── No ─────────────→ DLQ / DLT
+   │
+   └── Yes
+        ↓
+     Retry
+        ↓
+   Backoff + Jitter
+        ↓
+   Retry limit?
+   ├── No → Process again
+   └── Yes → DLQ / DLT
+                  ↓
+               Investigate
+                  ↓
+                Replay
+
+- A robust EDA system combines:
+  - Retry for transient failures
+  - Backoff to avoid aggressive retries
+  - Jitter to spread retry traffic
+  - Retry limits to prevent infinite attempts
+  - DLQ/DLT for messages that cannot be processed normally
+  - Replay for controlled recovery
+  - Idempotency to protect business effects during retries and replay
+
+=======================================================================================================================================================================
+Producer & Consumer Reliability
+=======================================================================================================================================================================
+
+- EDA reliability is not only about what happens when a consumer fails.
+- Messages can fail to reach the broker correctly, producers can fail during publishing, and consumers can fail at different points during processing.
+- The key question is:
+  - "At exactly which point did the failure occur, and what does the system know about the message?"
+
+------------------------------------------------------------
+Consumer Failure
+------------------------------------------------------------
+
+- A consumer can fail at different points in the message-processing lifecycle.
+- The outcome depends heavily on when the consumer fails relative to:
+  - Business processing
+  - ACK / offset confirmation
+
+General flow:
+
+Broker
+   ↓
+Consumer receives message
+   ↓
+Processing
+   ↓
+Business effect
+   ↓
+ACK
+   ↓
+Broker considers message handled
+
+- Failure at different points produces different reliability consequences.
+
+------------------------------------------------------------
+Crash Before Processing
+
+- The consumer receives the message but crashes before performing the business operation.
+- If the message has not been ACKed, the broker can redeliver it.
+
+Flow:
+
+Broker
+   ↓
+Consumer receives M1
+   ↓
+Consumer crashes
+   ↓
+No ACK
+   ↓
+Broker redelivers M1
+   ↓
+Consumer processes M1
+   ↓
+ACK
+
+- This is generally safe under at-least-once delivery.
+- The important point is that the business operation was never successfully performed during the failed attempt.
+
+------------------------------------------------------------
+Crash After Processing but Before ACK
+
+- The consumer successfully performs the business operation but crashes before ACKing the message.
+- The broker does not know that processing succeeded.
+- Therefore it may redeliver the same message.
+
+Flow:
+
+Broker
+   ↓
+Consumer
+   ↓
+Process M1
+   ↓
+Business effect succeeds
+   ↓
+Consumer crashes
+   ↓
+No ACK
+   ↓
+Broker redelivers M1
+   ↓
+Consumer processes M1 again
+
+- This is one of the most important causes of duplicate processing in EDA.
+- At-least-once delivery intentionally accepts this possibility.
+- The consumer therefore needs idempotent processing.
+
+Example:
+
+OrderCreated
+   ↓
+Insert order O100
+   ↓
+DB commit succeeds
+   ↓
+Consumer crashes before ACK
+   ↓
+OrderCreated redelivered
+   ↓
+Consumer must not create O100 again
+
+------------------------------------------------------------
+ACK Before Processing
+
+- The consumer can also ACK before completing the business operation.
+- If the consumer crashes after ACK but before processing, the broker may consider the message successfully handled.
+- The message may not be redelivered.
+
+Flow:
+
+Broker
+   ↓
+Consumer receives M1
+   ↓
+ACK
+   ↓
+Consumer crashes
+   ↓
+Business processing never happens
+   ↓
+Message may be lost
+
+- This is the basic failure scenario behind at-most-once processing.
+- It reduces duplicate processing but increases the possibility of message loss.
+- For important business operations, ACK-before-processing is generally dangerous unless loss is explicitly acceptable.
+
+------------------------------------------------------------
+Consumer Failure — Key Timing
+
+Broker → Consumer → Process → ACK
+
+Failure point:
+
+Before Process
+→ message can be redelivered
+
+After Process, before ACK
+→ business effect may already exist
+→ message can be redelivered
+→ idempotency required
+
+After ACK, before Process
+→ message may be considered handled
+→ business effect may never happen
+→ possible loss
+
+- ACK timing is therefore a reliability decision, not merely a technical detail.
+
+------------------------------------------------------------
+Producer Failure
+------------------------------------------------------------
+
+- A producer can fail while publishing an event.
+- The difficult part is that the producer may not always know whether the broker actually received the event.
+
+Example:
+
+Application
+   ↓
+Publish OrderCreated
+   ↓
+Network failure
+   ↓
+Producer receives no response
+
+- The producer now has an uncertainty problem:
+
+Did the broker receive the event?
+        ↓
+   Unknown
+
+- Retrying may create a duplicate.
+- Not retrying may lose the event.
+
+------------------------------------------------------------
+Failure Before Publishing
+
+- The producer may fail before the event is actually sent.
+
+Example:
+
+Order DB transaction
+   ↓
+Order created
+   ↓
+Application crashes
+   ↓
+Event never published
+
+Result:
+
+Database:
+Order O100 = CREATED
+
+Broker:
+No OrderCreated event
+
+- The business state exists, but downstream consumers never receive the event.
+- This creates inconsistency between the producer's state and the event-driven part of the system.
+
+------------------------------------------------------------
+Publish Uncertainty
+
+- Publish uncertainty occurs when the producer cannot determine whether a publish operation succeeded.
+
+Flow:
+
+Producer
+   ↓
+Send Event
+   ↓
+Broker
+   ↓
+Broker may have accepted event
+   ↓
+Network failure
+   ↓
+Producer receives no confirmation
+
+Producer perspective:
+
+"Did the broker receive it?"
+
+- If the producer retries:
+  - Event may be published twice.
+
+- If the producer does not retry:
+  - Event may never have been published.
+
+This creates:
+
+Unknown result
+      ↓
+Retry → possible duplicate
+No retry → possible loss
+
+- Reliable messaging systems provide mechanisms such as producer acknowledgements, retries, sequence tracking, or transactional publishing to reduce this uncertainty.
+- The exact mechanism is technology-specific.
+
+------------------------------------------------------------
+Duplicate Publication
+
+- Duplicate publication occurs when the same logical event is published more than once.
+- One common cause is producer retry after an uncertain publish result.
+
+Example:
+
+Producer
+   ↓
+Publish OrderCreated
+   ↓
+Broker receives event
+   ↓
+Network response lost
+   ↓
+Producer assumes failure
+   ↓
+Retry publish
+   ↓
+Broker receives event again
+
+Broker:
+
+OrderCreated(E100)
+OrderCreated(E100)
+
+- Consumers must therefore not assume that duplicate events can only originate from consumer redelivery.
+- Producer-side retries can also create duplicates.
+
+------------------------------------------------------------
+Dual-Write Problem — Introduction
+------------------------------------------------------------
+
+- The dual-write problem occurs when one business operation must update a database and publish an event, but the two actions are performed independently.
+
+Example:
+
+Order Service
+
+Database:
+INSERT Order O100
+
+Broker:
+PUBLISH OrderCreated
+
+There are two separate operations.
+
+Possible failure:
+
+BEGIN
+   ↓
+Insert Order O100
+   ↓
+DB COMMIT succeeds
+   ↓
+Application crashes
+   ↓
+Event never published
+
+Result:
+
+Database:
+O100 exists
+
+Broker:
+OrderCreated does not exist
+
+- The reverse can also happen:
+
+Publish OrderCreated
+   ↓
+Database update fails
+
+Result:
+
+Event exists
+but required business state does not.
+
+- This is difficult because a normal database transaction does not automatically make the external message broker operation atomic with the database.
+
+------------------------------------------------------------
+Why Dual-Write Matters
+
+- Many event-driven workflows naturally require:
+
+Business State Change
+        +
+Event Publication
+
+- Example:
+
+Payment Service
+   ↓
+Update payment status = SUCCESS
+   +
+Publish PaymentSucceeded
+
+- If these two operations are not coordinated, the system can enter an inconsistent state.
+
+This is the core problem:
+
+Database Transaction
+        │
+        │ separate operation
+        ▼
+Message Broker
+
+- Solutions such as the Transactional Outbox pattern address this problem.
+- The detailed solution belongs in EDA Patterns rather than this technology-neutral fundamentals note.
+
+------------------------------------------------------------
+
+- Reliable EDA requires reasoning about the exact failure boundary.
+- The most important question is not simply "Did it fail?"
+- Ask:
+  - What had already happened?
+  - What had not happened?
+  - What does the broker know?
+  - What does the producer/consumer know?
+  - Can the operation be repeated safely?
+  - Could the event be lost or duplicated?
+
+=======================================================================================================================================================================
+Ordering & Backpressure
+=======================================================================================================================================================================
+
+- EDA systems often process many messages concurrently.
+- Two important problems arise as traffic increases:
+  - In what order should messages be processed?
+  - What happens when consumers cannot process messages as quickly as producers generate them?
+- Ordering and backpressure are closely related to partitioning, consumer concurrency, and consumer lag.
+
+------------------------------------------------------------
+Message Ordering
+
+- Message ordering means preserving the required sequence of related events during processing.
+- Not every event in a system needs global ordering.
+- Usually, ordering is required only for events that belong to the same business entity or business workflow.
+
+Example:
+
+Order O100:
+
+OrderCreated
+      ↓
+OrderConfirmed
+      ↓
+OrderShipped
+
+- Processing these events out of order can produce an incorrect state.
+
+Incorrect:
+
+OrderShipped
+      ↓
+OrderCreated
+
+- Therefore the architectural question is not:
+  - "Do all messages need ordering?"
+- It is:
+  - "Which messages must be ordered relative to each other?"
+
+------------------------------------------------------------
+Why Global Ordering Is Difficult
+
+- Global ordering means every consumer sees every message in exactly one global sequence.
+
+Example:
+
+E1 → E2 → E3 → E4 → E5
+
+- This becomes difficult at scale because messages may be:
+  - Produced concurrently
+  - Distributed across multiple broker nodes
+  - Processed by multiple consumers
+  - Delayed or retried independently
+
+- Enforcing one global sequence can reduce parallelism and become a scalability bottleneck.
+
+Example:
+
+100,000 messages
+        ↓
+Single global ordered stream
+        ↓
+Limited parallel processing
+
+- Therefore large EDA systems usually avoid global ordering unless the business requirement truly needs it.
+
+------------------------------------------------------------
+Ordering Within an Ordered Channel
+
+- A common approach is to guarantee ordering within a smaller ordered unit rather than across the entire system.
+- The ordered unit could be a partition, queue, shard, or another technology-specific channel.
+
+Example:
+
+Channel 1:
+O100-Created
+O100-Paid
+O100-Shipped
+
+Channel 2:
+O200-Created
+O200-Paid
+O200-Shipped
+
+- Messages for the same business entity remain ordered within their channel.
+- Different entities can be processed in parallel.
+
+Conceptually:
+
+Order O100 → Channel 1 → ordered
+Order O200 → Channel 2 → ordered
+Order O300 → Channel 3 → ordered
+
+- This provides:
+  - Ordering where required
+  - Parallelism across independent business entities
+
+------------------------------------------------------------
+Business-Key-Based Ordering
+
+- A business key can be used to determine which ordered channel receives a message.
+- Common keys include:
+  - orderId
+  - customerId
+  - accountId
+  - transactionId
+
+Example:
+
+Hash(orderId)
+     ↓
+Channel selection
+
+O100 → Channel 1
+O101 → Channel 3
+O102 → Channel 2
+O100 → Channel 1
+
+- Because all events for O100 go to the same ordered channel, their relative order can be preserved there.
+- Meanwhile O101 and O102 can be processed independently.
+
+- The exact partitioning mechanism is technology-specific.
+
+------------------------------------------------------------
+Ordering vs Concurrency
+
+- More consumer concurrency generally increases throughput.
+- But careless concurrency can break ordering requirements.
+
+Example:
+
+Events:
+
+E1 → OrderCreated
+E2 → OrderPaid
+
+Two consumers:
+
+E1 → Consumer A → slow
+E2 → Consumer B → fast
+
+Possible processing result:
+
+E2 completes
+E1 completes later
+
+- If E2 depends on E1 having already been processed, this can create an invalid state.
+- Therefore ordering requirements must be considered before increasing consumer parallelism.
+
+------------------------------------------------------------
+Slow Consumer
+
+- A slow consumer processes messages more slowly than they are produced.
+
+Example:
+
+Producer rate = 10,000 messages/sec
+Consumer rate = 6,000 messages/sec
+
+Incoming traffic:
+████████████████████
+
+Processing capacity:
+████████████
+
+- The unprocessed messages accumulate.
+- This creates backlog.
+
+------------------------------------------------------------
+Backpressure
+
+- Backpressure is the mechanism by which a system prevents a faster producer or upstream component from overwhelming a slower downstream component.
+- The basic problem is:
+
+Producer
+   ↓
+Fast
+   ↓
+Consumer
+   ↓
+Slow
+
+- Without some form of flow control, the backlog can continue growing until:
+  - Memory is exhausted
+  - Queues become very large
+  - Processing latency increases
+  - Storage is exhausted
+  - Downstream systems become overloaded
+
+- Backpressure can involve:
+  - Limiting producer rate
+  - Limiting consumer concurrency
+  - Controlling in-flight messages
+  - Buffering
+  - Queueing
+  - Load shedding where appropriate
+
+- The exact mechanism depends on the architecture and messaging technology.
+
+------------------------------------------------------------
+Consumer Lag
+
+- Consumer lag represents the amount of available message work that a consumer or consumer group has not yet processed.
+- Conceptually:
+
+Lag = Available messages - Processed position
+
+- High lag means consumers are falling behind producers.
+- Low or near-zero lag generally means consumers are keeping up with incoming traffic.
+
+Example:
+
+Produced:
+1000 messages
+
+Consumer processed:
+700 messages
+
+Remaining work:
+300 messages
+
+Conceptual lag:
+300 messages
+
+- Lag is an important operational signal in event-driven systems.
+
+------------------------------------------------------------
+Why Consumer Lag Matters
+
+- Increasing lag can indicate:
+  - Consumer is too slow
+  - Traffic increased
+  - Downstream dependency is slow
+  - Consumer instances failed
+  - Consumer concurrency is insufficient
+  - Repeated retries are consuming processing capacity
+
+Example:
+
+Traffic:
+████████████████████
+
+Consumer capacity:
+████████████
+
+Lag:
+████████████████
+        ↑
+     growing
+
+- A temporary increase may be normal.
+- Continuously growing lag indicates that processing capacity is not keeping up with incoming work.
+
+------------------------------------------------------------
+Consumer Scaling
+
+- If messages can be processed independently, multiple consumer instances can process them concurrently.
+
+Example:
+
+                ┌── Consumer 1
+Broker ───────┼── Consumer 2
+                ├── Consumer 3
+                └── Consumer 4
+
+- This increases processing capacity.
+
+Example:
+
+Before:
+
+Producer → Broker → Consumer
+             10,000 msg/s → 5,000 msg/s
+
+After scaling:
+
+Producer → Broker → Consumer 1
+                  → Consumer 2
+                  → Consumer 3
+                  → Consumer 4
+
+- If each consumer can process approximately 5,000 messages/sec, aggregate capacity can increase significantly.
+- Actual scaling depends on:
+  - Number of independent ordered channels/partitions
+  - CPU
+  - Database capacity
+  - Downstream service capacity
+  - Network
+  - Consumer application efficiency
+
+------------------------------------------------------------
+Scaling vs Ordering
+
+- Consumer scaling cannot simply be increased without considering ordering.
+- If all messages for one business key must remain ordered, they generally cannot be processed concurrently by independent consumers.
+
+Example:
+
+O100-Created
+O100-Paid
+O100-Shipped
+
+must remain:
+
+Created → Paid → Shipped
+
+- But different orders can be processed concurrently:
+
+O100 → Consumer 1
+O200 → Consumer 2
+O300 → Consumer 3
+
+- This is the central trade-off:
+
+More parallelism
+      ↓
+Higher throughput
+
+More strict ordering
+      ↓
+Less parallelism
+
+------------------------------------------------------------
+Backpressure + Consumer Scaling
+
+- When lag increases, one possible response is to increase consumer capacity.
+- But scaling consumers only helps when the downstream dependencies can handle the additional load.
+
+Example:
+
+Consumer
+   ↓
+100 parallel workers
+   ↓
+Database
+
+If the database supports only 20 concurrent operations:
+
+100 workers
+    ↓
+Database overloaded
+    ↓
+More timeouts
+    ↓
+More retries
+    ↓
+Higher load
+    ↓
+More failures
+
+- Therefore scaling must consider the entire processing path, not just the consumer application.
+
+=======================================================================================================================================================================

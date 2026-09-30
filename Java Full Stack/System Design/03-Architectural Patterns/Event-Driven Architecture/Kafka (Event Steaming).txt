@@ -1,7 +1,10 @@
 KAFKA — ARCHITECTURE
 ------------------------------------------------------------
 - Why Kafka?
-- Kafka Broker
+- Kafka as an Event Streaming Platform
+- Kafka vs Traditional Message Queue
+- Kafka Architecture
+- Kafka Broker/server - replication
 - Kafka Cluster
 - Topic
 - Partition
@@ -26,3 +29,6 @@ KAFKA — IMPORTANT INTERNALS
 - Producer acknowledgements
 - Consumer offset / commit
 - Why Kafka provides high throughput
+
+
+

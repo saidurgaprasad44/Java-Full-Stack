@@ -1,0 +1,6 @@
+[ Internal EDA System ] ──> (Broker: Kafka/RabbitMQ) ──> [ Outbound Gateway ]
+                                                                   │
+              ┌────────────────────────────────────────┼───────────────────────────────────────┐
+              ▼                                                    ▼                                                  ▼
+         [ To a Client Browser ]                         [ To a Client Browser ]                    [ To a Third-Party Server ]
+         via **WebSockets** (2-way)                      via **SSE** (1-way stream)                 via **Webhooks** (HTTP POST)

@@ -1,12 +1,15 @@
 Functional vs Non-Functional Requirements
+
+Performance - Latency, Throughput
 Scalability
-Availability
-Reliability
-Performance
-Latency & Throughput
+Reliability - Availability, Resilience, Fault Tolerance
+Observability
+Security
 Consistency
 Durability
-Maintainability
-Fault Tolerance
+Maintainability - Low Coupling
+Cost Efficiency
+
 Trade-offs
+
 System Design Process
