@@ -1197,11 +1197,8 @@ Examples:
   eventId = E123
   eventType = OrderCreated
   orderId = O100
-
        ↓
-
   Check Inbox
-
        ↓
   E123 already exists?
        |

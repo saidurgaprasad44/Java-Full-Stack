@@ -595,28 +595,232 @@ Examples:
   Consumer lag
 
 =======================================================================================================================================================================
+KAFKA — INTERNALS
+=======================================================================================================================================================================
 
-
-
-
-
-
-
-
-
-
-KAFKA — IMPORTANT INTERNALS
 ------------------------------------------------------------
-- Append-only log model
-- Partition as an ordered log
-- Why partitions provide scalability
-- Offset and replay
-- Retention
-- Basic replication
-- Leader / follower
-- Producer acknowledgements
-- Consumer offset / commit
-- Why Kafka provides high throughput
+Append-only log model
+
+- Kafka stores records in an append-only log; new records are appended rather than updating arbitrary existing records.
+- This supports efficient sequential writes and is fundamental to Kafka's high-throughput design.
+- See Kafka Architecture notes for the basic broker/topic/partition model; this section focuses on the internal behavior resulting from that model.
+
+------------------------------------------------------------
+Partition as an ordered log
+
+- Each partition is an ordered, append-only sequence of records identified by offsets.
 
 
+Partition 0
 
+Offset 0 → A
+Offset 1 → B
+Offset 2 → C
+Offset 3 → D
+
+
+- Ordering is guaranteed within a partition, not across the entire topic.
+- Partition is also the unit of replication and the unit of consumer-group parallelism.
+
+------------------------------------------------------------
+Why partitions provide scalability
+
+- A topic can be divided into multiple partitions, allowing different partitions to be processed concurrently.
+
+
+Topic
+ ├── P0 → Broker 1
+ ├── P1 → Broker 2
+ ├── P2 → Broker 3
+ └── P3 → Broker 4
+
+
+- Producer and consumer workload can therefore be distributed across brokers and consumer instances.
+- Within a consumer group, one partition is assigned to only one consumer instance at a time.
+- Number of partitions therefore determines the potential parallelism of a consumer group.
+- More partitions do not guarantee proportional throughput; CPU, network, disk, broker capacity and application processing can still be bottlenecks.
+- Partitioning and consumer-group behavior are covered conceptually in Kafka Architecture; here the important internal relationship is that partitioning enables parallel data processing.
+
+------------------------------------------------------------
+Offset and replay
+
+- Each record in a partition has an offset representing its position in that partition.
+- A consumer can start reading from a previous offset, allowing already-retained records to be replayed.
+
+
+Partition
+
+100 → A
+101 → B
+102 → C
+103 → D
+
+Consumer
+       ↑
+    start here
+
+
+- Kafka does not normally delete a record when a consumer reads it.
+- Replay is possible only while the required record is still retained.
+- Offset represents position/progress; it is not a record identifier or a business ID.
+
+------------------------------------------------------------
+Retention
+
+- Kafka retains records according to topic retention configuration rather than consumer processing status.
+- Common retention controls are time-based and size-based.
+
+
+Oldest                              Newest
+  |                                    |
+  v                                    v
+[expired] [ retained records ........ ] [new]
+     X
+
+
+- A consumer not having processed a record does not prevent retention-based deletion.
+- Retention therefore defines the practical window in which consumers can replay data.
+- Kafka deletes data using log segments rather than individually deleting arbitrary records from the middle of a partition.
+- Retention is independent of consumer offsets and producer acknowledgements.
+- Long-term archival, when required, can be handled by databases, object storage or other dedicated storage systems; Kafka retention is primarily the streaming/replay window.
+
+------------------------------------------------------------
+Basic replication
+
+- A partition can have multiple replicas distributed across different brokers.
+
+
+Partition 0
+
+Broker 1 → Replica
+Broker 2 → Replica
+Broker 3 → Replica
+
+
+- Replication factor specifies the number of replicas for each partition.
+- Replication provides fault tolerance and availability when brokers fail.
+- Partition is the unit of replication.
+- Replication increases storage and network overhead, so replication factor is a durability/availability versus resource-cost trade-off.
+- Replication is not the same as long-term backup or archival.
+
+------------------------------------------------------------
+Leader / follower
+
+- Among the replicas of a partition, one replica is the leader and the others are followers.
+
+
+Producer
+   |
+   v
+Leader
+   |
+   +----> Follower
+   |
+   +----> Follower
+
+
+- The leader is the authoritative replica for writes to that partition.
+- Followers replicate the leader's partition log.
+- Different partitions can have different leaders, allowing leadership and workload to be distributed across brokers.
+- If the leader fails, an eligible follower can become the new leader.
+- Leader/follower therefore connects replication with partition availability and failure recovery.
+- Leader is defined per partition, not per topic.
+
+------------------------------------------------------------
+Producer acknowledgements
+
+- `acks` controls when the producer considers a record successfully acknowledged by Kafka.
+
+
+acks=0
+Producer → Leader
+          no acknowledgement wait
+
+acks=1
+Producer → Leader → ACK
+
+acks=all
+Producer → Leader
+              |
+              +--> required in-sync replicas
+              |
+              +--> ACK
+
+
+- `acks=0` does not wait for a broker acknowledgement; the producer has the weakest write confirmation.
+- `acks=1` waits for the partition leader to acknowledge the record; followers may not have replicated it yet.
+- `acks=all` waits for the configured replication/ISR condition, providing stronger durability.
+- `acks=all` does not simply mean waiting for every configured replica regardless of its state; in-sync replicas and `min.insync.replicas` are relevant.
+- `min.insync.replicas` can cause writes to be rejected when insufficient replicas are in sync, trading availability during failures for the configured durability requirement.
+- `acks` describes producer-to-Kafka acknowledgement; it does not indicate that any consumer has processed the record.
+
+------------------------------------------------------------
+Consumer offset / commit
+
+- Consumer progress is tracked separately for each consumer group, topic and partition.
+
+
+Partition 0
+100 → A
+101 → B
+102 → C
+103 → D
+
+Payment Group     → position 103
+Analytics Group   → position 101
+
+
+- Different consumer groups can independently consume and track the same partition.
+- Processing a record and committing its offset are separate operations.
+
+
+Read
+ ↓
+Process
+ ↓
+Commit
+
+
+- If processing succeeds but the commit fails, the record can be processed again after restart or rebalance.
+- This is the Kafka-specific reason consumer processing can result in duplicate delivery; apply the idempotency strategies to the business operation.
+- Committing before successful business processing can cause a record to be skipped after a failure.
+- A committed position conceptually represents the next position from which processing should resume.
+
+
+Processed through 102
+        ↓
+Committed position = 103
+        ↓
+Resume from 103
+
+
+- Consumer commits do not delete records from Kafka; retention still determines how long those records remain available.
+- Consumer-group rebalancing allows another consumer instance to take over partitions after a consumer failure and continue from the group's committed position.
+
+------------------------------------------------------------
+Why Kafka provides high throughput
+
+- Kafka's throughput comes from several design decisions working together rather than from a single optimization.
+
+
+Append-only log
+      ↓
+Sequential I/O
+      ↓
+Batching + compression
+      ↓
+Partition-level parallelism
+      ↓
+Producer / consumer concurrency
+
+
+- Append-only writes avoid the general cost of constantly modifying arbitrary locations in the log.
+- Sequential disk access is efficient compared with random updates.
+- Producers can batch multiple records into fewer requests, reducing network and request-processing overhead.
+- Batch compression can reduce network traffic and storage/I/O requirements.
+- Multiple partitions allow data to be processed concurrently across brokers and consumers.
+- Consumers can process different partitions concurrently within a consumer group.
+- Replication adds network and storage overhead; it is primarily a fault-tolerance/durability mechanism rather than a throughput optimization.
+- More partitions provide potential parallelism but do not guarantee unlimited throughput; hardware and application bottlenecks still apply.
+
+=======================================================================================================================================================================

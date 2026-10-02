@@ -1,29 +1,54 @@
 IMPORTANT EDA PATTERNS
 ------------------------------------------------------------
 - Transactional Outbox
-- Dual-write problem
-- Saga — basic concept
-- Choreography vs Orchestration
-- Event Sourcing — basic concept
-- EDA vs Event Sourcing
+if !(record in outbox table)
+	transaction begin
+		producer process
+		insert record into outbox table
+	end transaction
+publish
+acknowledge
+
+kafka broker
+
+delivery
+if !(event id in inbox table)
+	transaction begin
+		consumer process
+		insert event id into inbox table
+	end transaction
+acknowledge -> commit offset
+
+- Saga pattern
+- Event Sourcing
 
 
-EDA SYSTEM DESIGN / CASE STUDY
-------------------------------------------------------------
-- Identify where asynchronous communication is useful
-- Identify events
-- Identify producers and consumers
-- Choose Kafka/RabbitMQ where appropriate
-- Design event flow
-- Handle failures
-- Handle duplicates
-- Handle retries
-- Handle ordering
-- Handle slow consumers
-- Identify eventual consistency
-- Identify scalability concerns
-- Identify trade-offs
-- Reverse-engineer an existing real-world architecture
+
+EDA — Patterns: Final scope
+
+1. Transactional Outbox Pattern
+
+The dual-write problem and why it occurs.
+How the outbox table, database transaction, and publisher work together.
+Outbox polling vs. CDC (Change Data Capture).
+Delivery guarantees, duplicate publishing, and failure handling.
+How to implement the pattern with Kafka.
+
+2. Saga Pattern
+
+Why distributed transactions are difficult across independent services.
+Saga workflow and local transactions.
+Choreography vs. orchestration.
+Compensating transactions, failure handling, and consistency trade-offs.
+How Kafka supports saga-based workflows.
+
+3. Event Sourcing
+
+Event sourcing vs. conventional state-based persistence.
+Event store, aggregate, event stream, and state reconstruction.
+Snapshots, event replay, and projections.
+Event versioning and handling corrections.
+Benefits, limitations, and when it makes sense architecturally.
 
 
 EDA
@@ -50,4 +75,23 @@ EDA
  +-- Data
       +-- Event Sourcing
       +-- CQRS
+
+
+
+EDA SYSTEM DESIGN / CASE STUDY
+------------------------------------------------------------
+- Identify where asynchronous communication is useful
+- Identify events
+- Identify producers and consumers
+- Choose Kafka/RabbitMQ where appropriate
+- Design event flow
+- Handle failures
+- Handle duplicates
+- Handle retries
+- Handle ordering
+- Handle slow consumers
+- Identify eventual consistency
+- Identify scalability concerns
+- Identify trade-offs
+- Reverse-engineer an existing real-world architecture
 
