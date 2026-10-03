@@ -86,9 +86,9 @@ Payment Inventory Notification
 - The Order Service can complete its own responsibility without waiting for every consumer.
 - The broker can retain/buffer events so consumers can process them later, depending on the messaging system.
 
-=======================================================================================================================================================================
+------------------------------------------------------------
 Synchronous vs Asynchronous Communication
-=======================================================================================================================================================================
+------------------------------------------------------------
 
 - Synchronous communication means the caller waits for the called service to respond.
 
@@ -185,9 +185,9 @@ Broker / Event Bus
    +----> Consumer B
    +----> Consumer C
 
-=======================================================================================================================================================================
+------------------------------------------------------------
 Decoupling
-=======================================================================================================================================================================
+------------------------------------------------------------
 
 - EDA reduces direct runtime coupling between producers and consumers.
 - Instead of:
@@ -496,9 +496,9 @@ Message
 - In real systems, the terms message, event and record are sometimes used interchangeably.
 - Architecturally, it is useful to distinguish the business meaning from the transport representation.
 
-=======================================================================================================================================================================
+------------------------------------------------------------
 Message Distribution Models
-=======================================================================================================================================================================
+------------------------------------------------------------
 
 MESSAGE
    |
@@ -565,9 +565,9 @@ Examples:
 - Background report generation.
 - The purpose is commonly distributing work across workers.
 
-=======================================================================================================================================================================
+------------------------------------------------------------
 Topic vs Queue
-=======================================================================================================================================================================
+------------------------------------------------------------
 
 - Topic-style distribution is commonly used when multiple consumers need their own copy of an event.
 
@@ -602,9 +602,9 @@ Queue = Command
 - Event/command describes message meaning.
 - Topic/queue describes distribution and consumption behavior.
 
-=======================================================================================================================================================================
-How Events Carry Business Information
-=======================================================================================================================================================================
+------------------------------------------------------------
+Event Design
+------------------------------------------------------------
 
 Event
    |
@@ -784,9 +784,9 @@ Order Service
 - An incompatible change by the producer can therefore affect multiple consumers.
 - The event contract becomes a distributed dependency even though the services are otherwise loosely coupled.
 
-=======================================================================================================================================================================
+------------------------------------------------------------
 Schema Evolution
-=======================================================================================================================================================================
+------------------------------------------------------------
 
 - Event schemas evolve as business requirements change.
 - Consumers and producers may not be deployed at exactly the same time.
@@ -1093,7 +1093,6 @@ Idempotency & Duplicate Handling
 
 ------------------------------------------------------------
 Why Duplicates Happen
-------------------------------------------------------------
 
 - Duplicate messages are possible in reliable EDA, especially with at-least-once delivery.
 - A common cause is successful business processing followed by failure before ACK.
@@ -1144,7 +1143,6 @@ Examples:
 
 ------------------------------------------------------------
 Deduplication vs Idempotency
-------------------------------------------------------------
 
 - Deduplication means detecting that a message has already been seen and avoiding processing it again.
 - Idempotency means repeated processing does not create an additional business effect.
@@ -1186,7 +1184,6 @@ Examples:
 
 ------------------------------------------------------------
 Processed Message / Inbox
-------------------------------------------------------------
 
 - A processed-message or inbox mechanism stores identifiers of messages that have already been successfully handled.
 
@@ -1233,7 +1230,6 @@ Examples:
 
 ------------------------------------------------------------
 Unique Business Key
-------------------------------------------------------------
 
 - A business key identifies the business operation or entity independently of a particular message delivery.
 - It can sometimes provide idempotency without maintaining a separate processed-message table.
@@ -1255,7 +1251,6 @@ Examples:
 
 ------------------------------------------------------------
 Idempotent State Transition
-------------------------------------------------------------
 
 - An idempotent state transition produces the same final state when the same transition is applied repeatedly.
 
@@ -1280,7 +1275,6 @@ Examples:
 
 ------------------------------------------------------------
 External API Idempotency Key
-------------------------------------------------------------
 
 - When a consumer calls an external API, duplicate event processing can create duplicate external operations.
 - An idempotency key allows the external service to recognize repeated requests representing the same operation.
@@ -1312,6 +1306,7 @@ Retry & Failure Handling
 
 ------------------------------------------------------------
 Processing Failure
+------------------------------------------------------------
 
 - Processing failure means the consumer received the message but could not successfully complete its required processing.
 - Examples include:
@@ -1828,6 +1823,7 @@ No OrderCreated event
 
 - The business state exists, but downstream consumers never receive the event.
 - This creates inconsistency between the producer's state and the event-driven part of the system.
+- This introduces dual-write problem, which can be solved with Transactional Outbox pattern
 
 ------------------------------------------------------------
 Publish Uncertainty
@@ -1897,57 +1893,6 @@ OrderCreated(E100)
 
 - Consumers must therefore not assume that duplicate events can only originate from consumer redelivery.
 - Producer-side retries can also create duplicates.
-
-------------------------------------------------------------
-Dual-Write Problem — Introduction
-------------------------------------------------------------
-
-- The dual-write problem occurs when one business operation must update a database and publish an event, but the two actions are performed independently.
-
-Example:
-
-Order Service
-
-Database:
-INSERT Order O100
-
-Broker:
-PUBLISH OrderCreated
-
-There are two separate operations.
-
-Possible failure:
-
-BEGIN
-   ↓
-Insert Order O100
-   ↓
-DB COMMIT succeeds
-   ↓
-Application crashes
-   ↓
-Event never published
-
-Result:
-
-Database:
-O100 exists
-
-Broker:
-OrderCreated does not exist
-
-- The reverse can also happen:
-
-Publish OrderCreated
-   ↓
-Database update fails
-
-Result:
-
-Event exists
-but required business state does not.
-
-- This is difficult because a normal database transaction does not automatically make the external message broker operation atomic with the database.
 
 ------------------------------------------------------------
 

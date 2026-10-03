@@ -24,6 +24,7 @@ acknowledge -> commit offset
 
 
 
+
 EDA — Patterns: Final scope
 
 1. Transactional Outbox Pattern
@@ -94,4 +95,60 @@ EDA SYSTEM DESIGN / CASE STUDY
 - Identify scalability concerns
 - Identify trade-offs
 - Reverse-engineer an existing real-world architecture
+
+
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+Dual-Write Problem — Introduction
+------------------------------------------------------------
+
+- The dual-write problem occurs when one business operation must update a database and publish an event, but the two actions are performed independently.
+
+Example:
+
+Order Service
+
+Database:
+INSERT Order O100
+
+Broker:
+PUBLISH OrderCreated
+
+There are two separate operations.
+
+Possible failure:
+
+BEGIN
+   ↓
+Insert Order O100
+   ↓
+DB COMMIT succeeds
+   ↓
+Application crashes
+   ↓
+Event never published
+
+Result:
+
+Database:
+O100 exists
+
+Broker:
+OrderCreated does not exist
+
+- The reverse can also happen:
+
+Publish OrderCreated
+   ↓
+Database update fails
+
+Result:
+
+Event exists
+but required business state does not.
+
+- This is difficult because a normal database transaction does not automatically make the external message broker operation atomic with the database.
+
+
 

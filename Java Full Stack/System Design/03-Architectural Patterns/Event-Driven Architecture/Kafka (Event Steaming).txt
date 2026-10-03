@@ -600,6 +600,7 @@ KAFKA — INTERNALS
 
 ------------------------------------------------------------
 Append-only log model
+------------------------------------------------------------
 
 - Kafka stores records in an append-only log; new records are appended rather than updating arbitrary existing records.
 - This supports efficient sequential writes and is fundamental to Kafka's high-throughput design.
@@ -607,6 +608,7 @@ Append-only log model
 
 ------------------------------------------------------------
 Partition as an ordered log
+------------------------------------------------------------
 
 - Each partition is an ordered, append-only sequence of records identified by offsets.
 
@@ -643,6 +645,7 @@ Topic
 
 ------------------------------------------------------------
 Offset and replay
+------------------------------------------------------------
 
 - Each record in a partition has an offset representing its position in that partition.
 - A consumer can start reading from a previous offset, allowing already-retained records to be replayed.
@@ -666,6 +669,7 @@ Consumer
 
 ------------------------------------------------------------
 Retention
+------------------------------------------------------------
 
 - Kafka retains records according to topic retention configuration rather than consumer processing status.
 - Common retention controls are time-based and size-based.
@@ -686,6 +690,7 @@ Oldest                              Newest
 
 ------------------------------------------------------------
 Basic replication
+------------------------------------------------------------
 
 - A partition can have multiple replicas distributed across different brokers.
 
@@ -705,6 +710,7 @@ Broker 3 → Replica
 
 ------------------------------------------------------------
 Leader / follower
+------------------------------------------------------------
 
 - Among the replicas of a partition, one replica is the leader and the others are followers.
 
@@ -728,6 +734,7 @@ Leader
 
 ------------------------------------------------------------
 Producer acknowledgements
+------------------------------------------------------------
 
 - `acks` controls when the producer considers a record successfully acknowledged by Kafka.
 
@@ -756,6 +763,7 @@ Producer → Leader
 
 ------------------------------------------------------------
 Consumer offset / commit
+------------------------------------------------------------
 
 - Consumer progress is tracked separately for each consumer group, topic and partition.
 
@@ -799,6 +807,7 @@ Resume from 103
 
 ------------------------------------------------------------
 Why Kafka provides high throughput
+------------------------------------------------------------
 
 - Kafka's throughput comes from several design decisions working together rather than from a single optimization.
 
@@ -824,3 +833,4 @@ Producer / consumer concurrency
 - More partitions provide potential parallelism but do not guarantee unlimited throughput; hardware and application bottlenecks still apply.
 
 =======================================================================================================================================================================
+
