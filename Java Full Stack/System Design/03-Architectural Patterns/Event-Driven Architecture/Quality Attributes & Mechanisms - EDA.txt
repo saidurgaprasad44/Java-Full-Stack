@@ -9,15 +9,23 @@ While Mechanisms are the specific engineering techniques and patterns implemente
 - The Quality Attribute: How fast the system responds (Latency, measured in $p99$ ms) and how much work it can execute simultaneously (Throughput, measured in Requests Per Second).
 - The Goal: Maximize speed and processing capacity under heavy usage.
 
+
 Implementing Mechanisms
-- Tiered Caching: 
-    - Browser Cache: Stores assets directly on the user's device.
-    - CDN Cache: Stores static/dynamic data at the network edge close to users.
-    - Application/DB Cache: Uses in-memory stores (Redis) to cache heavy query results.
-- Database Indexing: Creates lookup paths (e.g., B-Trees) to prevent slow, expensive full-table disk scans.
-- Connection Pooling: Maintains pre-opened database connections to eliminate TCP handshake latency on every request.
-- Batch Processing: Groups data to process it in bulk, optimizing data throughput for non-real-time tasks.
-- Code Quality & DSA (LLD): Applying optimal algorithms and data structures to reduce CPU cycles and execution times.
+
+- Asynchronous Processing: Moves non-critical work away from the synchronous request path.
+- Trade-off: Reduces immediate response latency but increases end-to-end completion latency.
+
+- Parallel Event Processing: Processes independent events concurrently to increase throughput.
+- Trade-off: Increases concurrency complexity and may require additional handling for ordering and shared resources.
+
+- Batching: Processes multiple events together to reduce per-event processing and I/O overhead.
+- Trade-off: Improves throughput and resource efficiency but can increase processing latency because events may wait for a batch to form.
+
+- Buffering: Temporarily absorbs workload spikes and prevents producers from being blocked by slower consumers.
+- Trade-off: Requires additional storage and can increase event-processing delay during sustained backlog.
+
+- Consumer Scaling: Increases processing capacity by running multiple consumer instances.
+- Trade-off: Requires sufficient parallelizable workload and increases infrastructure and coordination complexity.
 
 ===============================================================================================================================================================================
 
@@ -25,11 +33,23 @@ Implementing Mechanisms
 - The Quality Attribute:- Scalability is the capacity to handle growth. Elasticity is the ability to automatically scale up or down based on real-time traffic spikes.
 - The Goal: Ensure the system expands seamlessly without manual human intervention.
 
+
 Implementing Mechanisms
-- Horizontal Scaling & Load Balancing: Spreads incoming web traffic evenly across multiple identical server instances.
-- Stateless Services: Ensuring application servers don't store user session state locally, allowing any server to handle any incoming request seamlessly.
-- Database Sharding: Horizontally partitioning large database tables across separate physical machines using a shard key.
-- Asynchronous Processing: Using message brokers to decouple workflows so background workers can scale independently.
+
+- Independent Consumer Scaling: Allows processing capacity to increase without scaling producers.
+- Trade-off: Requires workload to be independently distributable and may increase infrastructure cost.
+
+- Partitioned Workload: Divides event processing into independently scalable units.
+- Trade-off: Increases parallelism but introduces partitioning, ordering, and rebalancing complexity.
+
+- Asynchronous Buffering: Absorbs temporary workload spikes while consumers catch up.
+- Trade-off: Prevents immediate overload but can create growing backlog and increased processing delay.
+
+- Stateless Consumers: Enable easier horizontal replication and scaling.
+- Trade-off: May require external storage for state, adding network calls and infrastructure dependencies.
+
+- Backlog-Based Scaling: Uses queue depth or processing lag as a signal for increasing or decreasing consumer capacity.
+- Trade-off: Scaling decisions based on lag may react after the workload has already increased and can cause over-scaling if thresholds are poorly configured.
 
 ===============================================================================================================================================================================
 
@@ -37,13 +57,32 @@ Implementing Mechanisms
 - The Quality Attribute:- Availability is uptime percentage (e.g., 99.99%). Resilience is how it recovers. Fault Tolerance is surviving hardware/software failures.
 - The Goal: Build a system with no single point of failure that heals itself automatically.
 
+
 Implementing Mechanisms
-- Redundancy & Replication: Keeping multiple synchronous or asynchronous copies of data across different physical zones.
-- Read Replicas: Shifting heavy read volumes away from the primary write database to separate read-only instances.
-- Defensive Traffic Control: Implements Rate Limiting to prevent abuse and Timeouts to stop threads from hanging.
-- Circuit Breakers & Fallbacks: Trips a broken dependency path immediately, returning a graceful fallback response instead of failing the whole request chain.
-- Retries with Exponential Backoff: Retries temporary network blips with randomized incremental waiting delays to avoid overwhelming target services.
-- Health Checks & Automatic Recovery: Orchestrators (like Kubernetes) constantly ping instances and spin up fresh replacements automatically if an instance stops responding.
+
+- Persistent Event Storage: Retains events until they can be successfully processed.
+- Trade-off: Prevents event loss but increases storage requirements and management overhead.
+
+- Replication: Maintains redundant copies of event data to tolerate component failures.
+- Trade-off: Improves fault tolerance but increases storage, network, and synchronization costs.
+
+- Retry Mechanism: Reprocesses events when failures are temporary.
+- Trade-off: Improves recovery from transient failures but can cause duplicate processing and repeated load on a failing dependency.
+
+- Exponential Backoff: Gradually increases the delay between retries.
+- Trade-off: Reduces pressure on failing dependencies but increases recovery time.
+
+- Dead-Letter Queue: Isolates repeatedly failing events from the normal processing flow.
+- Trade-off: Prevents poison messages from blocking normal processing but requires additional monitoring and manual or automated recovery processes.
+
+- Consumer Isolation: Prevents failure in one processing component from directly stopping unrelated consumers.
+- Trade-off: Improves failure isolation but increases the number of independently managed components.
+
+- Transactional Outbox: Reliably persists the business change and corresponding event within the same local transaction.
+- Trade-off: Prevents the database/event dual-write problem but introduces an additional outbox storage and publishing mechanism.
+
+- Idempotent Processing: Allows safe reprocessing when duplicate events occur.
+- Trade-off: Prevents duplicate business effects but requires additional state, keys, or logic to detect previous processing.
 
 ===============================================================================================================================================================================
 
@@ -51,9 +90,29 @@ Implementing Mechanisms
 - The Quality Attribute: The clarity with which you can diagnose internal errors based on external indicators (Logs, Metrics, Traces).
 - The Goal: Spot anomalies and capture data corruption before it impacts users.
 
+
 Implementing Mechanisms
-- Distributed Tracing & Central Logging: Tracking requests across microservices via trace IDs and indexing structured JSON logs.
-- Metrics & Corruption Detection: Gathering system telemetry to calculate error rates, combined with checksums to detect data corruption during transit.
+
+- Event ID: Uniquely identifies an event throughout its lifecycle.
+- Trade-off: Requires consistent ID generation and propagation but provides reliable event-level tracking.
+
+- Correlation ID: Connects related operations across asynchronous components.
+- Trade-off: Requires propagation across every participating component but significantly improves distributed-flow tracing.
+
+- Distributed Tracing: Tracks processing across multiple services and asynchronous boundaries.
+- Trade-off: Adds instrumentation and telemetry overhead but provides end-to-end visibility.
+
+- Structured Logging: Provides consistent and searchable processing information.
+- Trade-off: Increases log volume and storage costs if excessive logging is enabled.
+
+- Processing Metrics: Measures throughput, latency, failures, retries, and processing duration.
+- Trade-off: Requires metric collection and monitoring infrastructure but enables proactive detection of performance and reliability issues.
+
+- Consumer Lag / Queue Depth: Indicates whether consumers are keeping up with incoming workload.
+- Trade-off: Provides useful backlog visibility but does not by itself explain the root cause of the backlog.
+
+- Dead-Letter Monitoring: Detects events that could not be successfully processed.
+- Trade-off: Improves failure visibility but requires operational processes for investigation and recovery.
 
 ===============================================================================================================================================================================
 
@@ -61,9 +120,32 @@ Implementing Mechanisms
 - The Quality Attribute: System immunity to unauthorized breaches and malicious attacks.
 - The Goal: Secure data at rest, in transit, and enforce strict user privacy bounds.
 
+
 Implementing Mechanisms
-- Authentication & Authorization: Verifying identity (AuthN) and evaluating permissions/roles (AuthZ via RBAC/ABAC).
-- Encryption: Obfuscating data using industry-standard cryptography algorithms both on-disk and over the wire (TLS).
+
+- Producer Authentication: Verifies the identity of event producers.
+- Trade-off: Prevents unauthorized producers but introduces authentication configuration and credential management.
+
+- Consumer Authentication: Verifies the identity of event consumers.
+- Trade-off: Prevents unauthorized consumers but adds authentication configuration and operational overhead.
+
+- Authorization: Controls which applications can publish, consume, or manage specific event resources.
+- Trade-off: Provides fine-grained access control but increases policy and permission management complexity.
+
+- Encryption in Transit: Protects event data during communication.
+- Trade-off: Protects against network interception but introduces encryption/decryption overhead.
+
+- Encryption at Rest: Protects persisted event data.
+- Trade-off: Protects stored data but adds key management and storage-layer complexity.
+
+- Least Privilege: Grants only the permissions required for a component's responsibilities.
+- Trade-off: Reduces security exposure but requires more detailed permission management.
+
+- Event Data Protection: Minimizes, masks, encrypts, or excludes sensitive information from events.
+- Trade-off: Reduces data exposure but can make downstream processing more complex.
+
+- Audit Logging: Records security-sensitive event operations and administrative activities.
+- Trade-off: Improves accountability and investigation capabilities but increases storage and monitoring requirements.
 
 ===============================================================================================================================================================================
 
@@ -71,9 +153,32 @@ Implementing Mechanisms
 - The Quality Attribute:- Consistency ensures data is uniform across all nodes. Durability guarantees that once a write is acknowledged, it will never be permanently lost.
 - The Goal: Maintain perfectly accurate records across a distributed system.
 
+
 Implementing Mechanisms
-- Quorum Consensuses: Requiring a strict majority of nodes to acknowledge reads/writes before confirming a transaction.
-- Idempotency Keys: Ensuring a duplicated network retry does not cause a duplicate record or double-charge a user.
+
+- Event Persistence: Stores events durably so they can survive consumer or processing failures.
+- Trade-off: Improves durability and replayability but increases storage and retention costs.
+
+- Transactional Outbox: Atomically persists the business change and corresponding event within the same local transaction.
+- Trade-off: Improves transactional reliability but introduces additional storage and publishing complexity.
+
+- Idempotent Consumers: Prevent duplicate event delivery from producing duplicate business effects.
+- Trade-off: Improves correctness during retries and duplicates but requires additional state or duplicate-detection logic.
+
+- Event Ordering: Maintains the required ordering of related state changes.
+- Trade-off: Preserves correctness where ordering matters but can restrict parallelism and scalability.
+
+- Event Versioning: Allows event contracts to evolve without breaking existing consumers.
+- Trade-off: Supports backward compatibility but increases schema and compatibility management complexity.
+
+- Replay: Allows persisted events to be processed again to rebuild or correct downstream state.
+- Trade-off: Provides recovery and reconstruction capability but requires replay-safe consumers and can consume significant processing resources.
+
+- Saga Pattern: Coordinates distributed business transactions through local transactions and compensating actions.
+- Trade-off: Avoids distributed transactions but introduces eventual consistency and compensation complexity.
+
+- Event Sourcing: Maintains business state through a sequence of persisted events.
+- Trade-off: Provides complete historical state reconstruction but increases event-modeling, versioning, and storage complexity.
 
 ===============================================================================================================================================================================
 
@@ -81,9 +186,32 @@ Implementing Mechanisms
 - The Quality Attribute: How easily code can be modified, tested, and expanded. Measured by deployment frequency and low inter-dependency (Coupling).
 - The Goal: Keep separate engineering teams unblocked and move quickly.
 
+
 Implementing Mechanisms
-- Microservices: Breaking down a monolith into loose, decoupled domains that talk over clean network protocols.
-- Automated Testing & Documentation: Running CI/CD test suites and keeping architecture specifications current to prevent regressions.
+
+- Event-Based Communication: Reduces direct runtime dependencies between producers and consumers.
+- Trade-off: Reduces coupling but makes the overall business flow more distributed and harder to follow.
+
+- Temporal Decoupling: Allows producers and consumers to operate at different times when events are durably stored.
+- Trade-off: Improves availability and independence but introduces eventual consistency and delayed processing.
+
+- Spatial Decoupling: Removes the need for producers to know the location or number of consumers.
+- Trade-off: Simplifies service dependencies but requires additional infrastructure for event routing and discovery.
+
+- Publish/Subscribe: Allows multiple consumers to independently react to the same event.
+- Trade-off: Makes adding consumers easier but increases the number of downstream processing flows to manage.
+
+- Event Contracts: Establishes a defined communication contract between producers and consumers.
+- Trade-off: Reduces integration ambiguity but creates a contract that must be maintained and evolved carefully.
+
+- Schema Versioning: Allows event structures to evolve while maintaining compatibility.
+- Trade-off: Supports independent evolution but increases schema management and compatibility complexity.
+
+- Independent Deployment: Allows consumers to evolve without requiring changes to producers.
+- Trade-off: Increases deployment independence but requires stronger backward/forward compatibility discipline.
+
+- Independent Scaling: Allows each processing component to scale according to its own workload.
+- Trade-off: Improves resource efficiency but increases deployment and infrastructure management complexity.
 
 ===============================================================================================================================================================================
 
@@ -91,8 +219,25 @@ Implementing Mechanisms
 - The Quality Attribute: Monthly financial infrastructure cost relative to system volume and computing resource usage.
 - The Goal: Run an optimized, high-throughput system at the lowest possible price point.
 
+
 Implementing Mechanisms
-- Auto-Scaling & Serverless Compute: Tearing down idle compute capacity automatically during low-traffic periods.
-- Tiered Cold/Hot Storage: Moving old records to cheaper object storage layers over time.
+
+- Independent Scaling: Scales only the components that require additional capacity.
+- Trade-off: Reduces unnecessary infrastructure usage but increases deployment and scaling management complexity.
+
+- Asynchronous Processing: Separates expensive or non-critical processing from the synchronous request path.
+- Trade-off: Can improve resource utilization but requires additional event infrastructure.
+
+- Buffering: Absorbs temporary workload spikes without requiring immediate peak capacity.
+- Trade-off: Reduces the need for over-provisioning but requires additional storage.
+
+- Batch Processing: Reduces per-operation network, I/O, and processing overhead.
+- Trade-off: Improves resource efficiency but can increase latency.
+
+- Resource Sharing: Allows multiple processing workloads to use shared infrastructure efficiently.
+- Trade-off: Improves utilization but can introduce resource contention.
+
+- Elastic Scaling: Dynamically adjusts processing capacity according to workload.
+- Trade-off: Reduces idle capacity but introduces scaling overhead and may provision resources temporarily during workload fluctuations.
 
 ===============================================================================================================================================================================

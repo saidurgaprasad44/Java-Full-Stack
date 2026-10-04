@@ -1336,7 +1336,7 @@ Processing Failure
 ------------------------------------------------------------
 Retryable vs Non-Retryable Failure
 
-- Retryable failure:
+- Retryable(transient) failure:
   - Failure may disappear if the operation is attempted again.
   - Examples:
     * Database temporarily unavailable
@@ -1344,7 +1344,7 @@ Retryable vs Non-Retryable Failure
     * Network timeout
     * Temporary connection failure
 
-- Non-retryable failure:
+- Non-retryable(permanent) failure:
   - Repeating the same message is unlikely to succeed without changing the message or application.
   - Examples:
     * Invalid event schema

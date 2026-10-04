@@ -1,0 +1,1344 @@
+=======================================================================================================================================================================
+=======================================================================================================================================================================
+									EDA - Design Patterns
+=======================================================================================================================================================================
+=======================================================================================================================================================================
+
+EDA
+ |
+ +-- Communication
+ |    +-- Pub/Sub
+ |    +-- Point-to-Point
+ |
+ +-- Event Design
+ |    +-- Event Notification
+ |    +-- Event-Carried State Transfer
+ |    +-- Event Contract
+ |
+ +-- Reliability
+ |    +-- Retry
+ |    +-- Dead Letter
+ |    +-- Idempotent Consumer
+ |    +-- Transactional Outbox
+ |
+ +-- Distributed Workflows
+ |    +-- Saga
+ |    +-- Compensation
+ |
+ +-- Data
+      +-- Event Sourcing
+      +-- CQRS
+
+
+
+EDA SYSTEM DESIGN / CASE STUDY
+------------------------------------------------------------
+- Identify where asynchronous communication is useful
+- Identify events
+- Identify producers and consumers
+- Choose Kafka/RabbitMQ where appropriate
+- Design event flow
+- Handle failures
+- Handle duplicates
+- Handle retries
+- Handle ordering
+- Handle slow consumers
+- Identify eventual consistency
+- Identify scalability concerns
+- Identify trade-offs
+- Reverse-engineer an existing real-world architecture
+
+
+=======================================================================================================================================================================
+TRANSACTIONAL OUTBOX PATTERN
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+Why the Transactional Outbox Pattern
+
+- In an event-driven system, a service often needs to update its database and publish an event as part of the same business operation.
+- These operations involve two different systems:
+
+  - Database — stores the business state.
+  - Message broker/event infrastructure — distributes the event.
+
+- A normal database transaction cannot atomically control both systems.
+
+
+Client
+  |
+  v
+Order Service
+  |
+  +------> Database
+  |        Save Order
+  |
+  +------> Event Broker
+           Publish OrderCreated
+
+
+- This creates the dual-write problem: the service must perform two independent writes, but both need to represent the same successful business operation.
+
+------------------------------------------------------------
+Dual-Write Problem
+
+- If the database write succeeds but event publishing fails, the business state exists but downstream consumers are unaware of the change.
+
+
+Database
+   |
+   +--> Order saved
+
+Event Broker
+   |
+   +--> Event not published
+
+
+- If the event is published but the database transaction fails, consumers may receive an event representing a business operation that never actually committed.
+
+
+Event Broker
+   |
+   +--> OrderCreated published
+
+Database
+   |
+   +--> Transaction rolled back
+
+
+- Retrying either operation independently can also create duplicate events or inconsistent state.
+- The fundamental problem is the lack of atomicity between the database transaction and event publication.
+
+------------------------------------------------------------
+Transactional Outbox Solution
+------------------------------------------------------------
+
+- Instead of publishing the event directly during the business transaction, the service stores the event in an outbox table in the same database transaction as the business data.
+
+
+Application
+    |
+    | One DB transaction
+    v
++---------------------------+
+| Database                  |
+|                           |
+| orders                    |
+| outbox_events             |
++---------------------------+
+             |
+             | asynchronous publishing
+             v
+        Event Publisher
+             |
+             v
+       Event Broker
+             |
+             v
+         Consumers
+
+
+- The business data and the intent to publish the event are therefore committed atomically.
+- The publisher sends the stored event asynchronously after the transaction has committed.
+- The pattern changes the problem from:
+
+
+DB write + Event-system write
+
+to:
+
+DB write + Outbox write
+
+
+- Both writes now belong to the same local database transaction.
+
+------------------------------------------------------------
+Database Transaction
+
+- The business operation and outbox record are written within one transaction.
+
+Examples:
+
+
+BEGIN TRANSACTION
+
+INSERT INTO orders
+    (order_id, customer_id, amount, status)
+VALUES
+    ('ORD-101', 'CUST-10', 5000, 'CREATED');
+
+INSERT INTO outbox_events
+    (event_id, event_type, aggregate_id, payload)
+VALUES
+    ('EVT-9001', 'OrderCreated', 'ORD-101', '{...}');
+
+COMMIT
+
+
+- If the transaction commits:
+
+
+orders        -> persisted
+outbox_events -> persisted
+
+
+- If the transaction rolls back:
+
+
+orders        -> rolled back
+outbox_events -> rolled back
+
+
+- Therefore, a committed business operation always has its corresponding event record in the outbox.
+
+------------------------------------------------------------
+Outbox Table
+
+- The outbox table is a durable staging area for events that need to be published.
+- A typical outbox record contains:
+
+
+event_id
+event_type
+aggregate_id
+payload
+created_at
+status
+published_at
+
+
+- `event_id` uniquely identifies the event.
+- `event_type` identifies the business event, such as `OrderCreated`.
+- `aggregate_id` identifies the business entity associated with the event, such as `ORD-101`.
+- `payload` contains the information required by consumers.
+- `status` can track whether the event is pending, published, or failed.
+- The exact schema depends on the implementation; the important architectural property is that the event record is stored in the same database transaction as the business change.
+
+------------------------------------------------------------
+Publisher
+------------------------------------------------------------
+
+- A separate publisher continuously obtains unpublished records from the outbox and sends them to the event infrastructure.
+
+
+Database
+   |
+   | pending outbox events
+   v
+Publisher
+   |
+   | publish event
+   v
+Event Broker
+   |
+   v
+Consumers
+
+
+- The publisher is intentionally separated from the original business request.
+- The business operation does not need the event infrastructure to be available at the exact moment the database transaction commits.
+- If the event infrastructure is temporarily unavailable, the outbox record remains durable and can be retried.
+
+------------------------------------------------------------
+Outbox Polling
+
+- With polling, the publisher periodically queries the outbox table for unpublished events.
+
+
+        +----------------+
+        | Outbox Table   |
+        +----------------+
+                ^
+                |
+         query pending
+                |
+         +--------------+
+         |   Publisher  |
+         +--------------+
+                |
+             publish
+                |
+                v
+         Event Broker
+
+
+- Conceptually:
+
+
+SELECT -
+FROM outbox_events
+WHERE status = 'PENDING'
+ORDER BY created_at;
+
+
+- After successful publication, the publisher marks the record as published.
+- Polling is relatively simple and does not require the database to expose a change stream.
+- Trade-off: the publisher repeatedly queries the database, creating database load and some polling latency.
+
+------------------------------------------------------------
+CDC (Change Data Capture)
+
+- CDC observes changes made to the database and detects newly created outbox records without the application repeatedly querying the table.
+
+
+Application
+    |
+    | DB transaction
+    v
+Database
+    |
+    | change
+    v
+   CDC
+    |
+    v
+Publisher / Event Pipeline
+    |
+    v
+Event Broker
+
+
+- With CDC, the database change itself becomes the trigger for processing the outbox record.
+- The key distinction is:
+
+
+Polling
+- Publisher asks the database:
+  "Are there new outbox records?"
+
+CDC
+- Change-data mechanism observes:
+  "A new outbox record was created."
+
+
+- Both approaches use the same fundamental outbox idea: the event is first durably committed alongside the business data.
+
+------------------------------------------------------------
+Failure Handling
+------------------------------------------------------------
+
+- The outbox protects the event from being lost after a successful business transaction.
+- However, failures can still occur while publishing the outbox record.
+
+
+Outbox
+   |
+   | publish
+   v
+Event Broker
+   |
+   | success
+   v
+Publisher
+   |
+   X crashes before marking outbox record published
+
+
+- The event may already have been published, but the publisher does not know that it completed successfully.
+- On retry, the same event can be published again.
+
+
+Event Broker
+
+EVT-9001
+EVT-9001   <- duplicate
+
+
+- Therefore, the outbox pattern generally provides reliable delivery with retry, but does not by itself guarantee exactly-once end-to-end processing.
+- This means consumers should be able to safely handle duplicate events.
+
+Atomic DB transaction
+        +
+Durable Outbox
+        +
+Retry
+        +
+Idempotent Consumers
+
+------------------------------------------------------------
+What the Pattern Solves
+
+- Solves the database/event-system dual-write problem.
+- Ensures business data and event intent are committed atomically.
+- Prevents an event from being lost simply because the event infrastructure was unavailable when the business transaction completed.
+- Allows event publication to be retried independently of the original business request.
+- Provides a durable boundary between synchronous business processing and asynchronous event delivery.
+
+------------------------------------------------------------
+What the Pattern Does Not Solve
+
+- It does not eliminate duplicate event publication.
+- It does not automatically provide exactly-once processing.
+- It does not make multiple independent service transactions atomic.
+- It does not eliminate eventual consistency.
+- It does not guarantee global event ordering.
+
+------------------------------------------------------------
+Key Architectural Trade-off
+
+- The pattern adds an outbox table and a publisher or CDC mechanism to the architecture.
+
+
+Without Outbox:
+
+Service
+  |
+  +--> Database
+  |
+  +--> Event System
+
+
+With Outbox:
+
+Service
+  |
+  v
+Database
+  |
+  +--> Business Data
+  |
+  +--> Outbox Event
+           |
+           v
+       Publisher
+           |
+           v
+      Event System
+
+
+- This adds storage, publishing infrastructure, retries, cleanup/retention considerations, and eventual consistency.
+- In return, it provides a reliable way to connect a local database transaction with asynchronous event publication.
+- The core idea is:
+
+
+Business State
+      +
+Event Intent
+      |
+      | same DB transaction
+      v
+Committed Together
+      |
+      | asynchronous
+      v
+Published Reliably
+
+
+- Transactional Outbox is therefore a pattern for solving the dual-write problem by making the database the transactional source of truth for both the business change and the intent to publish its corresponding event.
+
+=======================================================================================================================================================================
+SAGA PATTERN
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+Why the Saga Pattern
+
+- In a distributed system, one business operation may span multiple independent services, with each service owning its own database.
+- A traditional database transaction cannot normally span all of these independent databases as one local transaction.
+
+Examples:
+
+- Placing an order may require Order Service, Payment Service, and Inventory Service to complete related operations.
+
+
+Order Service       Payment Service       Inventory Service
+     |                     |                      |
+     v                     v                      v
+ Order DB              Payment DB            Inventory DB
+
+
+- If one operation succeeds and a later operation fails, the system can be left in a partially completed state.
+
+
+Create Order     -> SUCCESS
+Charge Payment   -> SUCCESS
+Reserve Stock    -> FAILED
+
+
+- A distributed transaction could try to make all operations atomic, but coordinating independent services this way introduces significant complexity and coupling.
+- Saga solves this by breaking the overall business transaction into a sequence of local transactions.
+
+------------------------------------------------------------
+Saga Core Idea
+
+- A Saga is a sequence of local transactions where each service commits its own transaction independently.
+- If a later step fails, previously completed steps are logically undone using compensating transactions.
+
+
+T1 -> T2 -> T3 -> T4
+          |
+          X failure
+          |
+          v
+        C2 -> C1
+
+
+- `T1`, `T2`, `T3`, and `T4` are local transactions.
+- `C1`, `C2`, etc. are compensating transactions that reverse the business effect of previously completed transactions.
+- A compensation is not a database rollback.
+- The original transaction has already committed; compensation creates a new business operation that brings the system toward the desired state.
+
+------------------------------------------------------------
+Saga Example
+
+- Consider an order workflow:
+
+
+Create Order
+     |
+     v
+Reserve Inventory
+     |
+     v
+Process Payment
+     |
+     v
+Confirm Order
+
+
+- Each service performs its own local transaction.
+
+
+Order Service
+    |
+    | T1: create order
+    v
+Order = CREATED
+
+Inventory Service
+    |
+    | T2: reserve items
+    v
+Inventory = RESERVED
+
+Payment Service
+    |
+    | T3: charge payment
+    v
+Payment = SUCCESS
+
+Order Service
+    |
+    | T4: confirm order
+    v
+Order = CONFIRMED
+
+
+- If payment fails after inventory has already been reserved:
+
+
+T1 -> Create Order       SUCCESS
+T2 -> Reserve Inventory  SUCCESS
+T3 -> Payment            FAILED
+
+
+- The Saga executes a compensating action:
+
+
+C2 -> Release Inventory
+C1 -> Cancel Order
+
+
+- Final business state:
+
+
+Order     -> CANCELLED
+Inventory -> AVAILABLE
+Payment   -> NOT CHARGED
+
+------------------------------------------------------------
+Local Transactions
+
+- Each service controls and commits its own transaction.
+
+
+Order Service
+    |
+    +--> Local DB Transaction -> COMMIT
+
+Inventory Service
+    |
+    +--> Local DB Transaction -> COMMIT
+
+Payment Service
+    |
+    +--> Local DB Transaction -> COMMIT
+
+
+- There is no single transaction spanning all services.
+- This preserves service autonomy and allows each service to use its own database and transaction mechanism.
+- The overall business operation is therefore not immediately atomic across all services.
+- Instead, the Saga provides eventual consistency through successful completion or compensation.
+
+------------------------------------------------------------
+Compensating Transactions
+
+- A compensating transaction semantically reverses the business effect of a previously completed transaction.
+
+Examples:
+
+* Reserve inventory -> Release inventory
+* Charge payment -> Refund payment
+* Create shipment -> Cancel shipment
+* Apply booking -> Cancel booking
+
+- Compensation is business-specific.
+- It is not always possible to perfectly reverse an operation.
+
+Examples:
+
+* Sending an email cannot truly be unsent.
+* A shipment may already have been delivered.
+* A payment may require a separate refund process.
+* An external side effect may be irreversible.
+
+- Therefore, Saga design must consider whether every step has a meaningful compensation.
+
+------------------------------------------------------------
+Saga Models
+------------------------------------------------------------
+
+------------------------------------------------------------
+Choreography
+
+- In choreography, services coordinate the Saga through events without a central coordinator.
+
+
+Order Service
+     |
+     | OrderCreated
+     v
+Inventory Service
+     |
+     | InventoryReserved
+     v
+Payment Service
+     |
+     | PaymentCompleted
+     v
+Order Service
+
+
+- Each service listens for relevant events and decides what local action to perform.
+- If a failure occurs, the service publishes another event that triggers compensation elsewhere.
+
+
+OrderCreated
+     |
+     v
+InventoryReserved
+     |
+     v
+PaymentFailed
+     |
+     v
+InventoryReleaseRequested
+     |
+     v
+OrderCancelled
+
+
+- Choreography keeps services loosely coupled at the coordination level, but the overall workflow can become difficult to understand as the number of services and events grows.
+
+------------------------------------------------------------
+Orchestration
+
+- In orchestration, a central Saga orchestrator controls the workflow.
+
+
+             Saga Orchestrator
+              /      |      \
+             v       v       v
+          Order  Inventory  Payment
+          Service Service    Service
+
+
+- The orchestrator explicitly tells each service what operation to perform.
+
+
+Orchestrator
+     |
+     | Create Order
+     v
+Order Service
+     |
+     | success
+     v
+Orchestrator
+     |
+     | Reserve Inventory
+     v
+Inventory Service
+     |
+     | success
+     v
+Orchestrator
+     |
+     | Process Payment
+     v
+Payment Service
+
+
+- If payment fails, the orchestrator knows which previous actions succeeded and can invoke their compensating operations.
+
+
+Payment Failed
+      |
+      v
+Orchestrator
+      |
+      +--> Release Inventory
+      |
+      +--> Cancel Order
+
+
+- Orchestration makes the workflow easier to understand and manage centrally, but introduces a coordinator that becomes an important architectural component.
+
+------------------------------------------------------------
+Choreography vs Orchestration
+
+
+Choreography
+
+Service A
+   |
+   | Event
+   v
+Service B
+   |
+   | Event
+   v
+Service C
+
+
+
+Orchestration
+
+        Orchestrator
+        /    |    \
+       v     v     v
+      A      B      C
+
+
+- Choreography:
+
+  - No central coordinator.
+  - Services react to events.
+  - More decentralized.
+  - Can become difficult to understand as workflows grow.
+  - Event dependencies can become difficult to trace.
+
+- Orchestration:
+
+  - Central coordinator manages the workflow.
+  - Workflow is explicit in one place.
+  - Easier to monitor and reason about complex workflows.
+  - Orchestrator becomes an additional dependency and coordination component.
+
+- The choice is architectural, not simply a matter of using one technology over another.
+
+------------------------------------------------------------
+Failure Handling
+------------------------------------------------------------
+
+- Saga failures are handled through compensation rather than global rollback.
+
+
+T1 -> SUCCESS
+T2 -> SUCCESS
+T3 -> FAILURE
+           |
+           v
+         C2
+           |
+           v
+         C1
+
+
+- Compensation itself can fail.
+
+
+Payment Failed
+      |
+      v
+Release Inventory
+      |
+      X FAILED
+
+
+- Therefore, compensating operations need their own retry and failure-handling mechanisms.
+- A Saga may also need to represent intermediate states such as:
+
+
+ORDER_CREATED
+INVENTORY_RESERVED
+PAYMENT_PENDING
+PAYMENT_FAILED
+COMPENSATION_PENDING
+ORDER_CANCELLED
+
+
+- These states make long-running workflows observable and recoverable.
+
+------------------------------------------------------------
+Consistency Model
+
+- A Saga does not provide immediate global consistency across all services.
+- During execution, different services may temporarily see different states.
+
+
+Order       = CREATED
+Inventory   = RESERVED
+Payment     = PENDING
+
+
+- After successful completion or compensation, the system converges toward the intended business state.
+- Therefore, Saga is primarily an eventual-consistency approach for distributed business transactions.
+- This is an important distinction:
+
+
+Traditional local transaction
+-> atomic immediate commit/rollback
+
+Saga
+-> sequence of local commits
+   + compensation on failure
+   + eventual consistency
+
+------------------------------------------------------------
+Key Architectural Trade-offs
+
+- Advantages:
+
+  - Avoids a distributed transaction across independent services.
+  - Preserves service/database autonomy.
+  - Supports long-running business workflows.
+  - Failures can be handled explicitly through compensation.
+  - Works well when business operations can be meaningfully reversed.
+
+- Trade-offs:
+
+  - No global atomic rollback.
+  - Temporary inconsistent states are expected.
+  - Compensation logic adds complexity.
+  - Failure handling becomes part of the business design.
+  - Choreography can become difficult to trace.
+  - Orchestration introduces a central coordinator.
+
+------------------------------------------------------------
+When Saga Makes Sense
+
+- Saga is useful when a business operation spans multiple services and cannot reasonably be handled by one local transaction.
+
+Examples:
+
+* Order processing across order, inventory, payment, and shipping services.
+* Travel booking across flight, hotel, and payment services.
+* Loan processing across application, verification, approval, and disbursement services.
+
+- It is especially suitable when each operation has a well-defined business compensation.
+- Saga is less suitable when operations contain irreversible external side effects or when the business requires strict atomic consistency across all participants.
+- The core idea is:
+
+
+Distributed Business Transaction
+            |
+            v
+   Local Transaction 1
+            |
+            v
+   Local Transaction 2
+            |
+            v
+   Local Transaction 3
+            |
+          failure
+            |
+            v
+   Compensating Transactions
+            |
+            v
+     Consistent Outcome
+
+
+- Saga replaces one large distributed transaction with a sequence of local transactions and explicit business-level compensation.
+
+=======================================================================================================================================================================
+EVENT SOURCING
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+Event Sourcing
+
+- Event Sourcing stores the sequence of business events that happened to an entity instead of storing only its latest state.
+- The event history becomes the source of truth from which the current state can be reconstructed.
+
+
+Conventional Persistence
+
+Order
+  |
+  v
+Current State
+status = SHIPPED
+
+
+
+Event Sourcing
+
+Order
+  |
+  v
+Event Stream
+  |
+  +--> OrderCreated
+  +--> PaymentCompleted
+  +--> OrderPacked
+  +--> OrderShipped
+  |
+  v
+Current State
+status = SHIPPED
+
+
+- The important distinction is:
+
+
+State-based
+-> stores what the entity is now.
+
+Event-sourced
+-> stores what happened to the entity.
+
+
+------------------------------------------------------------
+
+Conventional State-Based Persistence
+
+- In conventional persistence, an entity's current state is updated as the business operation progresses.
+
+Examples:
+
+
+orders
+
+order_id = ORD-101
+status   = SHIPPED
+amount   = 5000
+
+
+- Previous states are normally overwritten unless a separate history/audit mechanism is maintained.
+
+
+CREATED
+   |
+   v
+PAID
+   |
+   v
+SHIPPED
+
+Database primarily stores:
+
+SHIPPED
+
+
+- This makes current-state queries simple, but historical reconstruction is not inherent to the model.
+
+------------------------------------------------------------
+Event-Sourced Persistence
+
+- In Event Sourcing, business state changes are represented as immutable events.
+
+Examples:
+
+
+OrderCreated
+PaymentCompleted
+OrderPacked
+OrderShipped
+
+
+- The events are stored in an event store as an ordered stream for the entity.
+
+
+Order ORD-101
+
+Event Stream
+     |
+     +--> 1. OrderCreated
+     |
+     +--> 2. PaymentCompleted
+     |
+     +--> 3. OrderPacked
+     |
+     +--> 4. OrderShipped
+
+
+- The current state is derived by applying the events in order.
+
+
+OrderCreated
+     |
+     v
+Order = CREATED
+     |
+PaymentCompleted
+     |
+     v
+Order = PAID
+     |
+OrderPacked
+     |
+     v
+Order = PACKED
+     |
+OrderShipped
+     |
+     v
+Order = SHIPPED
+
+------------------------------------------------------------
+
+Event Store
+
+- The event store is the persistent storage for the event history.
+- Events are generally append-only: existing events are not normally modified or deleted.
+
+
+Event Store
+
+Aggregate ID   Version   Event
+ORD-101        1         OrderCreated
+ORD-101        2         PaymentCompleted
+ORD-101        3         OrderPacked
+ORD-101        4         OrderShipped
+
+
+- The event store is therefore fundamentally different from a normal table that primarily represents current entity state.
+- The event history can be used to reconstruct the state at different points in time.
+
+------------------------------------------------------------
+Aggregate
+
+- An aggregate represents a business entity or consistency boundary whose state is changed through business operations.
+- In Event Sourcing, the aggregate's state is derived from its event stream.
+
+
+Aggregate: Order ORD-101
+
+Event Stream
+     |
+     v
++------------------+
+| Order Aggregate  |
+|                  |
+| status = SHIPPED |
+| amount = 5000    |
++------------------+
+
+
+- New state changes are normally performed by:
+
+  - Loading the aggregate state.
+  - Applying its historical events.
+  - Executing a business operation.
+  - Producing a new event.
+  - Persisting the new event.
+
+
+Event History
+     |
+     v
+Reconstruct Aggregate
+     |
+     v
+Execute Command
+     |
+     v
+New Event
+     |
+     v
+Event Store
+
+------------------------------------------------------------
+Event Stream
+- An event stream is the ordered sequence of events belonging to a particular aggregate or business entity.
+
+Examples:
+
+ORD-101
+
+v1 -> OrderCreated
+v2 -> PaymentCompleted
+v3 -> OrderPacked
+v4 -> OrderShipped
+
+
+- Ordering matters because later events depend on the state produced by earlier events.
+- The stream also provides a chronological history of how the aggregate changed.
+- A new event is appended rather than replacing previous events.
+
+------------------------------------------------------------
+State Reconstruction
+
+- To reconstruct current state, the application starts from the initial state and applies events in order.
+
+
+Initial State
+     |
+     v
+OrderCreated
+     |
+     v
+PaymentCompleted
+     |
+     v
+OrderPacked
+     |
+     v
+OrderShipped
+     |
+     v
+Current State
+
+
+- Conceptually:
+
+
+state = initialState
+
+for each event in stream:
+    state = apply(state, event)
+
+- The event stream is therefore the source of truth, while the current aggregate state is derived from it.
+
+------------------------------------------------------------
+Snapshots
+
+- Replaying a very large event stream every time an aggregate is loaded can become expensive.
+- A snapshot stores the aggregate state at a particular event version.
+
+
+Events
+  |
+  +--> v1
+  +--> v2
+  +--> v3
+  +--> v4
+  +--> v5
+  |
+  v
+Snapshot at v5
+  |
+  +--> current state
+
+
+- When loading the aggregate, the system can start from the latest snapshot and replay only newer events.
+
+
+Snapshot v100
+     |
+     +--> Event v101
+     +--> Event v102
+     +--> Event v103
+             |
+             v
+       Current State
+
+
+- A snapshot is an optimization, not the source of truth.
+- The events remain authoritative because the snapshot can be rebuilt from the event history.
+
+------------------------------------------------------------
+Event Replay
+
+- Event replay means reading historical events again and applying them to reconstruct state or derive new information.
+- Replay is useful when:
+
+  - Rebuilding an aggregate.
+  - Rebuilding a projection.
+  - Recovering derived state.
+  - Creating a new view from historical events.
+
+
+Event Store
+     |
+     | replay
+     v
+Event 1 -> Event 2 -> Event 3 -> Event 4
+     |
+     v
+New Projection
+
+
+- This is one of the major architectural advantages of Event Sourcing: historical events remain available instead of being overwritten by later state changes.
+
+------------------------------------------------------------
+Projections
+
+- A projection is a derived representation of event data optimized for a particular query or use case.
+- The event store remains the source of truth; projections are derived views.
+
+
+              Event Store
+                   |
+          +--------+--------+
+          |                 |
+          v                 v
+   Order Projection   Reporting Projection
+          |                 |
+          v                 v
+ Order List / Search    Analytics / Reports
+
+
+- Different consumers can process the same event history to create different representations.
+
+Examples:
+
+* An order-history projection optimized for customer queries.
+* A reporting projection optimized for sales analytics.
+* A search projection optimized for fast order lookup.
+
+- If a projection becomes corrupted or its structure changes, it can potentially be rebuilt by replaying the event history.
+
+------------------------------------------------------------
+Event Versioning
+
+- Event schemas can evolve as business requirements change.
+- Older events may already exist in the event store, so changing the meaning or structure of an existing event can make historical replay fail or produce incorrect state.
+
+
+Old Event
+OrderCreated
+{
+  orderId,
+  amount
+}
+
+New Event
+OrderCreated
+{
+  orderId,
+  amount,
+  currency
+}
+
+
+- The system must therefore maintain compatibility with historical events.
+- Common approaches include:
+
+  - Versioning event schemas.
+  - Supporting multiple event versions.
+  - Upcasting older events into the current representation during replay.
+
+
+Stored Event v1
+      |
+      v
+Upcaster
+      |
+      v
+Current Event Model
+      |
+      v
+Apply to Aggregate
+
+
+- Historical events should generally be treated as immutable facts rather than edited in place.
+
+------------------------------------------------------------
+Handling Corrections
+
+- A mistake in an event should generally not be corrected by modifying the historical event.
+- Instead, a new business event can represent the correction.
+
+Examples:
+
+
+Original:
+PaymentReceived(amount = 5000)
+
+Correction:
+PaymentRefunded(amount = 5000)
+
+
+- The event history therefore preserves what actually happened.
+
+
+PaymentReceived
+      |
+      v
+PaymentRefunded
+
+
+- This maintains an auditable history while allowing the current state to reflect the correction.
+
+------------------------------------------------------------
+Benefits
+
+- Complete history of business state changes.
+- Natural auditability because events represent business facts.
+- Ability to reconstruct state at different points in time.
+- Event replay allows projections and derived models to be rebuilt.
+- Multiple projections can be created from the same source of truth.
+- Historical data is preserved instead of being overwritten.
+
+------------------------------------------------------------
+Limitations
+
+- The model is significantly more complex than conventional CRUD persistence.
+- Event schemas must be maintained for long periods because historical events remain relevant.
+- Rebuilding state can become expensive for aggregates with large event streams, requiring snapshots.
+- Queries often require projections rather than directly querying the event store.
+- Debugging requires understanding event history and state reconstruction rather than looking only at the latest database row.
+- Events are business facts, so changing or deleting historical events can be difficult and potentially dangerous.
+- Eventual consistency may exist between the event store and derived projections.
+
+------------------------------------------------------------
+When Event Sourcing Makes Sense
+
+- Event Sourcing is most valuable when the history of business changes is itself important.
+
+Examples:
+
+* Financial transactions where an auditable transaction history matters.
+* Banking/accounting systems where past changes must be reconstructed.
+* Order or booking systems where the complete lifecycle is valuable.
+* Complex domains where multiple derived views need to be built from the same business history.
+
+- It is less attractive for simple CRUD systems where only the current state matters and historical reconstruction provides little business value.
+
+------------------------------------------------------------
+Event Sourcing vs Transactional Outbox
+
+- These patterns solve different problems.
+
+
+Transactional Outbox
+--------------------
+Business DB State
+      +
+Event to Publish
+      |
+      v
+Atomic DB Transaction
+
+
+
+Event Sourcing
+--------------
+Business Event History
+      |
+      v
+Current State
+      |
+      v
+Reconstructed / Projected
+
+
+- Transactional Outbox is primarily about reliably publishing an event corresponding to a database transaction.
+- Event Sourcing is primarily about using the sequence of business events as the source of truth for state.
+- They can also be used together, but they are conceptually separate patterns.
+
+=======================================================================================================================================================================
