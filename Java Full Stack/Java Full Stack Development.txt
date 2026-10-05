@@ -49,14 +49,13 @@ spring Data Access 	- Spring jdbc, jdbc template, Spring ORM - Hibernate/JPA int
 Spring Boot 		- opinionated auto-configuration - overriding & customizing, Embedded tomcat, auto-configurations for spring MVC, DataSource, Transaction - rest & jpa project(boot)
 Security 		- request and response anatomy, http statelessness, session based authentication , sessionid, httponly cookies, state management, token authentication, session (stateful) vs token (stateless), jwt anatomy, access token and refresh token, CORS, CSRF, token in local storage vs httponly cookies, filters, password hashing, encryption vs encoding(sign) vs hashing, Oauth2, RBAC.
 spring security		- spring security infrastructure, session, basic, jwt, authorization, cors, csrf, oauth2, oidc, security configuration, Boots role in spring security
-caching			- redis, read through and write through techniques, TTL, eviction policies, @Cacheable
 event driven		- RabbitMQ message queues, kafka event streaming, @Async
-API communication	- websockets, webhooks, graphql, sse, polling, long polling, soap, rest
-microservices 		- api gateway, load balancer, microservices, inter service communication, service discovery, open feign, spring cloud
-microservices patterns	- saga pattern, mesh pattern
+caching			- redis, read through and write through techniques, TTL, eviction policies, @Cacheable
+API communication	- websockets, webhooks, sse, polling, long polling, soap, rest, graphql, grpc
+microservices 		- api gateway, load balancer, microservices, inter service communication, service discovery, open feign, spring cloud, service mesh, 
 system design concepts 	- sharding, partitions, replication, rate limiting, CDNs, reverse proxy, 
 
-Core Java		- java 8/11/17 features, serialization/deserialization, byte streams, I/O streams etc, exception handling, multi-threading - completable futures etc, jvm architecture and garbage collection, modifiers/keywords, core java APIs like Optional, Serializable, Throwable, Object, Method, Runnable, Callable, Thread, Future,...
+Core Java		- java 8/11/17 features, lambda expressions usage, serialization/deserialization, byte streams, I/O streams etc, exception handling, multi-threading - completable futures etc, jvm architecture and garbage collection, modifiers/keywords, core java APIs like Optional, Serializable, Throwable, Object, Method, Runnable, Callable, Thread, Future, file handling
 Design principles/patterns- SOLID, KISS, DRY, creational, structural, behavioral, 
 DSA			- string, array, collections and map, linked list, queues, 
 sql & DBMS 		- querying, update/insert/delete, joins, table relationships, indexing, transactions, aggregations, order of writing and execution, stored procedures, deadlocks

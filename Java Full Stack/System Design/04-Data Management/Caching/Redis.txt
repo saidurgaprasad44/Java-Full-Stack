@@ -1,0 +1,34 @@
+05 - Redis Fundamentals
+
+* Why Redis is commonly used for distributed caching
+* Redis data model and only the data structures relevant to architecture
+* TTL/expiration
+* Redis as cache vs Redis as a data store
+
+06 - Redis Architecture & Important Internals
+
+* Why Redis is fast
+* Persistence at a useful architectural depth
+* Replication
+* High availability
+* Sentinel
+* Cluster/sharding
+* Understand when and why each is needed, not every implementation detail
+
+07 - Redis in Distributed Systems
+
+* Distributed caching
+* Multiple application instances
+* Distributed locks
+* Rate limiting
+* Session storage
+* Redis vs Kafka where relevant
+
+08 - Redis + Spring
+
+* Spring Cache
+* Spring Data Redis
+* How Redis fits into a Spring application's architecture
+* Cache keys, TTL, serialization, failure handling
+* Enough implementation knowledge to connect the theory to real code
+

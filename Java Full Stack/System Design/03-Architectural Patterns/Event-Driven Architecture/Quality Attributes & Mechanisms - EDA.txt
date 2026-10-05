@@ -116,7 +116,7 @@ Implementing Mechanisms
 
 ===============================================================================================================================================================================
 
-5. Security (Authentication & Authorization)
+5. Security
 - The Quality Attribute: System immunity to unauthorized breaches and malicious attacks.
 - The Goal: Secure data at rest, in transit, and enforce strict user privacy bounds.
 
