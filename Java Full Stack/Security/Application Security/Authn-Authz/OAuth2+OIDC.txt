@@ -51,9 +51,6 @@ Example:
 - OAuth 2.0 primarily solves authorization.
 - OAuth 2.0 itself does not standardize user identity or provide an ID Token.
 - OpenID Connect adds authentication and identity on top of OAuth 2.0.
-
-Important misconception:
-
 - OAuth 2.0 login is not automatically authentication.
 - A client can receive an OAuth access token without receiving a standardized statement of who the user is.
 - OIDC is used when the application also needs standardized user authentication and identity information.
@@ -110,6 +107,7 @@ OAuth 2.0 Client Types
   - Can keep its credentials confidential.
   - Typically runs on a controlled backend/server.
   - Can authenticate itself using a client credential.
+  - Example: SSR Web apps
 
 - Public client
   - Cannot safely keep a static client credential secret.
@@ -219,17 +217,19 @@ OAuth 2.0 Grant Types
 
 - Authorization Code Grant
   - Used when a user authorizes a client.
+  - Primary Use Case: Traditional web apps (Node.js, Java, .NET backend) where code runs on a secure server
   - Client receives a temporary authorization code.
   - Code is exchanged for tokens.
 
 - Authorization Code + PKCE
   - Authorization Code flow with Proof Key for Code Exchange.
   - Particularly important for public clients.
-  - Also commonly used for modern confidential clients.
+  - Primary Use Case: Single-Page Apps (React, Angular, Vue) and Mobile/Native apps (iOS, Android)
 
 - Client Credentials Grant
   - Used for machine-to-machine authorization.
   - There is no end-user authorization step.
+  - Primary Use Case: Background daemons, cron jobs, or microservices communicating with each other.
 
 - Refresh Token Grant
   - Used to obtain a new access token using a refresh token.
@@ -422,7 +422,7 @@ Important misconception:
 - The access token is then used to access the Resource Server.
 
 ------------------------------------------------------------
-Authorization Code Security
+Authorization Code + PKCE
 ------------------------------------------------------------
 
 - The authorization code is a temporary intermediate credential.

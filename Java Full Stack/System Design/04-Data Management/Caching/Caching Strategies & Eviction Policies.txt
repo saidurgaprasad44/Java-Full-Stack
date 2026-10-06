@@ -10,10 +10,115 @@
 02 - Cache Strategies & Patterns
 
 * Cache-Aside
+
+Read:
+
+ Request
+    |
+    | get /products/123
+    v
+Application----> Cache
+    |             |
+    |            HIT
+    |             |
+    |             v
+    v           Response
+Data store
+    |
+    | populate
+    v
+  Cache
+    |
+    v
+  Response
+
+
+Write:
+
+ Request
+    |
+    | post/put/delete
+    v
+Application
+    |
+    v
+Data store
+    |
+    | update/invalidate
+    v
+  Cache
+
+
+
 * Read-Through
+
+ Request
+    |
+    | get /products/123
+    v
+Application
+    |
+    v
+  Cache ──> hit ──> return
+    |
+    | miss
+    v
+Data Store
+    |
+    | populate
+    v
+  Cache
+    |
+    v
+ return
+
+
+
 * Write-Through
+
+ Request
+    |
+    | post/put/delete
+    v
+Application
+    |
+    v
+  Cache
+    |
+    | synchronously write
+    v
+Data Store
+
+
+
 * Write-Behind
+
+ Request
+    |
+    | post/put/delete
+    v
+Application
+    |
+    v
+  Cache
+    |
+    | "I'll persist this later"
+    v
+Queue/async mechanism
+    |
+    v
+Database
+
+
 * Choosing the right strategy and understanding trade-offs
+
+| Strategy      | Who handles cache miss? | Write behavior               |
+| ------------- | ----------------------- | ---------------------------- |
+| Cache-Aside   | Application             | Application controls         |
+| Read-Through  | Cache layer             | Separate decision            |
+| Write-Through | Cache participates      | Synchronous datastore write  |
+| Write-Behind  | Cache                   | Asynchronous datastore write |
+
 
 03 - Cache Consistency & Invalidation
 

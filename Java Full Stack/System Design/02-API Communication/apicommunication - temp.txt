@@ -1,0 +1,152 @@
+==============================
+API Communication
+
+01 - Synchronous Communication
+
+1. SOAP 
+- Core architecture and communication model 
+- Why SOAP exists / where it fits 
+- Production scenario 
+- Important production problems 
+- How those problems are handled 
+- Key mechanisms and trade-offs 
+- SOAP vs REST — architectural decision 
+
+2. REST 
+- Core architecture and request/response flow 
+- Where REST fits in a distributed system 
+- Production scenario 
+- Important problems: 
+  - latency 
+  - timeouts 
+  - retries 
+  - duplicate requests 
+  - service unavailability 
+  - large responses 
+- Important mechanisms: 
+  - timeout 
+  - retry 
+  - idempotency 
+  - pagination 
+  - rate limiting 
+  - circuit breaker 
+- Key trade-offs 
+- When REST is / isn't appropriate 
+
+3. GraphQL 
+- Core architecture and request flow 
+- Why GraphQL exists 
+- Production scenario 
+- Important problems: 
+  - expensive/complex queries 
+  - N+1 problem 
+  - overloading backend 
+  - caching difficulty 
+- Important mechanisms: 
+  - query limits 
+  - query complexity/depth controls 
+  - batching/data loaders 
+  - caching considerations 
+- GraphQL vs REST 
+- Key trade-offs 
+
+4. gRPC 
+- Core architecture and communication flow 
+- Why gRPC is useful for internal services 
+- Production scenario 
+- Important problems: 
+  - service unavailable 
+  - timeout 
+  - retries 
+  - connection management 
+  - backward compatibility 
+- Important mechanisms: 
+  - deadlines 
+  - retries 
+  - load balancing 
+  - health checks 
+  - streaming 
+  - protobuf contract/versioning 
+- gRPC vs REST 
+- Key trade-offs 
+
+02 - Asynchronous Communication
+
+5. Polling 
+- Core architecture 
+- Short vs long polling conceptually 
+- Production scenario 
+- Important problems: 
+  - unnecessary requests 
+  - server load 
+  - delayed updates 
+  - traffic spikes 
+- Important mechanisms: 
+  - polling interval 
+  - exponential backoff 
+  - long polling 
+- When polling is actually good enough 
+- Polling vs push mechanisms 
+- Trade-offs 
+
+6. Webhooks 
+- Core architecture and delivery flow 
+- Production scenario 
+- Important problems: 
+  - receiver unavailable 
+  - network failure 
+  - duplicate delivery 
+  - malicious/fake webhook 
+  - ordering issues 
+  - producer retrying for too long 
+- Important mechanisms: 
+  - retries + backoff 
+  - idempotency 
+  - signature verification 
+  - event IDs 
+  - delivery tracking 
+  - dead-letter/failure handling 
+- Webhook vs polling 
+- Trade-offs 
+
+7. WebSockets 
+- Core architecture 
+- Persistent connection model 
+- Production scenario 
+- Important problems: 
+  - connection failures 
+  - reconnect storms 
+  - millions of connections 
+  - load balancing 
+  - state across multiple servers 
+  - server failure 
+- Important mechanisms: 
+  - reconnection/backoff 
+  - heartbeat/ping-pong 
+  - connection/session management 
+  - load balancing 
+  - shared messaging/state 
+- WebSocket scaling architecture 
+- WebSocket vs SSE 
+- Trade-offs 
+
+8. SSE 
+- Core architecture 
+- Persistent HTTP connection 
+- Production scenario 
+- Important problems: 
+  - disconnected clients 
+  - reconnection 
+  - missed events 
+  - many concurrent connections 
+  - server/load-balancer timeouts 
+- Important mechanisms: 
+  - automatic reconnection 
+  - event IDs 
+  - Last-Event-ID 
+  - connection timeout configuration 
+  - horizontal scaling considerations 
+- SSE vs WebSocket 
+- SSE vs polling 
+- Trade-offs
+
