@@ -1,0 +1,1409 @@
+
+
+=======================================================================================================================================================================
+=======================================================================================================================================================================
+										Caching
+=======================================================================================================================================================================
+=======================================================================================================================================================================
+
+01 - Caching Fundamentals
+
+* Why caching exists
+* Where caching fits in an architecture
+* When to cache / when not to cache
+* What makes good cache candidates
+* Cache vs database/source of truth
+* Cache hit/miss and basic architecture
+
+02 - Cache Strategies & Patterns
+
+* Cache-Aside
+* Read-Through
+* Write-Through
+* Write-Behind
+* Choosing the right strategy and understanding trade-offs
+
+03 - Cache Consistency & Invalidation
+
+* Stale data
+* TTL
+* Update & invalidate
+* Consistency models -
+* Race conditions and failure windows
+* Event-driven invalidation where relevant
+
+04 - Cache Reliability, Scaling & Failure
+
+* Cache stampede - request coalescing/single-flight, TTL jitter, proactive refresh
+* Cache penetration - Cache negative results, Bloom filter
+* Cache avalanche - TTL jitter, Failure fallback  
+* Cache failure/fallback - db fallback, bulkhead, timeouts, rate limiting/load shedding, serving slightly stale local data from L1 local cache/degraded mode, circuit breakers
+* Hot keys - L1 local cache, Request Coalescing, CDN/Edge caching, 
+* Eviction Policies - LFU, LRU
+* Scaling - vertical scaling, horizontal scaling (sharding/partitioning)
+* Availability - Replication
+
+=======================================================================================================================================================================
+01 - Caching Fundamentals
+=======================================================================================================================================================================
+
+- Caching exists to avoid repeatedly performing expensive work.
+- It does not make the database itself faster; it reduces how often the database or another expensive source needs to be accessed.
+- A cache stores data that can be reused so that future requests can be served faster.
+
+Typical architecture:
+
+
+Client
+  |
+  v
+Load Balancer
+  |
+  v
+Application
+  |
+  v
+Database
+
+
+With caching:
+
+
+Client
+  |
+  v
+Load Balancer
+  |
+  v
+Application
+  |
+  +------> Cache
+  |           |
+  |           +---- HIT  → return data
+  |
+  +------> Database
+              |
+              +---- populate cache
+
+
+- Cache can reduce:
+
+  - Response latency
+  - Database load
+  - Repeated expensive computation
+  - Pressure on downstream services
+- Caching can improve read scalability because many reads can be served without reaching the source of truth.
+
+------------------------------------------------------------
+Where caching fits in an architecture
+
+- Cache can exist at different layers depending on the requirement.
+
+
+Client
+  |
+  v
+CDN / Edge Cache
+  |
+  v
+Application
+  |
+  +--> Local / JVM Cache
+  |
+  +--> Distributed Cache
+          |
+          v
+         DB
+
+
+- CDN/edge cache is useful when content can be served close to users and does not need application processing for every request.
+- Local/in-process cache exists inside the application process/JVM.
+- Distributed cache exists outside the application process and can be accessed by multiple application instances.
+- Redis is commonly used as a distributed cache.
+
+Local cache vs distributed cache:
+
+
+Application Instance A
+        |
+     Local Cache
+
+Application Instance B
+        |
+     Local Cache
+
+
+- These are separate caches; updating one does not automatically update the other.
+
+With a shared Redis cache:
+
+
+Application A ----\
+Application B -----+----> Redis
+Application C ----/
+
+
+- Multiple application instances can access the same logical cached data.
+- "Shared" means multiple consumers/application instances access the same cache.
+- "Distributed" describes how the cache infrastructure/data is deployed across multiple nodes.
+- A single Redis server can be shared without being distributed.
+- Redis Cluster is both shared and distributed.
+- A local JVM cache is neither shared across application instances nor distributed.
+
+------------------------------------------------------------
+When to cache / when not to cache
+
+Good candidates for caching:
+
+- Frequently read data
+- Data that is expensive to obtain or calculate
+- Data reused by many requests
+- Data that does not change frequently
+- Data where some level of staleness is acceptable
+- Data where the cost of repeatedly querying the source is significant
+
+Poor candidates:
+
+- Data that changes extremely frequently
+- Data requiring strict freshness/correctness
+- Data that is cheap to obtain
+- Data with very low reuse
+- Highly user-specific data when cacheability provides little benefit
+- Data where stale information can cause serious business problems
+- Caching should be driven by the access pattern and business requirement, not simply because a cache is available.
+
+------------------------------------------------------------
+Cache vs database / source of truth
+
+- In a typical DB-backed architecture, the database remains the source of truth.
+- The cache is a temporary/reusable copy of data obtained from the source of truth.
+
+
+Database
+  |
+  | source of truth
+  v
+Cache
+  |
+  | temporary copy
+  v
+Application
+
+
+- Database answers: "What is the current authoritative state?"
+- Cache answers: "Do I already have a usable copy of this data?"
+- Cache consistency therefore becomes an architectural concern because there are now multiple copies of the same data.
+
+------------------------------------------------------------
+Cache hit and cache miss
+
+- Cache hit:
+
+  - Requested data exists in the cache.
+  - Application can return it without accessing the source.
+
+- Cache miss:
+
+  - Requested data is absent from the cache.
+  - Application needs to obtain it from the source and may populate the cache.
+
+Typical Cache-Aside flow:
+
+
+Request
+   |
+   v
+Check Cache
+   |
+   +---- HIT ----> Return
+   |
+   +---- MISS
+           |
+           v
+          DB
+           |
+           v
+      Populate Cache
+           |
+           v
+         Return
+
+
+- A cache miss is not necessarily a failure.
+- Misses are expected behavior; the architecture determines how expensive they are and how the cache is repopulated.
+
+=======================================================================================================================================================================
+02 - Cache Strategies & Patterns
+=======================================================================================================================================================================
+
+- Cache strategies describe how the cache participates in reads and writes.
+- Consistency strategy is another separate concern.
+
+
+READ Strategy
+→ How do I GET data? 
+Cache-Aside, Read-Through
+
+WRITE Strategy
+→ How do I CHANGE data?
+Write-Through, Write-Behind, direct DB write
+
+CONSISTENCY Strategy
+→ How do I keep the copies sufficiently correct?
+Invalidate, Update
+
+------------------------------------------------------------
+Cache-Aside
+
+- Application explicitly interacts with the cache.
+- Application decides when to read from cache, when to access the database, and when to populate/invalidate the cache.
+
+Read:
+
+ Request
+    |
+    | get /products/123
+    v
+Application----> Cache
+    |             |
+    |            HIT
+    |             |
+    |             v
+    v           Response
+Data store
+    |
+    | populate
+    v
+  Cache
+    |
+    v
+  Response
+
+
+Write:
+
+ Request
+    |
+    | post/put/delete
+    v
+Application
+    |
+    v
+Data store
+    |
+    | update/invalidate
+    v
+  Cache
+
+
+- Cache-Aside is very common because it gives the application control over caching.
+- Only frequently requested data needs to be cached.
+- Cache can usually be treated as optional; the application can fall back to the source of truth if the cache is unavailable.
+
+Advantages:
+
+- Simple and flexible
+- Application controls what gets cached
+- Cache population can be demand-driven
+- Easy to use with existing databases
+
+Trade-offs:
+
+- Application owns cache logic
+- Application must handle invalidation/update behavior
+- Race conditions are possible
+- Cache consistency becomes an application-level responsibility
+- Cache misses can create load on the database
+- Cache failures require fallback handling
+
+------------------------------------------------------------
+Read-Through
+
+- Application asks the cache for data.
+- The cache layer is responsible for loading the underlying source when the requested data is missing.
+
+Conceptually:
+
+
+ Request
+    |
+    | get /products/123
+    v
+Application
+    |
+    v
+  Cache ──> hit ──> return
+    |
+    | miss
+    v
+Data Store
+    |
+    | populate
+    v
+  Cache
+    |
+    v
+ Response
+
+
+- The important distinction from Cache-Aside is who controls cache population.
+- Cache-Aside → application handles the miss and population.
+- Read-Through → cache layer handles the miss and population.
+- Redis itself does not automatically mean Read-Through; Read-Through is a caching strategy/abstraction.
+
+------------------------------------------------------------
+Write-Through
+
+- Writes go through the cache and are synchronously persisted to the underlying data store.
+- The database remains part of the synchronous write path.
+
+Conceptually:
+
+
+ Request
+    |
+    | post/put/delete
+    v
+Application
+    |
+    v
+  Cache
+    |
+    | synchronously write
+    v
+Data Store
+
+
+- The write is not considered complete until the required persistence succeeds.
+
+Advantages:
+
+- Cache and database are updated as part of the synchronous write flow
+- Reduces the chance of the cache continuing to contain an old value after a successful write
+
+Trade-offs:
+
+- Database remains on the critical path
+- Write latency includes persistence latency
+- Cache/database coordination is still required
+- Does not automatically solve every consistency/failure problem
+
+------------------------------------------------------------
+Write-Behind
+
+- Application writes to the cache.
+- Persistence to the database happens asynchronously later.
+
+
+ Request
+    |
+    | post/put/delete
+    v
+Application
+    |
+    v
+  Cache
+    |
+    | "I'll persist this later"
+    v
+Queue/async mechanism
+    |
+    v
+Database
+
+
+- Because the database is removed from the synchronous critical path, writes can be very fast.
+- It can absorb bursts of writes before persisting them.
+
+Advantages:
+
+- Low write latency
+- High write throughput
+- Can absorb write bursts
+
+Trade-offs:
+
+- Database becomes eventually consistent with the cache
+- Data can be lost if the cached write disappears before persistence
+- Requires buffering, retry, ordering, backpressure and failure handling
+- More complicated recovery behavior
+- Not suitable when every write must be durably persisted before responding
+
+------------------------------------------------------------
+Choosing the strategy
+
+- Do not decide simply based on "read-heavy" or "write-heavy."
+- Read strategies and write strategies solve different problems.
+
+Read strategy:
+
+
+Cache-Aside
+→ Application handles cache miss/population
+
+Read-Through
+→ Cache layer handles cache miss/population
+
+
+Write strategy:
+
+
+Write-Through
+→ Synchronous persistence
+
+Write-Behind
+→ Asynchronous persistence
+
+
+Consistency is separate:
+
+
+Invalidate
+Update cache
+TTL
+Events
+CDC
+Versioning
+
+
+Example:
+
+
+Cache-Aside
++
+DB update
++
+Cache invalidation
++
+TTL safety net
+
+
+- A read-heavy system can use Cache-Aside for reads and Write-Through for writes.
+- A write-heavy system does not automatically require Write-Behind.
+- Write-Behind is appropriate only when its eventual persistence and durability trade-offs are acceptable.
+
+| Strategy      | Who handles cache miss? | Write behavior               |
+| ------------- | ----------------------- | ---------------------------- |
+| Cache-Aside   | Application             | Application controls         |
+| Read-Through  | Cache                   | Separate decision            |
+| Write-Through | Cache                   | Synchronous datastore write  |
+| Write-Behind  | Cache                   | Asynchronous datastore write |
+
+=======================================================================================================================================================================
+03 - Cache Consistency
+=======================================================================================================================================================================
+
+- Introducing a cache creates multiple copies of data.
+- The database may change while the cached copy still contains the previous value.
+- Cache consistency is therefore about defining and controlling how much divergence between the copies is acceptable.
+
+DB = ₹1100
+Cache = ₹1000
+
+- The cache is stale because the source of truth changed but the cached copy did not.
+- Consistency does not always mean that every copy must be identical at every instant.
+- The required consistency level depends on the business requirement.
+
+------------------------------------------------------------
+Consistency Strategy (Update & invalidate)
+------------------------------------------------------------
+
+- Two common approaches after a database change:
+
+
+Update DB
+   |
+   v
+Update Cache
+
+or:
+
+Update DB
+   |
+   v
+Invalidate Cache
+
+------------------------------------------------------------
+Cache update:
+
+- Attempts to immediately make the cached copy correct.
+
+
+Failure window:
+
+DB update succeeds
+Cache update fails
+    ↓
+Cache remains stale
+
+
+Another failure:
+
+Cache update succeeds
+DB update fails
+    ↓
+Cache contains a value that was never committed
+
+------------------------------------------------------------
+Cache invalidation:
+
+
+DB update
+    |
+    v
+Delete cache entry
+
+- The next read misses the cache and reloads from the source of truth.
+- Invalidation is often safer because it removes a potentially incorrect copy rather than trying to make it correct.
+- But invalidation itself can fail
+
+
+DB update succeeds
+Cache invalidation fails
+    ↓
+Stale cache remains
+
+- Therefore invalidation reduces the consistency problem but does not eliminate it.
+
+------------------------------------------------------------
+Consistency models
+------------------------------------------------------------
+
+Strong consistency:
+
+- A read should observe the latest successful write.
+- Stale reads are not allowed by the consistency requirement.
+- Provides stronger correctness but usually requires more coordination and can increase latency/complexity.
+
+------------------------------------------------------------
+Eventual consistency:
+
+- Temporary divergence between copies is allowed.
+- If updates stop, the copies eventually converge to the latest state.
+
+
+DB = ₹120
+Cache = ₹100
+      ↓
+Cache eventually updated
+
+
+DB = ₹120
+Cache = ₹120
+
+
+- Common for caching because it provides good performance and availability while accepting bounded temporary staleness.
+
+------------------------------------------------------------
+Read-after-write consistency:
+
+- After a user successfully writes data, their subsequent read should see their own successful write.
+- This does not necessarily mean every user must immediately see the update.
+
+------------------------------------------------------------
+Monotonic reads:
+
+- Once a reader has observed a newer version, subsequent reads should not return an older version.
+
+
+₹100 → ₹120 → ₹120
+
+- Not:
+
+₹100 → ₹120 → ₹100
+
+
+- This can matter when different replicas/cache copies contain different versions.
+
+------------------------------------------------------------
+Session consistency / session guarantees:
+
+- Consistency guarantees can be maintained within a user's interaction/session rather than requiring global strong consistency.
+- Common session guarantees include read-your-writes and monotonic reads.
+- The goal is that a user's sequence of interactions does not appear to move backward or hide their own successful changes.
+
+------------------------------------------------------------
+Stale data
+------------------------------------------------------------
+
+- Even with a consistency strategy, we will have Stale cache
+- Stale data means the cache contains an older value than the source of truth.
+
+Example:
+
+DB:
+price = ₹1100
+
+Cache:
+price = ₹1000
+
+
+- Stale data is the fundamental consistency problem introduced by caching.
+- Whether stale data is acceptable depends on the domain.
+
+Examples:
+
+- Product description → a few seconds of staleness may be acceptable.
+- Bank balance → stale information can be unacceptable.
+- Payment authorization → correctness is critical.
+- Recommendations → stale data is usually acceptable.
+
+Cache can be stale mainly because of two problems:
+
+Update/Invalidation failure 
+	Common Solutions - TTL, Retries, Outbox/CDC/Polling, Reliable Events/Asynchronous processing, Consistency guarantees
+
+Race conditions 
+	Common Solutions - Concurrency-aware mechanisms, ordering, versioning, locking, other consistency techniques
+
+------------------------------------------------------------
+Update/Invalidation failure
+------------------------------------------------------------
+
+- DB update is successful but Update/Invalidation is failed; This causes the cache to contain old data
+
+------------------------------------------------------------
+TTL
+
+- TTL = Time To Live.
+- TTL automatically expires a cached value after a configured duration.
+
+Example:
+
+Cache:
+product:101 = ₹1000
+TTL = 5 minutes
+
+
+- If the database changes after 2 minutes, the cache may continue serving ₹1000 until the TTL expires.
+- After expiration, the next request can retrieve the current value from the source.
+- TTL bounds how long a cached value can remain without refreshing.
+- TTL does not guarantee freshness.
+
+TTL
+→ "Don't keep this copy forever."
+
+- TTL should be based on the business tolerance for stale data.
+- TTL can be combined with invalidation.
+
+
+DB update
+   |
+   v
+Invalidate cache immediately
+
+TTL
+   |
+   v
+Safety net if invalidation fails
+
+
+- TTL also introduces expiration-related problems such as cache stampede when many entries expire together.
+
+------------------------------------------------------------
+Event-driven invalidation
+
+- When invalidation must be more reliable or distributed, the database change can produce an event indicating that cached data should be invalidated.
+
+Conceptually:
+
+
+Application
+    |
+    v
+Database
+    |
+    v
+Change Event
+    |
+    v
+Invalidation Consumer
+    |
+    v
+Cache
+
+
+- Instead of relying only on the request that changed the database to successfully invalidate the cache, the invalidation can be processed asynchronously.
+
+- Common mechanisms include:
+
+  - Transactional outbox
+  - CDC
+  - Messaging/event infrastructure
+
+- This is useful when multiple application instances/services maintain cached copies and cache invalidation must be propagated reliably.
+- Event-driven invalidation generally introduces eventual consistency and asynchronous failure/retry considerations.
+- Other mechanisms like Retries, Outbox/CDC/Polling, Reliable Events/Asynchronous processing, Consistency guarantees also give required consistency
+
+------------------------------------------------------------
+Race conditions and failure windows
+------------------------------------------------------------
+
+- A common Cache-Aside race:
+- Initial:
+
+
+DB = ₹100
+Cache = ₹100
+
+
+- Request A:
+
+
+Cache MISS
+    |
+    v
+Reads DB = ₹100
+
+
+- Request B simultaneously updates:
+
+
+DB = ₹110
+    |
+    v
+Invalidates Cache
+
+
+- Request A then continues
+- A writes ₹100 into Cache
+- Final state:
+
+
+DB = ₹110
+Cache = ₹100
+
+
+- The cache has become stale even though invalidation occurred.
+- The problem exists because the database read and cache write are separate operations with concurrency between them.
+- Distributed systems cannot normally make a DB transaction and an independent Redis operation one atomic transaction without additional coordination mechanisms.
+
+=======================================================================================================================================================================
+04 - Cache Reliability, Scaling & Failure
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+Cache Stampede
+
+- A cache stampede occurs when many requests simultaneously miss the same popular cache entry and all attempt to load it from the source.
+
+Example:
+
+
+Hot key
+  |
+  v
+Cache entry expires
+  |
+  v
+10,000 requests → MISS
+  |
+  +--> DB
+  +--> DB
+  +--> DB
+  +--> DB
+  ...
+
+
+- The cache was protecting the database.
+- Once the entry disappears, many requests bypass that protection simultaneously.
+- This can exhaust DB CPU, connections and cause latency/timeouts.
+
+------------------------------------------------------------------------------------------------------------------------
+Mechanisms:
+------------------------------------------------------------------------------------------------------------------------
+
+Request coalescing / single-flight:
+
+ 
+ Many requests
+      |
+      v
+    MISS
+      |
+      v
+ One request loads DB
+      |
+      v
+ Populate cache
+      |
+      v
+ Other requests use result
+
+
+- Only one request performs the expensive load for a given key.
+
+------------------------------------------------------------
+TTL jitter:
+
+- Add small random variation to TTLs so large numbers of entries do not expire at exactly the same time.
+
+------------------------------------------------------------
+Proactive refresh:
+
+- Refresh popular entries before they expire.
+
+------------------------------------------------------------------------------------------------------------------------
+Cache Penetration
+------------------------------------------------------------------------------------------------------------------------
+
+- Cache penetration occurs when requests repeatedly ask for data that does not exist.
+
+
+Request random ID
+       |
+       v
+Cache MISS
+       |
+       v
+DB
+       |
+       v
+NOT FOUND
+       |
+       v
+Nothing cached
+
+
+- Every subsequent request repeats the database lookup.
+- Attackers can exploit this using large numbers of random/nonexistent IDs.
+
+------------------------------------------------------------------------------------------------------------------------
+Mechanisms
+------------------------------------------------------------------------------------------------------------------------
+
+Negative caching:
+
+
+Cache:
+product:999999 = NOT_FOUND
+TTL = short
+
+
+- Subsequent requests can return NOT_FOUND without querying the database.
+- Short TTL is useful because the resource could be created later.
+
+------------------------------------------------------------
+Bloom filter:
+
+- Can cheaply identify keys that are definitely not present.
+- A positive result means "possibly present," so the database may still need to be checked.
+- Useful when the dataset is large and nonexistent-key traffic is significant.
+
+------------------------------------------------------------
+Input validation:
+
+- Reject obviously invalid identifiers before reaching the cache/database.
+
+------------------------------------------------------------------------------------------------------------------------
+Cache Avalanche
+------------------------------------------------------------------------------------------------------------------------
+
+- Cache avalanche is a broader failure where a large amount of cache protection disappears at once.
+
+------------------------------------------------------------
+Scenario 1:
+
+
+Many keys
+    |
+    v
+Expire at approximately the same time
+    |
+    v
+Large number of cache misses
+    |
+    v
+DB overload
+
+
+- TTL jitter helps distribute expiration.
+
+------------------------------------------------------------
+Scenario 2:
+
+
+Redis
+  |
+  X
+Failure
+  |
+  v
+Large portion of traffic bypasses cache
+  |
+  v
+DB overload
+
+
+Example:
+
+
+Normal:
+
+100k requests/sec
+    |
+    +---- 95k Redis hits
+    |
+    +---- 5k DB requests
+
+
+Redis failure:
+
+100k requests/sec
+    |
+    +---- 100k DB requests
+
+
+- A Redis failure can therefore overload a database that was sized assuming the cache would absorb most reads.
+
+Possible protection:
+
+- DB fallback with strict protection
+- Concurrency limits
+- Bulkheads
+- Rate limiting
+- Circuit breakers
+- Timeouts
+- Load shedding
+- Degraded responses
+- Serving stale local data where acceptable
+
+------------------------------------------------------------
+Cascading failure:
+
+
+Redis failure
+     ↓
+DB traffic increases
+     ↓
+DB overload
+     ↓
+Latency increases
+     ↓
+Requests wait longer
+     ↓
+Connection pools fill
+     ↓
+Timeouts
+     ↓
+Retries
+     ↓
+More DB traffic
+
+------------------------------------------------------------------------------------------------------------------------
+Cache Failure / Fallback
+------------------------------------------------------------------------------------------------------------------------
+
+- Cache failure/fallback asks:
+
+
+"Redis is unavailable. What should the application do?"
+
+
+- This is different from avalanche:
+
+  - Avalanche → what happens when cache protection disappears?
+  - Fallback → how does the application behave when the cache cannot be used?
+
+Possible fallback strategies:
+
+DB fallback:
+
+
+Request
+   |
+   v
+Redis
+   |
+   X
+   |
+   v
+Protected DB
+
+
+- Do not blindly send all cache traffic to the DB.
+- The DB may be capable of only a fraction of the traffic normally handled by Redis.
+
+Local/L1 cache fallback:
+
+
+Request
+   |
+   v
+Local Cache
+   |
+   +---- HIT → return
+   |
+   +---- MISS → Redis
+
+
+- Useful when slightly stale data is acceptable.
+
+------------------------------------------------------------
+Stale-data fallback:
+
+- Keep or use an older cached value when freshness is less important than availability.
+- Useful for product/catalog/recommendation-style data.
+- Usually inappropriate for strict correctness domains such as payment authorization or account balances.
+
+------------------------------------------------------------
+Degraded response:
+
+
+Redis unavailable
+      |
+      v
+Feature unavailable
+      |
+      v
+Return response without that feature
+
+
+- Sometimes the correct fallback is not another data source.
+- Failing gracefully can be safer than overwhelming the database.
+
+------------------------------------------------------------
+Failing closed:
+
+- Reject the operation when proceeding without reliable data would be unsafe.
+
+------------------------------------------------------------
+Protection mechanisms:
+
+- Concurrency limits / bulkheads
+- Rate limiting
+- Circuit breakers
+- Timeouts
+- Load shedding
+- Degraded responses
+
+
+Rate limiting
+→ Controls how much traffic is allowed through.
+
+Fallback
+→ Determines where/how the application gets data when cache is unavailable.
+
+Circuit breaker
+→ Detects repeated dependency failures and changes whether calls are allowed.
+
+Bulkhead
+→ Limits resource consumption so one failure/path cannot consume everything.
+
+
+- Static rate limiting does not automatically know that Redis has failed.
+- Dynamic/adaptive behavior requires a signal such as Redis errors, DB latency, DB CPU or circuit-breaker state.
+
+------------------------------------------------------------------------------------------------------------------------
+Hot Keys
+------------------------------------------------------------------------------------------------------------------------
+
+- A hot key is a valid cache key receiving a disproportionately large amount of traffic.
+
+Example:
+
+
+product:101 → 100 req/s
+product:102 → 80 req/s
+product:999 → 100,000 req/s
+
+
+- Redis can be healthy overall while one node becomes overloaded because the hot key maps to that node.
+
+
+Redis Cluster
+
+Node A → 10k req/s
+Node B → 100k req/s  ← hot key
+Node C → 8k req/s
+
+
+- Horizontal scaling distributes keys, but a single key normally belongs to one partition/location.
+- Therefore, adding more Redis nodes does not automatically distribute requests for the same key.
+
+------------------------------------------------------------
+Mechanism: L1 local cache
+
+
+Application
+    |
+    +---- Local Cache → HIT
+    |
+    +---- Redis → MISS
+
+
+- Extremely hot, relatively stable data can be kept in local JVM caches.
+- This reduces Redis traffic.
+- Trade-off: multiple local copies introduce another consistency problem.
+
+------------------------------------------------------------
+Mechanism: Replicate hot data
+
+
+              Hot Key
+           /     |     \
+          v      v      v
+       Redis A Redis B Redis C
+
+
+- Requests can be distributed across multiple copies.
+- Trade-off: updates/invalidation must reach all copies and consistency becomes more complex.
+
+------------------------------------------------------------
+Mechanism: Request coalescing
+
+- Prevents many simultaneous misses from independently loading the same hot data.
+- Particularly useful when a hot key expires or is missing.
+
+------------------------------------------------------------
+Mechanism: CDN / edge caching
+
+
+Users
+  |
+  v
+CDN
+  |
+  +---- HIT → response
+  |
+  +---- MISS → Application → Redis
+
+
+- Useful for highly popular and relatively static/public content.
+- Prevents enormous traffic from reaching the application and Redis at all.
+
+------------------------------------------------------------------------------------------------------------------------
+Cache Eviction Policies
+------------------------------------------------------------------------------------------------------------------------
+
+- Cache memory is finite.
+- When the configured cache capacity is reached, the cache may need to remove existing entries to make room.
+- This removal due to capacity/memory pressure is called eviction.
+
+Expiration vs eviction:
+
+
+Expiration
+→ Entry is removed because its TTL/lifetime ended.
+
+Eviction
+→ Entry is removed because cache capacity/memory is constrained.
+
+
+- An entry can therefore be evicted before its TTL expires.
+
+------------------------------------------------------------
+LRU - Least Recently Used:
+
+- Removes data that has not been accessed recently.
+- Based on temporal locality.
+
+Example:
+
+
+A → accessed 10 sec ago
+B → accessed 20 sec ago
+C → accessed 5 min ago
+D → accessed 2 hours ago
+
+
+- D is the natural LRU candidate.
+- LRU can favor recently active data.
+
+------------------------------------------------------------
+LFU - Least Frequently Used:
+
+- Removes data that has been accessed least frequently.
+
+Example:
+
+
+A → 10,000 accesses
+B → 5,000 accesses
+C → 100 accesses
+D → 2 accesses
+
+
+- D is the natural LFU candidate.
+- LFU can preserve data with historically high popularity even if it has not been accessed very recently.
+
+------------------------------------------------------------
+TTL and eviction are independent:
+
+
+Cache Entry
+    |
+    +---- TTL expires → expiration
+    |
+    +---- memory pressure → eviction
+
+
+- In a DB-backed cache, eviction normally does not mean data loss.
+- The data still exists in the source of truth and can be reloaded after a cache miss.
+- Poor eviction decisions or an undersized cache can cause cache churn:
+
+  - Entries are continuously evicted
+  - Requests continuously miss
+  - Database traffic increases
+  - Cache hit ratio decreases
+
+- If eviction is not allowed and memory is exhausted, new writes may fail instead of removing existing entries.
+- This is especially important when Redis is being used as a primary data store rather than a disposable cache.
+
+       │  Cache Penetration                      │
+       │  "Data doesn't exist"                   │
+       │                                         │
+       │  Cache Stampede                         │
+       │  "Many miss together"                   │
+       │                                         │
+       │  Cache Avalanche                        │
+       │  "Large cache protection disappears"    │
+       │                                         │
+       │  Hot Key                                │
+       │  "One key gets too much traffic"        │
+
+------------------------------------------------------------------------------------------------------------------------
+Scaling
+------------------------------------------------------------------------------------------------------------------------
+
+- Scaling asks whether the cache can handle increasing traffic and/or data volume.
+
+------------------------------------------------------------
+Vertical scaling:
+
+
+Redis
+4 CPU / 16 GB
+      ↓
+Redis
+16 CPU / 64 GB
+
+
+- Increase the capacity of one machine.
+- Simple because the logical cache remains one system.
+- Eventually limited by hardware and cost.
+- Does not inherently solve single-node failure.
+
+------------------------------------------------------------
+Horizontal scaling:
+
+
+Redis Cluster
+ /     |     \
+Node A Node B Node C
+
+
+- Distributes cached data across multiple nodes.
+- Provides greater total capacity and throughput.
+
+Sharding/partitioning:
+
+
+key
+ |
+ v
+hash / partition
+ |
+ v
+responsible Redis node
+
+
+- Determines which node stores a particular key.
+- Enables horizontal scaling.
+
+Important:
+
+- Horizontal scaling distributes keys, not necessarily requests for the same key.
+- A hot key can therefore overload one node even when the cluster has spare total capacity.
+
+------------------------------------------------------------------------------------------------------------------------
+Availability
+------------------------------------------------------------------------------------------------------------------------
+
+- Availability asks whether the cache/application can continue operating when infrastructure fails.
+
+------------------------------------------------------------
+Replication:
+
+
+Redis Primary
+      |
+      v
+Redis Replica
+
+
+- Maintains redundant copies.
+- If the primary fails, another node can potentially take over.
+- A cluster with multiple shards but no useful redundancy can scale while still having failure impact.
+- A replicated single node can provide redundancy but may not provide enough capacity for very large workloads.
+
+A more complete architecture:
+
+
+             Redis Cluster
+
+       Shard 1        Shard 2        Shard 3
+       /    \         /    \         /    \
+   Primary Replica Primary Replica Primary Replica
+
+
+- Sharding provides horizontal capacity.
+- Replication provides redundant copies/failover.
+
+------------------------------------------------------------
+Failure domains:
+
+
+AZ-1
+  Redis Primary
+
+AZ-2
+  Redis Replica
+
+
+- Redundant nodes should ideally be placed in independent failure domains.
+- Two replicas in the same failure domain may both be lost by a larger infrastructure failure.
+
+Application fallback still matters:
+
+
+Redis HA
+   +
+Application fallback
+
+
+- Redis replication/failover protects the cache infrastructure from certain failures.
+- Application fallback protects the application when the cache is unavailable despite those mechanisms.
+
+
+Overall caching:
+
+                    CACHING
+
+                         |
+          +--------------+--------------+
+          |              |              |
+        READ            WRITE       CONSISTENCY
+          |              |              |
+    Cache-Aside      Write-Through    TTL
+    Read-Through     Write-Behind     Invalidation / Update
+                                      Events
+                         |
+                         |
+                RELIABILITY / FAILURE
+                         |
+          +--------------+--------------+
+          |              |              |
+       Stampede      Penetration     Avalanche
+          |              |              |
+       Hot Keys       Eviction      Fallback
+                         |
+                  SCALING / HA
+                         |
+              +----------+----------+
+              |                     |
+           Sharding             Replication
+              |                     |
+        More capacity          Availability
+
+=======================================================================================================================================================================

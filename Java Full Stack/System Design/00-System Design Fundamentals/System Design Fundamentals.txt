@@ -1,4 +1,4 @@
-Functional vs Non-Functional Requirements
+Functional & Non-Functional Requirements
 
 Performance - Latency, Throughput
 Scalability
