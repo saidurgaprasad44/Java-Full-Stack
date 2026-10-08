@@ -1,0 +1,1 @@
+A mechanism to hand over the responsibility of a failed node to a healthy node in a distributed systems.

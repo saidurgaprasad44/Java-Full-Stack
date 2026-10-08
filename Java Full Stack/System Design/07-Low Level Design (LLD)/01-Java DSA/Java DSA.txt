@@ -1,0 +1,163 @@
+=======================================================================================================================================================================
+										Java DSA
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+Problem-solving fundamentals
+------------------------------------------------------------
+
+Problem
+Constraints
+Brute force
+Edge cases
+Time / Space complexity
+
+------------------------------------------------------------
+Essential Data Structures
+------------------------------------------------------------
+
+Array / String
+Linked List
+Stack
+Queue / Deque
+Hash Table
+Tree / BST
+Heap
+Graph
+
+------------------------------------------------------------
+Java DSA Toolkit
+------------------------------------------------------------
+
+Strings
+- String
+- StringBuilder
+- StringBuffer
+- char, char[]
+- String methods
+
+Arrays 
+- int[]
+- String[]
+- Object[]
+- 2D arrays
+- array of objects
+- Arrays methods
+
+Lambda Expressions + Functional Interfaces
+- Predicate<T> → test something
+- Function<T,R> → transform something
+- Consumer<T> → perform an action
+- Supplier<T> → provide something
+- BiFunction<T,U,R>
+- Employee::getName
+- System.out::println
+- String::valueOf
+- filter, transform, sort, iterate
+
+Collections 
+- List: ArrayList, LinkedList
+- Set: HashSet, LinkedHashSet, TreeSet
+- Queue/Deque: Queue, Deque, ArrayDeque
+
+Map
+- HashMap
+- LinkedHashMap
+- TreeMap
+
+Collections of Objects
+- List<Employee>
+- Map<Integer, Employee>
+- Map<String, List<Employee>>
+- Set<Employee>
+
+Nested Structures
+- Customer
+     └── List<Order>
+           └── List<OrderItem>
+- List<Customer>
+- Set<Customer>
+
+equals() vs hashCode()
+
+Comparable / Comparator
+
+Streams: Collection > stream() > filter > map > sorted > distinct > collect
+- filter
+- map
+- flatMap
+- distinct
+- sorted
+- limit
+- skip
+- peek
+- collect
+- toList
+- forEach
+- count
+- min
+- max
+- findFirst
+- findAny
+- anyMatch
+- allMatch
+- noneMatch
+- reduce
+- Collectors.toList()
+- Collectors.toSet()
+- Collectors.toMap()
+- Collectors.groupingBy()
+- Collectors.partitioningBy()
+- Collectors.joining()
+- Collectors.counting()
+- Collectors.mapping()
+
+------------------------------------------------------------
+Core Algorithms & Problem-Solving Patterns:
+------------------------------------------------------------
+
+Arrays / Strings
+├── Hashing
+├── Two Pointers
+├── Sliding Window
+└── Prefix Sum
+
+Searching / Ordering
+├── Binary Search
+├── Sorting
+└── Intervals
+
+Linear Structures
+├── Stack
+├── Monotonic Stack
+└── Queue / Deque
+
+Trees / Graphs
+├── DFS
+└── BFS
+
+Optimization
+├── Heap / Top-K
+├── Greedy
+└── Basic Dynamic Programming
+
+------------------------------------------------------------
+Problem-Solving
+------------------------------------------------------------
+
+Problem
+identify pattern
+choose data structure
+design algorithm
+implement cleanly in Java
+handle edge cases
+Dry Runs
+analyze complexity
+
+ArrayList.get()       → generally O(1)
+HashMap.get()         → O(1) average
+HashSet.contains()    → O(1) average
+TreeMap.get()         → O(log n)
+List.contains()       → O(n)
+
+=======================================================================================================================================================================

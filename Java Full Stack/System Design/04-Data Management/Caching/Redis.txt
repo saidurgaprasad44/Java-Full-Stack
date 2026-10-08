@@ -2,6 +2,13 @@
 
 * Why Redis is commonly used for distributed caching
 * Redis data model and only the data structures relevant to architecture
+
+String       -> useful for storing a serialized object, JSON document, token, or simple value.
+Hash         -> useful for field-by-field access and updates.
+List         -> useful for ordered collections, such as recent activity.
+Set          -> useful for unique members, such as unique visitor IDs
+Sorted Set   -> useful for ranking, such as top-selling products
+
 * TTL/expiration
 * Redis as cache vs Redis as a data store
 
@@ -15,6 +22,19 @@
 * Cluster/sharding
 * Understand when and why each is needed, not every implementation detail
 
+Persistence
+    -> How do we recover data?
+
+Replication
+    -> How do we maintain another copy?
+
+Sentinel
+    -> How do we detect failure and perform failover?
+
+Sharding / Cluster
+    -> How do we distribute data and scale?
+
+
 07 - Redis in Distributed Systems
 
 * Distributed caching
@@ -26,9 +46,11 @@
 
 08 - Redis + Spring
 
-* Spring Cache
+* Spring Cache - @Cacheable, @CachePut, @CacheEvict.
 * Spring Data Redis
 * How Redis fits into a Spring application's architecture
 * Cache keys, TTL, serialization, failure handling
 * Enough implementation knowledge to connect the theory to real code
+
+09 - Redis Infrastructure
 

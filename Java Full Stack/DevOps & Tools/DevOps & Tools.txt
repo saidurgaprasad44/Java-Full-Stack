@@ -1,0 +1,349 @@
+I want to learn modern application deployment through hands-on work, not by studying deployment theory first.
+
+My approach is:
+
+I will take ONE good, clean, freely available open-source project from GitHub and use that same project throughout the learning journey. I want you to first search the internet/GitHub and recommend a suitable existing project that I can legally clone and use for learning.
+
+The project should ideally contain or allow us to work with:
+
+* Java / Spring Boot
+* Multiple services or microservices
+* REST APIs
+* PostgreSQL or another relational database
+* Redis
+* Kafka
+* Nginx / reverse proxy
+* Maven
+* Docker / Docker Compose
+* Configuration through environment variables
+* Automated tests
+
+It does NOT need to already have every deployment component perfectly configured. In fact, I am fine with adding or modifying Dockerfiles, Docker Compose configuration, Nginx configuration, environment variables, health checks, etc. as part of the learning process.
+
+The important thing is that it should be a reasonably clean and understandable project rather than a huge enterprise codebase.
+
+My objective is NOT to become a DevOps engineer. I want enough practical deployment experience to understand how a modern Java/Spring application goes from source code to a running production-like environment and how the different components interact.
+
+My deployment roadmap is:
+
+============================================
+STAGE 1 — RUN THE APPLICATION WITHOUT DOCKER
+============================================
+
+Spring Boot source
+↓
+Maven
+↓
+mvn clean package
+↓
+JAR
+↓
+java -jar app.jar
+↓
+Application running locally
+↓
+Test APIs
+
+At this stage I want to learn through the actual project:
+
+* Maven build lifecycle
+* dependencies and packaging
+* application.properties / application.yml
+* profiles and configuration
+* JAR structure
+* running Spring Boot outside the IDE
+* application logs
+* ports
+* environment variables
+* testing the packaged application
+
+Do not give me a long theory lesson first.
+
+Instead:
+
+1. Help me understand the selected project's structure.
+2. Help me get it running in the IDE first if necessary.
+3. Then build it using Maven.
+4. Run the generated JAR.
+5. Verify/test the APIs.
+6. Explain concepts only when they become relevant to what I am doing.
+
+======================================
+STAGE 2 — DOCKERIZE EVERYTHING LOCALLY
+======================================
+
+The target architecture is approximately:
+
+Browser / Client
+↓
+Nginx
+↓
+Spring Boot services
+│      │      │
+↓      ↓      ↓
+PostgreSQL Redis  Kafka
+
+All of this should initially run on my local Windows machine using Docker / Docker Compose.
+
+Target idea:
+
+Java Application
+↓
+Maven
+↓
+Docker Image
+↓
+Docker Compose
+↓
+┌──────────────────┐
+│ Nginx                 │
+│ Spring Boot service(s)│
+│ PostgreSQL            │
+│ Redis                 │
+│ Kafka                 │
+└──────────────────┘
+↓
+Local containers
+
+At this stage I want to learn through implementation:
+
+* Dockerfile
+* Docker image
+* Docker container
+* Docker Compose
+* container networking
+* service-to-service communication
+* Docker volumes
+* environment variables
+* service discovery through Compose
+* port mapping
+* container logs
+* health checks
+* startup dependencies
+* database persistence
+* Nginx reverse proxy
+* Kafka as an infrastructure dependency
+* Redis as an infrastructure dependency
+* PostgreSQL as an infrastructure dependency
+
+Again, do NOT teach all of Docker theory upfront.
+
+Guide me incrementally:
+
+1. Containerize the application.
+2. Run it.
+3. Add PostgreSQL.
+4. Connect the application to PostgreSQL.
+5. Add Redis.
+6. Connect the application to Redis.
+7. Add Kafka.
+8. Connect the relevant service(s) to Kafka.
+9. Add Nginx.
+10. Put the complete system behind Docker Compose.
+11. Test the complete system.
+12. Troubleshoot problems that naturally occur.
+
+I want to understand WHY each configuration is required while actually implementing it.
+
+For example, if Spring Boot cannot connect to PostgreSQL because "localhost" no longer means the host machine from inside a container, explain that when we encounter it rather than giving me a generic Docker networking lecture beforehand.
+
+===============
+STAGE 3 — CI/CD
+===============
+
+Once Stage 2 works locally, put the project in my GitHub repository and create a simple GitHub Actions CI/CD pipeline.
+
+Target flow:
+
+Developer
+↓
+Git push
+↓
+GitHub
+↓
+GitHub Actions
+│
+├── Checkout
+├── Setup Java
+├── Maven build
+├── Run tests
+├── Build Docker image
+└── Push image
+↓
+GitHub Container Registry
+↓
+docker pull
+↓
+docker run / docker compose
+↓
+Local environment
+
+The goal is to understand:
+
+* GitHub repository workflow
+* GitHub Actions
+* CI pipeline
+* Maven build in CI
+* automated tests
+* Docker image creation in CI
+* image tagging
+* pushing images to a registry
+* GitHub Container Registry
+* pulling the exact image produced by CI
+* deploying/running that image locally
+
+I specifically want the pipeline to produce the Docker image and then have me pull/run that image locally so I understand the complete path:
+
+Code → CI → Test → Build → Docker Image → Registry → Deployment
+
+Do not make the CI/CD pipeline unnecessarily complicated.
+
+===============
+IMPORTANT SCOPE
+===============
+
+For now, ONLY focus on Stages 1, 2 and 3.
+
+Do NOT move into:
+
+* Cloud
+* AWS/Azure/GCP
+* Kubernetes
+* advanced DevOps
+* Terraform
+* Helm
+* service meshes
+* advanced observability
+* production cloud networking
+
+Those will come later.
+
+My complete future roadmap is:
+
+Stage 1 — Local application without Docker
+Stage 2 — Docker/Docker Compose locally
+Stage 3 — GitHub CI/CD + container registry
+Stage 4 — Cloud deployment
+Stage 5 — Monitoring
+Stage 6 — Failure testing
+Stage 7 — Kubernetes/orchestration
+
+But right now we are ONLY doing 1–3.
+
+==========================
+HOW I WANT YOU TO TEACH ME
+==========================
+
+Use an implementation-first approach.
+
+Do NOT start by giving me 50 pages of Docker/Maven/CI theory.
+
+Instead:
+
+1. Find and evaluate suitable open-source projects.
+2. Recommend the best one for this learning goal.
+3. Explain why you selected it and what components it already has versus what we need to add.
+4. Give me the GitHub repository link.
+5. Help me clone and inspect it.
+6. Start Stage 1.
+7. Guide me command-by-command/config-by-config.
+8. Let me run things and report the result/error.
+9. Diagnose problems with me.
+10. Only introduce theory when it helps explain what we are currently doing.
+11. Once Stage 1 is genuinely working, move to Stage 2.
+12. Once Stage 2 is genuinely working, move to Stage 3.
+
+Treat this like I am working with you on a real deployment task.
+
+When something fails, don't immediately give me a workaround. First explain:
+
+Problem
+→ Why it happened
+→ What component is responsible
+→ What we need to change
+→ Why that change solves it
+→ Then the actual command/configuration.
+
+I already have strong Java/Spring development knowledge, so don't explain basic Java or Spring concepts unless they are directly relevant to deployment.
+
+I also already understand architecture concepts such as:
+
+* microservices
+* REST APIs
+* Kafka
+* Redis
+* databases
+* caching
+* asynchronous communication
+* event-driven architecture
+* scalability
+* reliability
+* Docker's basic purpose
+
+My gap is primarily HANDS-ON DEPLOYMENT.
+
+Therefore, prioritize:
+
+SOURCE CODE
+→ BUILD
+→ ARTIFACT
+→ PROCESS
+→ CONTAINER
+→ NETWORK
+→ CONFIGURATION
+→ DEPENDENCY
+→ CI
+→ IMAGE
+→ REGISTRY
+→ DEPLOYMENT
+
+rather than theoretical definitions.
+
+==========================
+PROJECT SELECTION CRITERIA
+==========================
+
+When searching for the project, evaluate candidates based on:
+
+1. Free and publicly accessible
+2. Open-source GitHub repository
+3. Reasonably maintained or at least stable
+4. Java/Spring Boot preferred
+5. Maven preferred
+6. Understandable codebase
+7. Not excessively huge
+8. Has meaningful REST APIs
+9. Uses PostgreSQL or another relational DB
+10. Uses Redis if possible
+11. Uses Kafka if possible
+12. Multiple services/microservices preferred
+13. Can reasonably be run locally
+14. Can reasonably be containerized
+15. Suitable for GitHub Actions
+16. Does not require paid SaaS services just to run
+17. Avoid projects that are primarily tutorials with extremely simplistic architecture
+18. Avoid projects so complex that deployment becomes difficult to understand
+
+If no single project naturally contains every component, that's completely fine.
+
+Prefer a clean project where we can add the missing infrastructure ourselves.
+
+Before recommending a project, compare a few candidates and explain:
+
+* what components each project has
+* what we would need to add
+* complexity
+* suitability for my roadmap
+* why you recommend the final project
+
+Use current GitHub/repository information when evaluating projects.
+
+IMPORTANT:
+
+Do not ask me to build the application from scratch.
+
+The purpose of this exercise is to learn DEPLOYMENT by taking an existing realistic application and taking it through the deployment lifecycle.
+
+Once we select the project, stay with that project throughout Stages 1–3 unless there is a genuine technical reason to replace it.
+
+Let's start by finding the best project.

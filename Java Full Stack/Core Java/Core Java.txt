@@ -987,12 +987,11 @@ merge(key, value, BiFunction) 		: Combines an existing map key-value with a new 
 Collections.sort(list)	: Naturally sorts based on the compareTo from Comparable<T>
 .sort(Comparator<T>)	: Sorts the Collection based on the Comparator object given.
 
-Comparable Interface (compareTo(Object o)): Defines the natural ordering of a class. The class itself must implement this interface.
 
+- Comparable Interface (compareTo(Object o)): Defines the natural ordering of a class. The class itself must implement this interface.
+- Comparator Functional Interface (compare(Object o1, Object o2)): Defines custom sorting logic. It is separate from the class, allowing multiple different sorting behaviors.
 
-Comparator Functional Interface (compare(Object o1, Object o2)): Defines custom sorting logic. It is separate from the class, allowing multiple different sorting behaviors.
-
-Here are the most important static factory methods and default methods inside the Java Comparator interface:
+- Here are the most important static factory methods and default methods inside the Java Comparator interface:
 
 	1. Key Extractors (Building the First Comparator): These static methods are your starting points. They tell Java which field to look at to start sorting.
 		Comparator.comparing()		: Sorts by an Object field (like String, LocalDate, or a custom class).

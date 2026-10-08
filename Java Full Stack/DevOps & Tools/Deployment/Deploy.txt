@@ -1,0 +1,197 @@
+                 ┌──────────────┐
+                 │    Client        │
+                 └──────┬───────┘
+                          │
+                          ▼
+                 ┌──────────────┐
+                 │ Nginx/Gateway    │
+                 └──────┬───────┘
+                          │
+             ┌─────────┴─────────┐
+             ▼                        ▼
+       ┌─────────────┐     ┌─────────────┐
+       │ Order Service   │     │ User Service    │
+       └──────┬──────┘     └─────────────┘
+                │
+       ┌──────┴──────┐
+       ▼       ▼        ▼  
+  PostgreSQL  Kafka     Redis
+
+=======================================================================================================================================================================
+
+Stage 1 - Without a docker:
+
+
+Spring Boot source
+       ↓
+Maven
+       ↓
+mvn clean package
+       ↓
+JAR
+       ↓
+java -jar app.jar
+       ↓
+Application running locally
+       ↓
+Test APIs
+
+
+Learn here:
+
+Maven build lifecycle
+dependencies and packaging
+application.properties/yml
+profiles/configuration
+JAR structure
+running Spring Boot outside the IDE
+logs
+ports
+environment variables
+testing the packaged application
+
+------------------------------------------------------------
+
+Stage 2 — Docker:
+
+
+Java Application
+   ↓
+Maven
+   ↓
+Docker Image
+   ↓
+Docker Compose
+   ↓
+┌─────────────┐
+│ Nginx           │
+│ Spring Boot     │
+│ PostgreSQL      │
+│ Redis           │
+│ Kafka           │
+└─────────────┘
+   ↓
+Container
+
+
+     Browser / Client
+            ↓
+          Nginx
+            ↓
+       Spring Boot
+       │    │   │
+       ↓    ↓    ↓
+PostgreSQL Redis Kafka
+
+
+- Onto local Windows machine.
+
+
+Learn here:
+
+Dockerfile
+Docker image
+container
+container networking
+Docker volumes
+environment variables
+service discovery through Compose
+port mapping
+container logs
+health checks
+startup dependencies
+persistence
+Nginx reverse proxy
+Kafka/Redis/PostgreSQL as infrastructure dependencies
+
+------------------------------------------------------------
+
+Stage 3 — CI/CD
+
+
+- Put the project on GitHub and deploy locally
+
+
+Developer
+   ↓
+Git push
+   ↓
+GitHub
+   ↓
+GitHub Actions
+   │
+   ├── Checkout
+   ├── Setup Java
+   ├── Maven build
+   ├── Run tests
+   ├── Build Docker image
+   └── Push image
+          ↓
+GitHub Container Registry
+   ↓
+docker pull
+   ↓
+docker run / docker compose
+   ↓
+Local environment
+
+------------------------------------------------------------
+
+Stage 4 — Cloud
+
+
+Registry
+   ↓
+Cloud VM
+   ↓
+Docker Compose
+   ↓
+Nginx
+Spring Boot
+PostgreSQL
+Redis
+Kafka
+
+------------------------------------------------------------
+
+Stage 5 - Monitoring
+
+
+Monitoring
+   ↓
+Logs
+Metrics
+Health checks
+
+
+------------------------------------------------------------
+
+Stage 6 - Failure testing
+
+
+Failure testing
+   ↓
+DB failure
+Kafka failure
+Redis failure
+Container failure
+Deployment failure
+
+
+------------------------------------------------------------
+
+Stage 7 — Orchestration
+
+Docker Image
+      ↓
+Kubernetes
+      ↓
+Deployment
+      ↓
+Pods
+      ↓
+Service
+      ↓
+Ingress
+
+=======================================================================================================================================================================
