@@ -1,0 +1,11 @@
+Docker
+
+Docker File: 
+
+Image: Packaged file that contains the Jar package and the environment required to run the jar
+
+Container: Isolated environment
+
+Docker Compose: File that describes all the containers and how they connect
+
+

@@ -33,7 +33,7 @@ Implementing Mechanisms
 
 ===============================================================================================================================================================================
 
-3. Reliability (Availability, Resilience, & Fault Tolerance)
+3. Reliability (Availability, Resilience, Fault Tolerance)
 - The Quality Attribute:- Availability is uptime percentage (e.g., 99.99%). Resilience is how it recovers. Fault Tolerance is surviving hardware/software failures.
 - The Goal: Build a system with no single point of failure that heals itself automatically.
 

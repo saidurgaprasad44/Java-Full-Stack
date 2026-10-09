@@ -9,8 +9,17 @@ While Mechanisms are the specific engineering techniques and patterns implemente
 - The Quality Attribute: How fast the system responds (Latency, measured in $p99$ ms) and how much work it can execute simultaneously (Throughput, measured in Requests Per Second).
 - The Goal: Maximize speed and processing capacity under heavy usage.
 
+
 Implementing Mechanisms
 
+- Cache-aside: Reads from the cache first and queries the database on a cache miss, reducing repeated database access.
+- Trade-off: Cache misses still incur database latency, and simultaneous misses for the same key can cause a cache stampede.
+
+- Appropriate Data Structures and Serialization: Uses suitable Redis data types and efficient serialization to reduce memory, network, and processing overhead.
+- Trade-off: Optimized formats can make debugging, compatibility, and schema evolution more difficult.
+
+- Connection Pooling: Reuses Redis connections instead of repeatedly establishing new connections.
+- Trade-off: Reduces connection overhead but requires appropriate pool sizing; undersized pools cause waiting, while oversized pools waste resources and can overload Redis.
 
 ===============================================================================================================================================================================
 
@@ -18,17 +27,41 @@ Implementing Mechanisms
 - The Quality Attribute:- Scalability is the capacity to handle growth. Elasticity is the ability to automatically scale up or down based on real-time traffic spikes.
 - The Goal: Ensure the system expands seamlessly without manual human intervention.
 
+
 Implementing Mechanisms
 
+- Distributed Caching: Shares cached data across multiple application instances through a common cache service such as Redis.
+- Trade-off: Avoids separate, duplicated local caches but introduces network latency and a shared infrastructure dependency.
+
+- Redis Cluster (Sharding): Distributes keys across multiple Redis primary nodes, allowing data and request load to be spread across nodes.
+- Trade-off: Increases capacity but adds topology management, cross-slot limitations for certain operations, and operational complexity.
+
+- Cache Capacity and Eviction Policies: Controls memory usage by evicting eligible keys when Redis reaches its configured memory limit.
+- Trade-off: Prevents unbounded memory growth but may evict frequently needed entries, increasing cache misses and database load.
+
+- Horizontal Application Scaling: Runs more application instances that access the shared cache.
+- Trade-off: Increases request-handling capacity but may increase cache contention, connection counts, and pressure on Redis or the database.
 
 ===============================================================================================================================================================================
 
-3. Reliability (Availability, Resilience, & Fault Tolerance)
+3. Reliability (Availability, Resilience, Fault Tolerance)
 - The Quality Attribute:- Availability is uptime percentage (e.g., 99.99%). Resilience is how it recovers. Fault Tolerance is surviving hardware/software failures.
 - The Goal: Build a system with no single point of failure that heals itself automatically.
 
+
 Implementing Mechanisms
 
+- Cache Failure Handling: Uses timeouts, exception handling, and a controlled fallback to the database when cache access fails, where safe.
+- Trade-off: Keeps some requests available during cache failure but can overload the database if many requests fall back simultaneously.
+
+- Redis Replication and Automatic Failover: Maintains replicas and promotes an eligible replica when the primary fails, using an appropriate high-availability setup.
+- Trade-off: Improves availability but adds infrastructure and operational complexity; asynchronous replication can lose recently acknowledged writes during certain failures.
+
+- TTL and Cache Invalidation: Limits stale entries through expiration and removes or updates cached data after relevant database changes.
+- Trade-off: Reduces the duration of stale data but cannot guarantee immediate consistency when invalidation is delayed or fails.
+
+- Cache Stampede Protection: Uses request coalescing, per-key locking, or controlled refresh to prevent many concurrent requests from rebuilding the same expired entry.
+- Trade-off: Reduces duplicate database work but adds coordination overhead and can introduce waiting or lock-management complexity.
 
 ===============================================================================================================================================================================
 
@@ -36,8 +69,17 @@ Implementing Mechanisms
 - The Quality Attribute: The clarity with which you can diagnose internal errors based on external indicators (Logs, Metrics, Traces).
 - The Goal: Spot anomalies and capture data corruption before it impacts users.
 
+
 Implementing Mechanisms
 
+- Cache Metrics: Tracks hit rate, miss rate, request latency, error rate, evictions, memory usage, and connection-pool utilization.
+- Trade-off: Helps identify performance and capacity problems but detailed metrics can add instrumentation overhead and high-cardinality monitoring costs.
+
+- Distributed Tracing: Records cache operations alongside application and database calls to identify where request latency originates.
+- Trade-off: Improves diagnosis across services but adds instrumentation and telemetry-storage overhead.
+
+- Logging and Alerting: Logs cache failures, timeouts, unusual miss rates, and resource pressure, with alerts for actionable thresholds.
+- Trade-off: Speeds up incident detection but excessive logs or poorly tuned alerts create noise and increase operational costs.
 
 ===============================================================================================================================================================================
 
@@ -45,8 +87,17 @@ Implementing Mechanisms
 - The Quality Attribute: System immunity to unauthorized breaches and malicious attacks.
 - The Goal: Secure data at rest, in transit, and enforce strict user privacy bounds.
 
+
 Implementing Mechanisms
 
+- Authentication and Access Control: Uses Redis authentication and, where supported, ACLs to restrict which clients and commands are permitted.
+- Trade-off: Reduces unauthorized access but requires credential management and correct permission configuration.
+
+- Network Isolation and TLS: Restricts Redis access to trusted networks and encrypts connections when traffic crosses untrusted networks.
+- Trade-off: Reduces exposure and protects data in transit but adds configuration, certificate management, and some processing overhead.
+
+- Sensitive Data Protection: Avoids caching unnecessary sensitive information and applies appropriate masking, encryption, or restricted access where required.
+- Trade-off: Reduces data exposure risk but can add processing complexity and limit caching opportunities.
 
 ===============================================================================================================================================================================
 
@@ -54,8 +105,20 @@ Implementing Mechanisms
 - The Quality Attribute:- Consistency ensures data is uniform across all nodes. Durability guarantees that once a write is acknowledged, it will never be permanently lost.
 - The Goal: Maintain perfectly accurate records across a distributed system.
 
+
 Implementing Mechanisms
 
+- Cache Invalidation on Writes: Updates or evicts relevant cache entries after successful database changes so subsequent reads can obtain fresher data.
+- Trade-off: Reduces stale reads but introduces coordination concerns; failed invalidation or concurrent operations can leave stale entries.
+
+- TTL-Based Expiration: Places an upper bound on how long an entry remains in the cache without refresh, assuming no earlier invalidation.
+- Trade-off: Limits stale-data duration but does not guarantee that data remains fresh until expiry or that a newly loaded value is current.
+
+- Cache-Aside with the Database as Source of Truth: Treats Redis as a derived copy and reloads missing entries from the authoritative database.
+- Trade-off: Simplifies recovery and avoids relying on cache persistence for primary business data, but cache loss can cause a surge in database traffic.
+
+- Redis Persistence and Replication: Uses RDB snapshots, AOF, and/or replication when cached data or Redis-resident state requires recovery.
+- Trade-off: Improves recovery options but consumes resources and does not automatically guarantee zero data loss or strong consistency.
 
 ===============================================================================================================================================================================
 
@@ -63,8 +126,17 @@ Implementing Mechanisms
 - The Quality Attribute: How easily code can be modified, tested, and expanded. Measured by deployment frequency and low inter-dependency (Coupling).
 - The Goal: Keep separate engineering teams unblocked and move quickly.
 
+
 Implementing Mechanisms
 
+- Spring Cache Abstraction: Uses annotations such as @Cacheable, @CachePut, and @CacheEvict to separate caching policy from business logic.
+- Trade-off: Simplifies application code and makes provider changes easier, but complex key generation, invalidation, and provider-specific behavior may need explicit configuration or direct Redis APIs.
+
+- Centralized Cache Configuration: Defines cache names, TTLs, key prefixes, and serialization policies in a consistent configuration.
+- Trade-off: Improves consistency and maintainability but can become restrictive when different data requires distinct caching policies.
+
+- Explicit Cache Key Design: Uses predictable keys that include relevant identifiers and, where necessary, tenant or version information.
+- Trade-off: Reduces collisions and simplifies invalidation, but key changes can make existing entries unreachable and require migration or expiration.
 
 ===============================================================================================================================================================================
 
@@ -72,7 +144,19 @@ Implementing Mechanisms
 - The Quality Attribute: Monthly financial infrastructure cost relative to system volume and computing resource usage.
 - The Goal: Run an optimized, high-throughput system at the lowest possible price point.
 
+
 Implementing Mechanisms
 
+- Cache Only High-Value Data: Prioritizes frequently accessed, expensive-to-fetch data with acceptable freshness requirements.
+- Trade-off: Improves the value gained per unit of cache memory but requires measurement and periodic tuning.
+
+- Memory Limits and Eviction Policies: Sets memory budgets and chooses eviction behavior appropriate to the workload.
+- Trade-off: Controls infrastructure costs but overly restrictive limits can increase misses and database expenditure.
+
+- TTL Tuning: Chooses expiration durations based on access frequency, acceptable staleness, and data-change frequency.
+- Trade-off: Balances memory reuse against freshness and database load, but a single TTL is rarely optimal for every cache.
+
+- Cache Hit-Rate and Cost Monitoring: Evaluates whether reduced database work justifies Redis infrastructure, network traffic, and operational overhead.
+- Trade-off: Supports evidence-based cost decisions but requires monitoring and workload analysis; a high hit rate alone does not guarantee net savings.
 
 ===============================================================================================================================================================================

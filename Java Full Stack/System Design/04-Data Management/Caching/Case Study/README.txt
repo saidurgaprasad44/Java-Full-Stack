@@ -16,3 +16,30 @@
 * Inspect the actual code/configuration
 * Identify architectural trade-offs
 * Finally, redesign or modify the architecture for changed requirements
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+How we'll conduct the case study:
+
+- Understand the existing implementation. Trace the product API, service, repository, Redis configuration, cache keys, TTL, and invalidation logic.
+- Trace real request flows. Follow cache hits, misses, product updates, expiration, and concurrent requests through the code.
+- Evaluate failure scenarios. Identify existing protections and gaps rather than assuming the project handles every failure.
+- Improve it selectively. Implement and test worthwhile mechanisms such as stampede protection, bounded cache usage, resilience, and metrics.
+- Connect implementation to architecture. Explain why each mechanism exists, its trade-offs, and when it is appropriate in a production system.

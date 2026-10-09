@@ -1,18 +1,16 @@
-05 - Redis Fundamentals
+=======================================================================================================================================================================
+										Redis
+=======================================================================================================================================================================
+
+01 - Redis Fundamentals
 
 * Why Redis is commonly used for distributed caching
 * Redis data model and only the data structures relevant to architecture
-
-String       -> useful for storing a serialized object, JSON document, token, or simple value.
-Hash         -> useful for field-by-field access and updates.
-List         -> useful for ordered collections, such as recent activity.
-Set          -> useful for unique members, such as unique visitor IDs
-Sorted Set   -> useful for ranking, such as top-selling products
-
+* Commands
 * TTL/expiration
 * Redis as cache vs Redis as a data store
 
-06 - Redis Architecture & Important Internals
+02 - Redis Architecture & Important Internals
 
 * Why Redis is fast
 * Persistence at a useful architectural depth
@@ -22,35 +20,465 @@ Sorted Set   -> useful for ranking, such as top-selling products
 * Cluster/sharding
 * Understand when and why each is needed, not every implementation detail
 
-Persistence
-    -> How do we recover data?
-
-Replication
-    -> How do we maintain another copy?
-
-Sentinel
-    -> How do we detect failure and perform failover?
-
-Sharding / Cluster
-    -> How do we distribute data and scale?
-
-
-07 - Redis in Distributed Systems
+03 - Redis in Distributed Systems
 
 * Distributed caching
 * Multiple application instances
 * Distributed locks
 * Rate limiting
 * Session storage
-* Redis vs Kafka where relevant
 
-08 - Redis + Spring
+04 - Redis + Spring
 
-* Spring Cache - @Cacheable, @CachePut, @CacheEvict.
+* Spring Cache
 * Spring Data Redis
 * How Redis fits into a Spring application's architecture
 * Cache keys, TTL, serialization, failure handling
 * Enough implementation knowledge to connect the theory to real code
 
-09 - Redis Infrastructure
+05 - Redis Infrastructure
+
+=======================================================================================================================================================================
+Redis Fundamentals
+=======================================================================================================================================================================
+
+Why Redis is used for distributed caching
+
+- Redis is an in-memory key-value data store commonly used to reduce database reads and provide low-latency access.
+- Because Redis runs as a separate service, multiple application instances can share the same cache.
+- Redis is useful for frequently accessed data that is expensive to retrieve and can tolerate a defined level of staleness.
+
+Flow:
+
+Client → Spring Boot → Redis
+  |
+  +-------+-------+
+  |               |
+Cache hit       Cache miss
+  |               |
+Return data     Query database
+  |
+Store in Redis
+  |
+Return data
+
+- A cache hit avoids the database query. A cache miss retrieves the data from the database and may populate the cache.
+
+------------------------------------------------------------
+Redis data model and data structures
+
+- Redis maps keys to values. The value's data type determines how it is organized and which operations Redis supports.
+- String: stores simple values, counters, serialized objects or JSON.
+- Hash: stores field-value pairs; individual fields can be read or updated.
+- List: ordered values; useful for recent activity or queue-like operations.
+- Set: unique members; useful for membership checks.
+- Sorted Set: unique members ordered by score; useful for rankings.
+
+Examples:
+
+- String: product:101 → "{"id":101,"name":"Laptop","price":60000}"
+- Hash: product:101 → id:101, name:Laptop, price:60000
+- Set: users:unique → user1, user2, user3
+- Sorted Set: product:ranking → product101(score 120), product102(score 150)
+- A JSON document stored as a Redis String is treated as a string by ordinary Redis commands. Redis does not automatically understand its JSON fields.
+- RedisJSON is an additional capability for JSON document operations; it is not required just to cache JSON data.
+
+------------------------------------------------------------
+Redis commands
+
+Basic key operations:
+
+SET product:101 Laptop EX 300
+GET product:101
+EXISTS product:101
+TYPE product:101
+TTL product:101
+DEL product:101
+
+- EX sets expiration in seconds; TTL reports the remaining lifetime.
+- DEL removes a key.
+
+Hash operations:
+
+HSET product:101 name Laptop price 60000
+HGET product:101 price
+HGETALL product:101
+HSET product:101 price 65000
+
+List, Set and Sorted Set operations:
+
+LPUSH recent:products 101
+LRANGE recent:products 0 -1
+SADD users:unique user1 user2
+SISMEMBER users:unique user1
+ZADD product:ranking 150 product102
+ZREVRANGE product:ranking 0 9 WITHSCORES
+
+Counters and inspection:
+INCR page:views
+INCRBY page:views 10
+PING
+INFO
+SCAN 0 MATCH product:- COUNT 100
+
+- INCR performs an atomic counter increment.
+- PING checks connectivity; INFO exposes server statistics.
+- Use SCAN for incremental key discovery. Avoid KEYS - on large production datasets because it can block Redis while traversing the keyspace.
+- Commands can be run using redis-cli.
+
+------------------------------------------------------------
+TTL and expiration
+
+- TTL limits how long a key remains available. After expiration, a read becomes a cache miss.
+- Short TTL → fresher data but more misses and database load.
+- Long TTL → better cache reuse but potentially staler data.
+- TTL is a safeguard, not a replacement for explicit invalidation.
+
+Example:
+
+SET product:101 "{"id":101,"name":"Laptop","price":60000}" EX 600
+
+- The key expires after 600 seconds unless its expiration is changed.
+- After expiration, the application can fetch the latest product from the database and repopulate Redis.
+- Randomized TTLs can reduce many keys expiring simultaneously and triggering a cache stampede.
+
+------------------------------------------------------------
+Redis as a cache vs a data store
+
+Redis as a cache:
+
+- The database remains the source of truth.
+- Cached entries are normally disposable and can be rebuilt.
+- TTL and invalidation control freshness.
+
+Redis as a data store:
+
+- Redis may be authoritative for the data.
+- Persistence, backup and recovery become important.
+- RDB saves snapshots; AOF records write operations. Recovery and possible data loss depend on configuration.
+- Replication supports availability but does not by itself guarantee zero data loss.
+- Decide whether Redis is a disposable cache or an authoritative store before selecting persistence and recovery settings.
+
+=======================================================================================================================================================================
+Redis Architecture & Important Internals
+=======================================================================================================================================================================
+
+Why Redis is fast
+
+- Redis serves data primarily from memory and uses efficient data structures and low-overhead command processing.
+- Large values, expensive commands, network latency and resource contention can still cause delays.
+
+------------------------------------------------------------
+Persistence: RDB and AOF
+
+- RDB: point-in-time snapshots; changes since the last snapshot may be lost.
+- AOF: records write operations; durability depends on the configured fsync policy.
+- Both can be configured together.
+- Persistence helps reconstruct data after restart but does not itself provide high availability.
+
+------------------------------------------------------------
+Replication
+
+- A primary Redis node can replicate data to one or more replicas.
+- Replicas provide copies of data and can support selected read workloads.
+- Replication is commonly asynchronous, so replicas may lag behind the primary.
+- Replication alone does not guarantee automatic failover.
+
+------------------------------------------------------------
+High availability and Sentinel
+
+- Redis Sentinel monitors primary/replica deployments and coordinates failover when a primary is judged unavailable.
+- Clients must reconnect or discover the new primary after failover.
+- Failover can interrupt requests and may lose recent writes because replication can lag.
+- Sentinel provides high availability coordination, not data sharding.
+
+------------------------------------------------------------
+Cluster and sharding
+
+- Sharding distributes different portions of the keyspace across nodes, increasing capacity.
+- Redis Cluster combines sharding with replication for redundancy and failover.
+
+------------------------------------------------------------
+Redis Cluster:
+
+Application
+|
+v
+Redis Cluster
+|
++---- Node A: some keys
++---- Node B: other keys
++---- Node C: other keys
+
+- Replication = copies of data.
+- Sharding = data distributed across nodes.
+
+------------------------------------------------------------
+When to use each:
+
+- Persistence → recovery after restart.
+- Replication → copies and potential failover.
+- Sentinel → high availability for non-sharded primary/replica deployments.
+- Cluster → distribute data and load across multiple nodes.
+
+=======================================================================================================================================================================
+Redis in Distributed Systems
+=======================================================================================================================================================================
+
+Distributed caching
+
+- A local in-memory cache belongs to one application instance. Other instances do not automatically see its contents.
+- A shared Redis cache lets all instances access the same cache namespace.
+
+Spring Boot A ──┐
+Spring Boot B ──┼──> Shared Redis
+Spring Boot C ──┘
+
+- Shared caching avoids independent local copies but does not automatically prevent stale data. Instances must follow consistent invalidation and expiration rules.
+
+------------------------------------------------------------
+Cache invalidation
+
+- Common approach: update the database successfully, then evict the corresponding Redis entry.
+- The next read becomes a cache miss and reloads data from the database.
+- If eviction fails, stale data may remain until expiration or another invalidation.
+- Database and Redis updates are not automatically one atomic transaction.
+
+Example:
+
+- Product 101's price changes from 60000 to 65000.
+- Update PostgreSQL and evict product:101 from Redis.
+- The next request retrieves 65000 from PostgreSQL and caches the updated product.
+
+------------------------------------------------------------
+Distributed locks
+
+- synchronized protects threads within one JVM, not multiple application instances.
+- Redis can coordinate lock acquisition across instances using an atomic command:
+
+SET lock:product:101 unique-token NX PX 10000
+
+- NX acquires the lock only if the key does not exist; PX sets a 10-second lease.
+- Release the lock only if the stored token still matches the owner's token.
+- A lock can expire while work continues, so it is not sufficient as the only correctness mechanism for critical business operations. Use suitable database constraints and idempotency as well.
+
+------------------------------------------------------------
+Rate limiting
+
+- Redis can maintain shared request counters across application instances.
+- INCR is atomic individually, but multi-command counter/expiration logic may need a Lua script or another atomic design.
+- Fixed windows are simple but can allow bursts at window boundaries; sliding windows and token buckets offer different accuracy and complexity trade-offs.
+
+Example:
+
+- A user is allowed 100 API requests per minute, regardless of which Spring Boot instance handles the request.
+
+------------------------------------------------------------
+Session storage
+
+- Redis can store server-side sessions shared by multiple application instances.
+- Session expiration can be managed through TTLs and the session framework.
+- Server-side sessions differ from stateless JWT authentication. JWT systems may still use Redis for revocation or other shared state.
+
+=======================================================================================================================================================================
+Redis + Spring
+=======================================================================================================================================================================
+
+How Spring connects to Redis
+
+- Spring Data Redis provides APIs for Redis operations, commonly through a client such as Lettuce.
+- Spring Cache provides method-level caching through a cache manager.
+- Redis runs as a separate service; Spring Boot connects using its endpoint and configured security settings.
+
+Controller → Service → Spring Cache → Redis
+   |
+Cache miss
+   |
+Repository → Database
+
+------------------------------------------------------------
+Spring Cache
+------------------------------------------------------------
+
+@Cacheable
+
+- Checks the cache before executing the method.
+- Cache hit: returns the cached result without executing the method body.
+- Cache miss: executes the method and stores its result.
+
+@CachePut
+
+- Always executes the method and updates the cache with its returned result.
+- Useful when an update operation should refresh the corresponding cached object.
+
+@CacheEvict
+
+- Removes an entry from the cache.
+- Useful when a write or delete makes cached data stale.
+- The annotation is @CacheEvict, not @CacheDelete.
+
+------------------------------------------------------------
+Complete example: ProductService
+
+- Assume Product has id, name and price fields, and ProductRepository provides findById(), save() and deleteById().
+
+@Service
+public class ProductService {
+
+  private final ProductRepository repository;
+
+  public ProductService(ProductRepository repository) {
+    this.repository = repository;
+  }
+
+  @Cacheable(value = "products", key = "#id")
+  public Product getProduct(Long id) {
+    return repository.findById(id).orElseThrow();
+  }
+
+  @CachePut(value = "products", key = "#result.id")
+  public Product updateProduct(Product product) {
+    return repository.save(product);
+  }
+
+  @CacheEvict(value = "products", key = "#id")
+  public void deleteProduct(Long id) {
+    repository.deleteById(id);
+  }
+}
+
+------------------------------------------------------------
+How the example works
+
+1. GET product 101:
+
+   - Spring checks the products cache for key 101.
+   - On a hit, it returns the cached Product.
+   - On a miss, it calls the method, reads the database and caches the result.
+
+2. Update product 101:
+
+   - updateProduct() executes and saves the product to the database.
+   - @CachePut stores the returned Product under its ID.
+   - The cache is refreshed with the returned value.
+
+3. Delete product 101:
+
+   - deleteProduct() executes the database deletion.
+   - @CacheEvict removes the corresponding cache entry.
+
+- The example assumes the repository returns the saved product and the ID is present.
+- Database and Redis operations are not automatically atomic. A database write can succeed while a cache operation fails.
+- If an operation affects product-list or category caches, those entries also need an invalidation strategy.
+- Spring caching is commonly proxy-based. Calling a cached method from another method in the same object can bypass the caching interceptor.
+
+------------------------------------------------------------
+Spring cache configuration for Redis as the Cache Provider
+------------------------------------------------------------
+
+- Spring Cache is an abstraction; it does not store cached data by itself.
+- Redis is the cache provider that stores the entries.
+- Spring Boot configures a RedisCacheManager, which connects Spring Cache operations to Redis.
+- With this configuration, @Cacheable, @CachePut and @CacheEvict operate on Redis-backed cache entries.
+
+------------------------------------------------------------
+Dependencies (Maven)
+
+- Add Spring Cache and Spring Data Redis to the Spring Boot project.
+
+<dependencies> 
+
+	<dependency>
+    		<groupId>org.springframework.boot</groupId>
+    		<artifactId>spring-boot-starter-data-redis</artifactId>
+	</dependency>
+
+</dependencies>
+
+------------------------------------------------------------
+Enable caching
+
+@SpringBootApplication
+@EnableCaching
+public class ProductApplication {
+
+public static void main(String[] args) {
+    SpringApplication.run(
+        ProductApplication.class, args);
+}
+
+}
+
+- @EnableCaching enables Spring's annotation-driven cache interception.
+- Spring Boot auto-configuration can provide the Redis connection factory and RedisCacheManager when the Redis dependency and configuration are present.
+
+------------------------------------------------------------
+Redis configuration (application.properties)
+
+spring.cache.type=redis
+spring.cache.redis.time-to-live=10m
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
+
+- spring.cache.type=redis selects Redis as the cache provider.
+- spring.cache.redis.time-to-live=10m sets the default expiration for Redis cache entries managed by Spring Cache.
+- spring.data.redis.host and spring.data.redis.port specify where the Redis server is running.
+- If Spring Boot runs in a separate container, localhost refers to the application container, not the Redis container.
+- These are common Spring Boot properties; verify them against the project's Spring Boot version.
+
+------------------------------------------------------------
+Cache keys
+
+- A cache key must include every input that affects the result.
+- Examples: product ID, tenant, locale, or user scope.
+- A key that ignores relevant dimensions can return incorrect or even sensitive data to another request.
+- Use predictable namespaces and inspect the effective keys produced by the cache configuration.
+
+------------------------------------------------------------
+Serialization and deserialization
+
+- Java object → serializer → bytes → Redis.
+- Redis returns the stored bytes; the configured deserializer reconstructs the expected Java value.
+- JSON serializers are common, but type information must come from configuration, declared type information or metadata.
+- An untyped JSON deserializer may return a generic Map rather than a Product.
+- Incompatible serializer changes can make old cache entries unreadable.
+
+------------------------------------------------------------
+Failure handling
+
+- Redis outages do not automatically guarantee database fallback; behavior depends on application configuration and error handling.
+- Uncontrolled fallback can overwhelm the database when many requests bypass Redis.
+- Use suitable timeouts, monitoring, concurrency limits and controlled degradation.
+- Cache reads may be allowed to fall back, while locks and rate limits need stricter policies because silently skipping them can break correctness or security.
+
+=======================================================================================================================================================================
+Redis Infrastructure
+=======================================================================================================================================================================
+
+Redis server and deployment
+
+- Redis is a separate server process or managed service, not normally embedded in Spring Boot.
+- The application communicates with Redis over the network, commonly on port 6379.
+
+Spring Boot → Network → Redis server → Memory
+→ Optional persistence files
+
+------------------------------------------------------------
+Deployment options:
+
+- Local: run Redis on the development machine or in Docker.
+- Self-managed: run Redis on a VM, physical server or container; the team manages upgrades, security, monitoring and recovery.
+- Managed: a cloud provider operates the infrastructure and may provide backups, monitoring, failover and scaling features.
+
+------------------------------------------------------------
+Production considerations
+
+- Restrict network access; do not expose Redis directly to the public internet.
+- Size memory and configure maxmemory/eviction policies according to the workload.
+- Monitor memory, latency, evictions, errors, cache hit rate and database load.
+- Configure persistence and backups when stored data must survive restarts.
+- Use replication, Sentinel or Cluster when availability or capacity requirements justify them.
+- Test Redis failure and recovery instead of assuming the application will continue normally.
+
+=======================================================================================================================================================================
 
