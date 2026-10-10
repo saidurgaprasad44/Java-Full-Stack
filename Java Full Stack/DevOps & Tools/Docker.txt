@@ -1,11 +1,21 @@
-Docker
 
-Docker File: 
+Docker File: Instructions to build an image for any software or service when you need a custom image.
 
-Image: Packaged file that contains the Jar package and the environment required to run the jar
+Image: Packaged template that contains the application's files, its required runtime and the instructions and defaults needed to start it. Prebuilt images are also used for required software and dependencies.
 
-Container: Isolated environment
+Container: Isolated environment, a running instance. Docker creates a container from an image and runs its main process. The container has an isolated filesystem view, networking and process environment.
 
-Docker Compose: File that describes all the containers and how they connect
+Compose: The multi-container setup. A YAML file describing how to run the application and its dependencies together, including networking, ports, volumes and environment variables.
+
+Docker Desktop: Provides the environment needed to run Linux containers. In production, Docker containers may run on a Linux server with Docker Engine installed directly. Docker Desktop is not normally required on that server.
+
+Ports and networking
+
+Environment variables and configuration
+
+Dependencies
 
 
+
+
+PostgreSQL - volumes, persistence

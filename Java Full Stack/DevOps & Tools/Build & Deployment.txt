@@ -18,9 +18,8 @@
   PostgreSQL  Kafka     Redis
 
 =======================================================================================================================================================================
-
 Stage 1 - Without a docker:
-
+=======================================================================================================================================================================
 
 Spring Boot source
        ↓
@@ -37,6 +36,7 @@ Application running locally
 Test APIs
 
 
+
 Learn here:
 
 Maven build lifecycle
@@ -51,9 +51,43 @@ environment variables
 testing the packaged application
 
 ------------------------------------------------------------
+Run Maven Build
+------------------------------------------------------------
 
+- Right-click your project.
+- Select Run As → Maven build... (choose the configuration dialog, not just Maven build).
+- In the Goals field, enter: clean package
+- Click Run
+
+Goal	What it does
+------------------------------------------------------------
+clean	Removes the previous build output, normally the target/ directory.
+compile	Compiles application source code.
+test	Runs tests, if configured and not skipped.
+package	Packages compiled code and resources into the configured artifact, typically a JAR.
+
+------------------------------------------------------------
+JAR
+------------------------------------------------------------
+
+- After a successful build, open your project directory in File Explorer.
+- Find the jar in \target
+- Open Windows Command Prompt and navigate to the project directory: 
+
+cd C:\path\to\my-application
+
+- Run the JAR: 
+
+java -jar target\my-application-0.0.1-SNAPSHOT.jar
+
+- If the application starts successfully, you'll see logs similar to:
+
+Tomcat started on port 8080
+Started MyApplication in 4.5 seconds
+
+=======================================================================================================================================================================
 Stage 2 — Docker:
-
+=======================================================================================================================================================================
 
 Java Application
    ↓
@@ -84,9 +118,6 @@ Container
 PostgreSQL Redis Kafka
 
 
-- Onto local Windows machine.
-
-
 Learn here:
 
 Dockerfile
@@ -106,8 +137,10 @@ Kafka/Redis/PostgreSQL as infrastructure dependencies
 
 ------------------------------------------------------------
 
-Stage 3 — CI/CD
 
+=======================================================================================================================================================================
+Stage 3 — CI/CD
+=======================================================================================================================================================================
 
 - Put the project on GitHub and deploy locally
 
