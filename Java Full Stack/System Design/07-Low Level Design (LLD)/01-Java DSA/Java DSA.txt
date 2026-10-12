@@ -3,40 +3,55 @@
 =======================================================================================================================================================================
 
 ------------------------------------------------------------
-Problem-solving fundamentals
+1. Core Data Structures
 ------------------------------------------------------------
-
-Problem
-Constraints
-Brute force
-Edge cases
-Time / Space complexity
-
-------------------------------------------------------------
-Essential Data Structures
-------------------------------------------------------------
-
-Array / String
-Linked List
-Stack
-Queue / Deque
-Hash Table
-Tree / BST
-Heap
-Graph
+Array: Indexing, traversal, fixed size, multidimensional arrays
+String: Immutability, character access, string manipulation
+Dynamic array: Resizing, indexed access, insertion/removal costs
+Linked list: Nodes, references, singly vs. doubly linked
+Stack: LIFO, push, pop, peek
+Queue: FIFO, enqueue, dequeue
+Deque: Operations at both ends
+Hash table: Hashing, key lookup, collisions at a conceptual level
+Set: Uniqueness and membership checking
+Map: Key-value storage and lookup
+Tree / BST: Hierarchy, traversal, ordered search
+Heap / priority: queue Priority-based retrieval
+Graph: Vertices, edges, adjacency lists
 
 ------------------------------------------------------------
-Java DSA Toolkit
+2. Complexity fundamentals
 ------------------------------------------------------------
+Learn enough Big-O notation to compare common operations:
 
-Strings
+O(1): constant-time operation
+O(log n): logarithmic growth
+O(n): linear traversal
+O(n log n): common efficient sorting
+O(n square): nested full-array comparisons
+
+Typical costs for:
+array access
+list insertion
+searching
+hash lookups
+sorting and
+heap operations.
+
+- These are typical or average costs in some cases, not guarantees for every operation.
+- Which data structure suits a problem and why, before writing Java code.
+
+------------------------------------------------------------
+3. Java DSA Toolkit
+------------------------------------------------------------
+Strings:
 - String
 - StringBuilder
 - StringBuffer
 - char, char[]
 - String methods
 
-Arrays 
+Arrays:
 - int[]
 - String[]
 - Object[]
@@ -44,7 +59,7 @@ Arrays
 - array of objects
 - Arrays methods
 
-Lambda Expressions + Functional Interfaces
+Lambda Expressions + Functional Interfaces:
 - Predicate<T> → test something
 - Function<T,R> → transform something
 - Consumer<T> → perform an action
@@ -55,26 +70,29 @@ Lambda Expressions + Functional Interfaces
 - String::valueOf
 - filter, transform, sort, iterate
 
-Collections 
+Collections:
 - List: ArrayList, LinkedList
 - Set: HashSet, LinkedHashSet, TreeSet
 - Queue/Deque: Queue, Deque, ArrayDeque
 
-Map
+Map:
 - HashMap
 - LinkedHashMap
 - TreeMap
 
-Collections of Objects
+Collections of Objects:
 - List<Employee>
 - Map<Integer, Employee>
 - Map<String, List<Employee>>
 - Set<Employee>
 
-Nested Structures
+Nested Structures:
 - Customer
-     └── List<Order>
-           └── List<OrderItem>
+└── List<Order>
+       └── List<OrderItem>
+             ├── Product
+             ├── quantity
+             └── unitPrice
 - List<Customer>
 - Set<Customer>
 
@@ -113,51 +131,127 @@ Streams: Collection > stream() > filter > map > sorted > distinct > collect
 - Collectors.mapping()
 
 ------------------------------------------------------------
-Core Algorithms & Problem-Solving Patterns:
+4. Production-oriented Java coding
 ------------------------------------------------------------
 
-Arrays / Strings
-├── Hashing
-├── Two Pointers
-├── Sliding Window
-└── Prefix Sum
+Basic data manipulation:
 
-Searching / Ordering
-├── Binary Search
-├── Sorting
-└── Intervals
+- String processing, normalization and validation
+- Array and collection transformations
+- Removing duplicates while preserving order
+- Frequency counting
+- Searching and sorting
+- Converting between arrays, lists, sets and maps
+- Handling empty inputs, nulls and duplicates
 
-Linear Structures
-├── Stack
-├── Monotonic Stack
-└── Queue / Deque
+Collections of objects:
 
-Trees / Graphs
-├── DFS
-└── BFS
+Use models such as Employee, Product, Order, Customer and Transaction.
+- Filter objects by multiple conditions
+- Find maximum, minimum and matching objects
+- Sort by one or multiple fields
+- Group objects by a field
+- Count objects by category
+- Convert List<Employee> to Map<Long, Employee>
+- Build lookup maps by ID
+- Detect duplicate business keys
+- Merge or reconcile collections
+- Compare two collections to find additions, removals or changes
 
-Optimization
-├── Heap / Top-K
-├── Greedy
-└── Basic Dynamic Programming
+Maps and grouped data:
 
-------------------------------------------------------------
-Problem-Solving
-------------------------------------------------------------
+Map<Long, Employee>
+Map<String, List<Employee>>
+Map<String, Long>
+Map<String, BigDecimal>
 
-Problem
-identify pattern
-choose data structure
-design algorithm
-implement cleanly in Java
-handle edge cases
-Dry Runs
-analyze complexity
+- Grouping employees by department
+- Counting orders by status
+- Summing transaction amounts by type
+- Finding the most frequent item
+- Indexing records by ID
+- Grouping data with multiple levels of keys
+- Combining values using merge() or computeIfAbsent()
+
+Nested Structures:
+
+Customer
+└── List<Order>
+       └── List<OrderItem>
+             ├── Product
+             ├── quantity
+             └── unitPrice
+
+- Extract all products across all orders
+- Find customers who have placed qualifying orders
+- Calculate order totals
+- Calculate each customer's total spending
+- Group order items by product
+- Find the best-selling products
+- Identify customers with no orders
+- Handle missing or empty nested collections
+- Flatten nested data using loops and flatMap()
 
 ArrayList.get()       → generally O(1)
 HashMap.get()         → O(1) average
 HashSet.contains()    → O(1) average
 TreeMap.get()         → O(log n)
 List.contains()       → O(n)
+
+------------------------------------------------------------
+5. Java practice
+------------------------------------------------------------
+Strings and arrays:
+Reverse and transform strings, count characters, process arrays, remove duplicates and perform searches.
+Target: 5–8 programs
+
+Collections and maps:
+Frequency counting, deduplication, lookup, merging, grouping and sorting.
+Target: 5–8 programs
+
+Objects and nested structures:
+Employee, order, product and transaction exercises; grouping, aggregation and nested extraction.
+Target: 6–8 programs
+
+Lambdas and streams:
+Filtering, transformation, sorting, grouping, flattening and aggregation.
+Target: 6–8 programs
+
+- Given business data, select suitable data structures and produce readable, maintainable Java code.
+
+------------------------------------------------------------
+6. Important DSA patterns, algorithms and coding
+------------------------------------------------------------
+Array and string: traversal Searching, counting, reversing, in-place changes Essential
+Hashing: Frequency maps, duplicate detection, pair lookup Essential
+Sorting: Built-in sorting, sorting-based solutions Essential
+Two pointers: Sorted pairs, palindrome, in-place removal High
+Sliding window: Fixed/variable windows High
+Prefix sums: Range sums and cumulative totals High
+Binary search: Standard search, first/last occurrence High
+Stack and queue: Parentheses, processing order Medium
+Linked list: Reverse, middle, cycle detection Medium
+Recursion: Base cases and recursive calls Basic
+Trees: Traversals, depth, level-order traversal Basic
+Heap / priority queue: Top-K, kth-largest Medium
+BFS / DFS: Basic tree/graph/grid traversal Basic
+Greedy: Simple interval or scheduling problems Introductory
+Dynamic programming: Fibonacci, climbing stairs, memoization Introductory
+
+------------------------------------------------------------
+7. DSA practice
+------------------------------------------------------------
+Array and string basics
+Hashing
+Sorting
+Two pointers
+Sliding window
+Prefix sums
+Binary search
+Stack and queue
+Linked list
+Basic tree traversal
+Heap and simple BFS/DFS
+Introductory greedy and DP
 
 =======================================================================================================================================================================
