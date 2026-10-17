@@ -117,6 +117,24 @@ Container
        ↓    ↓    ↓
 PostgreSQL Redis Kafka
 
+Install and verify Docker Desktop
+Locate your JAR built by Maven
+Create the Dockerfile
+
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+
+COPY target/quiz-0.0.1-SNAPSHOT.jar app.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+Build the image
+docker build -t quiz-app:1.0 .
+
+
 
 Learn here:
 
