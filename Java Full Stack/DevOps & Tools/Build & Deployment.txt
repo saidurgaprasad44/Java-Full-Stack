@@ -36,20 +36,6 @@ Application running locally
 Test APIs
 
 
-
-Learn here:
-
-Maven build lifecycle
-dependencies and packaging
-application.properties/yml
-profiles/configuration
-JAR structure
-running Spring Boot outside the IDE
-logs
-ports
-environment variables
-testing the packaged application
-
 ------------------------------------------------------------
 Run Maven Build
 ------------------------------------------------------------
@@ -85,8 +71,112 @@ java -jar target\my-application-0.0.1-SNAPSHOT.jar
 Tomcat started on port 8080
 Started MyApplication in 4.5 seconds
 
+------------------------------------------------------------
+
+Learn here:
+
+Maven build lifecycle
+dependencies and packaging
+application.properties/yml
+profiles/configuration
+JAR structure
+running Spring Boot outside the IDE
+logs
+ports
+environment variables
+testing the packaged application
+
 =======================================================================================================================================================================
-Stage 2 — Docker:
+Stage 2 — Docker (Single Container):
+=======================================================================================================================================================================
+
+Java Application
+   ↓
+Maven
+   ↓
+Docker Image
+   ↓
+Container
+
+
+     Browser / Client
+            ↓
+        Container  <->  Docker Network  <->  host (Windows/Linux server)
+            ↓                                 ↓      
+       Spring Boot                        PostgreSQL DB
+
+
+------------------------------------------------------------
+Install and verify Docker Desktop / Docker Engine
+------------------------------------------------------------
+
+
+
+------------------------------------------------------------
+Locate your JAR built by Maven
+------------------------------------------------------------
+
+Find the Jar file (inside /target) created by maven in previous stage
+
+------------------------------------------------------------
+Create the Dockerfile
+------------------------------------------------------------
+
+Create a file in project root folder naming "Dockerfile" with no extension and add the below content:
+
+
+```
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+
+COPY target/quiz-0.0.1-SNAPSHOT.jar app.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
+```
+
+------------------------------------------------------------
+Build the image 
+------------------------------------------------------------
+
+- Open Command Prompt in the project root folder, where both Dockerfile and pom.xml are located and run:
+
+docker build -t quiz-app:1.0 .
+
+- The final . means Docker uses the current directory as its build context, so it can access the Dockerfile and the JAR under target/.
+- After a successful build, list your images using below command in the terminal to verify the created image
+
+docker images
+
+- Or check the images in the images tab in Docker Desktop
+
+------------------------------------------------------------
+Start the Container
+------------------------------------------------------------
+
+docker run --name quiz-app-container -p 8079:8079 -e "SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/questiondb" quiz-app:1.0
+
+--name quiz-app-container	Gives the container a convenient name
+-p 8079:8079			Publishes a host port and maps it to that container port.
+-e SPRING_DATASOURCE_URL=...	Overrides the Spring datasource URL for this container
+host.docker.internal		Routes the database connection to your Windows host
+quiz-app:1.0			Uses the image you built earlier
+
+------------------------------------------------------------
+Test the APIs
+------------------------------------------------------------
+
+Try the applications endpoints and test
+
+------------------------------------------------------------
+Stop the Container
+------------------------------------------------------------
+docker stop quiz-app-container
+
+=======================================================================================================================================================================
+Stage 3 — Docker (Multiple Containers / Compose):
 =======================================================================================================================================================================
 
 Java Application
@@ -117,25 +207,36 @@ Container
        ↓    ↓    ↓
 PostgreSQL Redis Kafka
 
-Install and verify Docker Desktop
-Locate your JAR built by Maven
-Create the Dockerfile
-
-FROM eclipse-temurin:17-jre
-
-WORKDIR /app
-
-COPY target/quiz-0.0.1-SNAPSHOT.jar app.jar
-
-EXPOSE 8080
-
-ENTRYPOINT ["java", "-jar", "app.jar"]
-
-Build the image
-docker build -t quiz-app:1.0 .
+Stage 2 plan
+1. Back up your existing Windows PostgreSQL database — protect your current schema and data.
+2. Run PostgreSQL in Docker — create a database container with persistent storage.
+3. Restore the existing database — copy its schema and data into the container.
+4. Connect the Quiz app container to PostgreSQL — use Docker networking rather than host.docker.internal.
+5. Verify the application — test the APIs and confirm the data is accessible.
+6. Fresh database workflow — learn the steps and configuration only.
 
 
 
+
+docker run -d `
+  --name quiz-postgres `
+  -e POSTGRES_DB=questiondb `
+  -e POSTGRES_USER=quizuser `
+  -e POSTGRES_PASSWORD=quiz123 `
+  -p 127.0.0.1:5433:5432 `
+  -v quiz-postgres-data:/var/lib/postgresql `
+  postgres:18
+
+docker run -d `
+  --name quiz-app-container `
+  --network quiz-network `
+  -p 8079:8079 `
+  -e "SPRING_DATASOURCE_URL=jdbc:postgresql://quiz-postgres:5432/questiondb_restore" `
+  -e "SPRING_DATASOURCE_USERNAME=quizuser" `
+  -e "SPRING_DATASOURCE_PASSWORD=quiz123" `
+  quiz-app:1.0
+
+------------------------------------------------------------
 Learn here:
 
 Dockerfile
@@ -152,9 +253,6 @@ startup dependencies
 persistence
 Nginx reverse proxy
 Kafka/Redis/PostgreSQL as infrastructure dependencies
-
-------------------------------------------------------------
-
 
 =======================================================================================================================================================================
 Stage 3 — CI/CD
