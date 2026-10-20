@@ -6,18 +6,87 @@ Windows containers: Use a Windows kernel and are needed for applications that de
 ------------------------------------------------------------
 DockerFile: Instructions to build an image for any software or service when you need a custom image.
 
+```
+FROM: 
+
+WORKDIR: 
+
+COPY: 
+
+EXPOSE: Documents the intended container port
+
+ENTRYPOINT: 
+```
+
 ------------------------------------------------------------
 Image: Packaged template that contains the application's files, its required runtime and the instructions and defaults needed to start it. Prebuilt images are also used for required software and dependencies.
 
-Commands: docker build, docker images
+Commands: 
+docker build
+docker images
 
 ------------------------------------------------------------
 Container: Isolated environment, a running instance. Docker creates a container from an image and runs its main process. The container has an isolated filesystem view, networking and process environment. The container can be running, stopped, or removed.
 
-Commands: docker run, docker ps, docker stop
+Commands: 
+docker run --name <new_container_name> -p <host_port>:<container_port> -e docker_image_name:tag
+docker start <container_name>
+docker restart <container_name>
+docker ps
+docker stop <container_name>
+docker logs -f <container_name>
+docker rm <container_name>
 
 ------------------------------------------------------------
 Compose: The multi-container setup. A YAML file describing how to run the application and its dependencies together, including networking, ports, volumes and environment variables.
+
+```
+
+services:
+  app:
+    image: quiz-app:1.0
+    container_name: quiz-app-container
+    ports:
+      - "8079:8079"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/questiondb_restore
+      SPRING_DATASOURCE_USERNAME: quizuser
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:18
+    container_name: quiz-postgres
+    environment:
+      POSTGRES_DB: questiondb_restore
+      POSTGRES_USER: quizuser
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - quiz-postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quizuser -d questiondb_restore"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  quiz-postgres-data:
+    external: true
+```
+
+
+docker compose config --quiet
+docker compose up -d
+docker compose logs --tail 100 <service_name>
+docker compose logs -f <service_name>
+docker compose ps
+docker compose down
 
 ------------------------------------------------------------
 Docker Engine: Manages images, containers, networks and volumes.
@@ -31,28 +100,29 @@ Ports
 ------------------------------------------------------------
 Docker Network
 
+docker network create <new_network_name>
+docker network connect <network_name> <container_name>
+docker network inspect <network_name>
+docker network ls
+
 ------------------------------------------------------------
 Environment variables and configuration
 
 ------------------------------------------------------------
 Dependencies:
-PostgreSQL - volumes, persistence
+
+Nginx - 
 
 
-=======================================================================================================================================================================
-Dockerfile:
-=======================================================================================================================================================================
+PostgreSQL - volumes/persistence - volumes allow docker to persist the data even though the container is removed
 
-FROM: 
+docker volume create <volume_name>
+docker volume ls
 
-WORKDIR: 
+Kafka -
 
-COPY: 
 
-EXPOSE: Documents the intended container port
-
-ENTRYPOINT: 
-
-multistage:
+Redis - 
+ 
 
 =======================================================================================================================================================================

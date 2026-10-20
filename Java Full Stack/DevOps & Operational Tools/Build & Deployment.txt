@@ -87,7 +87,7 @@ environment variables
 testing the packaged application
 
 =======================================================================================================================================================================
-Stage 2 — Docker (Single Container):
+Stage 2A — Docker (Single Container):
 =======================================================================================================================================================================
 
 Java Application
@@ -101,28 +101,27 @@ Container
 
      Browser / Client
             ↓
-        Container  <->  Docker Network  <->  host (Windows/Linux server)
+        Container  <->  host.docker.internal  <->  host (Windows/Linux server)
             ↓                                 ↓      
        Spring Boot                        PostgreSQL DB
-
 
 ------------------------------------------------------------
 Install and verify Docker Desktop / Docker Engine
 ------------------------------------------------------------
 
-
+- Download and install Docker Desktop or Docker Engine
 
 ------------------------------------------------------------
 Locate your JAR built by Maven
 ------------------------------------------------------------
 
-Find the Jar file (inside /target) created by maven in previous stage
+- Find the Jar file (inside /target) created by maven in previous stage
 
 ------------------------------------------------------------
 Create the Dockerfile
 ------------------------------------------------------------
 
-Create a file in project root folder naming "Dockerfile" with no extension and add the below content:
+- Create a file in project root folder naming "Dockerfile" with no extension and add the below content:
 
 
 ```
@@ -153,7 +152,7 @@ docker images
 - Or check the images in the images tab in Docker Desktop
 
 ------------------------------------------------------------
-Start the Container
+Run the Container
 ------------------------------------------------------------
 
 docker run --name quiz-app-container -p 8079:8079 -e "SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/questiondb" quiz-app:1.0
@@ -168,15 +167,16 @@ quiz-app:1.0			Uses the image you built earlier
 Test the APIs
 ------------------------------------------------------------
 
-Try the applications endpoints and test
+- Try the applications endpoints and test
 
 ------------------------------------------------------------
 Stop the Container
 ------------------------------------------------------------
+
 docker stop quiz-app-container
 
 =======================================================================================================================================================================
-Stage 3 — Docker (Multiple Containers / Compose):
+Stage 2B — Docker (Multi-Container & Custom Network):
 =======================================================================================================================================================================
 
 Java Application
@@ -185,38 +185,36 @@ Maven
    ↓
 Docker Image
    ↓
-Docker Compose
+App Container
+
+
+PostgreSQL 18 Image
    ↓
-┌─────────────┐
-│ Nginx           │
-│ Spring Boot     │
-│ PostgreSQL      │
-│ Redis           │
-│ Kafka           │
-└─────────────┘
-   ↓
-Container
+DB Container
 
 
      Browser / Client
             ↓
-          Nginx
-            ↓
-       Spring Boot
-       │    │   │
-       ↓    ↓    ↓
-PostgreSQL Redis Kafka
-
-Stage 2 plan
-1. Back up your existing Windows PostgreSQL database — protect your current schema and data.
-2. Run PostgreSQL in Docker — create a database container with persistent storage.
-3. Restore the existing database — copy its schema and data into the container.
-4. Connect the Quiz app container to PostgreSQL — use Docker networking rather than host.docker.internal.
-5. Verify the application — test the APIs and confirm the data is accessible.
-6. Fresh database workflow — learn the steps and configuration only.
+     App Container  <->  Custom Docker Network  <->  DB Container
+            ↓                                             ↓      
+       Spring Boot                                   PostgreSQL DB
 
 
+------------------------------------------------------------
+DB Back up
+------------------------------------------------------------
 
+- If the database with data has to be migrated to a container instead of creating a fresh DB altogether, take a backup of existing DB
+
+------------------------------------------------------------
+Run the PostgreSQL 18 container
+------------------------------------------------------------
+
+- Create a volume to persist the database and its schema and data
+
+docker volume create quiz-postgres-data
+
+- Start the db container using PostgreSQL 18 image
 
 docker run -d `
   --name quiz-postgres `
@@ -227,6 +225,33 @@ docker run -d `
   -v quiz-postgres-data:/var/lib/postgresql `
   postgres:18
 
+------------------------------------------------------------
+Restore DB
+------------------------------------------------------------
+
+- Restore the DB schema and data to the containerised DB, if backed up
+
+------------------------------------------------------------
+Create Docker Network
+------------------------------------------------------------
+
+docker network create quiz-network
+
+- Connect the quiz-postgres container to the network
+
+docker network connect quiz-network quiz-postgres
+
+------------------------------------------------------------
+Run the Spring Boot Container
+------------------------------------------------------------
+
+- Before starting the app container, stop and remove the container started in the previous stage:
+
+docker stop quiz-app-container
+docker rm quiz-app-container
+
+- Run the container:
+
 docker run -d `
   --name quiz-app-container `
   --network quiz-network `
@@ -235,6 +260,10 @@ docker run -d `
   -e "SPRING_DATASOURCE_USERNAME=quizuser" `
   -e "SPRING_DATASOURCE_PASSWORD=quiz123" `
   quiz-app:1.0
+
+- Verify logs
+
+docker logs -f quiz-app-container
 
 ------------------------------------------------------------
 Learn here:
@@ -253,6 +282,162 @@ startup dependencies
 persistence
 Nginx reverse proxy
 Kafka/Redis/PostgreSQL as infrastructure dependencies
+
+=======================================================================================================================================================================
+Stage 2C — Docker Compose:
+=======================================================================================================================================================================
+
+Java Application
+   ↓
+Maven
+   ↓
+Docker Image
+   ↓
+Docker Compose
+   ↓
+┌─────────────┐
+│ Spring Boot     │
+│ PostgreSQL      │
+└─────────────┘
+   ↓
+Containers
+
+
+     Browser / Client
+            ↓
+       Spring Boot
+            ↓
+        PostgreSQL
+
+------------------------------------------------------------
+Create the Compose YAML File
+------------------------------------------------------------
+
+- In the projects root directory containing pom.xml and Dockerfile — create a new file named:
+
+compose.yaml
+
+- Add the below configuration:
+
+
+```
+services:
+  app:
+    image: quiz-app:1.0
+    container_name: quiz-app-container
+    ports:
+      - "8079:8079"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/questiondb_restore
+      SPRING_DATASOURCE_USERNAME: quizuser
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:18
+    container_name: quiz-postgres
+    environment:
+      POSTGRES_DB: questiondb_restore
+      POSTGRES_USER: quizuser
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - quiz-postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quizuser -d questiondb_restore"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  quiz-postgres-data:
+    external: true
+```
+
+- Create .env file in the same directory and add below:
+
+POSTGRES_PASSWORD=quiz123
+
+------------------------------------------------------------
+Validate the Compose file
+------------------------------------------------------------
+
+- In PowerShell/CMD, navigate to your project root directory containing compose.yaml — and run:
+
+docker compose config --quiet
+
+------------------------------------------------------------
+Stop the current containers
+------------------------------------------------------------
+
+docker stop quiz-app-container
+docker stop quiz-postgres
+
+------------------------------------------------------------
+Remove the old containers
+------------------------------------------------------------
+
+docker rm quiz-app-container quiz-postgres
+
+------------------------------------------------------------
+Start services
+------------------------------------------------------------
+
+docker compose up -d
+
+------------------------------------------------------------
+Verify Deployment
+------------------------------------------------------------
+
+- Check container status
+
+docker compose ps
+
+- Check application logs
+
+docker compose logs --tail 100 app
+
+- Watch logs live:
+
+docker compose logs -f app
+
+- Test the APIs
+
+
+------------------------------------------------------------
+
+Java Application
+   ↓
+Maven
+   ↓
+Docker Image
+   ↓
+Docker Compose
+   ↓
+┌─────────────┐
+│ Nginx           │
+│ Spring Boot     │
+│ PostgreSQL      │
+│ Redis           │
+│ Kafka           │
+└─────────────┘
+   ↓
+Containers
+
+
+     Browser / Client
+            ↓
+       Spring Boot
+       │    │   │
+       ↓    ↓    ↓
+PostgreSQL Redis Kafka
+
+
 
 =======================================================================================================================================================================
 Stage 3 — CI/CD

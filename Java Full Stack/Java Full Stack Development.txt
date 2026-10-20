@@ -55,8 +55,7 @@ API communication	- websockets, webhooks, sse, polling, long polling, soap, rest
 microservices 		- api gateway, load balancer, microservices, inter service communication, service discovery, open feign, spring cloud, service mesh, 
 system design concepts 	- sharding, partitions, replication, rate limiting, CDNs, reverse proxy, 
 
-Docker and Kubernetes	- 
-DevOps & Tools		- Inspect tool in browsers, CI/CD pipeline, splunk, datadog, postman, git, azure devops, servicenow
+DevOps & Tools		- Inspect tool in browsers, CI/CD pipeline, splunk, Docker & Compose, Prometheus & Grafana, postman, git, azure devops, servicenow
 Cloud			- Azure cloud and its services
 SDLC & SCRUM		- planning, requirement analysis(functional and non-functional), design, implementation, testing (Junit, integration, etc.,), deployment, maintenance (logging..,) 
 
