@@ -94,6 +94,8 @@ Java Application
    ↓
 Maven
    ↓
+Jar + Environment
+   ↓
 Docker Image
    ↓
 Container
@@ -102,8 +104,8 @@ Container
      Browser / Client
             ↓
         Container  <->  host.docker.internal  <->  host (Windows/Linux server)
-            ↓                                 ↓      
-       Spring Boot                        PostgreSQL DB
+            ↓                                       ↓      
+       Spring Boot                              PostgreSQL DB
 
 ------------------------------------------------------------
 Install and verify Docker Desktop / Docker Engine
@@ -155,7 +157,7 @@ docker images
 Run the Container
 ------------------------------------------------------------
 
-docker run --name quiz-app-container -p 8079:8079 -e "SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/questiondb" quiz-app:1.0
+docker run -d --name quiz-app-container -p 8079:8079 -e "SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/questiondb" quiz-app:1.0
 
 --name quiz-app-container	Gives the container a convenient name
 -p 8079:8079			Publishes a host port and maps it to that container port.
@@ -214,7 +216,7 @@ Run the PostgreSQL 18 container
 
 docker volume create quiz-postgres-data
 
-- Start the db container using PostgreSQL 18 image
+- Start the db container using PostgreSQL 18 image (prebuilt image available)
 
 docker run -d `
   --name quiz-postgres `
@@ -431,6 +433,8 @@ Containers
 
 
      Browser / Client
+            ↓
+	  Nginx
             ↓
        Spring Boot
        │    │   │

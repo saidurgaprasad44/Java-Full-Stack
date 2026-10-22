@@ -1,0 +1,6 @@
+Centralized Authentication
+Load balancing
+rate limiting
+reverse proxys
+
+Example: Nginx, Apache

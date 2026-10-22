@@ -3,6 +3,10 @@ The operating System inside Docker Containers can be Linux or Windows
 Linux containers/Engine: Use the Linux kernel and are the standard choice for Java/Spring Boot applications in production.
 Windows containers/Engine: Use a Windows kernel and are needed for applications that depend on Windows-specific components, such as certain .NET Framework applications.
 
+
+Dockerfile  --build-->  image  --run-->  container 
+AvailableImage --run--> container
+
 ------------------------------------------------------------
 DockerFile: Instructions to build an image for any software or service when you need a custom image.
 
@@ -22,7 +26,7 @@ ENTRYPOINT:
 Image: Packaged template that contains the application's files, its required runtime and the instructions and defaults needed to start it. Prebuilt images are also used for required software and dependencies.
 
 Commands: 
-docker build
+docker build -t <new_image_name>:tag .
 docker images
 
 ------------------------------------------------------------
@@ -88,6 +92,7 @@ docker compose up -d
 docker compose logs --tail 100 <service_name>
 docker compose logs -f <service_name>
 docker compose ps
+docker compose ps -a
 docker compose down
 
 ------------------------------------------------------------
