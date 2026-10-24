@@ -45,13 +45,6 @@ Run Maven Build
 - In the Goals field, enter: clean package
 - Click Run
 
-Goal	What it does
-------------------------------------------------------------
-clean	Removes the previous build output, normally the target/ directory.
-compile	Compiles application source code.
-test	Runs tests, if configured and not skipped.
-package	Packages compiled code and resources into the configured artifact, typically a JAR.
-
 ------------------------------------------------------------
 JAR
 ------------------------------------------------------------
@@ -111,7 +104,7 @@ Container
 Install and verify Docker Desktop / Docker Engine
 ------------------------------------------------------------
 
-- Download and install Docker Desktop or Docker Engine
+- Download and install Docker Desktop or Docker Engine + Compose
 
 ------------------------------------------------------------
 Locate your JAR built by Maven
@@ -146,7 +139,6 @@ Build the image
 
 docker build -t quiz-app:1.0 .
 
-- The final . means Docker uses the current directory as its build context, so it can access the Dockerfile and the JAR under target/.
 - After a successful build, list your images using below command in the terminal to verify the created image
 
 docker images
@@ -159,11 +151,9 @@ Run the Container
 
 docker run -d --name quiz-app-container -p 8079:8079 -e "SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/questiondb" quiz-app:1.0
 
---name quiz-app-container	Gives the container a convenient name
--p 8079:8079			Publishes a host port and maps it to that container port.
 -e SPRING_DATASOURCE_URL=...	Overrides the Spring datasource URL for this container
 host.docker.internal		Routes the database connection to your Windows host
-quiz-app:1.0			Uses the image you built earlier
+quiz-app:1.0			Uses the image built earlier
 
 ------------------------------------------------------------
 Test the APIs

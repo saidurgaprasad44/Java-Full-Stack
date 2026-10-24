@@ -1,8 +1,9 @@
 
 services:
   app:
-    image: quiz-app:1.0
-    container_name: quiz-app-container
+    build: 
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "8079:8079"
     environment:
@@ -34,4 +35,3 @@ services:
 
 volumes:
   quiz-postgres-data:
-    external: true

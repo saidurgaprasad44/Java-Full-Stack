@@ -1,32 +1,24 @@
 server:
-  port: 8081
+  port: 8085
 
 spring:
   application:
-    name: order-service
+    name: analytics-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/order_db
+    url: jdbc:postgresql://localhost:5432/analytics_db
     username: postgres
-    password: siraj123
+    password: postgres
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
       ddl-auto: validate
     show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
 
   kafka:
     bootstrap-servers: localhost:29092
 
-    consumer:
-      group-id: order-service-group
-      auto-offset-reset: earliest
-
 logging:
   level:
-    org.hibernate.SQL: DEBUG
     org.springframework.kafka: INFO

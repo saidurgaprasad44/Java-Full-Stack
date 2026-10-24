@@ -5,7 +5,7 @@ Windows containers/Engine: Use a Windows kernel and are needed for applications 
 
 
 Dockerfile  --build-->  image  --run-->  container 
-AvailableImage --run--> container
+Prebuilt Image --run--> container
 
 ------------------------------------------------------------
 DockerFile: Instructions to build an image for any software or service when you need a custom image.
@@ -27,13 +27,23 @@ Image: Packaged template that contains the application's files, its required run
 
 Commands: 
 docker build -t <new_image_name>:tag .
+
+- The final . means Docker uses the current directory as its build context, so it can access the Dockerfile and the JAR under target/.
+
 docker images
 
 ------------------------------------------------------------
 Container: Isolated environment, a running instance. Docker creates a container from an image and runs its main process. The container has an isolated filesystem view, networking and process environment. The container can be running, stopped, or removed.
 
 Commands: 
-docker run --name <new_container_name> -p <host_port>:<container_port> -e docker_image_name:tag
+
+docker run --name <new_container_name> -p <host_port>:<container_port> -e "<environment_variable_name>=<value>" <docker_image_name>:tag
+
+--name 				Gives the container a convenient name
+-p 				Publishes a host port and maps it to that container port.
+-e 				environment variable
+<docker_image_name>:tag		Uses already built image earlier
+
 docker start <container_name>
 docker restart <container_name>
 docker ps
@@ -44,8 +54,8 @@ docker rm <container_name>
 ------------------------------------------------------------
 Compose: The multi-container setup. A YAML file describing how to run the application and its dependencies together, including networking, ports, volumes and environment variables.
 
-```
 
+```
 services:
   app:
     image: quiz-app:1.0
@@ -84,6 +94,29 @@ volumes:
     external: true
 ```
 
+- "external: true" tells compose to not create the mentioned volume(s) and look outside the compose stack
+- If a prebuilt image is already available, configure it as "image: <image_name>:tag
+- If the image is not prebuilt, compose can build the image with the below configuration:
+
+```
+  app:
+    build: 
+      context: ./quiz-service
+      dockerfile: Dockerfile
+    ports:
+      - "8079:8079"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/questiondb_restore
+      SPRING_DATASOURCE_USERNAME: quizuser
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+```
+
+- If the Dockerfile is in the same directory as the compose file, use "context: .
+
 
 docker compose config --quiet
 docker compose config --services
@@ -105,7 +138,10 @@ Docker Desktop: Provides the environment needed to run Linux containers. In prod
 Ports
 
 ------------------------------------------------------------
-Docker Network
+Docker Network: A mechanism that allows Docker containers to communicate with
+- Other containers
+- your host computer
+- External systems, such as APIs and websites on the Internet
 
 docker network create <new_network_name>
 docker network connect <network_name> <container_name>

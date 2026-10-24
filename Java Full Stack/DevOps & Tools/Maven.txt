@@ -1,0 +1,54 @@
+
+mvn -version
+
+Goal	What it does
+------------------------------------------------------------
+clean	Removes the previous build output, normally the target/ directory.
+compile	Compiles application source code.
+test	Runs tests, if configured and not skipped.
+package	Packages compiled code and resources into the configured artifact, typically a JAR.
+install compiles and packages contracts, runs its tests, and installs the resulting JAR into your local Maven repository, usually under C:\Users\<your-user>\.m2\repository.
+
+
+mvn clean package
+mvn clean install
+
+
+
+
+Multi-module build:
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.14</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.example</groupId>
+    <artifactId>event-driven-microservices</artifactId>
+    <version>1.0.0</version>
+
+    <packaging>pom</packaging>
+
+    <properties>
+        <java.version>21</java.version>
+    </properties>
+
+    <modules>
+        <module>contracts</module>
+        <module>order-service</module>
+        <module>payment-service</module>
+        <module>inventory-service</module>
+        <module>notification-service</module>
+        <module>analytics-service</module>
+    </modules>
+
+</project>

@@ -1,0 +1,17 @@
+Scaling Service Instances:
+
+Vertical(Internal) Scaling:
+Horizontal Scaling:
+
+
+
+
+
+Database Scaling:
+
+Vertical(Internal) Scaling:
+Partitioning
+
+Horizontal Scaling:
+Sharding
+Replication
