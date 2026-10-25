@@ -121,7 +121,17 @@ volumes:
 docker compose config --quiet
 docker compose config --services
 docker compose up -d --build
+
+- Run ".. --build" command if compose needs to build images
+
 docker compose up -d
+
+- Run this command if compose needs only to run the containers
+
+docker compose up -d <service_1> <service_2>
+
+- This will start only the specified services
+
 docker compose logs --tail 100 <service_name>
 docker compose logs -f <service_name>
 docker compose ps

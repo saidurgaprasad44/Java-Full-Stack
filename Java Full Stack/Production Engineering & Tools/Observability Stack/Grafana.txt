@@ -1,0 +1,24 @@
+=======================================================================================================================================================================
+									  Grafana
+=======================================================================================================================================================================
+
+Grafana - The investigation workspace
+
+- Grafana brings the different telemetry sources together.
+- It queries the backends like Prometheus, Tempo, Loki and visualizes their results.
+
+
+Metrics to Traces:
+
+- Get Trace ID from an exemplar in Prometheus metrics (Explore -> Prometheus)
+- Query with `histogram_quantile(.99,sum(rate(http_server_requests_seconds_bucket{application="app-a", uri!="/actuator/prometheus"}[1m])) by(uri, le))`
+- Turn on Exemplars in options
+- Then query in Tempo (Explore -> Tempo)
+
+Traces to Logs:
+
+- Get Trace ID and tags defined in Tempo data source from span, then query with Loki (Explore -> Loki)
+
+Logs to Traces:
+
+- Get Trace ID from log (regex defined in Loki data source), then query in Tempo

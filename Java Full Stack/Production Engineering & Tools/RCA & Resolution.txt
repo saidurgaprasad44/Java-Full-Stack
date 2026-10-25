@@ -1,3 +1,40 @@
+=======================================================================================================================================================================
+How to perform root-cause analysis (RCA):
+=======================================================================================================================================================================
+
+Step 1 — Detect the symptom with metrics
+
+- Open Grafana and inspect request rate, latency, error rate, JVM metrics, and database connection-pool metrics if exposed.
+
+Question: What changed, and when did it start?
+
+
+
+Step 2 — Isolate the slow operation with traces
+
+- Open a representative slow request in Tempo. Find the longest spans and identify whether time was spent in application code, PostgreSQL, Redis, or a downstream HTTP call.
+
+Question: Which operation is consuming the time?
+
+
+
+Step 3 — Find the detailed error in logs
+
+- Search Loki for the relevant exception or trace ID. If Loki ingestion isn't configured, use docker compose logs instead.
+
+Question: What failed, and what does the exception tell us?
+
+
+
+Step 4 — Validate the hypothesis
+
+- Check PostgreSQL, Redis, JVM, connection pools, recent configuration changes, and resource pressure as relevant. Confirm the cause before applying a fix.
+
+Question: What evidence proves the root cause?
+
+
+=======================================================================================================================================================================
+
 1. Java Core & Runtime Internals (The "Under the Hood" Knowledge)
 - Memory Management: Deep understanding of JVM Heap vs. Non-Heap memory, Metaspace, and Garbage Collection (GC) behavior (e.g., G1GC, Parallel GC tuning). 
 - Concurrency Issues: Understanding thread lifecycle, identifying thread deadlocks, thread starvation, and CPU spikes caused by rogue loops. 
@@ -34,7 +71,7 @@
 - CI/CD Awareness: Navigating deployment pipelines (Azure DevOps, Jenkins, or GitHub Actions) to restart failed deployments, verify build tags, and check environmental variables.
 - ITIL Framework: Strict adherence to Incident Management (handling P1/P2 critical outages), Problem Management (Root Cause Analysis - RCA documentation), and Change Management (deploying fixes to production securely)
 
-
+=======================================================================================================================================================================
 
 Core Java (8/11/17)
 JVM Memory & GC tuning

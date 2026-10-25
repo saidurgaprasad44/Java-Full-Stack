@@ -1,0 +1,41 @@
+=======================================================================================================================================================================
+							Prometheus/Spring Boot Actuator/Micrometer - Metrics
+=======================================================================================================================================================================
+
+- Prometheus answers questions such as:
+
+	- Is request latency increasing?
+	- Are HTTP 500 errors increasing?
+	- Is the application receiving more traffic?
+	- Are JVM memory or thread counts changing?
+
+- To get Prometheus metrics from the Spring Boot application, we need two dependencies:
+
+	- Spring Boot Actuator: Actuator provides a lot of monitoring features by HTTP or JMX endpoints for the Spring Boot applications.
+	- Micrometer: Micrometer provides a general API to collect metrics and transform the format for different monitoring systems, including Prometheus.
+
+- Spring Boot Actuator and Micrometer expose metrics through an endpoint such as: /actuator/Prometheus
+- Prometheus periodically scrapes that endpoint
+- An exemplar, when available, can link a metric observation to a trace.
+- Add these two dependencies to the pom.xml 
+
+  <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+  </dependency>
+  
+  <dependency>
+    <groupId>io.micrometer</groupId>
+    <artifactId>micrometer-registry-prometheus</artifactId>
+  </dependency>
+
+- And config to the application.yaml as follows:
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus # only exposure /actuator/prometheus endpoint
+  metrics:
+    tags:
+      application: app # add tag to each prometheus metric

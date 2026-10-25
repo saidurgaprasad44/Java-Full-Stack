@@ -1,0 +1,8 @@
+=======================================================================================================================================================================
+										Loki - Centralized Logs
+=======================================================================================================================================================================
+
+Loki
+
+- A log collector like Loki Docker logging driver collects the logs from all microservices and their instances 
+- Loki stores those logs in one place, correlates with trace id and span id

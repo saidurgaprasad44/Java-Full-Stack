@@ -159,7 +159,7 @@ Event-Driven Communication:
 - Other services consume that event independently.
 
 
-RabbitMQ (Message Queue):
+1. RabbitMQ (Message Queue):
 
 - Focuses on reliable message delivery between producer and consumer.
 

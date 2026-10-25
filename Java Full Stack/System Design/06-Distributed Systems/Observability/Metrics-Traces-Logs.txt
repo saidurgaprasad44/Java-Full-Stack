@@ -1,0 +1,6 @@
+Metrics ---> Spring Boot Actuator → Micrometer → Prometheus → Grafana
+
+Traces ---> OpenTelemetry → Tempo → Grafana
+
+Logs ---> Promtail → Loki → Grafana
+

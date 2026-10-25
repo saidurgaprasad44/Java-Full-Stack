@@ -1,0 +1,35 @@
+=======================================================================================================================================================================
+								OpenTelemetry/Tempo - Traces
+=======================================================================================================================================================================
+
+OpenTelemetry — instrumentation
+
+- The OpenTelemetry Java agent automatically observes supported operations from applications and produces traces.
+- The agent supports a lot of libraries, including Spring Web MVC
+- It can be used to capture telemetry data at the “edges” of an app or service, such as:
+
+	- inbound HTTP requests
+	- outbound HTTP calls
+	- database calls
+	- A Redis lookup, if the request uses the cache
+	- The duration and outcome of these operations.
+
+- It links these operations into a trace
+- A trace is the complete journey of one request; each timed operation within it is called a span.
+- OpenTelemetry Agent injects the current span information into each logging event's MDC copy:
+
+	- trace_id - the current trace id (same as Span.current().getSpanContext().getTraceId());
+	- span_id - the current span id (same as Span.current().getSpanContext().getSpanId());
+	- trace_flags - the current trace flags, formatted according to W3C traceflags format (same as Span.current() .getSpanContext().getTraceFlags().asHex()).
+
+- OpenTelemetry Instrumentation for Java provides a zero-code way to instrument the application by the agent jar as follows:
+
+java -javaagent:path/to/opentelemetry-javaagent.jar -jar myapp.jar
+
+------------------------------------------------------------
+
+Tempo - distributed tracing
+
+- It shows where a request spent its time
+- The agent sends trace data to Tempo using OTLP and Tempo stores traces
+

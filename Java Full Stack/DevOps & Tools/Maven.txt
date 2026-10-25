@@ -1,5 +1,4 @@
 
-mvn -version
 
 Goal	What it does
 ------------------------------------------------------------
@@ -10,9 +9,12 @@ package	Packages compiled code and resources into the configured artifact, typic
 install compiles and packages contracts, runs its tests, and installs the resulting JAR into your local Maven repository, usually under C:\Users\<your-user>\.m2\repository.
 
 
+mvn -version
 mvn clean package
 mvn clean install
-
+mvn compile
+mvn package -DskipTests
+mvn clean install -DskipTests
 
 
 
