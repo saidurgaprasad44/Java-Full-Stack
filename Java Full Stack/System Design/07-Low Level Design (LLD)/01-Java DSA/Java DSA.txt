@@ -3,47 +3,9 @@
 =======================================================================================================================================================================
 
 ------------------------------------------------------------
-1. Core Data Structures
+1. Java DSA Toolkit
 ------------------------------------------------------------
-Array: Indexing, traversal, fixed size, multidimensional arrays
-String: Immutability, character access, string manipulation
-Dynamic array: Resizing, indexed access, insertion/removal costs
-Linked list: Nodes, references, singly vs. doubly linked
-Stack: LIFO, push, pop, peek
-Queue: FIFO, enqueue, dequeue
-Deque: Operations at both ends
-Hash table: Hashing, key lookup, collisions at a conceptual level
-Set: Uniqueness and membership checking
-Map: Key-value storage and lookup
-Tree / BST: Hierarchy, traversal, ordered search
-Heap / priority: queue Priority-based retrieval
-Graph: Vertices, edges, adjacency lists
 
-------------------------------------------------------------
-2. Complexity fundamentals
-------------------------------------------------------------
-Learn enough Big-O notation to compare common operations:
-
-O(1): constant-time operation
-O(log n): logarithmic growth
-O(n): linear traversal
-O(n log n): common efficient sorting
-O(n square): nested full-array comparisons
-
-Typical costs for:
-array access
-list insertion
-searching
-hash lookups
-sorting and
-heap operations.
-
-- These are typical or average costs in some cases, not guarantees for every operation.
-- Which data structure suits a problem and why, before writing Java code.
-
-------------------------------------------------------------
-3. Java DSA Toolkit
-------------------------------------------------------------
 Strings:
 - String
 - StringBuilder
@@ -131,7 +93,7 @@ Streams: Collection > stream() > filter > map > sorted > distinct > collect
 - Collectors.mapping()
 
 ------------------------------------------------------------
-4. Production-oriented Java coding
+2. Production-oriented Java coding
 ------------------------------------------------------------
 
 Basic data manipulation:
@@ -199,8 +161,9 @@ TreeMap.get()         → O(log n)
 List.contains()       → O(n)
 
 ------------------------------------------------------------
-5. Java practice
+3. Java practice
 ------------------------------------------------------------
+
 Strings and arrays:
 Reverse and transform strings, count characters, process arrays, remove duplicates and perform searches.
 Target: 5–8 programs
@@ -220,8 +183,50 @@ Target: 6–8 programs
 - Given business data, select suitable data structures and produce readable, maintainable Java code.
 
 ------------------------------------------------------------
+4. Core Data Structures
+------------------------------------------------------------
+
+Array: Indexing, traversal, fixed size, multidimensional arrays
+String: Immutability, character access, string manipulation
+Dynamic array: Resizing, indexed access, insertion/removal costs
+Linked list: Nodes, references, singly vs. doubly linked
+Stack: LIFO, push, pop, peek
+Queue: FIFO, enqueue, dequeue
+Deque: Operations at both ends
+Hash table: Hashing, key lookup, collisions at a conceptual level
+Set: Uniqueness and membership checking
+Map: Key-value storage and lookup
+Tree / BST: Hierarchy, traversal, ordered search
+Heap / priority: queue Priority-based retrieval
+Graph: Vertices, edges, adjacency lists
+
+------------------------------------------------------------
+5. Complexity fundamentals
+------------------------------------------------------------
+
+Learn enough Big-O notation to compare common operations:
+
+O(1): constant-time operation
+O(log n): logarithmic growth
+O(n): linear traversal
+O(n log n): common efficient sorting
+O(n square): nested full-array comparisons
+
+Typical costs for:
+array access
+list insertion
+searching
+hash lookups
+sorting and
+heap operations.
+
+- These are typical or average costs in some cases, not guarantees for every operation.
+- Which data structure suits a problem and why, before writing Java code.
+
+------------------------------------------------------------
 6. Important DSA patterns, algorithms and coding
 ------------------------------------------------------------
+
 Array and string: traversal Searching, counting, reversing, in-place changes Essential
 Hashing: Frequency maps, duplicate detection, pair lookup Essential
 Sorting: Built-in sorting, sorting-based solutions Essential
@@ -241,6 +246,7 @@ Dynamic programming: Fibonacci, climbing stairs, memoization Introductory
 ------------------------------------------------------------
 7. DSA practice
 ------------------------------------------------------------
+
 Array and string basics
 Hashing
 Sorting

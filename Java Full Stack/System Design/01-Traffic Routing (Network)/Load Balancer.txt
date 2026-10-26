@@ -1,0 +1,11 @@
+Load Balancer levels:
+
+- Level 4 (l4)
+- Level 7 (l7)
+
+
+Algorithms:
+
+- round robin
+- least weighted
+- least time

@@ -1,8 +1,0 @@
-l4
-l7
-
-
-Algorithms
-round robin
-least weighted
-least time

@@ -8,3 +8,6 @@ Failover
 
 
 Traffic Splitting
+
+
+Load Balancing

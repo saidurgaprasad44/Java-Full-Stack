@@ -1,0 +1,47 @@
+Let's explore your running stack
+You don't need to modify application code yet. First, verify what is working.
+
+Open these pages in your browser:
+
+Prometheus
+
+Check whether app-a is being scraped.
+
+Open scrape targets
+http://localhost:9090/targets?utm_source=chatgpt.com
+
+
+
+
+Grafana
+
+Explore the preconfigured dashboard and data sources.
+
+Open Grafana
+http://localhost:3000/?utm_source=chatgpt.com
+
+
+
+Spring Boot Actuator
+
+Inspect the application's exported metrics.
+
+Open metrics endpoint
+http://localhost:8080/actuator/prometheus?utm_source=chatgpt.com
+
+
+Grafana's initial login in this repository is documented as admin / admin; use that only if you haven't changed it. 
+
+GitHub
+
+
+
+
+One limitation of the current stage: only app-a is running. The repository's /chain endpoint calls other application instances, so don't use that endpoint yet to test cross-service traces. We'll start app-b and app-c after verifying the first instance.
+
+Your next task: Open http://localhost:9090/targets and tell me whether app-a is marked UP or DOWN. That will be our first hands-on observability check.
+
+
+
+
+Once you check the Prometheus target, we'll work through a real incident simulation step by step: generate traffic, identify a latency spike, inspect a trace, find the error in logs, and establish the root cause. We'll also configure the missing log ingestion path so Loki becomes useful in that investigation.
