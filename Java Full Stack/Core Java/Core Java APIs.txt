@@ -2,7 +2,7 @@
 ***
 ===============================================================================================================================================================================
 - Collections (List, Set, Map, Queue) 
-- String / StringBuilder 
+- String / StringBuilder /StringBuffer
 - Object 
 - Exceptions 
 - equals() / hashCode() 

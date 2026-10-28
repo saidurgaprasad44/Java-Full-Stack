@@ -579,38 +579,31 @@ There are two primary ways to create a String object in Java:
 
 
 
-Adding Numbers and Strings:
-	If you add two numbers, the result will be a number; If you add two strings, the result will be a string concatenation.
-	However, if you add a number and a string, the result will be a string concatenation.
-
-	Example:
-		String x = "10";
-		int y = 20;
-		String z = x + y;  // z will be 1020 (a String)
-
-
-
 Key methods to work with Strings:
-	Java provides a rich String class API. Here are the most essential methods:
 
-Method				Description						Example
+Purpose		APIs								Detail to watch
 --------------------------------------------------------------------------------------------------------
-length()			Returns the number of characters.			"Hi".length() → 2
-concat(String s)		Appends a string to the end.				"A".concat("B") → "AB"
-equals(Object o)		Compares content (case-sensitive).			"A".equals("a") → false
-equalsIgnoreCase()		Compares content(case-insensitive).			"A".equalsIgnoreCase("a") → true
-toUpperCase() / toLowerCase()	Converts the casing of the string.			"hi".toUpperCase() → "HI"
-substring(int start, int end)	Returns a part of the string.				"Hello".substring(0, 2) → "He"
-contains(CharSequence s)	Checks if a sequence exists.				"Java".contains("av") → true
-trim()				Removes leading and trailing spaces.			"  hi  ".trim() → "hi"
-replace(old, new)		Replaces characters or sequences.			"bat".replace('b', 'c') → "cat"
-charAt()			Returns the char at the given index			"saivaishu".charAt(1) → 'a'
-indexOf()			Returns the index of the first occurance of a char	"saivaishu".indexOf('a') → 1
-toCharArray()			Returns a char array					"sai".toCharArray() → {'s','a','i'}
-compareTo()			Returns 0 If s1 and s2 are exactly identical, 		"Apple".compareTo("Apple") -> Output: 0
-				<0 if s1 comes before s2 and 				"Apple".compareTo("Banana") -> Output: -1  (65 - 66) -> Apple comes before Banana
-				>0 if s1 comes after s2 alphabetically			"Cat".compareTo("car") -> Output: 2  (116 - 114) -> Cat comes after Car
+Inspect		length(), isEmpty(), isBlank()					isBlank() requires Java 11+
+Extract		charAt(), substring(), subSequence()				substring(begin, end) excludes end
+Search		contains(), indexOf(), lastIndexOf(), startsWith(), endsWith()	Search methods commonly return -1 when not found
+Replace		replace(), replaceAll(), replaceFirst()				replaceAll() uses a regular expression
+Split		split()								Argument is a regex; trailing empty tokens are discarded by default
+Normalize	trim(), strip()							strip() handles Unicode whitespace more appropriately; Java 11+
+Compare		equals(), equalsIgnoreCase(), compareTo()			compareTo() returns ordering, not necessarily -1, 0, or 1
+Convert		toCharArray(), valueOf(), join()				String.valueOf(null) returns "null"
 
+
+Operation		String			StringBuilder	StringBuffer
+--------------------------------------------------------------------------------------------------------
+Get length		length()		length()	length()
+Get character		charAt(i)		charAt(i)	charAt(i)
+Append			concat() / +		append()	append()
+Insert			Not directly		insert()	insert()
+Replace range		Not directly		replace()	replace()
+Delete range		Not directly		delete()	delete()
+Reverse			Not directly		reverse()	reverse()
+Extract substring	substring()		substring()	substring()
+Convert to String	Already a String	toString()	toString()
 
 
 Special Characters:
