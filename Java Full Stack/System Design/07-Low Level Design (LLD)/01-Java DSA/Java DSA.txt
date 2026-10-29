@@ -5,32 +5,194 @@
 =======================================================================================================================================================================
 
 
+
+
+
 =======================================================================================================================================================================
-1. Java DSA Toolkit
+Java DSA Toolkit
 =======================================================================================================================================================================
 
-------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 Strings
-------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 
-- String: immutable, so its contents cannot be changed after creation, so automatically thread-safe.
-- StringBuilder: mutable, not synchronized, not thread-safe; ideal for local string construction
-- StringBuffer: mutable, synchronized, thread-safe; useful in some shared-buffer scenarios, but not a universal concurrency solution.
-- char, char[]
-- String methods
+String → java.lang.String
+StringBuilder → java.lang.StringBuilder
+StringBuffer → java.lang.StringBuffer
+
+StringBuilder and StringBuffer share a common superclass: AbstractStringBuilder
 
 ------------------------------------------------------------
+String: 
+
+- Immutable, so its contents cannot be changed after creation, any change will create a completely new object in string pool, so automatically thread-safe.
+
+- String Literal: 
+	- Example: String str = "Java"; // Declared and initialized using a literal
+	- The most common way. It uses the String Pool for memory efficiency.
+	- If "Java" already exists in the pool, the new reference points to the existing object.
+
+- Using the new Keyword: 
+	- Example: String s = new String("Java"); // Explicit instantiation
+	- This forces the creation of a new object in the standard heap memory, even if "Java" already exists in the pool.
+	- Less efficient; creates redundant objects.
+
+- Example: 
+	String s1 = "Hello";
+	String s2 = "Hello";
+	String s3 = new String("Hello");
+	System.out.println(s1 == s2); // true (same reference in pool)
+	System.out.println(s1 == s3); // false (different objects in memory)
+	System.out.println(sq.equals(s3) // true (== to compare the reference, while .equals() to compare the content)
+
+
+Purpose		APIs								Detail to watch
+--------------------------------------------------------------------------------------------------------
+Inspect		length(), isEmpty(), isBlank()					isBlank() requires Java 11+
+Extract		charAt(), substring(), subSequence()				substring(begin, end) excludes end
+Search		contains(), indexOf(), lastIndexOf(), startsWith(), endsWith()	Search methods commonly return -1 when not found
+Replace		replace(), replaceAll(), replaceFirst()				replaceAll() uses a regular expression
+Split		split()								Argument is a regex; trailing empty tokens are discarded by default
+Normalize	trim(), strip()							strip() handles Unicode whitespace more appropriately; Java 11+
+Compare		equals(), equalsIgnoreCase(), compareTo()			compareTo() returns ordering, not necessarily -1, 0, or 1
+Convert		toCharArray(), valueOf(), join(), toLowerCase(), toUpperCase()	String.valueOf(null) returns "null"
+
+
+- The backslash (\) escape character turns special characters into string characters
+
+Escape character	Result		Description
+----------------------------------------------------
+\'			'		Single quote
+\"			"		Double quote
+\\			\		Backslash
+\n					New Line	
+\t					Tab	
+\b					Backspace	
+\r					Carriage Return	
+\f					Form Feed
+
+Example: String txt = "We are the so-called \"Vikings\" from the north.";
+
+- Important nuances
+
+"a.b.c".split(".");       // Unexpected: "." matches any character, because split() is regex-based
+"a.b.c".split("\\.");     // Correct: literal dot
+
+"one,two,".split(",");    // ["one", "two"]
+"one,two,".split(",", -1); // ["one", "two", ""], for delimited input, the negative split limit is particularly useful when trailing empty fields have meaning.
+
+"  Java  ".trim();        // Removes characters <= U+0020 at the ends
+"  Java  ".strip();       // Uses Unicode whitespace rules
+
+
+------------------------------------------------------------
+StringBuilder & StringBuffer:
+
+StringBuilder: Mutable, not synchronized, not thread-safe; ideal for local string construction
+StringBuffer: Mutable, synchronized, thread-safe; useful in some shared-buffer scenarios, but not a universal concurrency solution because Synchronization adds overhead
+
+- StringBuilder and StringBuffer have almost the same APIs. But internally StringBuffer methods are synchronized while StringBuilder methods are not.
+
+Purpose			APIs						Detail to watch
+--------------------------------------------------------------------------------------------------------
+Inspect			length(), capacity(), isEmpty()			capacity() is allocated buffer capacity, not current content length. isEmpty() is available from Java 15.
+Extract			substring(), subSequence()			Returns a String or CharSequence, respectively; the range excludes end. Neither removes content from the builder.
+Access			charAt(), codePointAt(), codePointCount()	charAt() returns a UTF-16 code unit, not necessarily a complete Unicode character.
+Replace			replace()					replace(start, end, str) replaces a range; it does not use regex.
+Convert			toString(), getChars()				toString() creates a String snapshot; getChars() copies a range into a destination character array.
+Modify			append(), insert()				append() adds to the end; insert() adds at a specified index. Both modify the existing object.
+Delete			delete(), deleteCharAt()			delete(start, end) excludes end.
+Reverse			reverse()					Reverses the sequence; handles surrogate pairs specially, but not necessarily whole grapheme clusters.
+Update character	setCharAt(), setLength()			setCharAt() replaces one character; increasing setLength() pads with null characters ('\u0000').
+Capacity management	ensureCapacity(), trimToSize()			ensureCapacity() can reduce repeated buffer resizing; trimToSize() attempts to reduce unused capacity.
+
+
+- ASCII value: ASCII is an older character encoding standard defining 128 values, from 0 through 127. It includes English letters, digits, punctuation and control characters. 
+- UTF-16 code unit: A 16-bit unit used by Java's char and String representation. Java does not use ASCII
+- Unicode code point: A number identifying a Unicode character, such as A or 😀.
+- Visible character: What a user perceives as one character on screen. It may consist of multiple Unicode code points.
+
+------------------------------------------------------------
+char & char[]
+
+- Java char represents one UTF-16 code unit, not necessarily one complete Unicode character
+
+
+
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 Arrays
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+
+Primitive Arrays: 
+
+- Stores raw data values (like 42 or true) directly in a contiguous memory block, initialized to type-specific defaults like 0 or false.
+
+int[] n; // Declaration
+int[] numbers = {40, 10, 30, 20}; 
+int[] nums = new int[4];  // Instantiation
+
 ------------------------------------------------------------
+Object Arrays:
 
-- int[]
-- String[]
-- Object[]
-- 2D arrays
-- array of objects
-- Arrays methods
+- Stores memory addresses (references) that point to objects elsewhere on the heap, initialized to null.
 
+String[] names = new String[3];
+Object[] objects = new Object[3];
+Employee[] employees = new Employee[10];
+
+------------------------------------------------------------
+Multi-dimensional Arrays:
+
+- Array of arrays
+
+int[][] matrix = {
+    {1, 2, 3},
+    {4, 5, 6}
+};
+
+
+Note:
+
+- Once an array is instantiated, their size is fixed.
+- When an array is instantiated, it will create an object of special internal type dynamically created (by JVM) Class with a name like  [I (for int[]) or [Ljava.lang.String; (for String[]).
+- Use numbers.length, not numbers.length(), numbers.length is a property, not a method
+
+
+Purpose			APIs						Detail to watch
+--------------------------------------------------------------------------------------------------------
+Display			Arrays.toString(), Arrays.deepToString()	Use deepToString() for nested arrays.
+Sort			Arrays.sort()					Supports primitive arrays and object arrays; object sorting can use a comparator.
+Search			Arrays.binarySearch()				The array must already be sorted using the compatible ordering.
+Copy			Arrays.copyOf(), Arrays.copyOfRange()		Copies are shallow for object arrays. The range end is exclusive.
+Compare			Arrays.equals(), Arrays.deepEquals()		equals() compares one-dimensional contents; deepEquals() compares nested arrays recursively.
+Fill			Arrays.fill()					Fills the entire array or a specified range with one value.
+Parallel sort		Arrays.parallelSort()				May use parallel processing; overhead means it isn't automatically faster for every input.
+Convert to stream	Arrays.stream()					Returns a primitive stream (like IntStream) for a primitive array and a generic Stream<T> for an object array.
+Convert to list		Arrays.asList()					For object arrays, returns a fixed-size list backed by the array.
+Hashing			Arrays.hashCode(), Arrays.deepHashCode()	Useful for content-based hashing; pair consistently with the corresponding equality operation.
+Set operations		Arrays.setAll(), Arrays.parallelSetAll()	Compute array elements using an index-based generator.
+
+
+Note:
+
+- Arrays.asList() doesn't work with primitive arrays, we have to do explicit conversion such as below:
+
+int[] intArray = {10, 20, 30};
+List<Integer> list = Arrays.stream(intArray)
+			.boxed()
+			.toList();
+
+
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 Lambda Expressions + Functional Interfaces:
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+
 - Predicate<T> → test something
 - Function<T,R> → transform something
 - Consumer<T> → perform an action
@@ -41,23 +203,43 @@ Lambda Expressions + Functional Interfaces:
 - String::valueOf
 - filter, transform, sort, iterate
 
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 Collections:
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+
 - List: ArrayList, LinkedList
 - Set: HashSet, LinkedHashSet, TreeSet
 - Queue/Deque: Queue, Deque, ArrayDeque
 
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 Map:
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+
 - HashMap
 - LinkedHashMap
 - TreeMap
 
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 Collections of Objects:
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+
 - List<Employee>
 - Map<Integer, Employee>
 - Map<String, List<Employee>>
 - Set<Employee>
 
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 Nested Structures:
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+
 - Customer
 └── List<Order>
        └── List<OrderItem>
@@ -71,7 +253,14 @@ equals() vs hashCode()
 
 Comparable / Comparator
 
-Streams: Collection > stream() > filter > map > sorted > distinct > collect
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+Streams: 
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+
+Collection > stream() > filter > map > sorted > distinct > collect
+
 - filter
 - map
 - flatMap
