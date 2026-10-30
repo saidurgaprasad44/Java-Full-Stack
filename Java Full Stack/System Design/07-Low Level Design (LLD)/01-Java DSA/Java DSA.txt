@@ -26,6 +26,7 @@ StringBuilder and StringBuffer share a common superclass: AbstractStringBuilder
 
 ------------------------------------------------------------
 String: 
+------------------------------------------------------------
 
 - Immutable, so its contents cannot be changed after creation, any change will create a completely new object in string pool, so automatically thread-safe.
 
@@ -89,6 +90,7 @@ Example: String txt = "We are the so-called \"Vikings\" from the north.";
 
 ------------------------------------------------------------
 StringBuilder & StringBuffer:
+------------------------------------------------------------
 
 StringBuilder: Mutable, not synchronized, not thread-safe; ideal for local string construction
 StringBuffer: Mutable, synchronized, thread-safe; useful in some shared-buffer scenarios, but not a universal concurrency solution because Synchronization adds overhead
@@ -127,7 +129,9 @@ Arrays
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
+------------------------------------------------------------
 Primitive Arrays: 
+------------------------------------------------------------
 
 - Stores raw data values (like 42 or true) directly in a contiguous memory block, initialized to type-specific defaults like 0 or false.
 
@@ -137,6 +141,7 @@ int[] nums = new int[4];  // Instantiation
 
 ------------------------------------------------------------
 Object Arrays:
+------------------------------------------------------------
 
 - Stores memory addresses (references) that point to objects elsewhere on the heap, initialized to null.
 
@@ -146,6 +151,7 @@ Employee[] employees = new Employee[10];
 
 ------------------------------------------------------------
 Multi-dimensional Arrays:
+------------------------------------------------------------
 
 - Array of arrays
 
@@ -186,32 +192,97 @@ List<Integer> list = Arrays.stream(intArray)
 			.boxed()
 			.toList();
 
-
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-Lambda Expressions + Functional Interfaces:
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-
-- Predicate<T> → test something
-- Function<T,R> → transform something
-- Consumer<T> → perform an action
-- Supplier<T> → provide something
-- BiFunction<T,U,R>
-- Employee::getName
-- System.out::println
-- String::valueOf
-- filter, transform, sort, iterate
-
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 Collections:
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
-- List: ArrayList, LinkedList
-- Set: HashSet, LinkedHashSet, TreeSet
-- Queue/Deque: Queue, Deque, ArrayDeque
+- Java Collections Framework eliminates the need for fixed-size arrays.
+- Collections only work with Object types, not primitives
+
+List: ArrayList, LinkedList
+Set: HashSet, LinkedHashSet, TreeSet
+Queue/Deque: PriorityQueue, LinkedList, ArrayDeque
+
+------------------------------------------------------------
+List (Ordered Sequence)
+------------------------------------------------------------
+
+- A List is an ordered collection that allows duplicate elements and provides index-based access. 
+- Maintains the insertion order of elements.
+
+
+Common Implementations:
+
+ArrayList: Best for fast random access and frequent searching by index.
+LinkedList: Better for frequent insertions and deletions at the beginning or end.
+
+
+Hierarchy:
+
+Collection(I) ------> List(I) ------> ArrayList(C)
+Collection(I) ------> List(I) ------> LinkedList(C)
+
+
+Syntax:
+
+List<String> list = new ArrayList<>();
+
+
+
+------------------------------------------------------------
+Set (Unique Elements)
+------------------------------------------------------------
+
+- A Set is a collection that does not allow duplicate elements. 
+- Used strictly when you need a collection of unique items.
+
+
+Common Implementations:
+
+HashSet: Most common; unordered and backed by a hash table for fast operations.
+LinkedHashSet: Maintains the order in which elements were added.
+TreeSet: Automatically keeps elements in a sorted order.
+
+
+Hierarchy:
+
+Collection(I) ------> Set(I) ------> HashSet(C)   ------> LinkedHashSet(C)
+Collection(I) ------> Set(I) ------> SortedSet(I) ------> NavigableSet(I) ------> TreeSet(C)
+
+
+Syntax: 
+
+Set<Type> name = new HashSet<>();
+
+
+
+------------------------------------------------------------
+Queue (Order of Processing)
+------------------------------------------------------------
+
+- A Queue is designed for holding elements prior to processing, typically following the FIFO (First-In-First-Out) principle. 
+- Elements are added at the back and removed from the front.
+
+
+Common Implementations:
+
+PriorityQueue: Elements are ordered based on their natural priority or a custom comparator.
+ArrayDeque: A double-ended queue that supports insertion and removal at both ends.
+
+
+Hierarchy:
+
+Collection(I) ------> Queue(I) ------> Deque(I) ------> ArrayDeque(C)
+Collection(I) ------> Queue(I) ------> PriorityQueue(C)
+Collection(I) ------> Deque(I) ------> LinkedList(C)
+
+
+Syntax: 
+
+Queue<Type> name = new LinkedList<>();
+
 
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
@@ -231,8 +302,27 @@ Collections of Objects:
 
 - List<Employee>
 - Map<Integer, Employee>
-- Map<String, List<Employee>>
 - Set<Employee>
+
+
+
+// Add objects
+employees.add(new Employee(101, "John", "IT", 75000));
+employees.add(new Employee(102, "Alice", "HR", 65000));
+
+// Find an employee
+Employee employee = employees.stream()
+        .filter(e -> e.getId() == 101)
+        .findFirst()
+        .orElse(null);
+
+// Create a lookup map using employee ID
+Map<Integer, Employee> employeeById = employees.stream()
+        .collect(Collectors.toMap(Employee::getId, Function.identity()));
+
+// Group employees by department
+Map<String, List<Employee>> byDepartment = employees.stream()
+        .collect(Collectors.groupingBy(Employee::getDepartment));
 
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
@@ -240,12 +330,15 @@ Nested Structures:
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
-- Customer
-└── List<Order>
-       └── List<OrderItem>
-             ├── Product
-             ├── quantity
-             └── unitPrice
+- Map<String, List<Employee>>
+- Map<String, Map<String, List<Employee>>>
+
+Customer
+  └── List<Order>
+         └── List<OrderItem>
+               ├── Product
+               ├── quantity
+               └── unitPrice
 - List<Customer>
 - Set<Customer>
 

@@ -615,7 +615,9 @@ Anonymous Class from an Interface: A class without a name that is defined and in
 Key Feature: It simultaneously creates the object and provides the concrete logic for the abstract methods.
 
 
-Implementation Example: Here, MultiActionHandler is an interface/class with three abstract/concrete methods
+Implementation Example: 
+
+- Here, MultiActionHandler is an interface/class with three abstract/concrete methods
 
 MultiActionHandler myButton = new MultiActionHandler() {  // Defining (or) overriding method(s) while creating an instance of an interface (or) class
 
@@ -639,13 +641,24 @@ myButton.onLongPress();
 
 ////////////////////////////////////////////////////////////
 
-Lambda Expression (Java8+): An anonymous function that is defined and instantiated implementing a Functional Interface by defining its single abstract method in a highly concise, single expression.
+Lambda Expression (Java8+): 
+
+- An anonymous function that is defined and instantiated implementing a Functional Interface by defining its single abstract method in a highly concise, single expression.
 Key Feature: It simultaneously creates the object and provides the concrete logic for the abstract methods.
 
 
-Implementation Examples: Here, Runnable is a Functional Interface with only one abstract method named run()
+Implementation Examples: 
 
-1. Abstract method with an input(s), multiple statements and returns a result:
+- Here, Runnable is a Functional Interface with only one abstract method named run()
+
+
+1. Abstract method with no input and returns a result:
+
+Runnable r = () -> "Hello world"; //If the body has one expression, braces and return are optional, it will auto return the value
+r.run();
+
+
+2. Abstract method with input(s), multiple statements and returns a result:
 
 Runnable r = (a, b) -> {
 	System.out.print("The sum is: ");
@@ -653,16 +666,12 @@ Runnable r = (a, b) -> {
 };
 System.out.println(r.run(10, 20));
 
-2. Abstract method with no input and returns a result:
-
-Runnable r = () -> "Hello world"; //When you have only one expression/statement, you can skip curly braces {} and return, it will auto return the value
-r.run();
 
 
 
-Key Functional Interfaces: Java provides a set of built-in interfaces in java.util.function to handle common logic
+- Key built-in Functional Interfaces java.util.function
 
-Predicate
+Predicate<T>
 	Purpose: Takes one input and returns a boolean. Used for filtering/testing.
 	Method: boolean test(T t);
 	Example: Predicate<String> isStringEmpty = s -> s.isEmpty();
@@ -672,135 +681,199 @@ Function<T, R>
 	Method: R apply(T t);
 	Example: Function<String, Integer> stringLength = s -> s.length();
 
-Consumer
+Consumer<T>
 	Purpose: Takes an input but returns nothing (void). Used for actions like printing.
 	Method: void accept(T t);
 	Example: Consumer<String> printer = s -> System.out.println(s);
 
-Supplier
+Supplier<T>
 	Purpose: Takes no input but returns a value. Used for lazy generation.
 	Method: T get();
 	Example: Supplier<Double> randomNum = () -> Math.random();
 
+BiFunction<T,U,R>
+	Purpose: Takes two inputs of type T and U and returns a result of type R
+	Method: R apply(T,U);
+	Example: BiFunction<Double, Double, Double> calculateBonus = (salary, percentage) -> salary * percentage / 100;
+
+BiPredicate<T,U>
+	Purpose: Comparing two inputs
+	Method: boolean test(T,U);
+
+BiConsumer<T,U>
+	Purpose: Processing two inputs
+	Method: void accept(T,U);
+
+UnaryOperator<T>
+	Purpose: Transforming same type.
+	Method: T apply(T);
+
+BinaryOperator<T>
+	Purpose: Combining same-type values.
+	Method: T apply(T,T);
+
+
+
+
+Primitive-specialized functional interfaces:
+
+- Java also provides specialized interfaces to avoid unnecessary boxing and unboxing.
+- This is useful when extracting primitive values, particularly in streams, without converting them to wrapper objects unnecessarily.
+
+Interface		Purpose
+--------------------------------------------------
+IntPredicate		Takes int, returns boolean
+IntFunction<R>		Takes int, returns R
+ToIntFunction<T>	Takes T, returns int
+IntConsumer		Takes int, returns void
+IntSupplier		Returns int
+IntUnaryOperator	Takes int, returns int
+IntBinaryOperator	Takes two ints, returns int
+
+Example:
+
+ToIntFunction<Employee> salaryExtractor = Employee::getSalary;
+
+
+
+
+Default methods and composition: 
+
+- Functional interfaces have useful default methods that let you combine behavior.
+
+
+Interface	Main composition methods
+------------------------------------------------
+Predicate	and(), or(), negate(), isEqual()
+Function	andThen(), compose(), identity()
+Consumer	andThen()
+Supplier	No standard composition method
+BiFunction	andThen()
+
+
+Examples:
+
+//Predicate composition
+Predicate<Employee> highSalary = e -> e.getSalary() > 50000;
+Predicate<Employee> inIT = e -> e.getDepartment().equals("IT");
+
+Predicate<Employee> eligible = highSalary.and(inIT);
+Predicate<Employee> notEligible = eligible.negate();
+
+
+//Function composition
+Function<String, String> trim = String::strip;
+Function<String, String> upper = String::toUpperCase;
+
+Function<String, String> normalize = trim.andThen(upper);
+
+System.out.println(normalize.apply(" java ")); // JAVA
+
+
+
+
+Method references:
+
+- Method references are a shorter way to express certain lambdas.
+
+
+Type							Example			Equivalent lambda
+---------------------------------------------------------------------------------------------------------
+Static method						String::valueOf		x -> String.valueOf(x)
+Instance method of a particular object			System.out::println	x -> System.out.println(x)
+Instance method of an arbitrary object of a type	String::toLowerCase	s -> s.toLowerCase()
+Constructor reference					ArrayList::new		() -> new ArrayList<>()
+
+
+Examples:
+
+// Method reference
+employees.forEach(System.out::println);
+
+// Lambda
+employees.forEach(e -> System.out.println(e));
+
+// Method reference
+employees.sort(Comparator.comparing(Employee::getName));
+
+// Lambda
+employees.sort((e1, e2) -> e1.getName().compareTo(e2.getName()));
+
+
 ===============================================================================================================================================================================
-Collections:
+Collections & Maps:
 ===============================================================================================================================================================================
 
-The Java Collections Framework is a unified architecture that provides ready-to-use data structures to store and manage groups of objects efficiently. 
-It eliminates the need for fixed-size arrays and provides standardized interfaces and classes for searching, sorting, and manipulating data.
-Collections only work with Object types, not primitives
-
-////////////////////////////////////////////////////////////
-1. List (Ordered Sequence)
-A List is an ordered collection that allows duplicate elements and provides index-based access. 
-
-Common Implementations:
-ArrayList: Best for fast random access and frequent searching by index.
-LinkedList: Better for frequent insertions and deletions at the beginning or end.
-
-Hierarchy:
-Collection(I) ------> List(I) ------> ArrayList(C)
-Collection(I) ------> List(I) ------> LinkedList(C)
-
-Key Feature: Maintains the insertion order of elements.
-
-Syntax:
-List<String> list = new ArrayList<>();
 
 
 
-////////////////////////////////////////////////////////////
-2. Set (Unique Elements)
-A Set is a collection that does not allow duplicate elements. 
+------------------------------------------------------------
+Collections Essential Functions
+------------------------------------------------------------
 
-Common Implementations:
-HashSet: Most common; unordered and backed by a hash table for fast operations.
-LinkedHashSet: Maintains the order in which elements were added.
-TreeSet: Automatically keeps elements in a sorted order.
+- Since all major collection interfaces (List, Set, Queue) extend the root Collection<E> interface, they all share a core set of methods.
 
-Hierarchy:
-Collection(I) ------> Set(I) ------> HashSet(C)   ------> LinkedHashSet(C)
-Collection(I) ------> Set(I) ------> SortedSet(I) ------> NavigableSet(I) ------> TreeSet(C)
-
-Key Feature: Used strictly when you need a collection of unique items.
-
-Syntax: Set<Type> name = new HashSet<>();
-
-
-
-////////////////////////////////////////////////////////////
-3. Queue (Order of Processing)
-A Queue is designed for holding elements prior to processing, typically following the FIFO (First-In-First-Out) principle. 
-
-Common Implementations:
-PriorityQueue: Elements are ordered based on their natural priority or a custom comparator.
-ArrayDeque: A double-ended queue that supports insertion and removal at both ends.
-
-Hierarchy:
-Collection(I) ------> Queue(I) ------> Deque(I) ------> ArrayDeque(C)
-Collection(I) ------> Queue(I) ------> PriorityQueue(C)
-Collection(I) ------> Deque(I) ------> LinkedList(C)
-
-Key Feature: Elements are added at the back and removed from the front.
-
-Syntax: Queue<Type> name = new LinkedList<>();
-
-
-
-////////////////////////////////////////////////////////////
-4. Map (Key-Value Pairs)
-A Map stores data as associations between unique keys and values. 
-
-Common Implementations:
-HashMap: General-purpose; offers fast lookups but no specific order.
-LinkedHashMap: Stores key-value pairs with unique keys
-TreeMap: Keeps keys in a sorted order.
-
-Hierarchy:
-Map(I) ------> HashMap(C)   ------> LinkedHashMap(C)
-Map(I) ------> SortedMap(I) ------> NavigableMap(I) ------> TreeMap(C)
-Map(I) ------> Hashtable(C)
-
-Key Feature: It is not a subtype of the Collection interface but is part of the framework. Each key maps to exactly one value.
-
-Syntax: Map<KeyType, ValueType> name = new HashMap<>();
-
-
-
-////////////////////////////////////////////////////////////
-Essential Functions:
-
-Since all major collection interfaces (List, Set, Queue) extend the root Collection<E> interface, they all share a core set of methods.
-
-1. Adding Elements:
+Adding Elements:
 add(E e)				: Adds an element. Returns true if the collection changed.
 addAll(Collection<? extends E> c)	: Adds all elements from another collection.
 
-2. Removing Elements:
+Removing Elements:
 remove(Object o)			: Removes a specific element if it exists.
 removeAll(Collection<?> c)		: Removes all elements that are also contained in the specified collection.
 removeIf(Predicate<? super E> filter)	: Removes all elements that meet a certain condition (very useful with Lambda expressions).
 clear()					: Removes all elements, leaving the collection empty.
 
-3. Checking State:
+Checking State:
 size()					: Returns the number of elements.
 isEmpty()				: Returns true if there are no elements.
 contains(Object o)			: Checks if a specific element is present.
 containsAll(Collection<?> c)		: Checks if the collection contains all elements of another collection.
 
-4. Conversion & Bulk Operations:
+Conversion & Bulk Operations:
 toArray()				: Converts the collection into a standard Java array (Object[]).
 iterator()				: Manual looping, works with .hasNext() and .next() methods (used for manual looping and mainly used to .remove() while in loop which is not possible with enhanced for).
 stream()				: Converts the collection into a Stream, allowing for modern functional-style operations like filter, map, and reduce.
 
-5. Comparison:
+Comparison:
 equals(Object o)			: Compares the specified object with the collection for equality.
 hashCode()				: Returns the hash code value for the collection.
 
-6. Queue/Dequeue functions:	
+Queue/Dequeue functions:	
 poll()					: Retrieves and removes the head of a queue; returns null if the queue is empty.
 
-7. Map functions:
+------------------------------------------------------------
+Map (Key-Value Pairs)
+------------------------------------------------------------
+
+- A Map stores data as associations between unique keys and values. 
+- It is not a subtype of the Collection interface but is part of the framework. Each key maps to exactly one value.
+
+
+Common Implementations:
+
+HashMap: General-purpose; offers fast lookups but no specific order.
+LinkedHashMap: Stores key-value pairs with unique keys
+TreeMap: Keeps keys in a sorted order.
+
+
+Hierarchy:
+
+Map(I) ------> HashMap(C)   ------> LinkedHashMap(C)
+Map(I) ------> SortedMap(I) ------> NavigableMap(I) ------> TreeMap(C)
+Map(I) ------> Hashtable(C)
+
+
+Syntax: 
+
+Map<KeyType, ValueType> name = new HashMap<>();
+
+
+------------------------------------------------------------
+Maps Essentials functions
+------------------------------------------------------------
+
+Map functions:
+
 Because Map does not extend Collection, its methods are slightly different but follow a similar logic:
 put(key, value) 			: adds a key-value pair to the map.
 get(key) 				: to retrieve data.
@@ -808,10 +881,9 @@ containsKey(key) / containsValue(value)	: for checks.
 getOrDefault(key, default) 		: Returns the value of the key, or the default value if the key is missing.
 merge(key, value, BiFunction) 		: Combines an existing map key-value with a new value using a remapping function
 
-8. Sorting & Custom Ordering (Comparable & Comparator):
-Collections.sort(list)	: Naturally sorts based on the compareTo from Comparable<T>
-.sort(Comparator<T>)	: Sorts the Collection based on the Comparator object given.
-
+------------------------------------------------------------
+Comparable & Comparator
+------------------------------------------------------------
 
 - Comparable Interface (compareTo(Object o)): Defines the natural ordering of a class. The class itself must implement this interface.
 - Comparator Functional Interface (compare(Object o1, Object o2)): Defines custom sorting logic. It is separate from the class, allowing multiple different sorting behaviors.
