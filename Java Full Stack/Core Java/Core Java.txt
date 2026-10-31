@@ -270,13 +270,18 @@ java.lang.Throwable: The base class for all objects that can be thrown or caught
 		Other subclasses: All other subclasses of Exception are "checked" exceptions
 
 
+Checked vs Unchecked Exceptions: 
+- Checked exceptions are checked before compilation, while unchecked exceptions are checked at runtime. 
+- Checked Exceptions are for caller to fix before proceeding
+- Unchecked Exceptions are meant to be business rules, caught at runtime
+
+
+
 Category 	In Developer Control?	Can be handled?		Caught By	Best Action				Example
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 Error		❌ No			❌ No			Runtime		Fix system or hardware			OutOfMemoryError, StackOverflowError
 Checked		⚠️ Partially		✅ Yes (Mandatory)	Compiler	Implement a Plan B			IOException, SQLException
 Unchecked	✅ Yes			✅ Yes (Optional)	Runtime		Fix the bug in logic or handle it	NullPointerException, ArithmeticException
-
-Checked vs Unchecked Exceptions: Checked exceptions are checked before compilation, while unchecked exceptions are checked at runtime.
 
 
 
@@ -335,125 +340,6 @@ public class CustomException {
         }
     }
 }
-
-===============================================================================================================================================================================
-Object-Oriented Programming:
-===============================================================================================================================================================================
-
-Building Blocks:
-
-Class: A user-defined blueprint or template from which objects are created. It defines the state and behavior common to all objects of that type.
-Object: A basic unit of OOP and a real-world entity that is an instance of a class. It has a state (attributes) and behavior (methods).
-
-
-
-The Four Pillars of OOP:
-
-////////////////////////////////////////////////////////////
-1. Abstraction: This concept focuses on hiding complex implementation details and showing only the essential features to the user. For example, a driver knows how to use the steering wheel and brakes without needing to understand the internal mechanics of the engine.
-	Implementation: Java achieves abstraction using abstract classes and interfaces.
-
-////////////////////////////////////////////////////////////
-2. Encapsulation: This is the process of wrapping data and the methods that operate on that data into a single unit (a class) while restricting direct access to the data.
-	Implementation: It is typically achieved by declaring class variables as private and providing public getter and setter methods for controlled access
-
-////////////////////////////////////////////////////////////
-3. Inheritance: A mechanism that allows a subclass (child) to acquire the properties (fields) and behaviors (methods) of a superclass (parent). Beyond what it inherits, the child class can also define its own new properties and behaviors or override existing ones. It promotes code reusability by establishing an "is-a" relationship.
-	Implementation: Java uses the extends keyword to implement inheritance
-
-
-
-Object creation and accessing the properties/behaviors:
-When you create an object, ParentClass obj = new ChildClass();
-The Compiler checks the Reference Type (ParentClass) to see which properties and behaviors are available to call; if the method is found, the JVM then executes the specific logic defined in the Object Type (ChildClass)
-
-Scenario:
-So, when you create an object of a subclass with parent reference type, you can only access what parent class have. If the method in parent class is overridden in the child class, it would give you updated behavior when the method is called 
-
-
-
-Order of Constructor Execution in inheritance: 
-When you create an instance of a subclass, the parent class constructor is called first to ensure the base part of the object is fully initialized before the subclass adds its own data
-
-Example:
-When you run new Dog(), the sequence is as follows:
-Animal (Top Superclass) constructor executes.
-Mammal (Middle Superclass) constructor executes.
-Dog (Subclass) constructor executes
-
-
-
-Super:
-The super keyword is primarily used in three scenarios:
- 
-To Call Parent Class Constructors: 	super invokes the parent class constructor (Default/Parameterized). It must be the first statement in the subclass constructor.
-	- Default Constructor (Implicit): Every constructor has super() by default, no need to use it. 
-	- Parameterized Constructor (Explicit): It is essential to use super(parameters) for calling parameterized constructors of the parent class.
-To Access Parent Class Methods: 	If a subclass overrides a parent method, you can still call the original parent version using super.methodName().
-To Access Parent Class Variables: 	If a subclass has a variable with the same name as a parent class variable (variable shadowing), super.variableName differentiates and accesses the parent's version
-
-////////////////////////////////////////////////////////////
-4. Polymorphism: Meaning "many forms," polymorphism allows a single action to behave differently depending on the object it is acting upon
-Types:
-	Compile-time (Static): Achieved via method overloading (multiple methods with the same names but different parameters in the same class).
-	Runtime (Dynamic): Achieved via method overriding (a subclass providing its own implementation of a parent class method).
-
-
-////////////////////////////////////////////////////////////
-Relationships:
-
-IS-A Relationship (Inheritance): 
-
-- The IS-A relationship is based entirely on inheritance
-- A subclass is a more specialized version of the superclass.
-- It is tightly coupled (changes in the parent class directly affect child classes)
-- Example: A Car IS-A Vehicle
- 
-
-HAS-A Relationship (Association):
-
-- The HAS-A relationship occurs when an instance of one class is used as a field inside another class
-- This establishes a loose coupling between classes.
-- Association is divided into two sub-types based on how strictly the lifecycles of the objects are tied
-
-      Aggregation (Weak HAS-A): 
-
-	- The child object can exist independently of the parent.
-	- Lifecycle: Independent lifetimes. If the parent object is destroyed, the child object survives.
-	- Example: A Department HAS-A Professor. If the department closes, the professor still exists.
-
-	//Child
-	class Professor {
-    		String name;
-    		Professor(String name) { this.name = name; }
-	}
-
-	//Parent
-	class Department {
-    		private Professor professor; // Aggregation
-    		Department(Professor professor) {
-        		this.professor = professor; // Professor is passed from outside
-    		}
-	}
-
-      Composition (Strong HAS-A):
-
-	- The child object cannot exist independently of the parent.
-	- Lifecycle: Tightly bound lifetimes. If the parent object is destroyed, the child object is also destroyed.
-	- Example: A Department HAS-A Professor. If the department closes, the professor still exists.
-
-	//Child
-	class Engine {
-    		void start() { System.out.println("Vroom!"); }
-	}
-
-	//Parent
-	class Car {
-		private final Engine engine; // Composition
-    		Car() {
-        		this.engine = new Engine(); // Engine lifecycle is managed entirely by Car
-    		}
-	}
 
 ===============================================================================================================================================================================
 Modifiers:
@@ -841,31 +727,6 @@ hashCode()				: Returns the hash code value for the collection.
 Queue/Dequeue functions:	
 poll()					: Retrieves and removes the head of a queue; returns null if the queue is empty.
 
-------------------------------------------------------------
-Map (Key-Value Pairs)
-------------------------------------------------------------
-
-- A Map stores data as associations between unique keys and values. 
-- It is not a subtype of the Collection interface but is part of the framework. Each key maps to exactly one value.
-
-
-Common Implementations:
-
-HashMap: General-purpose; offers fast lookups but no specific order.
-LinkedHashMap: Stores key-value pairs with unique keys
-TreeMap: Keeps keys in a sorted order.
-
-
-Hierarchy:
-
-Map(I) ------> HashMap(C)   ------> LinkedHashMap(C)
-Map(I) ------> SortedMap(I) ------> NavigableMap(I) ------> TreeMap(C)
-Map(I) ------> Hashtable(C)
-
-
-Syntax: 
-
-Map<KeyType, ValueType> name = new HashMap<>();
 
 
 ------------------------------------------------------------

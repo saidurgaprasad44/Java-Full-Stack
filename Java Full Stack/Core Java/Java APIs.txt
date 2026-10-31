@@ -17,6 +17,8 @@
 - CompletableFuture 
 - ConcurrentHashMap 
 - ThreadLocal 
+- Serialization APIs 
+- Object serialization 
 - HttpClient 
 - Path / Files 
 - Reflection 
@@ -32,7 +34,6 @@
 - Synchronization utilities 
 - URI 
 - InetAddress 
-- Serialization APIs 
 - XML APIs 
 - Cryptography APIs 
 
@@ -44,7 +45,6 @@
 - ByteBuffer 
 - Advanced cryptography 
 - WatchService 
-- Object serialization 
 - Less commonly used collection implementations
 
 ===============================================================================================================================================================================

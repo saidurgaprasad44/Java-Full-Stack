@@ -192,6 +192,7 @@ List<Integer> list = Arrays.stream(intArray)
 			.boxed()
 			.toList();
 
+
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 Collections:
@@ -201,9 +202,41 @@ Collections:
 - Java Collections Framework eliminates the need for fixed-size arrays.
 - Collections only work with Object types, not primitives
 
-List: ArrayList, LinkedList
-Set: HashSet, LinkedHashSet, TreeSet
-Queue/Deque: PriorityQueue, LinkedList, ArrayDeque
+
+Iterable (I)
+    |
+    └── Collection (I)
+          |
+          ├── List (I)
+          |     |
+          |     ├── ArrayList (C)
+          |     ├── LinkedList (C)
+          |     └── Vector (C)
+          |           └── Stack (C)
+          |
+          ├── Set (I)
+          |     |
+          |     ├── HashSet (C)
+          |     |     └── LinkedHashSet (C)
+          |     |
+          |     ├── SortedSet (I)
+          |     |     └── NavigableSet (I)
+          |     |           └── TreeSet (C)
+          |     |
+          |     └── EnumSet (C)
+          |
+          └── Queue (I)
+                |
+                ├── PriorityQueue (C)
+                └── Deque (I)
+                      |
+                      ├── ArrayDeque (C)
+                      └── LinkedList (C)
+
+
+- LinkedList implements both List and Deque
+- Vector is a legacy synchronized List implementation; Stack extends Vector
+
 
 ------------------------------------------------------------
 List (Ordered Sequence)
@@ -213,21 +246,47 @@ List (Ordered Sequence)
 - Maintains the insertion order of elements.
 
 
+
 Common Implementations:
 
-ArrayList: Best for fast random access and frequent searching by index.
-LinkedList: Better for frequent insertions and deletions at the beginning or end.
+ArrayList: 
+
+- Best for fast random access and frequent searching by index.
+- Understand the internals
+
+List<Integer> nums = List.of(1, 34, 32, 45); //creates an unmodifiable List, cannot perform operations like set(), remove(), add(), ...
+List<String> names = new ArrayList<>(List.of("sai", "vaishu", "bhuvana", "Priya", "Akshay")); //creates a modifiable ArrayList backed by arrays
+List<String> roles = Arrays.toList("hr", "developer"); //creates a modifiable ArrayList from an object array
 
 
-Hierarchy:
+LinkedList: 
 
-Collection(I) ------> List(I) ------> ArrayList(C)
-Collection(I) ------> List(I) ------> LinkedList(C)
+- Better for frequent insertions and deletions at the beginning or end.
+- Understand the internals
 
 
-Syntax:
 
-List<String> list = new ArrayList<>();
+Feature				ArrayList		LinkedList
+--------------------------------------------------------------------------
+Internal structure		Dynamic array		Doubly linked list
+Index access			O(1)			O(n)
+Append				Amortized O(1)		O(1)
+Insert/remove at beginning	O(n)			O(1)
+Insert/remove in middle		O(n)			O(n) to locate; O(1) to unlink
+Memory overhead			Lower			Higher
+
+
+
+Purpose		APIs								Detail to watch
+---------------------------------------------------------------------------------------------------------------------------------------------
+Add		add(), add(index, element), addAll()				Indexed insertion shifts subsequent elements in ArrayList.
+Access		get(), indexOf(), lastIndexOf()					get() is O(1) for ArrayList, O(n) for LinkedList.
+Update		set()								Replaces an element at an index.
+Remove		remove(index), remove(object), removeAll(), retainAll()		remove(1) can mean remove index 1, not the Integer object 1.
+Search		contains(), containsAll()					Usually O(n) for ArrayList.
+Iterate		iterator(), listIterator(), forEach()				ListIterator supports bidirectional traversal and modification.
+Extract		subList()							Returns a backed view, not an independent list.
+Convert		toArray(), List.of()						List.of() creates an unmodifiable list and rejects nulls.
 
 
 
@@ -239,6 +298,7 @@ Set (Unique Elements)
 - Used strictly when you need a collection of unique items.
 
 
+
 Common Implementations:
 
 HashSet: Most common; unordered and backed by a hash table for fast operations.
@@ -246,15 +306,25 @@ LinkedHashSet: Maintains the order in which elements were added.
 TreeSet: Automatically keeps elements in a sorted order.
 
 
-Hierarchy:
 
-Collection(I) ------> Set(I) ------> HashSet(C)   ------> LinkedHashSet(C)
-Collection(I) ------> Set(I) ------> SortedSet(I) ------> NavigableSet(I) ------> TreeSet(C)
+Feature			HashSet			LinkedHashSet			TreeSet
+---------------------------------------------------------------------------------------------
+Ordering		No guaranteed order	Insertion order			Sorted order
+Internal structure	Hash table		Hash table + linked ordering	Balanced tree
+Add/search/remove	O(1) average		O(1) average			O(log n)
+Null			One null allowed	One null allowed		Generally no null with natural ordering
+Duplicates		Not allowed		Not allowed			Not allowed
 
 
-Syntax: 
 
-Set<Type> name = new HashSet<>();
+Purpose		APIs					Detail to watch
+---------------------------------------------------------------------------------------------
+Add		add(), addAll()				Returns false if the element already exists.
+Remove		remove(), removeAll(), retainAll()	retainAll() keeps only common elements.
+Search		contains(), containsAll()		HashSet uses hashCode and equals.
+Size		size(), isEmpty()			Standard collection operations.
+Convert		toArray()				Can convert the set into an array.
+Iterate		iterator(), forEach()			HashSet iteration order is not guaranteed.
 
 
 
@@ -290,9 +360,45 @@ Map:
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
-- HashMap
-- LinkedHashMap
-- TreeMap
+- Map is not a subtype of the Collection interface.
+
+
+Map (I)
+  |
+  ├── HashMap (C)
+  |     └── LinkedHashMap (C)
+  |
+  ├── SortedMap (I)
+  |     |
+  |     └── NavigableMap (I)
+  |           |
+  |           └── TreeMap (C)
+  |
+  ├── Hashtable (C)
+  ├── WeakHashMap (C)
+  ├── IdentityHashMap (C)
+  └── EnumMap (C)
+
+
+
+Common Implementations:
+
+HashMap: General-purpose; offers fast lookups but no specific order.
+LinkedHashMap: Stores key-value pairs with unique keys
+TreeMap: Keeps keys in a sorted order.
+
+
+Hierarchy:
+
+Map(I) ------> HashMap(C)   ------> LinkedHashMap(C)
+Map(I) ------> SortedMap(I) ------> NavigableMap(I) ------> TreeMap(C)
+Map(I) ------> Hashtable(C)
+
+
+Syntax: 
+
+Map<KeyType, ValueType> name = new HashMap<>();
+
 
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
@@ -348,7 +454,7 @@ Comparable / Comparator
 
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
-Streams: 
+Streams & Collectors: 
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 
