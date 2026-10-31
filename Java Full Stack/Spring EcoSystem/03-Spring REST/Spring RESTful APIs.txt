@@ -385,8 +385,7 @@ Example:
 Controller:
 
     @GetMapping("/users")
-    public List<User> searchUsers(
-            @ModelAttribute UserSearch search) {
+    public List<User> searchUsers(@ModelAttribute UserSearch search) {
 
         return userService.search(search);
     }
