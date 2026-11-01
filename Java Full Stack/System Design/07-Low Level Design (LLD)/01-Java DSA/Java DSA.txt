@@ -8,6 +8,30 @@
 
 
 
+
+=======================================================================================================================================================================
+Complexity fundamentals
+=======================================================================================================================================================================
+
+Common Time Complexities:
+
+O(1): constant; Array index access
+O(log n): logarithmic; Binary search
+O(n): linear traversal; Single loop
+O(n log n): Linearithmic; Merge sort
+O(n²): Quadratic; Nested loops
+
+
+Common Space Complexities:
+
+O(1): Constant space; Using a few variables
+O(log n): logarithmic; Recursive binary search
+O(n): linear traversal; Creating another array of n elements
+O(n log n): Linearithmic; Some divide-and-conquer algorithms (not very common)
+O(n²): Quadratic space; Creating an n× 	n matrix
+O(2ⁿ): Exponential space; Storing all subsets of a set
+O(n!): Factorial space; Storing all permutations
+
 =======================================================================================================================================================================
 Java DSA Toolkit
 =======================================================================================================================================================================
@@ -238,6 +262,37 @@ Iterable (I)
 - Vector is a legacy synchronized List implementation; Stack extends Vector
 
 
+
+
+1. Internal data structure – array, linked nodes, hash table, tree, heap, etc.
+2. Operations – how add(), get(), put()/set(), remove() and iteration work internally.
+3. Time and space complexity – average, worst case, and amortized costs where relevant.
+4. Thread safety – what happens with concurrent reads and writes, and available alternatives.
+5. Null handling – whether null elements, keys, and values are allowed.
+6. Optimization considerations – when to choose one implementation over another.
+
+
+lets continue from:
+
+How Entity and Repository beans are singleton yet thread-safe?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ------------------------------------------------------------
 List (Ordered Sequence)
 ------------------------------------------------------------
@@ -301,9 +356,17 @@ Set (Unique Elements)
 
 Common Implementations:
 
-HashSet: Most common; unordered and backed by a hash table for fast operations.
-LinkedHashSet: Maintains the order in which elements were added.
-TreeSet: Automatically keeps elements in a sorted order.
+HashSet:
+
+- Unordered and backed by a hash table for fast operations.
+
+LinkedHashSet:
+
+- Maintains the order in which elements were added.
+
+TreeSet:
+
+- Automatically keeps elements in a sorted order.
 
 
 
@@ -333,25 +396,49 @@ Queue (Order of Processing)
 ------------------------------------------------------------
 
 - A Queue is designed for holding elements prior to processing, typically following the FIFO (First-In-First-Out) principle. 
-- Elements are added at the back and removed from the front.
+- Queue: First In, First Out. Elements are added at the back and removed from the front.
+- Deque: Allows insertion and removal at both ends.
+
 
 
 Common Implementations:
 
-PriorityQueue: Elements are ordered based on their natural priority or a custom comparator.
-ArrayDeque: A double-ended queue that supports insertion and removal at both ends.
+PriorityQueue: 
+
+- Elements are ordered based on their natural priority or a custom comparator.
+
+ArrayDeque: 
+
+- A double-ended queue that supports insertion and removal at both ends.
+- ArrayDeque is generally preferred over the legacy Stack class for stack operations.
+
+LinkedList:
+
+- Doubly linked list; implements both List and Deque.
 
 
-Hierarchy:
 
-Collection(I) ------> Queue(I) ------> Deque(I) ------> ArrayDeque(C)
-Collection(I) ------> Queue(I) ------> PriorityQueue(C)
-Collection(I) ------> Deque(I) ------> LinkedList(C)
+Important Queue APIs:
+
+Purpose		Methods			Behavior
+----------------------------------------------------
+Insert		add(), offer()		add() throws on capacity restriction; offer() returns false.
+Remove head	remove(), poll()	remove() throws if empty; poll() returns null.
+Inspect head	element(), peek()	element() throws if empty; peek() returns null.
 
 
-Syntax: 
 
-Queue<Type> name = new LinkedList<>();
+Deque-specific APIs:
+
+Purpose			Methods
+-------------------------------------
+Insert at front		addFirst(), offerFirst()
+Insert at rear		addLast(), offerLast()
+Remove from front	removeFirst(), pollFirst()
+Remove from rear	removeLast(), pollLast()
+Inspect front		getFirst(), peekFirst()
+Inspect rear		getLast(), peekLast()
+
 
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -383,23 +470,45 @@ Map (I)
 
 Common Implementations:
 
-HashMap: General-purpose; offers fast lookups but no specific order.
-LinkedHashMap: Stores key-value pairs with unique keys
-TreeMap: Keeps keys in a sorted order.
+HashMap: 
+
+- General-purpose; offers fast lookups but no specific order.
+
+LinkedHashMap:
+
+- Stores key-value pairs with unique keys
+- LinkedHashMap can also be configured for access-order iteration, which is useful when implementing an LRU cache.
+
+TreeMap:
+
+- Keeps keys in a sorted order.
 
 
-Hierarchy:
 
-Map(I) ------> HashMap(C)   ------> LinkedHashMap(C)
-Map(I) ------> SortedMap(I) ------> NavigableMap(I) ------> TreeMap(C)
-Map(I) ------> Hashtable(C)
+Feature	HashMap		Linked		HashMap				TreeMap
+------------------------------------------------------------------------------------
+Ordering		No guarantee	Insertion order by default	Sorted keys
+Internal structure	Hash table	Hash table + linked ordering	Red-black tree
+get() / put()		O(1) average	O(1) average			O(log n)
+Null key		One		One				Generally not with natural ordering
+Null values		Allowed		Allowed				Allowed
+Typical use		General lookup	Predictable iteration order	Sorted/range-based lookup
 
 
-Syntax: 
 
-Map<KeyType, ValueType> name = new HashMap<>();
+Purpose		APIs							Detail to watch
+--------------------------------------------------------------------------------------------------
+Insert/update	put(), putAll(), putIfAbsent()				put() overwrites an existing key's value.
+Retrieve	get(), getOrDefault()					get() returns null for an absent key or a key mapped to null.
+Remove		remove(), clear()					remove(key, value) conditionally removes a mapping.
+Check		containsKey(), containsValue()				containsKey() is generally faster than searching values.
+Compute		compute(), computeIfAbsent(), computeIfPresent()	Useful for conditional updates and grouped data.
+Merge		merge()							Combines an existing value with a new value.
+Iterate		forEach(), entrySet(), keySet(), values()		Prefer entrySet() when both key and value are needed.
+Size		size(), isEmpty()					Standard operations.
 
 
+Things to keep in mind: Nulls, thread-safty, time complexity, space complexity 
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
 Collections of Objects:
@@ -596,29 +705,6 @@ Map: Key-value storage and lookup
 Tree / BST: Hierarchy, traversal, ordered search
 Heap / priority: queue Priority-based retrieval
 Graph: Vertices, edges, adjacency lists
-
-=======================================================================================================================================================================
-Complexity fundamentals
-=======================================================================================================================================================================
-
-Learn enough Big-O notation to compare common operations:
-
-O(1): constant-time operation
-O(log n): logarithmic growth
-O(n): linear traversal
-O(n log n): common efficient sorting
-O(n square): nested full-array comparisons
-
-Typical costs for:
-array access
-list insertion
-searching
-hash lookups
-sorting and
-heap operations.
-
-- These are typical or average costs in some cases, not guarantees for every operation.
-- Which data structure suits a problem and why, before writing Java code.
 
 =======================================================================================================================================================================
 Important DSA patterns, algorithms and coding
