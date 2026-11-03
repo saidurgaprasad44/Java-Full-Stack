@@ -269,7 +269,7 @@ Internal data structure:
 	- Hash value
 	- Key
 	- Value
-	- Reference to the next entry (to preserve the order)
+	- Reference to the next entry (to connect entries that have the same bucket index called chaining collision-resolution technique)
 
 - The bucket array is called the table in the OpenJDK implementation.
 - Each entry is represented by a Node object, conceptually containing:
@@ -315,11 +315,11 @@ Step 1: Calculate the key's hash
 
 Step 2: Calculate the bucket index
 - HashMap determines where the entry should be stored using: index = (capacity - 1) & hash;
-- A single bucket can have multiple entries (collision)
+- A single bucket can have multiple entries (hash collision)
 
 Step 3: Check the bucket
 - If the bucket is empty, insert a new node.
-- If the bucket already contains an entry, compare hashes and keys.
+- If the bucket already contains an entry, compare (==) search hash with stored hash and search key with (equals()) stored key.
 - If the same key exists, replace its value.
 - Otherwise, handle the collision by adding another node to that bucket.
 
@@ -329,18 +329,19 @@ Step 4: Check whether resizing is required
 	- Initial capacity: 16 (allocated lazily when first needed).
 	- Load factor: 0.75.
 	- Resize threshold: 16 × 0.75 = 12.
-- When the number of entries exceeds the threshold, the table generally doubles in capacity.
+- When the number of entries exceeds the threshold, the table generally doubles in capacity (16, 32, 64, ....).
+- For example if the current capacity is 16, then resize threshold = 12; At this moment, if a 13th element is added, it resizes itself to 32
 
 get():
 
-- Calculates the hash of key 101.
+- Calculates the hash of key 101 using hashCode().
 - Calculates the bucket index.
 - Goes directly to that bucket.
-- Checks the hash and key equality.
+- Checks the hash and key equality with equals().
 - Returns the matching value.
 
 
-Important complexity overview:
+Time complexity:
 
 Operation	Average			Worst case
 --------------------------------------------------
@@ -365,20 +366,208 @@ Null handling:
 	- Multiple null values.
 	- Normal keys and values alongside nulls.
 
+------------------------------------------------------------
+equals() vs hashCode()
+
+- These two methods are particularly important when working with custom objects in hash-based collections.
+- hashCode() helps locate the bucket; equals() distinguishes objects within that bucket.
+
+
+equals():
+
+- By default, the equals() method inherited from Object compares object references, just like ==
+- The equals() method is overridden in String class to define content based equality
+- Override equals() in custom Java classes to define business logic based equality.
+
+
+Overriding equals():
+
+class Employee{
+	private String name;
+	private int id;
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		
+		if (obj == null || !(obj instanceof Employee)) return false;
+		
+		Employee other = (Employee)obj;
+		
+		return Objects.equals(this.name,other.name) && this.id == other.id;
+	}	
+
+	//getters & setters.....
+
+	//Overridden hashCode().....
+}
+
+
+hashCode():
+
+- hashCode() returns an integer to determine where an object should be stored.
+- If hashCode() isn't overridden in custom classes, the default implementation from Object guarantees a distinct integer for every single unique object instance created in memory, regardless of whether their internal fields hold identical data.
+- Override hashCode() in custom classes to use hash based collections like HashMap, HashSet etc.,
+
+
+Overriding hashCode():
+
+class Employee{
+
+	......
+
+	@Override
+	public int hashCode() {
+    		return Objects.hash(name, id);
+	}	
+
+	......
+
+}
+
+- For custom objects as HashMap keys, make sure the equals-hashCode contract is followed
+
+The equals-hashCode contract:
+
+Rule				Meaning
+--------------------------------------------
+If a.equals(b) is true		a.hashCode() must equal b.hashCode()
+If hash codes are equal		Objects are not necessarily equal
+If equals() is overridden	You should also override hashCode()
+If objects are unequal		They may still have the same hash code (collision)
+
+- If mutable fields are used for HashMap key equality and hashing, the lookup may fail, if the field is changed after inserting the object 
+- Why? The entry was stored using the original hash, but lookup now calculates a hash using the modified ID
+- Use immutable fields for HashMap key equality and hashing wherever possible.
+
+------------------------------------------------------------
+Hash Collision:
+
+- A hash collision occurs when their hash values map to the same bucket index.
+- The nodes from the same bucket maintain links to next node for node traversal (Single linked list)
+
+How does HashMap retrieve an element from a collided bucket?
+
+- Suppose John and Alice are in the same bucket.
+
+HashMap:
+
+- Calculates Alice's hash.
+- Identifies bucket 5.
+- Checks the first node (John).
+- Compares the stored hash and key.
+- John doesn't match.
+- Follows next to the second node.
+- Finds Alice and returns 200.
+
+------------------------------------------------------------
+Treeification:
+
+- If a bucket gets too crowded, the long linked list can make lookups expensive.
+- To improve performance, modern Java HashMap implementations can convert a heavily collided bucket into a Red-Black Tree called treeification.
+- In OpenJDK Java 17/21, the relevant thresholds are:
+
+Constant		Value	Meaning
+-------------------------------------------
+TREEIFY_THRESHOLD	8	Collision-chain threshold that triggers treeification consideration
+UNTREEIFY_THRESHOLD	6	Threshold used when splitting tree bins during resizing
+MIN_TREEIFY_CAPACITY	64	Minimum table capacity for treeification
+
+- Treeification improves lookup in heavily collided buckets from O(n) toward O(log n).
+
+------------------------------------------------------------
+Resizing:
+
+- Allocate a new bucket array with double the capacity.
+- Redistribute existing entries into the new table.
+- Update the table reference and threshold.
+
+Note: Existing nodes already store their spread hash, so HashMap reuses it during resizing
 
 ------------------------------------------------------------
 LinkedHashMap:
 
-- Stores key-value pairs with unique keys
-- LinkedHashMap can also be configured for access-order iteration, which is useful when implementing an LRU cache.
 
-Internal data structure: array, linked nodes, hash table, tree, heap, etc.
-Mutability & Modifiability: 
-Operations: how add(), get(), put()/set(), remove() and iteration work internally.
-Time and space complexity: average, worst case, and amortized costs where relevant.
-Thread safety: what happens with concurrent reads and writes, and available alternatives.
-Null handling: whether null elements, keys, and values are allowed.
-Optimization considerations: when to choose.
+Internal Data Structure:
+
+- LinkedHashMap extends HashMap. 
+- It retains the hash-based lookup mechanism but adds a doubly linked list connecting entries to maintain iteration order.
+- The LinkedHashMap entry contains additional before and after references alongside the normal HashMap node fields (i.e., hash, key, value, next).
+- The trade-off is additional memory for the two linked-list references in every entry.
+
+
+
+Mutability & Modifiability:
+
+ 
+
+How do operations work?: 
+
+Insertion:
+
+- HashMap calculates the hash and identifies the bucket.
+- The entry is inserted into the bucket.
+- LinkedHashMap links the new entry after the current tail.
+- The insertion order is maintained.
+
+Retrieval:
+
+- Retrieval uses the normal HashMap mechanism for finding the key in the bucket array
+- And it uses next node to traverse through the nodes in the collided bucket
+
+Removal:
+
+- HashMap locates the entry.
+- The entry is removed from its bucket.
+- Its previous and next entries are linked together.
+- The removed entry is unlinked from the ordering list.
+
+
+
+Time and space complexity:
+
+Operation	Average complexity
+----------------------------------
+put()		O(1)
+get()		O(1)
+remove()	O(1)
+containsKey()	O(1)
+Iteration	O(n)
+
+
+
+Insertion order vs access order:
+
+- By default, it preserves insertion order, but you can configure it to preserve access order instead.
+
+Map<Integer, String> employees = new LinkedHashMap<>(16, 0.75f, true); //LinkedHashMap(int initialCapacity, float loadFactor, boolean accessOrder)
+
+- When accessOrder is true, accessing an entry moves it to the end of the linked list.
+- This behavior is the foundation of a classic LRU (Least Recently Used) cache.
+
+Example: Suppose a cache can hold only three entries.
+
+Operation	Cache order (oldest → newest)
+Add A		A
+Add B		A → B
+Add C		A → B → C
+Access A	B → C → A
+Add D		C → A → D
+
+- B is evicted because it is now the least recently used entry.
+
+
+
+Thread safety: 
+
+- LinkedHashMap is not thread-safe.
+
+
+
+Null handling: 
+
+- One null key.
+- Multiple null values.
 
 ------------------------------------------------------------
 TreeMap:
@@ -395,15 +584,14 @@ Optimization considerations: when to choose.
 
 
 
-Feature	HashMap		Linked		HashMap				TreeMap
-------------------------------------------------------------------------------------
-Ordering		No guarantee	Insertion order by default	Sorted keys
-Internal structure	Hash table	Hash table + linked ordering	Red-black tree
-get() / put()		O(1) average	O(1) average			O(log n)
-Null key		One		One				Generally not with natural ordering
-Null values		Allowed		Allowed				Allowed
-Typical use		General lookup	Predictable iteration order	Sorted/range-based lookup
-
+Requirement			Choice
+-------------------------------------------
+General key-value lookup	HashMap
+Preserve insertion order	LinkedHashMap
+Preserve access order		LinkedHashMap
+Implement a simple LRU cache	LinkedHashMap
+Sorted keys			TreeMap
+Concurrent lookup and updates	ConcurrentHashMap
 
 ------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------
@@ -718,6 +906,7 @@ Inspect front		getFirst(), peekFirst()
 Inspect rear		getLast(), peekLast()
 
 
+
 ------------------------------------------------------------
 PriorityQueue: 
 
@@ -784,7 +973,6 @@ Customer
 - List<Customer>
 - Set<Customer>
 
-equals() vs hashCode()
 
 Comparable / Comparator
 

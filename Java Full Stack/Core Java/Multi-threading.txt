@@ -2,3 +2,17 @@
 										Multi-threading:
 ===============================================================================================================================================================================
 
+Topic			What you should understand
+----------------------------------------------------------------------------------
+Thread and Runnable	Creating and executing threads
+Thread lifecycle	New, Runnable, Blocked, Waiting, Timed Waiting, Terminated
+Synchronization		Controlling concurrent access to shared data
+Race conditions		Unexpected results due to concurrent execution
+Deadlocks		Threads waiting indefinitely for each other
+volatile		Visibility of changes across threads
+synchronized		Mutual exclusion and memory visibility
+Locks			ReentrantLock and explicit locking
+ExecutorService		Managing thread pools
+Callable and Future	Executing tasks and obtaining results
+CompletableFuture	Asynchronous task execution and composition
+Concurrent collections	ConcurrentHashMap, BlockingQueue, etc.

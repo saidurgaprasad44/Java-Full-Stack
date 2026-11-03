@@ -70,15 +70,17 @@ Lack of Low-Level Control: The absence of low-level pointers makes it less suita
 Slow Startup Time: Applications can have a slower startup time, especially for short-lived processes, due to the JVM's startup process. 
 
 ===============================================================================================================================================================================
-Memory management in java:
+Memory management & Garbage Collection:
 ===============================================================================================================================================================================
 
-Java memory management is automatic, handled by the JVM
-With the crucial Garbage Collector (GC) cleaning up unused objects from the Heap, freeing developers from manual deallocation like in C/C++. 
+- Java memory management is automatic, handled by the JVM
+- With the crucial Garbage Collector (GC) cleaning up unused objects from the Heap, freeing developers from manual deallocation like in C/C++. 
 Focusing on main areas: 
 	- The Stack (for temporary method execution state and stack frames for each thread) and
 	- The Heap (for objects and String literals shared by the threads)
 You create objects with new (Heap), while method calls / local variables use the Stack (auto-cleared)
+
+
 
 ===============================================================================================================================================================================
 Data Types:
@@ -693,54 +695,7 @@ Collections & Maps:
 
 
 
-------------------------------------------------------------
-Collections Essential Functions
-------------------------------------------------------------
 
-- Since all major collection interfaces (List, Set, Queue) extend the root Collection<E> interface, they all share a core set of methods.
-
-Adding Elements:
-add(E e)				: Adds an element. Returns true if the collection changed.
-addAll(Collection<? extends E> c)	: Adds all elements from another collection.
-
-Removing Elements:
-remove(Object o)			: Removes a specific element if it exists.
-removeAll(Collection<?> c)		: Removes all elements that are also contained in the specified collection.
-removeIf(Predicate<? super E> filter)	: Removes all elements that meet a certain condition (very useful with Lambda expressions).
-clear()					: Removes all elements, leaving the collection empty.
-
-Checking State:
-size()					: Returns the number of elements.
-isEmpty()				: Returns true if there are no elements.
-contains(Object o)			: Checks if a specific element is present.
-containsAll(Collection<?> c)		: Checks if the collection contains all elements of another collection.
-
-Conversion & Bulk Operations:
-toArray()				: Converts the collection into a standard Java array (Object[]).
-iterator()				: Manual looping, works with .hasNext() and .next() methods (used for manual looping and mainly used to .remove() while in loop which is not possible with enhanced for).
-stream()				: Converts the collection into a Stream, allowing for modern functional-style operations like filter, map, and reduce.
-
-Comparison:
-equals(Object o)			: Compares the specified object with the collection for equality.
-hashCode()				: Returns the hash code value for the collection.
-
-Queue/Dequeue functions:	
-poll()					: Retrieves and removes the head of a queue; returns null if the queue is empty.
-
-
-
-------------------------------------------------------------
-Maps Essentials functions
-------------------------------------------------------------
-
-Map functions:
-
-Because Map does not extend Collection, its methods are slightly different but follow a similar logic:
-put(key, value) 			: adds a key-value pair to the map.
-get(key) 				: to retrieve data.
-containsKey(key) / containsValue(value)	: for checks.
-getOrDefault(key, default) 		: Returns the value of the key, or the default value if the key is missing.
-merge(key, value, BiFunction) 		: Combines an existing map key-value with a new value using a remapping function
 
 ------------------------------------------------------------
 Comparable & Comparator

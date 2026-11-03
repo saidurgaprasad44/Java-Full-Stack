@@ -3,13 +3,13 @@
 ===============================================================================================================================================================================
 - Collections (List, Set, Map, Queue) 
 - String / StringBuilder /StringBuffer
-- Object 
+- Object                      ------
 - Exceptions 
 - equals() / hashCode() 
-- Optional 
+- Optional                    ------
 - Functional interfaces 
 - Streams / Collectors 
-- java.time 
+- java.time                   ------
 - Thread 
 - Runnable 
 - ExecutorService 
@@ -19,7 +19,7 @@
 - ThreadLocal 
 - Serialization APIs 
 - Object serialization 
-- HttpClient 
+- HttpClient                  ------
 - Path / Files 
 - Reflection 
 - JDBC 
