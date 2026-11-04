@@ -1,16 +1,7 @@
 =======================================================================================================================================================================
 =======================================================================================================================================================================
-										Java DSA
-=======================================================================================================================================================================
-=======================================================================================================================================================================
-
-
-
-
-
-
-=======================================================================================================================================================================
 Complexity fundamentals
+=======================================================================================================================================================================
 =======================================================================================================================================================================
 
 Common Time Complexities:
@@ -33,14 +24,15 @@ O(2ⁿ): Exponential space; Storing all subsets of a set
 O(n!): Factorial space; Storing all permutations
 
 =======================================================================================================================================================================
+=======================================================================================================================================================================
 Java DSA Toolkit
 =======================================================================================================================================================================
+=======================================================================================================================================================================
 
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
+
+========================================================================================================================
 Strings
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
+========================================================================================================================
 
 String → java.lang.String
 StringBuilder → java.lang.StringBuilder
@@ -48,9 +40,11 @@ StringBuffer → java.lang.StringBuffer
 
 StringBuilder and StringBuffer share a common superclass: AbstractStringBuilder
 
-------------------------------------------------------------
+
+
+============================================================
 String: 
-------------------------------------------------------------
+============================================================
 
 - Immutable, so its contents cannot be changed after creation, any change will create a completely new object in string pool, so automatically thread-safe.
 
@@ -112,9 +106,10 @@ Example: String txt = "We are the so-called \"Vikings\" from the north.";
 "  Java  ".strip();       // Uses Unicode whitespace rules
 
 
-------------------------------------------------------------
+
+============================================================
 StringBuilder & StringBuffer:
-------------------------------------------------------------
+============================================================
 
 StringBuilder: Mutable, not synchronized, not thread-safe; ideal for local string construction
 StringBuffer: Mutable, synchronized, thread-safe; useful in some shared-buffer scenarios, but not a universal concurrency solution because Synchronization adds overhead
@@ -140,22 +135,37 @@ Capacity management	ensureCapacity(), trimToSize()			ensureCapacity() can reduce
 - Unicode code point: A number identifying a Unicode character, such as A or 😀.
 - Visible character: What a user perceives as one character on screen. It may consist of multiple Unicode code points.
 
-------------------------------------------------------------
+
+
+============================================================
 char & char[]
+============================================================
 
 - Java char represents one UTF-16 code unit, not necessarily one complete Unicode character
 
 
 
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-Arrays
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+========================================================================================================================
+Arrays
+========================================================================================================================
+
+
+
+============================================================
 Primitive Arrays: 
-------------------------------------------------------------
+============================================================
 
 - Stores raw data values (like 42 or true) directly in a contiguous memory block, initialized to type-specific defaults like 0 or false.
 
@@ -163,9 +173,11 @@ int[] n; // Declaration
 int[] numbers = {40, 10, 30, 20}; 
 int[] nums = new int[4];  // Instantiation
 
-------------------------------------------------------------
+
+
+============================================================
 Object Arrays:
-------------------------------------------------------------
+============================================================
 
 - Stores memory addresses (references) that point to objects elsewhere on the heap, initialized to null.
 
@@ -173,9 +185,11 @@ String[] names = new String[3];
 Object[] objects = new Object[3];
 Employee[] employees = new Employee[10];
 
-------------------------------------------------------------
+
+
+============================================================
 Multi-dimensional Arrays:
-------------------------------------------------------------
+============================================================
 
 - Array of arrays
 
@@ -217,11 +231,16 @@ List<Integer> list = Arrays.stream(intArray)
 			.toList();
 
 
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-Map:
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+========================================================================================================================
+Maps:
+========================================================================================================================
 
 - Map is not a subtype of the Collection interface.
 
@@ -257,8 +276,10 @@ Iterate		forEach(), entrySet(), keySet(), values()		Prefer entrySet() when both 
 Size		size(), isEmpty()					Standard operations.
 
 
-------------------------------------------------------------
+
+============================================================
 HashMap: 
+============================================================
 
 - Offers fast lookups but no specific order.
 
@@ -353,11 +374,6 @@ containsValue()	O(n)			O(n)
 Iteration	O(capacity + size)	O(capacity + size)
 
 
-Thread safety: 
-
-- HashMap is not thread-safe.
-- For concurrent key-value storage, consider ConcurrentHashMap
-
 
 Null handling: 
 
@@ -366,8 +382,11 @@ Null handling:
 	- Multiple null values.
 	- Normal keys and values alongside nulls.
 
+
+
 ------------------------------------------------------------
 equals() vs hashCode()
+------------------------------------------------------------
 
 - These two methods are particularly important when working with custom objects in hash-based collections.
 - hashCode() helps locate the bucket; equals() distinguishes objects within that bucket.
@@ -440,8 +459,11 @@ If objects are unequal		They may still have the same hash code (collision)
 - Why? The entry was stored using the original hash, but lookup now calculates a hash using the modified ID
 - Use immutable fields for HashMap key equality and hashing wherever possible.
 
+
+
 ------------------------------------------------------------
 Hash Collision:
+------------------------------------------------------------
 
 - A hash collision occurs when their hash values map to the same bucket index.
 - The nodes from the same bucket maintain links to next node for node traversal (Single linked list)
@@ -460,8 +482,11 @@ HashMap:
 - Follows next to the second node.
 - Finds Alice and returns 200.
 
+
+
 ------------------------------------------------------------
 Treeification:
+------------------------------------------------------------
 
 - If a bucket gets too crowded, the long linked list can make lookups expensive.
 - To improve performance, modern Java HashMap implementations can convert a heavily collided bucket into a Red-Black Tree called treeification.
@@ -475,8 +500,11 @@ MIN_TREEIFY_CAPACITY	64	Minimum table capacity for treeification
 
 - Treeification improves lookup in heavily collided buckets from O(n) toward O(log n).
 
+
+
 ------------------------------------------------------------
 Resizing:
+------------------------------------------------------------
 
 - Allocate a new bucket array with double the capacity.
 - Redistribute existing entries into the new table.
@@ -484,9 +512,11 @@ Resizing:
 
 Note: Existing nodes already store their spread hash, so HashMap reuses it during resizing
 
-------------------------------------------------------------
-LinkedHashMap:
 
+
+============================================================
+LinkedHashMap:
+============================================================
 
 Internal Data Structure:
 
@@ -494,7 +524,6 @@ Internal Data Structure:
 - It retains the hash-based lookup mechanism but adds a doubly linked list connecting entries to maintain iteration order.
 - The LinkedHashMap entry contains additional before and after references alongside the normal HashMap node fields (i.e., hash, key, value, next).
 - The trade-off is additional memory for the two linked-list references in every entry.
-
 
 
 Mutability & Modifiability:
@@ -558,31 +587,142 @@ Add D		C → A → D
 
 
 
-Thread safety: 
-
-- LinkedHashMap is not thread-safe.
-
-
-
 Null handling: 
 
 - One null key.
 - Multiple null values.
 
-------------------------------------------------------------
+
+
+============================================================
 TreeMap:
+============================================================
 
 - Keeps keys in a sorted order.
 
-Internal data structure: array, linked nodes, hash table, tree, heap, etc.
+
+Internal data structure:
+
+- Unlike HashMap and LinkedHashMap, which use bucket array and hashing to locate entries, TreeMap stores entries in a sorted tree structure.
+- Each node conceptually contains:
+
+class Entry<K, V> {
+    K key;
+    V value;
+
+    Entry<K, V> parent;
+    Entry<K, V> left;
+    Entry<K, V> right;
+
+    boolean color;
+}
+
+- Every node's left subtree contains smaller keys.
+- Every node's right subtree contains larger keys.
+- The tree remains balanced to avoid becoming a long chain.
+
+
+
+Ordering using Comparable / Comparator:
+
+- TreeMap determines key ordering using either:
+
+	- Natural ordering through Comparable.
+	- A custom ordering through Comparator.
+
+- TreeMap uses the comparison result to determine whether keys are equivalent.
+- If compareTo() or compare() returns zero, TreeMap treats the keys as the same key, even if their equals() method returns false.
+
+
+
 Mutability & Modifiability: 
-Operations: how add(), get(), put()/set(), remove() and iteration work internally.
-Time and space complexity: average, worst case, and amortized costs where relevant.
-Thread safety: what happens with concurrent reads and writes, and available alternatives.
-Null handling: whether null elements, keys, and values are allowed.
-Optimization considerations: when to choose.
 
 
+
+Operations: 
+
+Retrieval/get():
+
+- TreeMap starts at the root and compares the requested key with each node
+- If the requested key is greater, move right.
+- If it is smaller, move left.
+- If equal, return the value.
+
+Insertion/put():
+
+- The tree finds the correct position using comparisons.
+- However, inserting many values in sorted order could make an ordinary binary search tree unbalanced.
+
+For example: 10, 20, 30, 40
+
+10
+  \
+   20
+     \
+      30
+        \
+         40
+
+- Searching this structure would take O(n), defeating the purpose of a tree.
+- TreeMap solves this using Red-Black Tree balancing.
+
+
+
+Red-Black Tree Balancing:
+
+- A Red-Black Tree assigns each node a color: red or black.
+- It follows rules that prevent the tree from becoming excessively unbalanced.
+- When insertion or deletion violates those rules, TreeMap restores balance using:
+
+	- Recoloring nodes.
+	- Left rotations.
+	- Right rotations.
+
+
+
+
+Time and space complexity:
+
+Operation		Complexity
+put()			O(log n)
+get()			O(log n)
+remove()		O(log n)
+containsKey()		O(log n)
+firstKey() / lastKey()	O(log n)
+containsValue()		O(n)
+Iteration		O(n)
+
+
+
+Null handling:
+
+- Null key is not allowed with natural ordering
+- Null key with custom comparator is allowed if comparator supports null
+- Null values are allowed
+
+
+Important TreeMap APIs:
+
+Method			Meaning
+firstKey()		Smallest key	
+lastKey()		Largest key	
+lowerKey(30)		Greatest key strictly less than 30	
+floorKey(30)		Greatest key less than or equal to 30	
+ceilingKey(35)		Smallest key greater than or equal to 35	
+higherKey(30)		Smallest key strictly greater than 30	
+map.subMap(20, 50)	Returns entries with keys from 20 (inclusive) to 50 (exclusive)
+map.headMap(30)		Returns keys strictly less than 30.
+map.tailMap(30)		Returns keys greater than or equal to 30.
+map.pollFirstEntry()	Retrieves and removes smallest entry
+map.pollLastEntry()	Retrieves and removes largest entry
+map.descendingMap();	Reverse-order view
+
+
+
+
+============================================================
+Optimization considerations:
+============================================================
 
 Requirement			Choice
 -------------------------------------------
@@ -593,14 +733,22 @@ Implement a simple LRU cache	LinkedHashMap
 Sorted keys			TreeMap
 Concurrent lookup and updates	ConcurrentHashMap
 
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+========================================================================================================================
 Collections:
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
+========================================================================================================================
 
 - Java Collections Framework eliminates the need for fixed-size arrays.
 - Collections only work with Object types, not primitives
+
 
 
 Iterable (I)
@@ -638,9 +786,9 @@ Iterable (I)
 - Vector is a legacy synchronized List implementation; Stack extends Vector
 
 
-------------------------------------------------------------
+============================================================
 List (Ordered Sequence)
-------------------------------------------------------------
+============================================================
 
 - A List is an ordered collection that allows duplicate elements and provides index-based access. 
 - Maintains the insertion order of elements.
@@ -660,8 +808,9 @@ Extract		subList()							Returns a backed view, not an independent list.
 Convert		toArray(), List.of()						List.of() creates an unmodifiable list and rejects nulls.
 
 
-------------------------------------------------------------
+============================================================
 ArrayList:
+============================================================
 
 
 List<Integer> nums = List.of(1, 34, 32, 45); //creates an unmodifiable List, cannot perform operations like set(), remove(), add(), ...
@@ -712,20 +861,6 @@ indexOf(object)			Linear search						O(n)
 clear()				Null out occupied positions				O(n)
 
 
-Thread safety:
-
-- ArrayList is not synchronized. Hence, not thread-safe.
-- Even though individual array reads and writes are generally simple operations, the complete add() operation involves multiple steps that are not atomic.
-- This can cause lost updates or inconsistent state.
-
-Other Alternatives:
-
-Implementation			Behavior
-----------------------------------------------
-Collections.synchronizedList()	Synchronizes list operations using a common lock
-CopyOnWriteArrayList		Copies the underlying array on every mutation
-External locking		You control synchronization
-
 
 Null Safety: 
 
@@ -742,8 +877,9 @@ Optimization considerations::
 - You don't require built-in concurrent access.
 
 
-------------------------------------------------------------
+============================================================
 LinkedList: 
+============================================================
 
 - Better for frequent insertions and deletions at the beginning or end.
 - Implements both List and Deque, so it can be used as a list, queue, or deque.
@@ -797,9 +933,10 @@ Optimization considerations:
 - Use it when you genuinely need efficient insertions/removals at both ends or already have an iterator positioned at the required node.
 
 
-------------------------------------------------------------
+
+============================================================
 Set (Unique Elements)
-------------------------------------------------------------
+============================================================
 
 - A Set is a collection that does not allow duplicate elements. 
 - Used strictly when you need a collection of unique items.
@@ -817,8 +954,11 @@ Convert		toArray()				Can convert the set into an array.
 Iterate		iterator(), forEach()			HashSet iteration order is not guaranteed.
 
 
-------------------------------------------------------------
+
+
+============================================================
 HashSet:
+============================================================
 
 - Unordered and backed by a hash table for fast operations.
 
@@ -826,41 +966,165 @@ HashSet:
 Internal data structure: 
 
 - HashSet internally uses a HashMap.
+- Every element you add becomes a key in the internal HashMap.
+- The value is a shared dummy object called PRESENT.
+
+For example:
+
+HashSet elements:
+
+John
+Alice
+David
+
+Internal HashMap:
+
+Key	Value
+---------------
+John	PRESENT
+Alice	PRESENT
+David	PRESENT
+
+- This explains why HashSet has no duplicate elements: HashMap keys must be unique.
+
 
 
 Mutability & Modifiability: 
-Operations: how add(), get(), put()/set(), remove() and iteration work internally.
-Time and space complexity: average, worst case, and amortized costs where relevant.
-Thread safety: what happens with concurrent reads and writes, and available alternatives.
-Null handling: whether null elements, keys, and values are allowed.
-Optimization considerations: when to choose.
 
-------------------------------------------------------------
+
+
+Operations: 
+
+add():
+
+- HashMap calculates the hash of the key.
+- It identifies the corresponding bucket.
+- It checks whether an existing key is equal to insert key.
+- If it finds an existing key.
+- It replaces the existing value with the same PRESENT object and returns false, indicating no new element was added.
+- If no equal key is present, it inserts new key with value PRESENT.
+
+
+
+Time complexity:
+
+Operation	Average			Worst case
+--------------------------------------------------
+add()		O(1)			O(n)
+remove()	O(1)			O(n)
+contains()	O(1)			O(n)
+Iteration	O(size + capacity)	O(size + capacity)
+
+
+
+Space complexity:
+
+- HashSet maintains an underlying HashMap table, containing buckets and entries.
+- O(n) space for stored elements.
+- Additional capacity for unused buckets.
+- Each entry has its own node/object overhead.
+- Resizing may temporarily require old and new bucket arrays.
+
+
+
+Null handling: 
+
+- HashSet permits one null element and any number of non-null elements.
+
+
+
+============================================================
 LinkedHashSet:
+============================================================
 
 - Maintains the order in which elements were added.
 
 
-Internal data structure: array, linked nodes, hash table, tree, heap, etc.
-Mutability & Modifiability: 
-Operations: how add(), get(), put()/set(), remove() and iteration work internally.
-Time and space complexity: average, worst case, and amortized costs where relevant.
-Thread safety: what happens with concurrent reads and writes, and available alternatives.
-Null handling: whether null elements, keys, and values are allowed.
-Optimization considerations: when to choose.
+Internal data structure:
 
-------------------------------------------------------------
+- LinkedHashSet is essentially a HashSet backed by a LinkedHashMap.
+- It maintains the hashing structure for fast lookup and a doubly linked list to preserve insertion order.
+
+
+
+Mutability & Modifiability: 
+
+
+
+Time Complexity: 
+
+Operation	Average complexity
+----------------------------------
+add()		O(1)
+remove()	O(1)
+contains()	O(1)
+Iteration	O(n)
+
+
+
+Space Complexity:
+
+- It has additional memory overhead compared with HashSet because each entry maintains linked-list references.
+
+
+
+Null handling: 
+
+- Allows one null element.
+
+
+
+============================================================
 TreeSet:
+============================================================
 
 - Automatically keeps elements in a sorted order.
 
 
-Internal data structure: array, linked nodes, hash table, tree, heap, etc.
+
+Internal data structure: 
+
+- It internally uses a TreeMap, which is implemented as a Red-Black Tree (a self-balancing binary search tree) in OpenJDK.
+
+
+
 Mutability & Modifiability: 
-Operations: how add(), get(), put()/set(), remove() and iteration work internally.
-Time and space complexity: average, worst case, and amortized costs where relevant.
-Thread safety: what happens with concurrent reads and writes, and available alternatives.
-Null handling: whether null elements, keys, and values are allowed.
+
+
+
+Operations: 
+
+add():
+
+- Starts at the root.
+- Compares the new value with the current node.
+- Moves left if smaller, right if greater.
+- Continues until it finds an empty position.
+- Inserts the new node.
+- If an equivalent element already exists, it isn't inserted.
+- Rebalances the tree if necessary.
+
+
+
+Time complexity:
+
+Operation		Complexity
+-----------------------------------
+add()			O(log n)
+remove()		O(log n)
+contains()		O(log n)
+First/last element	O(log n) in the general tree traversal
+Iteration		O(n)
+Range queries		O(log n + k), approximately
+
+
+
+Null handling:
+
+- With natural ordering, it does not permit null elements because they cannot be compared.
+- A custom comparator can define a null ordering, although null handling must be explicitly designed.
+
+
 Optimization considerations: when to choose.
 
 
@@ -874,9 +1138,11 @@ Duplicates		Not allowed		Not allowed			Not allowed
 
 
 
-------------------------------------------------------------
+
+
+============================================================
 Queue (Order of Processing)
-------------------------------------------------------------
+============================================================
 
 - A Queue is designed for holding elements prior to processing, typically following the FIFO (First-In-First-Out) principle. 
 - Queue: First In, First Out. Elements are added at the back and removed from the front.
@@ -907,29 +1173,184 @@ Inspect rear		getLast(), peekLast()
 
 
 
-------------------------------------------------------------
+============================================================
 PriorityQueue: 
+============================================================
 
 - Elements are ordered based on their natural priority or a custom comparator.
+- Unlike a normal FIFO queue, the element with the highest priority (or lowest value by default) is retrieved first.
 
-------------------------------------------------------------
+
+
+Internal data structure: 
+
+- Java implements PriorityQueue using a Min-Heap, this means the smallest element always stays at the root.
+- Java stores the heap in an array.
+- For example:
+
+Min-Heap:
+
+      10
+     /  \
+    20   30
+   /  \ 
+  40  50
+
+For the above example, one valid internal representation is:
+
+Index:    0   1   2   3   4
+          |   |   |   |   |
+Array:   [10, 20, 30, 40, 50]
+
+- The relationship between array indexes and tree positions is for a node at index i:
+
+Position	Index
+---------------------------
+Parent		(i - 1) / 2
+Left child	2 * i + 1
+Right child	2 * i + 2
+
+- This is why a binary heap doesn't need node objects or left/right references like a TreeMap.
+
+
+
+Mutability & Modifiability: 
+
+
+
+Operations:
+
+Insertion:
+
+- The new element is initially placed at the end to preserve the complete binary tree structure.
+- Compare the new element with its parent using "(i-1)/2"
+- If the new element is smaller than its parent, swap - Heapify upward (sift-up).
+- Repeat this until the new element is greater than its parent
+- The heap property is restored.
+
+Removal/poll():
+
+- Remove the root, which is the smallest element.
+- Move the last element to the root
+- Compare the root with its children using 2 * i + 1 (Left child) and 2 * i + 2 (Right child)
+- If the greater than its children, swap with the smaller child - Heapify downward (sift-down)
+- Continue until the heap property is restored.
+
+
+
+Time and space complexity:
+
+Operation		Complexity
+----------------------------------
+offer() / add()		O(log n)
+poll()			O(log n)
+peek()			O(1)
+remove(Object)		O(n)
+contains()		O(n)
+Iteration		O(n)
+Space			O(n)
+
+
+
+Custom priority using Comparator:
+
+- By default, PriorityQueue is a Min-Heap.
+- To create a Max-Heap:
+
+PriorityQueue<Integer> maxHeap = new PriorityQueue<>(Comparator.reverseOrder());
+
+- To prioritize objects:
+
+class Job {
+    int priority;
+    String name;
+}
+
+PriorityQueue<Job> jobs =
+    new PriorityQueue<>(
+        Comparator.comparingInt(job -> job.priority)
+    );
+
+- This retrieves jobs with the smallest priority value first.
+- If you want larger priority numbers first:
+
+PriorityQueue<Job> jobs =
+    new PriorityQueue<>(
+        Comparator.comparingInt((Job job) -> job.priority)
+                  .reversed()
+    );
+
+
+
+Null handling:
+
+- Null elements not allowed
+
+
+
+Common backend use cases:
+
+- Processing jobs based on priority.
+- Scheduling the next task by execution time.
+- Finding the top K elements from a large dataset.
+- Merging multiple sorted streams.
+- Implementing algorithms such as Dijkstra's shortest path.
+
+
+
+============================================================
 ArrayDeque: 
+============================================================
 
 - A double-ended queue that supports insertion and removal at both ends.
 - ArrayDeque is generally preferred over the legacy Stack class for stack operations.
 
-------------------------------------------------------------
+
+Internal data structure: array, linked nodes, hash table, tree, heap, etc.
+Mutability & Modifiability: 
+Operations: how add(), get(), put()/set(), remove() and iteration work internally.
+Time and space complexity: average, worst case, and amortized costs where relevant.
+Null handling: whether null elements, keys, and values are allowed.
+Optimization considerations: when to choose.
+
+
+============================================================
 LinkedList:
+============================================================
 
 - Doubly linked list; implements both List and Deque.
 
 
 
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
+Internal data structure: array, linked nodes, hash table, tree, heap, etc.
+Mutability & Modifiability: 
+Operations: how add(), get(), put()/set(), remove() and iteration work internally.
+Time and space complexity: average, worst case, and amortized costs where relevant.
+Null handling: whether null elements, keys, and values are allowed.
+Optimization considerations: when to choose.
+
+
+============================================================
+Concurrency in Maps and Collections
+============================================================
+
+- None of the collections/maps is not synchronized. Hence, not thread-safe.
+- Even though individual reads and writes are generally simple operations, a complete single operation involves multiple steps that are not atomic.
+- This can cause lost updates or inconsistent state.
+
+Other Alternatives:
+
+- ConcurrentHashMap, Hashtable
+- CopyOnWriteArrayList
+- ConcurrentHashMap-backed Set
+- ConcurrentLinkedQueue, BlockingQueue
+- External locking (you control synchronization)
+- Collections.synchronizedList(), Collections.synchronizedMap(), Collections.synchronizedSet() etc.,
+
+
+========================================================================================================================
 Collections of Objects:
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
+========================================================================================================================
 
 - List<Employee>
 - Map<Integer, Employee>
@@ -955,11 +1376,9 @@ Map<Integer, Employee> employeeById = employees.stream()
 Map<String, List<Employee>> byDepartment = employees.stream()
         .collect(Collectors.groupingBy(Employee::getDepartment));
 
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
+========================================================================================================================
 Nested Structures:
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
+========================================================================================================================
 
 - Map<String, List<Employee>>
 - Map<String, Map<String, List<Employee>>>
@@ -976,11 +1395,9 @@ Customer
 
 Comparable / Comparator
 
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
+========================================================================================================================
 Streams & Collectors: 
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
+========================================================================================================================
 
 Collection > stream() > filter > map > sorted > distinct > collect
 
