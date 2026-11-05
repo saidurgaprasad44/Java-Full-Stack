@@ -523,7 +523,23 @@ Internal Data Structure:
 - LinkedHashMap extends HashMap. 
 - It retains the hash-based lookup mechanism but adds a doubly linked list connecting entries to maintain iteration order.
 - The LinkedHashMap entry contains additional before and after references alongside the normal HashMap node fields (i.e., hash, key, value, next).
+
+Conceptually:
+
+static class Entry<K, V> extends HashMap.Node<K, V> {
+    Entry<K, V> before;
+    Entry<K, V> after;
+}
+
+static class Node<K, V> {
+    final int hash;
+    final K key;
+    V value;
+    Node<K, V> next;
+}
+
 - The trade-off is additional memory for the two linked-list references in every entry.
+
 
 
 Mutability & Modifiability:
@@ -601,9 +617,28 @@ TreeMap:
 - Keeps keys in a sorted order.
 
 
+
+Binary Tree: - Each node has at most two children
+Binary Search Tree(BST) - A Binary tree where all the left sub tree is less than the current node and the right sub tree is greater than the current node
+Complete Binary Tree - A Binary tree with all the levels are completely filled except possibly for the last level filled from left to right.
+Red-Black Tree - A self balancing BST using red/black color field
+Binary Heap - A Complete Binary Tree with min/max heap ordering.
+
+
+             Tree
+              |
+         Binary Tree 
+        /           \
+      BST        Complete Binary Tree
+       |             |
+Red-Black Tree   Binary Heap(min/max)
+
+
+
+
 Internal data structure:
 
-- Unlike HashMap and LinkedHashMap, which use bucket array and hashing to locate entries, TreeMap stores entries in a sorted tree structure.
+- Unlike HashMap and LinkedHashMap, which use bucket array and hashing to locate entries, TreeMap stores entries in a Binary Search Tree structure.
 - Each node conceptually contains:
 
 class Entry<K, V> {
@@ -619,7 +654,7 @@ class Entry<K, V> {
 
 - Every node's left subtree contains smaller keys.
 - Every node's right subtree contains larger keys.
-- The tree remains balanced to avoid becoming a long chain.
+- The tree remains balanced using red/black color field to avoid becoming a long chain.
 
 
 
@@ -1211,6 +1246,7 @@ Left child	2 * i + 1
 Right child	2 * i + 2
 
 - This is why a binary heap doesn't need node objects or left/right references like a TreeMap.
+- However, after every insertion/removal, the tree has to restore the min-heap property
 
 
 
@@ -1304,14 +1340,64 @@ ArrayDeque:
 
 - A double-ended queue that supports insertion and removal at both ends.
 - ArrayDeque is generally preferred over the legacy Stack class for stack operations.
+- It can function as:
+	- A FIFO Queue.
+	- A LIFO Stack.
+	- A general-purpose Deque.
 
 
-Internal data structure: array, linked nodes, hash table, tree, heap, etc.
+
+Internal data structure: 
+
+- ArrayDeque is implemented using a resizable circular array.
+- It maintains:
+	- An internal array.
+	- A head index pointing to the first element.
+	- A tail index representing the next insertion position at the rear.
+
+
+
 Mutability & Modifiability: 
-Operations: how add(), get(), put()/set(), remove() and iteration work internally.
-Time and space complexity: average, worst case, and amortized costs where relevant.
-Null handling: whether null elements, keys, and values are allowed.
-Optimization considerations: when to choose.
+
+
+
+Important APIs:
+
+Operation	Meaning
+---------------------------------------
+addFirst(e)	Insert at front
+addLast(e)	Insert at rear
+offerFirst(e)	Insert at front, returns boolean
+offerLast(e)	Insert at rear, returns boolean
+removeFirst()	Remove front; throws if empty
+removeLast()	Remove rear; throws if empty
+pollFirst()	Remove front; returns null if empty
+pollLast()	Remove rear; returns null if empty
+peekFirst()	Read front; returns null if empty
+peekLast()	Read rear; returns null if empty
+push(e)		Push onto stack (front)
+pop()		Pop from stack (front)
+
+
+
+Complexity:
+
+Operation			Complexity
+----------------------------------------------
+Insert at front/rear		O(1) amortized
+Remove from front/rear		O(1)
+Peek at front/rear		O(1)
+Search (contains)		O(n)
+Remove arbitrary element	O(n)
+Iteration			O(n)
+Space				O(capacity)
+
+
+
+Null Safety:
+
+- Null elements	are not allowed
+- Duplicate elements are allowed
 
 
 ============================================================
@@ -1319,15 +1405,63 @@ LinkedList:
 ============================================================
 
 - Doubly linked list; implements both List and Deque.
+- It supports FIFO, LIFO and double-ended operations
 
 
 
-Internal data structure: array, linked nodes, hash table, tree, heap, etc.
-Mutability & Modifiability: 
-Operations: how add(), get(), put()/set(), remove() and iteration work internally.
-Time and space complexity: average, worst case, and amortized costs where relevant.
-Null handling: whether null elements, keys, and values are allowed.
-Optimization considerations: when to choose.
+Using LinkedList as a Queue:
+
+Queue<Integer> queue = new LinkedList<>();
+
+queue.offer(10);
+queue.offer(20);
+queue.offer(30);
+
+queue.poll(); // 10
+queue.poll(); // 20
+
+- FIFO behavior:
+
+Insertion → 30 → 20 → 10 → Removal
+
+- offer() inserts at the tail, while poll() removes from the head.
+- Both operations are O(1).
+
+
+
+Using LinkedList as a Deque:
+
+Deque<Integer> deque = new LinkedList<>();
+
+deque.addFirst(10);
+deque.addLast(20);
+deque.addFirst(5);
+deque.addLast(30);
+
+deque.removeFirst(); // 5
+deque.removeLast();  // 30
+
+- Logical structure:
+
+Front → 5 ⇄ 10 ⇄ 20 ⇄ 30 ← Rear
+
+- Both are O(1), because LinkedList already maintains references to the head and tail.
+
+
+
+Complexity:
+
+Operation			Complexity
+------------------------------------------
+Insert at front/rear		O(1)
+Remove from front/rear		O(1)
+Peek at front/rear		O(1)
+Search (contains)		O(n)
+Remove arbitrary element	O(n)
+Access by index			O(n)
+Iteration			O(n)
+Space				O(n), with per-node overhead
+
 
 
 ============================================================
@@ -1348,8 +1482,11 @@ Other Alternatives:
 - Collections.synchronizedList(), Collections.synchronizedMap(), Collections.synchronizedSet() etc.,
 
 
+
+
+
 ========================================================================================================================
-Collections of Objects:
+Collections of Objects Nested Structures:
 ========================================================================================================================
 
 - List<Employee>
@@ -1376,9 +1513,10 @@ Map<Integer, Employee> employeeById = employees.stream()
 Map<String, List<Employee>> byDepartment = employees.stream()
         .collect(Collectors.groupingBy(Employee::getDepartment));
 
-========================================================================================================================
+
+
+
 Nested Structures:
-========================================================================================================================
 
 - Map<String, List<Employee>>
 - Map<String, Map<String, List<Employee>>>
@@ -1391,6 +1529,9 @@ Customer
                └── unitPrice
 - List<Customer>
 - Set<Customer>
+
+
+
 
 
 Comparable / Comparator
