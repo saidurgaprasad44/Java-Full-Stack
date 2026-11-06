@@ -1,31 +1,6 @@
 =======================================================================================================================================================================
 =======================================================================================================================================================================
-Complexity fundamentals
-=======================================================================================================================================================================
-=======================================================================================================================================================================
-
-Common Time Complexities:
-
-O(1): constant; Array index access
-O(log n): logarithmic; Binary search
-O(n): linear traversal; Single loop
-O(n log n): Linearithmic; Merge sort
-O(n²): Quadratic; Nested loops
-
-
-Common Space Complexities:
-
-O(1): Constant space; Using a few variables
-O(log n): logarithmic; Recursive binary search
-O(n): linear traversal; Creating another array of n elements
-O(n log n): Linearithmic; Some divide-and-conquer algorithms (not very common)
-O(n²): Quadratic space; Creating an n× 	n matrix
-O(2ⁿ): Exponential space; Storing all subsets of a set
-O(n!): Factorial space; Storing all permutations
-
-=======================================================================================================================================================================
-=======================================================================================================================================================================
-Java DSA Toolkit
+									Java DSA Toolkit
 =======================================================================================================================================================================
 =======================================================================================================================================================================
 
@@ -1486,7 +1461,7 @@ Other Alternatives:
 
 
 ========================================================================================================================
-Collections of Objects Nested Structures:
+Collections of Objects:
 ========================================================================================================================
 
 - List<Employee>
@@ -1515,8 +1490,9 @@ Map<String, List<Employee>> byDepartment = employees.stream()
 
 
 
-
+========================================================================================================================
 Nested Structures:
+========================================================================================================================
 
 - Map<String, List<Employee>>
 - Map<String, Map<String, List<Employee>>>
@@ -1532,9 +1508,109 @@ Customer
 
 
 
+========================================================================================================================
+Comparable & Comparator:
+========================================================================================================================
+
+Comparable:
+
+- Used to naturally order the custom objects implementing Comparable interface and compareTo() abstract method
+
+class Employee implements Comparable<Employee> {
+
+    private int id;
+    private String name;
+    private double salary;
+
+    @Override
+    public int compareTo(Employee other) {
+        return Integer.compare(this.id, other.id);
+    }
+}
 
 
-Comparable / Comparator
+Output:
+
+101 - David
+102 - Sam
+103 - John
+
+- Prefer Integer.compare() over subtraction (this.id - other.id), which can overflow.
+
+
+
+Comparator:
+
+- For custom ordering
+- With Comparator, we dont have to keep changing the custom class's compareTo() implementation to define the objects ordering.
+
+
+Ascending salary:
+
+Comparator<Employee> bySalary = (e1, e2) -> Double.compare(e1.getSalary(), e2.getSalary());
+employees.sort(bySalary);
+
+Result:
+
+45000 - Sam
+50000 - John
+60000 - David
+
+
+Descending salary:
+
+employees.sort(bySalary.reversed());
+
+
+- We can define multiple comparators without modifying Employee.
+
+Comparator<Employee> byName = Comparator.comparing(Employee::getName);
+Comparator<Employee> byIdDescending = Comparator.comparingInt(Employee::getId).reversed();
+
+
+- One of the most useful capabilities is sorting using multiple conditions.
+- Suppose employees should be sorted by - Department ascending, Salary descending within each department, Name ascending when department and salary are equal.
+
+Comparator<Employee> comparator =
+    Comparator.comparing(Employee::getDepartment)
+        .thenComparing(
+            Comparator.comparingDouble(Employee::getSalary)
+                      .reversed()
+        )
+        .thenComparing(Employee::getName);
+
+employees.sort(comparator);
+
+
+
+Important Comparator methods:
+
+Method			Purpose
+-----------------------------------------------
+comparing()		Compare using an object property
+comparingInt()		Compare using an int property
+comparingLong()		Compare using a long property
+comparingDouble()	Compare using a double property
+thenComparing()		Add secondary ordering
+reversed()		Reverse ordering
+naturalOrder()		Natural ordering
+reverseOrder()		Reverse natural ordering
+nullsFirst()		Place null values first
+nullsLast()		Place null values last
+thenComparingInt()	Add secondary int comparison
+
+
+
+API / Collection				Comparison mechanism
+---------------------------------------------------------------
+Collections.sort(list)			Comparable
+Collections.sort(list, comparator)		Comparator
+list.sort(comparator)			Comparator
+Arrays.sort(array)			Comparable or Comparator
+TreeSet					Comparable or Comparator
+TreeMap					Comparable or Comparator
+PriorityQueue				Comparable or Comparator
+Stream.sorted()				Comparable or Comparator
 
 ========================================================================================================================
 Streams & Collectors: 
@@ -1570,150 +1646,3 @@ Collection > stream() > filter > map > sorted > distinct > collect
 - Collectors.joining()
 - Collectors.counting()
 - Collectors.mapping()
-
-=======================================================================================================================================================================
-Production-oriented Java coding
-=======================================================================================================================================================================
-
-Basic data manipulation:
-
-- String processing, normalization and validation
-- Array and collection transformations
-- Removing duplicates while preserving order
-- Frequency counting
-- Searching and sorting
-- Converting between arrays, lists, sets and maps
-- Handling empty inputs, nulls and duplicates
-
-Collections of objects:
-
-Use models such as Employee, Product, Order, Customer and Transaction.
-- Filter objects by multiple conditions
-- Find maximum, minimum and matching objects
-- Sort by one or multiple fields
-- Group objects by a field
-- Count objects by category
-- Convert List<Employee> to Map<Long, Employee>
-- Build lookup maps by ID
-- Detect duplicate business keys
-- Merge or reconcile collections
-- Compare two collections to find additions, removals or changes
-
-Maps and grouped data:
-
-Map<Long, Employee>
-Map<String, List<Employee>>
-Map<String, Long>
-Map<String, BigDecimal>
-
-- Grouping employees by department
-- Counting orders by status
-- Summing transaction amounts by type
-- Finding the most frequent item
-- Indexing records by ID
-- Grouping data with multiple levels of keys
-- Combining values using merge() or computeIfAbsent()
-
-Nested Structures:
-
-Customer
-└── List<Order>
-       └── List<OrderItem>
-             ├── Product
-             ├── quantity
-             └── unitPrice
-
-- Extract all products across all orders
-- Find customers who have placed qualifying orders
-- Calculate order totals
-- Calculate each customer's total spending
-- Group order items by product
-- Find the best-selling products
-- Identify customers with no orders
-- Handle missing or empty nested collections
-- Flatten nested data using loops and flatMap()
-
-ArrayList.get()       → generally O(1)
-HashMap.get()         → O(1) average
-HashSet.contains()    → O(1) average
-TreeMap.get()         → O(log n)
-List.contains()       → O(n)
-
-=======================================================================================================================================================================
-Java practice
-=======================================================================================================================================================================
-
-Strings and arrays:
-Reverse and transform strings, count characters, process arrays, remove duplicates and perform searches.
-Target: 5–8 programs
-
-Collections and maps:
-Frequency counting, deduplication, lookup, merging, grouping and sorting.
-Target: 5–8 programs
-
-Objects and nested structures:
-Employee, order, product and transaction exercises; grouping, aggregation and nested extraction.
-Target: 6–8 programs
-
-Lambdas and streams:
-Filtering, transformation, sorting, grouping, flattening and aggregation.
-Target: 6–8 programs
-
-- Given business data, select suitable data structures and produce readable, maintainable Java code.
-
-=======================================================================================================================================================================
-Core Data Structures
-=======================================================================================================================================================================
-
-Array: Indexing, traversal, fixed size, multidimensional arrays
-String: Immutability, character access, string manipulation
-Dynamic array: Resizing, indexed access, insertion/removal costs
-Linked list: Nodes, references, singly vs. doubly linked
-Stack: LIFO, push, pop, peek
-Queue: FIFO, enqueue, dequeue
-Deque: Operations at both ends
-Hash table: Hashing, key lookup, collisions at a conceptual level
-Set: Uniqueness and membership checking
-Map: Key-value storage and lookup
-Tree / BST: Hierarchy, traversal, ordered search
-Heap / priority: queue Priority-based retrieval
-Graph: Vertices, edges, adjacency lists
-
-=======================================================================================================================================================================
-Important DSA patterns, algorithms and coding
-=======================================================================================================================================================================
-
-Array and string: traversal Searching, counting, reversing, in-place changes Essential
-Hashing: Frequency maps, duplicate detection, pair lookup Essential
-Sorting: Built-in sorting, sorting-based solutions Essential
-Two pointers: Sorted pairs, palindrome, in-place removal High
-Sliding window: Fixed/variable windows High
-Prefix sums: Range sums and cumulative totals High
-Binary search: Standard search, first/last occurrence High
-Stack and queue: Parentheses, processing order Medium
-Linked list: Reverse, middle, cycle detection Medium
-Recursion: Base cases and recursive calls Basic
-Trees: Traversals, depth, level-order traversal Basic
-Heap / priority queue: Top-K, kth-largest Medium
-BFS / DFS: Basic tree/graph/grid traversal Basic
-Greedy: Simple interval or scheduling problems Introductory
-Dynamic programming: Fibonacci, climbing stairs, memoization Introductory
-
-=======================================================================================================================================================================
-DSA practice
-=======================================================================================================================================================================
-
-Array and string basics
-Hashing
-Sorting
-Two pointers
-Sliding window
-Prefix sums
-Binary search
-Stack and queue
-Linked list
-Basic tree traversal
-Heap and simple BFS/DFS
-Introductory greedy and DP
-
-=======================================================================================================================================================================
