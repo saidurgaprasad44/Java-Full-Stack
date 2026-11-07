@@ -613,13 +613,13 @@ Converting from primitives to wrapper objects and vice versa.
 			int primitive = wrapper; // Unboxing: wrapper.intValue() is called automatically
 
 ===============================================================================================================================================================================
-Anonymous Class and Lambda Expression:
+Anonymous Class, Functional Interface & Lambda Expression:
 ===============================================================================================================================================================================
 
-Anonymous Class from another class: A class without a name that is defined and instantiated extending another class by overriding any number of its concrete methods in a single expression. It contains both creating the object and overriding the methods 
+Anonymous Class from another class: A class without a name that is instantiated extending another class by overriding any number of its concrete methods in a single expression. It contains both creating the object and overriding the methods 
 Key Feature: It simultaneously creates the object and overrides the desired methods.
 
-Anonymous Class from an Interface: A class without a name that is defined and instantiated implementing an interface by defining all the abstract methods in a single expression. It contains both creating the object and defining the abstract methods
+Anonymous Class from an Interface: A class without a name that is instantiated implementing an interface by defining all the abstract methods in a single expression. It contains both creating the object and defining the abstract methods
 Key Feature: It simultaneously creates the object and provides the concrete logic for the abstract methods.
 
 
@@ -717,7 +717,7 @@ UnaryOperator<T>
 	Method: T apply(T);
 
 BinaryOperator<T>
-	Purpose: Combining same-type values.
+	Purpose: Combining same-type values and produces a result of same-type.
 	Method: T apply(T,T);
 
 
@@ -728,15 +728,17 @@ Primitive-specialized functional interfaces:
 - Java also provides specialized interfaces to avoid unnecessary boxing and unboxing.
 - This is useful when extracting primitive values, particularly in streams, without converting them to wrapper objects unnecessarily.
 
-Interface		Purpose
---------------------------------------------------
-IntPredicate		Takes int, returns boolean
-IntFunction<R>		Takes int, returns R
-ToIntFunction<T>	Takes T, returns int
-IntConsumer		Takes int, returns void
-IntSupplier		Returns int
-IntUnaryOperator	Takes int, returns int
-IntBinaryOperator	Takes two ints, returns int
+Interface		Purpose				Method
+----------------------------------------------------------------
+IntPredicate		Takes int, returns Boolean	test(int)
+IntFunction<R>		Takes int, returns R		R apply(int)
+ToIntFunction<T>	Takes T, returns int		int applyAsInt(T)
+IntConsumer		Takes int, returns void		void accept(int)
+IntSupplier		Returns int			int getAsInt()
+IntUnaryOperator	Takes int, returns int		int applyAsInt(int)
+IntBinaryOperator	Takes two ints, returns int	int applyAsInt(int, int)
+
+- Similar interfaces available for Long and Double as well
 
 Example:
 
@@ -807,147 +809,6 @@ employees.sort(Comparator.comparing(Employee::getName));
 // Lambda
 employees.sort((e1, e2) -> e1.getName().compareTo(e2.getName()));
 
-
-===============================================================================================================================================================================
-Collections & Maps:
-===============================================================================================================================================================================
-
-
-
-
-
-
-------------------------------------------------------------
-Comparable & Comparator
-------------------------------------------------------------
-
-- Comparable Interface (compareTo(Object o)): Defines the natural ordering of a class. The class itself must implement this interface.
-- Comparator Functional Interface (compare(Object o1, Object o2)): Defines custom sorting logic. It is separate from the class, allowing multiple different sorting behaviors.
-
-- Here are the most important static factory methods and default methods inside the Java Comparator interface:
-
-	1. Key Extractors (Building the First Comparator): These static methods are your starting points. They tell Java which field to look at to start sorting.
-		Comparator.comparing()		: Sorts by an Object field (like String, LocalDate, or a custom class).
-		Comparator.comparingInt()	: Highly optimized; prevents boxing when sorting by primitive int fields (e.g., age, id).
-		Comparator.comparingLong()	: Optimized for primitive long fields (e.g., timestamp).
-		Comparator.comparingDouble()	: Optimized for primitive double fields (e.g., price, weight).
-	2. Tie-Breakers (Chaining Multi-Level Sorts): These default methods allow you to string multiple criteria together if the previous step results in a tie.
-		thenComparing()		: The primary tie-breaker for object-based fields.
-		thenComparingInt()	: Tie-breaker specifically for primitive int fields.
-		thenComparingLong()	: Tie-breaker specifically for primitive long fields.
-		thenComparingDouble()	: Tie-breaker specifically for primitive double fields.
-	3. Order Modifiers (Reversing Direction): These methods change the direction of your sort.
-		reversed()			: Flips the entire sorting order from ascending to descending (or vice versa).
-		Comparator.reverseOrder()	: A standalone static method that creates a basic descending comparator for natural ordering.
-		Comparator.naturalOrder()	: Creates a basic ascending comparator for natural ordering (like A-to-Z or lowest-to-highest numbers)
-	4. Null Handlers (Preventing NullPointerException): If your dataset contains null values, sorting it normally will crash your application. These methods safely position null elements.
-		Comparator.nullsFirst()	: Places all null values at the very beginning of the sorted list.
-		Comparator.nullsLast()	: Places all null values at the very end of the sorted list.
-
-	
-Key Syntax Examples:
-Using Lambda (Modern Java)		: list.sort((a, b) -> a.compareTo(b));
-Reversing Natural Order			: list.sort(Comparator.reverseOrder());
-Sorting objects by a specific property	: list.sort(Comparator.comparing(User::getAge));
-
-===============================================================================================================================================================================
-Streams API:
-===============================================================================================================================================================================
-
-A Stream is not a data structure. It’s a pipeline of operations that processes data from a source (like a Collection or array or other streams) without modifying the original source.
-
-Pipeline Structure: 	Source -> Intermediate Operations -> Terminal Operation.
-
-Source: 			The origin of the data (Collections, Arrays, other streams etc.,)
-Intermediate Operations: 	Transform the stream into another stream; these are "lazy" and don't run until the end.
-Terminal Operation: 		Produces a result or side-effect; once called, the stream is consumed and cannot be reused
-
-Lazy Evaluation: Intermediate operations aren't executed until a Terminal operation is called. This is a huge performance win.
-
-////////////////////////////////////////////////////////////
-Regular Streams (object streams):
-
-Stream Sources (Initiation):
-Ways to create a stream or fetch it from data structures
-
-- From Values: 
-	Stream.of("A", "B", "C")
-- From Collections: 	
-	list.stream()
-	set.stream()
-- From Maps:
-	map.keySet().stream() 		: Stream of keys
-	map.values().stream() 		: Stream of values
-	map.entrySet().stream() 	: Stream of Key-Value pairs (entrySet() breaks the map into Set<Map.Entry>)
-- From Arrays:
-	Arrays.stream(ObjectArray) 	: Creates an Object Stream
-- From Primitive Streams - Bulk boxing (primitive stream -> object stream):
-	boxed()				: Converts IntStream to Stream<Integer>.
-	mapToObj(i -> new Object(i))	: Converts primitives into custom Objects.
-
-	
-Intermediate Operations (The Filters & Transformers):
-
-filter(Predicate) 	:Keeps only elements that match a condition (e.g., n -> n > 10).
-map(Function) 		:Transforms each element into something else (e.g., converting a list of Strings to Uppercase).
-sorted() 		:Sorts the elements in natural order (or use a custom Comparator).
-flatMap(Function)	:"Flattens" a stream of collections into a single stream of elements.
-distinct() 		:Removes duplicate elements based on equals().
-limit(n) 		:Truncates the stream to only show the first n elements.
-peek(Consumer)		:Used for debugging; performs an action without changing the stream.
-
-
-Terminal Operations (The Result Makers):
-
-collect(Collectors.to....()) 			:Gathers the final results into a List, Set, or Map - Ex: collect(Collectors.toList()).
-collect(Collectors.groupingBy(Function))	:Groups data into a Map based on a classifying property
-collect(Collectors.partitioningBy(Predicate)) 	:Specialized grouping that splits data into a Map<Boolean, List> based on a true/false condition.
-forEach(Consumer) 				:Performs an action for each element (e.g., System.out::println).
-reduce() 					:Combines all elements into a single result (like summing numbers).
-count() 					:Returns the total number of elements in the stream as a long.
-anyMatch / allMatch / noneMatch			:Returns a boolean based on a condition.
-findFirst() / findAny()				:Returns an Optional containing an element from the stream.
-
-////////////////////////////////////////////////////////////
-Primitive Streams (IntStream, LongStream, DoubleStream):
-
-Till now, we have only seen streams that work with object, i.e., Integer, String, Student, etc., 
-Java also supports primitive streams, that work with numbers like int, long, double etc., these are specialized for performance to avoid boxing/unboxing overhead.
-
-Note: Java does not have specialized streams for other primitives like boolean, char, byte, or short. For those, you typically use a standard Stream with their wrapper classes
-
-
-Stream Sources (Initiation):
-
-- From Values: 
-	IntStream.of(1, 2, 3)
-- From Arrays:
-	Arrays.stream(primitiveArray) 	: Automatically creates an IntStream, LongStream, or DoubleStream
-- From Ranges: 
-	IntStream.range(1, 5) 		: (1 to 4)
-	IntStream.rangeClosed(1, 5) 	: (1 to 5)
-- From object streams - Bulk Unboxing (Object Stream → Primitive Stream):
-	mapToInt(obj -> primitive)	: Returns an IntStream.
-	mapToLong(obj -> primitive)	: Returns a LongStream.
-	mapToDouble(obj -> primitive)	: Returns a DoubleStream.
-	flatMapToInt()			: Flattens nested objects into a single IntStream.
-
-
-Intermediate Operations (Work on both Regular & Primitive):
-Same functional use as Regular Streams: filter, map, distinct, sorted, limit.
-
-
-Specialized Terminal Operations (Math only):
-
-sum() 				:Returns the total sum as a primitive.
-average() 			:Returns an OptionalDouble since a stream might be empty.
-min() / max()			:Returns an OptionalInt (or Long/Double)
-summaryStatistics() 		:A "mega-method" that returns the count, sum, min, average, and max all at once
-
-
-Collectors:
-
-complete the notes///////////////////////////
 
 
 ===============================================================================================================================================================================

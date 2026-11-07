@@ -1512,7 +1512,9 @@ Customer
 Comparable & Comparator:
 ========================================================================================================================
 
+============================================================
 Comparable:
+============================================================
 
 - Used to naturally order the custom objects implementing Comparable interface and compareTo() abstract method
 
@@ -1538,11 +1540,42 @@ Output:
 - Prefer Integer.compare() over subtraction (this.id - other.id), which can overflow.
 
 
-
+============================================================
 Comparator:
+============================================================
 
 - For custom ordering
 - With Comparator, we dont have to keep changing the custom class's compareTo() implementation to define the objects ordering.
+- Instead we simply implement the functional interface Comparator and compare() abstract method using lambda expressions.
+
+
+
+Important Comparator methods:
+
+1. Key Extractors (Building the First Comparator): These static methods are your starting points. They tell Java which field to look at to start sorting.
+	Comparator.comparing()		: Sorts by an Object field (like String, LocalDate, or a custom class).
+	Comparator.comparingInt()	: Highly optimized; prevents boxing when sorting by primitive int fields (e.g., age, id).
+	Comparator.comparingLong()	: Optimized for primitive long fields (e.g., timestamp).
+	Comparator.comparingDouble()	: Optimized for primitive double fields (e.g., price, weight).
+
+2. Tie-Breakers (Chaining Multi-Level Sorts): These default methods allow you to string multiple criteria together if the previous step results in a tie.
+	thenComparing()		: The primary tie-breaker for object-based fields.
+	thenComparingInt()	: Tie-breaker specifically for primitive int fields.
+	thenComparingLong()	: Tie-breaker specifically for primitive long fields.
+	thenComparingDouble()	: Tie-breaker specifically for primitive double fields.
+
+3. Order Modifiers (Reversing Direction): These methods change the direction of your sort.
+	reversed()			: Flips the entire sorting order from ascending to descending (or vice versa).
+	Comparator.reverseOrder()	: A standalone static method that creates a basic descending comparator for natural ordering.
+	Comparator.naturalOrder()	: Creates a basic ascending comparator for natural ordering (like A-to-Z or lowest-to-highest numbers)
+
+4. Null Handlers (Preventing NullPointerException): If your dataset contains null values, sorting it normally will crash your application. These methods safely position null elements.
+	Comparator.nullsFirst()	: Places all null values at the very beginning of the sorted list.
+	Comparator.nullsLast()	: Places all null values at the very end of the sorted list.
+
+
+
+Examples:
 
 
 Ascending salary:
@@ -1550,61 +1583,35 @@ Ascending salary:
 Comparator<Employee> bySalary = (e1, e2) -> Double.compare(e1.getSalary(), e2.getSalary());
 employees.sort(bySalary);
 
-Result:
-
-45000 - Sam
-50000 - John
-60000 - David
-
 
 Descending salary:
 
 employees.sort(bySalary.reversed());
 
 
-- We can define multiple comparators without modifying Employee.
+Multiple comparators without modifying Employee:
 
 Comparator<Employee> byName = Comparator.comparing(Employee::getName);
 Comparator<Employee> byIdDescending = Comparator.comparingInt(Employee::getId).reversed();
 
 
-- One of the most useful capabilities is sorting using multiple conditions.
-- Suppose employees should be sorted by - Department ascending, Salary descending within each department, Name ascending when department and salary are equal.
+Sorting with Multiple conditions:
+
+- Suppose employees should be sorted by - Department ascending, Salary descending when department is a tie, Name ascending when department and salary are equal.
 
 Comparator<Employee> comparator =
     Comparator.comparing(Employee::getDepartment)
-        .thenComparing(
-            Comparator.comparingDouble(Employee::getSalary)
-                      .reversed()
-        )
+        .thenComparingDouble(Employee::getSalary).reversed()
         .thenComparing(Employee::getName);
 
 employees.sort(comparator);
 
 
 
-Important Comparator methods:
-
-Method			Purpose
------------------------------------------------
-comparing()		Compare using an object property
-comparingInt()		Compare using an int property
-comparingLong()		Compare using a long property
-comparingDouble()	Compare using a double property
-thenComparing()		Add secondary ordering
-reversed()		Reverse ordering
-naturalOrder()		Natural ordering
-reverseOrder()		Reverse natural ordering
-nullsFirst()		Place null values first
-nullsLast()		Place null values last
-thenComparingInt()	Add secondary int comparison
-
-
-
-API / Collection				Comparison mechanism
+API / Collection			Comparison mechanism
 ---------------------------------------------------------------
 Collections.sort(list)			Comparable
-Collections.sort(list, comparator)		Comparator
+Collections.sort(list, comparator)	Comparator
 list.sort(comparator)			Comparator
 Arrays.sort(array)			Comparable or Comparator
 TreeSet					Comparable or Comparator
@@ -1612,32 +1619,170 @@ TreeMap					Comparable or Comparator
 PriorityQueue				Comparable or Comparator
 Stream.sorted()				Comparable or Comparator
 
+
+
+
+
+
+
 ========================================================================================================================
 Streams & Collectors: 
 ========================================================================================================================
 
-Collection > stream() > filter > map > sorted > distinct > collect
+============================================================
+Streams API:
+============================================================
 
-- filter
-- map
-- flatMap
-- distinct
-- sorted
-- limit
-- skip
-- peek
-- collect
-- toList
-- forEach
-- count
-- min
-- max
-- findFirst
-- findAny
-- anyMatch
-- allMatch
-- noneMatch
-- reduce
+- A Stream is a sequence of elements that is processed through  a pipeline of declarative operations
+- Java generally processes an element through the entire pipeline before moving to the next element.
+- It doesn't create a new collection of filtered or mapped or some other operation's resultant  elements.
+- A Stream pipeline generally consists of three stages:
+
+
+
+                 Source
+Collection, Array, File, generated data, etc.
+             numbers.stream()
+
+                   ↓
+
+         Intermediate operations
+     filter → map → sorted → distinct
+            Lazy evaluation
+
+                   ↓
+
+           Terminal operation
+     collect, forEach, count, reduce,
+
+
+
+- The source provides the elements to process.
+- Intermediate operations transform or filter elements.
+- These are lazy. They don't process the elements until a terminal operation is invoked.
+- A terminal operation triggers execution and produces a result or side effect.
+
+
+
+How Java implements the pipeline internally:
+
+- The Java implementation uses classes such as:
+
+AbstractPipeline	: Maintains the pipeline structure
+ReferencePipeline	: Implements object-based intermediate operations such as filter, map, etc.
+Sink			: Represents the action to perform when an element arrives.
+Spliterator		: Traverses and potentially splits the source elements
+
+- Java does not immediately execute the lambda passed to filter() or map().
+- Instead, it adds the operation to the pipeline structure.
+- And when a terminal operation triggers the pipeline execution, Java connects the stages using Sink.
+- Finally Spliterator traverses the source elements one by one through every operation of the pipeline.
+
+
+------------------------------------------------------------
+Creating Generic Streams(source):
+
+From Values: 
+	Stream.of("Java", "Python", "Go");
+
+From Collections: 	
+	list.stream();
+	set.stream();
+
+From Maps:
+	map.keySet().stream();	
+	map.values().stream() ;
+	map.entrySet().stream();
+
+From Arrays:
+	Arrays.stream(objectArray);
+
+Empty Stream:
+	Stream.empty();
+
+
+	Stream.generate(() -> "Java");
+	Stream.iterate(1, n -> n + 1);
+
+
+
+Intermediate Operations:
+
+- filter(predicate)
+- map(function)
+- flatMap(List::stream) //Flattens a stream of collections into a stream of object elements
+- flatMapToInt(list -> list.stream().mapToInt(Integer::intValue)) //Flattens a stream of collections or arrays into a stream of int elements
+- distinct() //Removes duplicates based on equals()
+- sorted(comparator)
+- limit(maxSize) //A short-circuiting stateful intermediate operation to limit the elements
+- skip(n) //A stateful intermediate operation to skip first n elements
+- peek(consumer) //To observe elements often for debugging
+- mapToInt(Integer::valueOf) //bulk unboxing
+- mapToLong(Long::valueOf) //bulk unboxing
+- mapToDouble(Double::valueOf) //bulk unboxing
+
+
+
+Terminal Operations:
+
+- collect()
+- toList()
+- forEach()
+- count()
+- min(comparator)
+- max(comparator)
+- findFirst()
+- findAny() -----
+- anyMatch(predicate) //At least one element must match......        what is short-circuiting?
+- allMatch(predicate) //Every element must match
+- noneMatch(predicate) //No element should match
+- reduce(binaryOperator)
+
+
+
+------------------------------------------------------------
+Creating Primitive Streams(source):
+
+- From Values: 
+	IntStream.of(1, 2, 3)
+	LongStream.of(1L, 2)
+	DoubltStream(3, 4D)
+	
+- From Arrays:
+	Arrays.stream(primitiveArray) 
+
+- From Ranges: 
+	IntStream.range(1, 5) //(1 to 4)
+	IntStream.rangeClosed(1, 5) //(1 to 5)
+
+
+
+Intermediate Operations:
+
+- filter(intPredicate)
+- map(intFunction)
+- distinct()
+- sorted(comparator)
+- limit(maxSize) //A short-circuiting stateful intermediate operation to limit the elements
+- skip(n)
+- boxed()
+- mapToObj(i -> new Object(i))
+
+
+
+Terminal Operations:
+
+- sum()
+- average() 		
+- min() / max()
+- summaryStatistics() //A "mega-method" that returns the count, sum, min, average, and max all at once
+
+
+
+============================================================
+Collectors:
+============================================================
+
 - Collectors.toList()
 - Collectors.toSet()
 - Collectors.toMap()
@@ -1646,3 +1791,8 @@ Collection > stream() > filter > map > sorted > distinct > collect
 - Collectors.joining()
 - Collectors.counting()
 - Collectors.mapping()
+
+============================================================
+Parallel Streams?
+============================================================
+
