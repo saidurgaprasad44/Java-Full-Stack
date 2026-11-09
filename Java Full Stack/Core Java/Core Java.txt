@@ -1,19 +1,24 @@
-Java:
+===============================================================================================================================================================================
+===============================================================================================================================================================================
+                                                                                     Java:
+===============================================================================================================================================================================
+===============================================================================================================================================================================
+
 
 ===============================================================================================================================================================================
 JVM vs JRE vs JDK:
 ===============================================================================================================================================================================
 
 1. JVM (Java Virtual Machine)
-The execution engine that runs Java bytecode(.class). It is "virtual" because it provides a platform-independent interface that doesn't depend on the underlying hardware.
+- The execution engine that runs Java bytecode(.class). It is "virtual" because it provides a platform-independent interface that doesn't depend on the underlying hardware.
 Components: Class Loader, Interpreter, JIT Compiler, Garbage Collector.
 
 2. JRE (Java Runtime Environment)
-The deployment package that provides the minimum requirements to run a Java application. 
+- The deployment package that provides the minimum requirements to run a Java application. 
 JRE = JVM + Class Libraries (e.g., rt.jar) + Supporting Files
 
 3. JDK (Java Development Kit)
-The full toolkit for Java developers to create and run applications. 
+- The full toolkit for Java developers to create and run applications. 
 JDK = JRE + Development Tools (javac, jdb, javadoc, etc.)
 
 ===============================================================================================================================================================================
@@ -42,32 +47,56 @@ Source Code (.java) ----[Compiler (javac)]---> Bytecode (.class) ----[JVM (Inter
 Features:
 ===============================================================================================================================================================================
 
-Object-Oriented
-Platform-Independent (Write Once, Run Anywhere with JVM)
-Robust and Secure
-High-Performance (JIT Compiler)
-Multithreaded and
-Distributed Computing
+- Object-Oriented
+- Platform-Independent (Write Once, Run Anywhere with JVM)
+- Robust and Secure
+- High-Performance (JIT Compiler)
+- Multithreaded and
+- Distributed Computing
+
 
 ===============================================================================================================================================================================
-
 Advantages:
+===============================================================================================================================================================================
 
-Platform Independence: Write code once and run it on any platform with a Java Virtual Machine (JVM).
-Large Community and Ecosystem: Benefits from a massive community, extensive libraries, and frameworks like Spring Boot, which support rapid development and problem-solving.
-Object-Oriented: Fully supports object-oriented programming principles, making it modular and reusable.
-Robust and Secure: Includes features like garbage collection and a security model that protects against threats.
-Multithreading: Allows multiple threads of execution to run concurrently, improving performance and resource utilization.
-Backward Compatibility: Maintains compatibility with older versions, making it easier to upgrade existing applications. 
+Platform Independence: 
+- Write code once and run it on any platform with a Java Virtual Machine (JVM).
+
+Large Community and Ecosystem: 
+- Benefits from a massive community, extensive libraries, and frameworks like Spring Boot, which support rapid development and problem-solving.
+
+Object-Oriented: 
+- Fully supports object-oriented programming principles, making it modular and reusable.
+
+Robust and Secure:
+- Includes features like garbage collection and a security model that protects against threats.
+
+Multithreading: 
+- Allows multiple threads of execution to run concurrently, improving performance and resource utilization.
+
+Backward Compatibility: 
+- Maintains compatibility with older versions, making it easier to upgrade existing applications. 
 
 
+===============================================================================================================================================================================
 Disadvantages:
+===============================================================================================================================================================================
 
-Performance: Can be slower than compiled languages like C/C++ due to the JVM overhead and the JIT compiler's interpretation step.
-High Memory Consumption: Uses more memory because of the JVM and automatic garbage collection, which can impact performance in resource-constrained environments.
-Verbose Syntax: Code can be more verbose and require more lines to accomplish a task compared to more concise languages.
-Lack of Low-Level Control: The absence of low-level pointers makes it less suitable for tasks that require direct hardware manipulation, like driver development.
-Slow Startup Time: Applications can have a slower startup time, especially for short-lived processes, due to the JVM's startup process. 
+Performance: 
+- Can be slower than compiled languages like C/C++ due to the JVM overhead and the JIT compiler's interpretation step.
+
+High Memory Consumption: 
+- Uses more memory because of the JVM and automatic garbage collection, which can impact performance in resource-constrained environments.
+
+Verbose Syntax: 
+- Code can be more verbose and require more lines to accomplish a task compared to more concise languages.
+
+Lack of Low-Level Control: 
+- The absence of low-level pointers makes it less suitable for tasks that require direct hardware manipulation, like driver development.
+
+Slow Startup Time: 
+- Applications can have a slower startup time, especially for short-lived processes, due to the JVM's startup process. 
+
 
 ===============================================================================================================================================================================
 Memory management & Garbage Collection:
@@ -75,20 +104,22 @@ Memory management & Garbage Collection:
 
 - Java memory management is automatic, handled by the JVM
 - With the crucial Garbage Collector (GC) cleaning up unused objects from the Heap, freeing developers from manual deallocation like in C/C++. 
-Focusing on main areas: 
+- Focusing on main areas: 
 	- The Stack (for temporary method execution state and stack frames for each thread) and
 	- The Heap (for objects and String literals shared by the threads)
-You create objects with new (Heap), while method calls / local variables use the Stack (auto-cleared)
 
+- You create objects with new (Heap), while method calls / local variables use the Stack (auto-cleared)
 
 
 ===============================================================================================================================================================================
 Data Types:
 ===============================================================================================================================================================================
 
-1. Primitive Data Types (Values):
+------------------------------------------------------------
+Primitive Data Types (Values):
+------------------------------------------------------------
 
-These are predefined by the language and store actual values directly in memory (typically on the stack). 
+- These are predefined by the language and store actual values directly in memory (typically on the stack). 
 
 Type 	Size	Default (Fields)	Range / Purpose
 ----------------------------------------------------------------------------------------------
@@ -101,27 +132,26 @@ double	64-bit	0.0d			~15 decimal digits; default for decimal literals.
 char	16-bit	'\u0000'		Single Unicode character (unsigned: 0 to 65,535).
 boolean	~1-bit	false			true or false only.
 
-Key Constraints:
-No Methods: Primitives do not have methods; use Wrapper Classes (e.g., Integer) for object-based operations.
-No Null: Primitives cannot be null.
-Not for Generics: You cannot use primitives in collections (e.g., List<int> is invalid; use List<Integer>)
+- Primitives do not have methods; use Wrapper Classes (e.g., Integer) for object-based operations.
+- Primitives cannot be null.
+- You cannot use primitives in collections (e.g., List<int> is invalid; use List<Integer>)
 
 
+------------------------------------------------------------
+Non-Primitive Data Types (Reference):
+------------------------------------------------------------
 
-
-2. Non-Primitive Data Types (Reference):
-
-These store memory addresses (references) of objects stored on the heap. 
+- These store memory addresses (references) of objects stored on the heap. 
 	
-String: String name="sai";
-Arrays: int[] numbers = new int[5];	int[] numbers = {1, 2, 3, 4, 5}
-Classes: Blueprint of an object
-Interfaces: Used to achieve abstraction
-Enums:
+String
+Arrays
+Classes/Interfaces
+Enums
 
-Default Value: Always null if uninitialized.
-Size: Not fixed; depends on the object's complexity.
-Behavior: When you assign one reference variable to another, they both point to the same object in memory. 
+- Always null if uninitialized.
+- Size is not fixed; depends on the object's complexity.
+- When you assign one reference variable to another, they both point to the same object in memory. 
+
 
 ===============================================================================================================================================================================
 Operators:
@@ -155,8 +185,9 @@ Unsigned Right Shift (>>>): Shifts bits right, fills left with 0 regardless of s
 Decision Making/ Conditional Statements:
 ===============================================================================================================================================================================
 
-1. if-else Ladder:
-
+------------------------------------------------------------
+if-else Ladder:
+------------------------------------------------------------
 
 if (condition1) {
     // code
@@ -167,10 +198,11 @@ if (condition1) {
 }
 
 
+------------------------------------------------------------
+Traditional switch:
+------------------------------------------------------------
 
-
-2. Traditional switch:
-Constant matching with fall-through behavior
+- Constant matching with fall-through behavior
 
 switch (variable) {
     case 1:
@@ -183,47 +215,88 @@ switch (variable) {
         // default code
 }
 
+
 ===============================================================================================================================================================================
 Loops:
 ===============================================================================================================================================================================
 
-1. for Loop (Traditional):
-Best when the number of iterations is known.
+------------------------------------------------------------
+for Loop (Traditional):
+------------------------------------------------------------
 
-for (int i = 0; i < 10; i++) {
+- Best when the number of iterations is known.
+
+for (int i = 0; i < 10; i+=2) {
     // code
 }
 
-Structure: initialization; condition; increment/decrement.
-Scope: i is local to the loop block.
 
+------------------------------------------------------------
+while Loop:
+------------------------------------------------------------
 
-
-
-2. while Loop:
-Best when the number of iterations is unknown and depends on a condition.
+- Best when the number of iterations is unknown and depends on a condition.
 
 while (condition) {
     // code
     // condition must eventually become false
 }
 
-Risk: If the condition never changes, it results in an infinite loop.
 
+------------------------------------------------------------
+do-while Loop:
+------------------------------------------------------------
 
-
-
-3. do-while Loop:
-Guarantees at least one execution of the block before checking the condition.
+- Guarantees at least one execution of the block before checking the condition.
 
 do {
     // code executes once
 } while (condition);
 
 
+------------------------------------------------------------
+Enhanced for loop:
+------------------------------------------------------------
+
+- Introduced in Java 5 for iterating over Arrays and Iterable collections (List, Set, etc.).
+
+for (String item : list) {
+    // code
+}
+
+- It cannot modify the structure of the collection (e.g., remove()) during iteration throws ConcurrentModificationException), use Iterator or removeIf().
 
 
-4. Loop Control Statements:
+------------------------------------------------------------
+Iterator:
+------------------------------------------------------------
+
+- An Iterator is an object that provides a standard way to traverse elements of a collection one at a time
+- An Iterator provides a common way to traverse different collections without depending on their internal structure.
+
+Iterator<String> iterator = listOfNames.iterator();
+
+while (iterator.hasNext()) { // cursor starts at 0
+    String name = iterator.next(); // returns the current element and moves the cursor to next
+    System.out.println(name);
+}
+
+- The same traversal approach works with other collections, for example: setOfNames.
+
+
+------------------------------------------------------------
+Functional Iteration (Java 8+):
+------------------------------------------------------------
+
+forEach method, internal iteration using the Streams API and in collections.
+
+list.forEach(item -> System.out.println(item));
+
+
+------------------------------------------------------------
+Loop Control Statements:
+------------------------------------------------------------
+
 break: Exits the innermost loop immediately.
 continue: Skips the rest of the current iteration and jumps to the next one.
 Labeled Breaks/Continues: Useful for nested loops to break out of an outer loop
@@ -233,28 +306,6 @@ outer: for (int i = 0; i < 5; i++) {
         if (condition) break outer; // exits both loops
     }
 }
-
-
-
-
-5. Enhanced for loop:
-Introduced in Java 5 for iterating over Arrays and Iterable collections (List, Set, etc.).
-
-for (String item : list) {
-    // code
-}
-
-Constraint: Cannot modify the structure of the collection (e.g., remove()) during iteration without throwing ConcurrentModificationException.
-Use an Iterator or removeIf() for that.
-
-
-
-
-
-6. Functional Iteration (Java 8+):
-forEach method, internal iteration using the Streams API and in collections.
-
-list.forEach(item -> System.out.println(item));
 
 
 ===============================================================================================================================================================================
@@ -270,16 +321,51 @@ Object: A basic unit of OOP and a real-world entity that is an instance of a cla
 
 The Four Pillars of OOP:
 
-////////////////////////////////////////////////////////////
-1. Abstraction: This concept focuses on hiding complex implementation details and showing only the essential features to the user. For example, a driver knows how to use the steering wheel and brakes without needing to understand the internal mechanics of the engine.
-	Implementation: Java achieves abstraction using abstract classes and interfaces.
+------------------------------------------------------------
+1. Encapsulation: 
+------------------------------------------------------------
 
-////////////////////////////////////////////////////////////
-2. Encapsulation: This is the process of wrapping data and the methods that operate on that data into a single unit (a class) while restricting direct access to the data.
-	Implementation: It is typically achieved by declaring class variables as private and providing public getter and setter methods for controlled access
+- Encapsulation is the practice of bundling an object's data (state) and the methods that operate on that data within a class, while controlling access to its internal state.
+- Simply declaring fields as private and providing public getters and setters for every field doesn't automatically achieve good encapsulation.
+- Expose meaningful operations that represent what an object should allow callers to do and provide getters and setters only when genuinely required, rather than blindly exposing every field.
 
-////////////////////////////////////////////////////////////
-3. Inheritance: A mechanism that allows a subclass (child) to acquire the properties (fields) and behaviors (methods) of a superclass (parent). Beyond what it inherits, the child class can also define its own new properties and behaviors or override existing ones. It promotes code reusability by establishing an "is-a" relationship.
+
+public class BankAccount {
+
+    private double balance;
+
+    public void deposit(double amount) { // meaningful operation that controls state transitions.
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Invalid amount");
+        }
+        balance += amount;
+    }
+
+    public double getBalance() { // reasonable because reading the balance is allowed
+        return balance;
+    }
+
+    // setBalance() — potentially dangerous because it bypasses business rules.
+}
+
+
+------------------------------------------------------------
+2. Abstraction: 
+------------------------------------------------------------
+
+- Hides complex implementation details showing only the essential features to the caller. 
+- It defines a simplified contract that allows different implementations to be used interchangeably without changing the caller's interaction with them.
+- Java achieves abstraction using abstract classes and interfaces.
+
+Example:
+
+
+
+------------------------------------------------------------
+3. Inheritance: 
+------------------------------------------------------------
+
+- A mechanism that allows a subclass (child) to acquire the properties (fields) and behaviors (methods) of a superclass (parent). Beyond what it inherits, the child class can also define its own new properties and behaviors or override existing ones. It promotes code reusability by establishing an "is-a" relationship.
 	Implementation: Java uses the extends keyword to implement inheritance
 
 
@@ -313,15 +399,19 @@ To Call Parent Class Constructors: 	super invokes the parent class constructor (
 To Access Parent Class Methods: 	If a subclass overrides a parent method, you can still call the original parent version using super.methodName().
 To Access Parent Class Variables: 	If a subclass has a variable with the same name as a parent class variable (variable shadowing), super.variableName differentiates and accesses the parent's version
 
-////////////////////////////////////////////////////////////
-4. Polymorphism: Meaning "many forms," polymorphism allows a single action to behave differently depending on the object it is acting upon
+------------------------------------------------------------
+4. Polymorphism: 
+------------------------------------------------------------
+
+- Meaning "many forms," polymorphism allows a single action to behave differently depending on the object it is acting upon
 Types:
 	Compile-time (Static): Achieved via method overloading (multiple methods with the same names but different parameters in the same class).
 	Runtime (Dynamic): Achieved via method overriding (a subclass providing its own implementation of a parent class method).
 
 
-////////////////////////////////////////////////////////////
+------------------------------------------------------------
 Relationships:
+------------------------------------------------------------
 
 IS-A Relationship (Inheritance): 
 

@@ -1,0 +1,82 @@
+01. OOP, SOLID & Design Patterns
+
+- OOP principles and their practical application
+- Abstraction, encapsulation, inheritance, polymorphism
+- Composition vs inheritance
+- SOLID principles with real examples
+- Important design patterns: Singleton, Factory, Strategy, Builder, Template Method, Observer, Adapter, Decorator, Proxy, etc.
+- Production and interview applications
+
+
+02. Exception Handling
+- Exception hierarchy and internals
+- Checked vs unchecked exceptions
+- try-catch-finally and try-with-resources
+- Custom exceptions
+- Exception propagation and chaining
+- Best practices in enterprise applications
+
+
+03. Enums
+- Enum internals and implementation
+- Constructors, fields, methods
+- Enum constants with different implementations
+- EnumSet and EnumMap
+- Practical use cases
+
+
+04. Important Java APIs
+- Object: equals(), hashCode(), toString(), getClass(), clone()
+- Optional: creation, operations, composition, best practices
+- java.time: LocalDate, LocalTime, LocalDateTime, Instant, ZonedDateTime, Duration, Period
+- HttpClient: synchronous/asynchronous HTTP communication
+
+
+05. Regular Expressions (RegEx)
+- Pattern and Matcher APIs
+- Character classes, quantifiers, groups
+- Lookahead and lookbehind
+- Greedy vs reluctant vs possessive quantifiers
+- Validation and text processing
+
+
+06. I/O Streams
+- Byte streams vs character streams
+- InputStream and OutputStream
+- Reader and Writer
+- Buffered streams
+- Object streams
+- Resource management
+
+
+07. File Handling
+- File vs Path
+- java.io.File vs java.nio.file
+- Files API
+- Directory traversal
+- Reading, writing, copying, moving and deleting
+- Large-file processing and performance
+
+
+08. Serialization
+- Serializable and Externalizable
+- Object serialization/deserialization internals
+- serialVersionUID
+- transient keyword
+- Custom serialization
+- Security, compatibility and practical limitations
+
+
+09. Multithreading & Concurrency
+High priority
+- Thread lifecycle and creation
+- Runnable and Callable
+- Synchronization and intrinsic locks
+- volatile and atomic variables
+- Race conditions, deadlocks and starvation
+- wait(), notify(), notifyAll()
+- ExecutorService and thread pools
+- Future and CompletableFuture
+- Concurrent collections
+- Locks, semaphores and other concurrency utilities
+- Java Memory Model and happens-before
