@@ -8,6 +8,20 @@
 - Production and interview applications
 
 
+Topic			What we'll cover
+----------------------------------------------------------------------
+Classes & Objects	Object lifecycle, state, behaviour, references
+Encapsulation		Data hiding, access control, immutability
+Abstraction		Abstract classes vs interfaces
+Inheritance		Overriding, constructor chaining, limitations
+Polymorphism		Compile-time vs runtime, dynamic dispatch
+Relationships		IS-A, HAS-A, association, aggregation, composition
+Object design		Composition vs inheritance, coupling, cohesion
+SOLID			All five principles with practical examples
+Design patterns		Creational, structural and behavioural patterns
+
+
+
 02. Exception Handling
 - Exception hierarchy and internals
 - Checked vs unchecked exceptions

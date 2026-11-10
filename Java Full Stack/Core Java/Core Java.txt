@@ -182,7 +182,7 @@ Signed Right Shift (>>): Shifts bits right, preserving the sign bit (arithmetic 
 Unsigned Right Shift (>>>): Shifts bits right, fills left with 0 regardless of sign (logical shift). 
 
 ===============================================================================================================================================================================
-Decision Making/ Conditional Statements:
+Decision Making / Conditional Statements:
 ===============================================================================================================================================================================
 
 ------------------------------------------------------------
@@ -309,10 +309,64 @@ outer: for (int i = 0; i < 5; i++) {
 
 
 ===============================================================================================================================================================================
+Modifiers:
+===============================================================================================================================================================================
+
+- In Java, these keywords define the scope and behavior of Classes, Variables and Methods.
+
+------------------------------------------------------------
+Access Modifiers (Scope):
+------------------------------------------------------------
+
+- These control who can "see" or use the class or variable or method:
+
+
+Access Modifier		Classes						Variables/Methods
+--------------------------------------------------------------------------------------------------------------------
+public			Accessible by any other class			Accessible from any other class in any package.
+Default (no keyword) 	Accessible by classes in the same package	Accessible only within the same package.
+protected 		NA						Accessible within the same package and by subclasses in other packages.
+private			NA						Accessible only within the class it is defined in.
+
+
+------------------------------------------------------------
+Non-Access Modifiers (Behavior):
+------------------------------------------------------------
+
+These define specific properties or logic constraints:
+
+1. static (The "Class" Keyword)
+Variables: The variable belongs to the class itself, not instances. All objects share the same copy.
+Methods: Can be called without creating an object of the class (e.g., Math.sqrt()).
+
+2. final (The "Constant" Keyword)
+Variables: Once assigned, the value cannot change (a constant).
+Methods: Cannot be overridden by a subclass.
+Classes: Cannot be inherited (extended).
+
+3. abstract (The "Template" Keyword)
+Methods: Has no body (logic). It acts as a requirement that subclasses must implement.
+Classes: Cannot be instantiated (you can't do new MyClass()). It only exists to be a parent for other classes.
+
+4. void (The "No Return" Keyword)
+Used only for methods. It tells the compiler that the method performs an action but does not return any value/data back to the caller.
+
+5. synchronized & volatile (The "Threading" Keywords)
+synchronized: Ensures a method can only be accessed by one thread at a time (prevents data corruption).
+volatile: Ensures that changes to a variable are always read directly from main memory, not a thread's local cache.
+
+6. default (keyword for methods with bodies in interfaces)
+Methods: : Allowed developers to add method implementations inside interfaces using the default keyword without breaking existing implementing classes.
+
+
+
+===============================================================================================================================================================================
 Object-Oriented Programming:
 ===============================================================================================================================================================================
 
-Building Blocks:
+------------------------------------------------------------
+Class & Object:
+------------------------------------------------------------
 
 Class: A user-defined blueprint or template from which objects are created. It defines the state and behavior common to all objects of that type.
 Object: A basic unit of OOP and a real-world entity that is an instance of a class. It has a state (attributes) and behavior (methods).
@@ -359,18 +413,88 @@ public class BankAccount {
 
 Example:
 
+public interface PaymentProcessor {
+    void processPayment(double amount);
+}
+
+
+public class RazorpayProcessor implements PaymentProcessor {
+
+    public void processPayment(double amount) {
+        // Razorpay implementation
+    }
+}
+
+
+public class StripeProcessor implements PaymentProcessor {
+
+    public void processPayment(double amount) {
+        // Stripe implementation
+    }
+}
+
+
+public class OrderService {
+
+    private final PaymentProcessor processor;
+
+    public OrderService(PaymentProcessor processor) {
+        this.processor = processor;
+    }
+
+    public void checkout(double amount) {
+        processor.processPayment(amount);
+    }
+}
+
+
+- OrderService doesn't know whether the injected object is RazorpayProcessor implementation or StripeProcessor implementation
+- But who creates and supplies that object? There are several approaches like:
+	- Factory pattern
+	- Spring Dependency Injection
+	- Or another composition mechanism
 
 
 ------------------------------------------------------------
 3. Inheritance: 
 ------------------------------------------------------------
 
-- A mechanism that allows a subclass (child) to acquire the properties (fields) and behaviors (methods) of a superclass (parent). Beyond what it inherits, the child class can also define its own new properties and behaviors or override existing ones. It promotes code reusability by establishing an "is-a" relationship.
-	Implementation: Java uses the extends keyword to implement inheritance
+- A mechanism that allows a class to acquire the properties and behaviors of another class (code reusability) by establishing an "is-a" relationship. 
+- Beyond what it inherits, the child class can also define its own new properties and behaviors. 
+
+
+Types of inheritance:
+
+- Single inheritance
+- Multilevel inheritance
+- Hierarchical inheritance
+- Multiple interface inheritance
+- Multiple class inheritance:     Can introduce ambiguity, particularly when two parent classes provide implementations of the same method. 
+- Java avoids this complexity by allowing a class to extend only one class, while implementing multiple interfaces.
+
+
+Method Overriding:
+
+- A subclass can provide its own implementation of an inherited instance method called method overriding.
+- Java uses runtime method dispatch to resolve overridden instance methods based on the actual object type.
+
+
+Important overriding rules:
+
+- Method name and parameter list must match.
+- Return type must be the same or covariant.
+- Access visibility cannot be reduced.
+- Checked exceptions cannot be broadened beyond what the overridden method permits.
+- final methods cannot be overridden.
+- private methods aren't inherited and therefore cannot be overridden.
+- Static methods are hidden, not overridden.
 
 
 
-Object creation and accessing the properties/behaviors:
+
+Runtime/Dynamic Method Dispatch:
+
+- Object creation and accessing the properties/behaviors:
 When you create an object, ParentClass obj = new ChildClass();
 The Compiler checks the Reference Type (ParentClass) to see which properties and behaviors are available to call; if the method is found, the JVM then executes the specific logic defined in the Object Type (ChildClass)
 
@@ -379,7 +503,18 @@ So, when you create an object of a subclass with parent reference type, you can 
 
 
 
-Order of Constructor Execution in inheritance: 
+
+
+Constructor Chaining:
+
+- super() invokes the immediate superclass constructor.
+- If no explicit constructor invocation is provided, Java inserts an implicit no-argument super() where permitted.
+- If the superclass has no accessible no-argument constructor, you must explicitly invoke an appropriate superclass constructor.
+- this() invokes another constructor in the same class.
+- this() and super() must be the first constructor statement in Java 17 and earlier.
+- Java 25 introduced flexible constructor bodies, allowing certain statements before an explicit constructor invocation. For our Java 8–21 focus, remember the traditional rule.
+
+-Order of Constructor Execution in inheritance: 
 When you create an instance of a subclass, the parent class constructor is called first to ensure the base part of the object is fully initialized before the subclass adds its own data
 
 Example:
@@ -390,14 +525,20 @@ Dog (Subclass) constructor executes
 
 
 
-Super:
-The super keyword is primarily used in three scenarios:
+
+
+this vs super:
+
+- The super keyword is primarily used in three scenarios:
  
 To Call Parent Class Constructors: 	super invokes the parent class constructor (Default/Parameterized). It must be the first statement in the subclass constructor.
-	- Default Constructor (Implicit): Every constructor has super() by default, no need to use it. 
+	- Default Constructor (Implicit): Every constructor has super() by default. 
 	- Parameterized Constructor (Explicit): It is essential to use super(parameters) for calling parameterized constructors of the parent class.
 To Access Parent Class Methods: 	If a subclass overrides a parent method, you can still call the original parent version using super.methodName().
 To Access Parent Class Variables: 	If a subclass has a variable with the same name as a parent class variable (variable shadowing), super.variableName differentiates and accesses the parent's version
+
+
+
 
 ------------------------------------------------------------
 4. Polymorphism: 
@@ -405,8 +546,10 @@ To Access Parent Class Variables: 	If a subclass has a variable with the same na
 
 - Meaning "many forms," polymorphism allows a single action to behave differently depending on the object it is acting upon
 Types:
-	Compile-time (Static): Achieved via method overloading (multiple methods with the same names but different parameters in the same class).
-	Runtime (Dynamic): Achieved via method overriding (a subclass providing its own implementation of a parent class method).
+	Compile-time Polymorphism (Static): Achieved via method overloading (multiple methods with the same names but different parameters in the same class).
+	Runtime Polymorphism (Dynamic): Achieved via method overriding (a subclass providing its own implementation of a parent class method).
+
+
 
 
 ------------------------------------------------------------
@@ -552,52 +695,6 @@ public class CustomException {
         }
     }
 }
-
-===============================================================================================================================================================================
-Modifiers:
-===============================================================================================================================================================================
-
-In Java, these keywords define the scope and behavior of Classes, Variables and Methods.
-
-Access Modifiers (Scope):
-These control who can "see" or use the class or variable or method:
-
-For classes, you can only use either public or default:
-public: The class is accessible by any other class
-default (no keyword): The class is only accessible by classes in the same package. This is used when you don't specify a modifier
-
-For attributes, methods and constructors, use one of the following:
-public: Accessible from any other class in any package.
-protected: Accessible within the same package and by subclasses in other packages.
-Default (no keyword): Accessible only within the same package.
-private: Accessible only within the class it is defined in.
-
-////////////////////////////////////////////////////////////
-Non-Access Modifiers (Behavior):
-These define specific properties or logic constraints:
-
-1. static (The "Class" Keyword)
-Variables: The variable belongs to the class itself, not instances. All objects share the same copy.
-Methods: Can be called without creating an object of the class (e.g., Math.sqrt()).
-
-2. final (The "Constant" Keyword)
-Variables: Once assigned, the value cannot change (a constant).
-Methods: Cannot be overridden by a subclass.
-Classes: Cannot be inherited (extended).
-
-3. abstract (The "Template" Keyword)
-Methods: Has no body (logic). It acts as a requirement that subclasses must implement.
-Classes: Cannot be instantiated (you can't do new MyClass()). It only exists to be a parent for other classes.
-
-4. void (The "No Return" Keyword)
-Used only for methods. It tells the compiler that the method performs an action but does not return any value/data back to the caller.
-
-5. synchronized & volatile (The "Threading" Keywords)
-synchronized: Ensures a method can only be accessed by one thread at a time (prevents data corruption).
-volatile: Ensures that changes to a variable are always read directly from main memory, not a thread's local cache.
-
-6. default (keyword for methods with bodies in interfaces)
-Methods: : Allowed developers to add method implementations inside interfaces using the default keyword without breaking existing implementing classes.
 
 ===============================================================================================================================================================================
 Wrapper classes and Generics:

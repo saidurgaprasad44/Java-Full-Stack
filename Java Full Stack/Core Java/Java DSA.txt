@@ -1687,16 +1687,16 @@ Intermediate Operations:
 
 - filter(predicate)
 - map(function)
-- flatMap(List::stream) //Flattens a stream of collections into a stream of object elements
-- flatMapToInt(list -> list.stream().mapToInt(Integer::intValue)) //Flattens a stream of collections or arrays into a stream of int elements
-- distinct() //Removes duplicates based on equals()
+- flatMap(List::stream)    //Flattens a stream of collections into a stream of object elements
+- flatMapToInt(list -> list.stream().mapToInt(Integer::intValue))    //Flattens a stream of collections or arrays into a stream of int elements
+- distinct()    //Removes duplicates based on equals()
 - sorted(comparator)
-- limit(maxSize) //A short-circuiting stateful intermediate operation to limit the elements
-- skip(n) //A stateful intermediate operation to skip first n elements
-- peek(consumer) //To observe elements often for debugging
-- mapToInt(Integer::valueOf) //bulk unboxing
-- mapToLong(Long::valueOf) //bulk unboxing
-- mapToDouble(Double::valueOf) //bulk unboxing
+- limit(n)    //A short-circuiting stateful intermediate operation that stops after collecting n elements 
+- skip(n)    //A stateful intermediate operation to skip first n elements
+- peek(consumer)    //To observe elements often for debugging
+- mapToInt(Integer::valueOf)    //bulk unboxing
+- mapToLong(Long::valueOf)    //bulk unboxing
+- mapToDouble(Double::valueOf)    //bulk unboxing
 
 
 
@@ -1708,12 +1708,12 @@ Terminal Operations:
 - count()
 - min(comparator)
 - max(comparator)
-- findFirst()
-- findAny() -----
-- anyMatch(predicate) //At least one element must match
-- allMatch(predicate) //Every element must match
-- noneMatch(predicate) //No element should match
-- reduce(identityValue, binaryOperator)
+- findFirst()    //A short-circuiting terminal operation that stops
+- findAny() -----> pending to learn
+- anyMatch(predicate)    //A short-circuiting operation, that at least one element must match the condition; Stops when first matching element is found
+- allMatch(predicate)    //A short-circuiting operation, that every element must match; Stops when first non-matching element is found
+- noneMatch(predicate)    //A short-circuiting operation, that no element should match; Stops when first matching element is found
+- reduce(identityValue, binaryOperator)    //for aggregations
 
 
 ------------------------------------------------------------
@@ -1731,8 +1731,8 @@ Creating Primitive Streams(source):
 	Arrays.stream(primitiveArray) 
 
 - From Ranges: 
-	IntStream.range(1, 5) //(1 to 4)
-	IntStream.rangeClosed(1, 5) //(1 to 5)
+	IntStream.range(1, 5)    //(1 to 4)
+	IntStream.rangeClosed(1, 5)    //(1 to 5)
 
 
 
@@ -1742,7 +1742,7 @@ Intermediate Operations:
 - map(intFunction)
 - distinct()
 - sorted(comparator)
-- limit(maxSize) //A short-circuiting stateful intermediate operation to limit the elements
+- limit(maxSize)    //A short-circuiting stateful intermediate operation to limit the elements
 - skip(n)
 - boxed()
 - mapToObj(i -> new Object(i))
@@ -1754,14 +1754,14 @@ Specialized Terminal Operations (Math Only):
 - sum()
 - average() 		
 - min() / max()
-- summaryStatistics() //A "mega-method" that returns the count, sum, min, average, and max all at once
+- summaryStatistics()    //A "mega-method" that returns the count, sum, min, average, and max all at once
 
 
 ------------------------------------------------------------
 Parallel Streams:
 ------------------------------------------------------------
 
-
+----> Pending to learn
 
 
 ========================================================================================================================
@@ -1824,8 +1824,8 @@ Step 4: Finisher – Produce final result
 Collect into collections:
 ------------------------------------------------------------
 
-- Collectors.toList() //List; mutability/type not guaranteed
-- Collectors.toSet() //Set; implementation/order not guaranteed
+- Collectors.toList()    //List; mutability/type not guaranteed
+- Collectors.toSet()    //Set; implementation/order not guaranteed
 - Collectors.toMap(keyMapper, valueMapper, binaryOperator, HashMap::new)
 
 	- Need to handle duplicate values
@@ -1952,7 +1952,7 @@ Map<String, Employee> highestPaid =
 Partitioning By:
 ------------------------------------------------------------
 
-- Collectors.partitioningBy(predicate, downstreamCollectors) //Creates exactly two groups based on a Predicate.
+- Collectors.partitioningBy(predicate, downstreamCollectors)    //Creates exactly two groups based on a Predicate.
 
 
 =======================================================================================================================================================================
