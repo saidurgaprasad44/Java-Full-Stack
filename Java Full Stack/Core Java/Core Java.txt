@@ -324,9 +324,9 @@ Access Modifiers (Scope):
 Access Modifier		Classes						Variables/Methods
 --------------------------------------------------------------------------------------------------------------------
 public			Accessible by any other class			Accessible from any other class in any package.
-Default (no keyword) 	Accessible by classes in the same package	Accessible only within the same package.
 protected 		NA						Accessible within the same package and by subclasses in other packages.
-private			NA						Accessible only within the class it is defined in.
+Default (no keyword) 	Accessible by classes in the same package	Accessible only within the same package.
+private			NA						Accessible only within the same class.
 
 
 ------------------------------------------------------------
@@ -335,28 +335,27 @@ Non-Access Modifiers (Behavior):
 
 These define specific properties or logic constraints:
 
-1. static (The "Class" Keyword)
+1. static:
 Variables: The variable belongs to the class itself, not instances. All objects share the same copy.
 Methods: Can be called without creating an object of the class (e.g., Math.sqrt()).
 
-2. final (The "Constant" Keyword)
+2. final:
 Variables: Once assigned, the value cannot change (a constant).
 Methods: Cannot be overridden by a subclass.
 Classes: Cannot be inherited (extended).
 
-3. abstract (The "Template" Keyword)
+3. abstract:
 Methods: Has no body (logic). It acts as a requirement that subclasses must implement.
 Classes: Cannot be instantiated (you can't do new MyClass()). It only exists to be a parent for other classes.
 
-4. void (The "No Return" Keyword)
-Used only for methods. It tells the compiler that the method performs an action but does not return any value/data back to the caller.
+4. void: no return
 
-5. synchronized & volatile (The "Threading" Keywords)
+5. synchronized & volatile:
 synchronized: Ensures a method can only be accessed by one thread at a time (prevents data corruption).
 volatile: Ensures that changes to a variable are always read directly from main memory, not a thread's local cache.
 
-6. default (keyword for methods with bodies in interfaces)
-Methods: : Allowed developers to add method implementations inside interfaces using the default keyword without breaking existing implementing classes.
+6. default:
+Methods: Allowed developers to add method implementations inside interfaces using the default keyword without breaking existing implementing classes.
 
 
 
@@ -382,7 +381,7 @@ The Four Pillars of OOP:
 - Encapsulation is the practice of bundling an object's data (state) and the methods that operate on that data within a class, while controlling access to its internal state.
 - Simply declaring fields as private and providing public getters and setters for every field doesn't automatically achieve good encapsulation.
 - Expose meaningful operations that represent what an object should allow callers to do and provide getters and setters only when genuinely required, rather than blindly exposing every field.
-
+s
 
 public class BankAccount {
 
@@ -449,10 +448,9 @@ public class OrderService {
 
 
 - OrderService doesn't know whether the injected object is RazorpayProcessor implementation or StripeProcessor implementation
-- But who creates and supplies that object? There are several approaches like:
+- But who creates and supplies the object? There are two common approaches:
 	- Factory pattern
 	- Spring Dependency Injection
-	- Or another composition mechanism
 
 
 ------------------------------------------------------------
@@ -469,74 +467,194 @@ Types of inheritance:
 - Multilevel inheritance
 - Hierarchical inheritance
 - Multiple interface inheritance
-- Multiple class inheritance:     Can introduce ambiguity, particularly when two parent classes provide implementations of the same method. 
-- Java avoids this complexity by allowing a class to extend only one class, while implementing multiple interfaces.
+- Multiple class inheritance: Java avoids the complexity of multiple class inheritance by allowing a class to extend only one class, while implementing multiple interfaces.
+
 
 
 Method Overriding:
 
-- A subclass can provide its own implementation of an inherited instance method called method overriding.
-- Java uses runtime method dispatch to resolve overridden instance methods based on the actual object type.
+- A subclass can provide its own implementation of an inherited instance method.
+- If a subclass declares a field or static method with the same name/signature as one in its superclass, the subclass declaration hides the superclass member even though it exists.
 
 
-Important overriding rules:
+Overriding rules:
 
 - Method name and parameter list must match.
 - Return type must be the same or covariant.
 - Access visibility cannot be reduced.
 - Checked exceptions cannot be broadened beyond what the overridden method permits.
-- final methods cannot be overridden.
-- private methods aren't inherited and therefore cannot be overridden.
-- Static methods are hidden, not overridden.
 
 
 
+Static vs Dynamic Binding:
 
-Runtime/Dynamic Method Dispatch:
-
-- Object creation and accessing the properties/behaviors:
-When you create an object, ParentClass obj = new ChildClass();
-The Compiler checks the Reference Type (ParentClass) to see which properties and behaviors are available to call; if the method is found, the JVM then executes the specific logic defined in the Object Type (ChildClass)
-
-Scenario:
-So, when you create an object of a subclass with parent reference type, you can only access what parent class have. If the method in parent class is overridden in the child class, it would give you updated behavior when the method is called 
+Static Binding: Java determines the member to access or implementation to execute at compile time, primarily using the reference type.
+Dynamic Binding: Java determines which implementation to execute at runtime based on the actual object's type.
 
 
+Member type			Inherited?	Overridden?		Hidden?			Binding / resolution
+--------------------------------------------------------------------------------------------------------------------
+Instance fields			Yes		No			Yes, if redeclared	Static
+Static fields			Yes		No			Yes, if redeclared	Static
+Static methods			Yes		No			Yes, if redeclared	Static
+Normal instance methods		Yes		Yes, if overridden	No			Dynamic
+Private instance methods	No		No			No			Static
+Final instance methods		Yes		No			No			Static
+Constructors			No		No			No			Constructor chaining
 
 
 
 Constructor Chaining:
 
+- Constructors aren't inherited, but a subclass constructor must initialize its superclass portion.
 - super() invokes the immediate superclass constructor.
-- If no explicit constructor invocation is provided, Java inserts an implicit no-argument super() where permitted.
-- If the superclass has no accessible no-argument constructor, you must explicitly invoke an appropriate superclass constructor.
+- If no explicit constructor invocation is provided, Java implicitly inserts super() where permitted.
+- If the superclass has no accessible no-argument constructor, you must explicitly invoke an appropriate superclass constructor using super(arguments).
 - this() invokes another constructor in the same class.
-- this() and super() must be the first constructor statement in Java 17 and earlier.
-- Java 25 introduced flexible constructor bodies, allowing certain statements before an explicit constructor invocation. For our Java 8–21 focus, remember the traditional rule.
-
--Order of Constructor Execution in inheritance: 
-When you create an instance of a subclass, the parent class constructor is called first to ensure the base part of the object is fully initialized before the subclass adds its own data
-
-Example:
-When you run new Dog(), the sequence is as follows:
-Animal (Top Superclass) constructor executes.
-Mammal (Middle Superclass) constructor executes.
-Dog (Subclass) constructor executes
-
-
-
 
 
 this vs super:
 
-- The super keyword is primarily used in three scenarios:
- 
-To Call Parent Class Constructors: 	super invokes the parent class constructor (Default/Parameterized). It must be the first statement in the subclass constructor.
-	- Default Constructor (Implicit): Every constructor has super() by default. 
-	- Parameterized Constructor (Explicit): It is essential to use super(parameters) for calling parameterized constructors of the parent class.
-To Access Parent Class Methods: 	If a subclass overrides a parent method, you can still call the original parent version using super.methodName().
-To Access Parent Class Variables: 	If a subclass has a variable with the same name as a parent class variable (variable shadowing), super.variableName differentiates and accesses the parent's version
+this:
 
+- this refers to the current object as a whole and provides access to its members (fields and methods). 
+- If the current class overrides a superclass method, this.methodName() invokes the overridden method in the current class through normal dynamic method dispatch.
+- If the current class has a variable with the same name as a superclass variable (variable shadowing), this.variableName accesses the current class's variable
+
+super:
+
+- super refers to the superclass portion of the current object and provides access to accessible superclass members of the current object
+- If a subclass overrides a superclass method, you can still invoke the original parent version using super.methodName().
+- If a subclass has a variable with the same name as a parent class variable, super.variableName accesses the superclass's variable.
+
+
+Example:
+
+class Animal {
+
+    // Property to demonstrate variable hiding
+    String type = "General Animal";
+
+    public static void getClassification() {
+        System.out.println("Static Classification: Kingdom Animalia");
+    }
+    // Constructor 1
+    public Animal() {
+        System.out.println("1. Animal constructor called.");
+    }
+
+    public void eat() {
+        System.out.println("Eating.");
+    }
+
+    public void reproduce() {
+        System.out.println("Reproducing to create offspring.");
+    }
+}
+
+class Mammal extends Animal {
+
+    // Hides Animal.type
+    String type = "Warm-blooded Mammal";
+    public static void getClassification() {
+        System.out.println("Static Classification: Class Mammalia");
+    }
+    // Constructor 2
+    public Mammal() {
+        super(); // Explicitly calls Animal() constructor
+        System.out.println("2. Mammal constructor called.");
+    }
+
+    public void produceMilk() {
+        System.out.print("producing milk");
+    }
+
+    @Override
+    public void reproduce() {
+        System.out.print("Giving live birth and ");
+        this.produceMilk();
+        System.out.println(); // Added for clean formatting
+    }
+}
+
+class Dog extends Mammal {
+
+    // Hides Mammal.type and Animal.type
+    String type = "Domestic Dog";
+
+    // Constructor 3
+    public Dog() {
+        super(); // Explicitly calls Mammal() constructor
+        System.out.println("3. Dog constructor called.");
+    }
+
+    public void bark() {
+        System.out.print(", barking bow wow ");
+    }
+
+    @Override
+    public void reproduce() {
+        System.out.print("Giving live birth to a litter of puppies, ");
+        super.produceMilk();
+        this.bark();
+        System.out.println("and nursing them.");
+    }
+}
+
+
+public class Main {
+    public static void main(String[] args) {
+
+        System.out.println("--- CONSTRUCTOR CHAINING ---");
+        Animal myPet = new Dog(); 
+
+        System.out.println("\n--- METHOD OVERRIDING (Runtime / Dynamic Dispatch) ---");
+        myPet.reproduce(); 
+
+        System.out.println("\n--- VARIABLE HIDING (Compile-time) ---");
+        System.out.println("Reference as Animal: " + myPet.type);
+        System.out.println("Reference as Mammal: " + ((Mammal) myPet).type);
+        System.out.println("Reference as Dog:    " + ((Dog) myPet).type);
+
+        System.out.println("\n--- STATIC METHOD HIDING (Compile-time / Static Dispatch) ---");
+        // 1. Calling via object references (Resolved by reference type, NOT actual object)
+        myPet.getClassification();             // Calls Animal's version
+        ((Mammal) myPet).getClassification();  // Calls Mammal's version
+        ((Dog) myPet).getClassification();     // Calls Dog's version
+
+        // 2. Best practice: Calling directly via Class names
+        System.out.println("\n--- CALLING STATIC METHODS VIA CLASS NAMES ---");
+        Animal.getClassification();
+        Mammal.getClassification();
+        Dog.getClassification();
+    }
+}
+
+
+Output:
+
+--- CONSTRUCTOR CHAINING ---
+1. Animal constructor called.
+2. Mammal constructor called.
+3. Dog constructor called.
+
+--- METHOD OVERRIDING (Runtime / Dynamic Dispatch) ---
+Giving live birth to a litter of puppies, producing milk, barking bow wow and nursing them.
+
+--- VARIABLE HIDING (Compile-time) ---
+Reference as Animal: General Animal
+Reference as Mammal: Warm-blooded Mammal
+Reference as Dog:    Domestic Dog
+
+--- STATIC METHOD HIDING (Compile-time / Static Dispatch) ---
+Static Classification: Kingdom Animalia
+Static Classification: Class Mammalia
+Static Classification: Species Canis lupus familiaris
+
+--- CALLING STATIC METHODS VIA CLASS NAMES ---
+Static Classification: Kingdom Animalia
+Static Classification: Class Mammalia
+Static Classification: Species Canis lupus familiaris
 
 
 
@@ -544,12 +662,20 @@ To Access Parent Class Variables: 	If a subclass has a variable with the same na
 4. Polymorphism: 
 ------------------------------------------------------------
 
-- Meaning "many forms," polymorphism allows a single action to behave differently depending on the object it is acting upon
+- Polymorphism allows a single action to behave differently depending on the object it is acting upon
+
+
 Types:
-	Compile-time Polymorphism (Static): Achieved via method overloading (multiple methods with the same names but different parameters in the same class).
-	Runtime Polymorphism (Dynamic): Achieved via method overriding (a subclass providing its own implementation of a parent class method).
+
+Compile-time Polymorphism (method overloading): The compiler selects the method based on the method signature and the compile-time types of the arguments.
+Runtime Polymorphism (Dynamic): The JVM selects the overridden implementation based on the actual runtime object.
 
 
+Vehicle vehicle = new Car();
+vehicle.start(); // Car's implementation
+
+
+- The reference type decides the scope (Vehicle), while the object type decides the implementation (car)
 
 
 ------------------------------------------------------------
@@ -564,50 +690,176 @@ IS-A Relationship (Inheritance):
 - Example: A Car IS-A Vehicle
  
 
+
 HAS-A Relationship (Association):
 
 - The HAS-A relationship occurs when an instance of one class is used as a field inside another class
 - This establishes a loose coupling between classes.
 - Association is divided into two sub-types based on how strictly the lifecycles of the objects are tied
 
-      Aggregation (Weak HAS-A): 
+Aggregation (Weak HAS-A): 
 
-	- The child object can exist independently of the parent.
-	- Lifecycle: Independent lifetimes. If the parent object is destroyed, the child object survives.
-	- Example: A Department HAS-A Professor. If the department closes, the professor still exists.
+- The child object can exist independently of the parent.
+- Lifecycle: Independent lifetimes. If the parent object is destroyed, the child object survives.
+- Example: A Department HAS-A Professor. If the department closes, the professor still exists.
 
-	//Child
-	class Professor {
-    		String name;
-    		Professor(String name) { this.name = name; }
+//Child
+class Professor {
+    	String name;
+    	Professor(String name) { this.name = name; }
+}
+
+//Parent
+class Department {
+    	private Professor professor; // Aggregation
+    	Department(Professor professor) {
+        	this.professor = professor; // Professor is passed from outside
+    	}
+}
+
+Composition (Strong HAS-A):
+
+- The child object cannot exist independently of the parent.
+- Lifecycle: Tightly bound lifetimes. If the parent object is destroyed, the child object is also destroyed.
+- Example: A Department HAS-A Professor. If the department closes, the professor still exists.
+
+//Child
+class Engine {
+    	void start() { System.out.println("Vroom!"); }
+}
+
+//Parent
+class Car {
+	private final Engine engine; // Composition
+    	Car() {
+        	this.engine = new Engine(); // Engine lifecycle is managed entirely by Car
+    	}
+}
+
+
+Note: 
+
+- A parent can receive an object through a constructor and still take exclusive ownership of it.
+- Conversely, creating an object inside a constructor doesn't automatically establish composition if that object is shared or independently managed
+
+
+===============================================================================================================================================================================
+Wrapper classes and Generics:
+===============================================================================================================================================================================
+
+------------------------------------------------------------
+Wrapper Classes
+------------------------------------------------------------
+
+- A Wrapper class "wraps" a primitive data type into an object. This allows primitives to be used where objects are required.
+
+Example: Collections (like ArrayList) can only store Objects, not primitives
+
+
+------------------------------------------------------------
+Generics
+------------------------------------------------------------
+
+- Generics allow you to specify the type of data that a class or method can work with using angle brackets < >. 
+
+- This provides:
+	- Type Safety: Errors are caught during compilation rather than at runtime.
+	- No Casting: You don't have to manually cast objects when retrieving them from a collection.
+	- Code Reusability: One piece of logic can be applied to many different data types
+
+- Initially Collection framework was introduced without generics in java, later the generics were introduced to provide type safety
+- Generics only work with Class types, does not work with primitives
+
+
+
+Without Generics:
+
+ArrayList list = new ArrayList(); 
+list.add("Hello");
+String s = list.get(0).toString(); // Casting
+
+
+
+With Generics:
+
+ArrayList<String> list = new ArrayList<>(); 
+list.add("Hello");
+String s = list.get(0); // No casting needed
+// list.add(10); // Compile-time error! (Type Safety)
+
+
+
+
+Implementing Own Generics:
+
+class Container<T> {
+	T value;
+	public void show() {
+		System.out.println(value.getClass().getName());
 	}
+}
 
-	//Parent
-	class Department {
-    		private Professor professor; // Aggregation
-    		Department(Professor professor) {
-        		this.professor = professor; // Professor is passed from outside
-    		}
+public class GenericsDemo {
+	public static void main(String[] args) {
+		Container<Integer> obj = new Container<>();
+		obj.value=10;
+		obj.show();
 	}
+}
 
-      Composition (Strong HAS-A):
 
-	- The child object cannot exist independently of the parent.
-	- Lifecycle: Tightly bound lifetimes. If the parent object is destroyed, the child object is also destroyed.
-	- Example: A Department HAS-A Professor. If the department closes, the professor still exists.
+===============================================================================================================================================================================
+Type Conversions:
+===============================================================================================================================================================================
 
-	//Child
-	class Engine {
-    		void start() { System.out.println("Vroom!"); }
-	}
+------------------------------------------------------------
+Type casting:
+------------------------------------------------------------
 
-	//Parent
-	class Car {
-		private final Engine engine; // Composition
-    		Car() {
-        		this.engine = new Engine(); // Engine lifecycle is managed entirely by Car
-    		}
-	}
+	Primitive Casting:
+		Widening(Implicit):
+		Narrowing(Explicit):
+
+	Object Casting:
+		Up-casting:
+		Down-casting:
+
+
+------------------------------------------------------------
+Type promotion:
+------------------------------------------------------------
+
+
+Parsing(String to Wrapper Classes):
+	Integer.parseInt(), Double.partseDouble()
+
+
+------------------------------------------------------------
+String Conversion:
+------------------------------------------------------------
+
+- any other type or object to String
+	
+.toString()
+
+
+------------------------------------------------------------
+Boxing/Unboxing:
+------------------------------------------------------------
+
+- Converting from primitives to wrapper objects and vice versa.
+
+	- Autoboxing(Implicit): Occurs when a primitive is passed where a wrapper object is expected
+
+		Ex 1: 	Integer n = 10; // Autoboxing: int 10 becomes Integer.valueOf(10)
+
+		Ex 2: 	List<Integer> list = new ArrayList<>();
+			list.add(10); // Autoboxing: int 10 becomes Integer.valueOf(10)
+
+	- Unboxing(Implicit): Occurs when a wrapper object is used where a primitive is expected.
+
+		Ex:	Integer wrapper = 20;
+			int primitive = wrapper; // Unboxing: wrapper.intValue() is called automatically
 
 
 ===============================================================================================================================================================================
@@ -696,118 +948,24 @@ public class CustomException {
     }
 }
 
-===============================================================================================================================================================================
-Wrapper classes and Generics:
-===============================================================================================================================================================================
-
-1. Wrapper Classes
-A Wrapper class "wraps" a primitive data type into an object. This allows primitives to be used where objects are required.
-Example: Collections (like ArrayList) can only store Objects, not primitives
-
-
-////////////////////////////////////////////////////////////
-2. Generics
-Generics allow you to specify the type of data that a class or method can work with using angle brackets < >. 
-
-This provides:
-- Type Safety: Errors are caught during compilation rather than at runtime.
-- No Casting: You don't have to manually cast objects when retrieving them from a collection.
-- Code Reusability: One piece of logic can be applied to many different data types
-
-Initially Collection framework was introduced without generics in java, later the generics were introduced to provide type safety
-Generics only work with Class types, does not work with primitives
-
-
-
-Without Generics:
-
-ArrayList list = new ArrayList(); 
-list.add("Hello");
-String s = list.get(0).toString(); // Casting
-
-
-
-With Generics:
-
-ArrayList<String> list = new ArrayList<>(); 
-list.add("Hello");
-String s = list.get(0); // No casting needed
-// list.add(10); // Compile-time error! (Type Safety)
-
-
-
-
-Implementing Own Generics:
-
-class Container<T> {
-	T value;
-	public void show() {
-		System.out.println(value.getClass().getName());
-	}
-}
-
-public class GenericsDemo {
-	public static void main(String[] args) {
-		Container<Integer> obj = new Container<>();
-		obj.value=10;
-		obj.show();
-	}
-}
-
-===============================================================================================================================================================================
-Type Conversions:
-===============================================================================================================================================================================
-
-Type casting:
-
-	Primitive Casting:
-		Widening(Implicit):
-		Narrowing(Explicit):
-
-	Object Casting:
-		Up-casting:
-		Down-casting:
-
-////////////////////////////////////////////////////////////
-
-Type promotion:
-
-////////////////////////////////////////////////////////////
-
-Parsing(String to Wrapper Classes):
-	Integer.parseInt(), Double.partseDouble()
-
-////////////////////////////////////////////////////////////
-
-String Conversion(any other type or object to String):
-	.toString()
-
-////////////////////////////////////////////////////////////
-
-Boxing/Unboxing:
-Converting from primitives to wrapper objects and vice versa.
-
-	Autoboxing(Implicit): Occurs when a primitive is passed where a wrapper object is expected
-
-		Ex 1: 	Integer n = 10; // Autoboxing: int 10 becomes Integer.valueOf(10)
-
-		Ex 2: 	List<Integer> list = new ArrayList<>();
-			list.add(10); // Autoboxing: int 10 becomes Integer.valueOf(10)
-
-	Unboxing(Implicit): Occurs when a wrapper object is used where a primitive is expected.
-
-		Ex:	Integer wrapper = 20;
-			int primitive = wrapper; // Unboxing: wrapper.intValue() is called automatically
 
 ===============================================================================================================================================================================
 Anonymous Class, Functional Interface & Lambda Expression:
 ===============================================================================================================================================================================
 
-Anonymous Class from another class: A class without a name that is instantiated extending another class by overriding any number of its concrete methods in a single expression. It contains both creating the object and overriding the methods 
-Key Feature: It simultaneously creates the object and overrides the desired methods.
+------------------------------------------------------------
+Anonymous Class:
+------------------------------------------------------------
 
-Anonymous Class from an Interface: A class without a name that is instantiated implementing an interface by defining all the abstract methods in a single expression. It contains both creating the object and defining the abstract methods
-Key Feature: It simultaneously creates the object and provides the concrete logic for the abstract methods.
+Anonymous Class from another class: 
+
+- A class without a name that is instantiated extending another class by overriding any number of its concrete methods in a single expression. 
+- It simultaneously creates the object and overrides the desired methods.
+
+Anonymous Class from an Interface: 
+
+- A class without a name that is instantiated implementing an interface by defining all the abstract methods in a single expression.
+- It simultaneously creates the object and provides the concrete logic for the abstract methods.
 
 
 Implementation Example: 
@@ -834,9 +992,10 @@ myButton.onClick();
 myButton.onLongPress();
 myButton.onLongPress();
 
-////////////////////////////////////////////////////////////
 
+------------------------------------------------------------
 Lambda Expression (Java8+): 
+------------------------------------------------------------
 
 - An anonymous function that is defined and instantiated implementing a Functional Interface by defining its single abstract method in a highly concise, single expression.
 Key Feature: It simultaneously creates the object and provides the concrete logic for the abstract methods.
@@ -995,6 +1154,11 @@ employees.sort(Comparator.comparing(Employee::getName));
 
 // Lambda
 employees.sort((e1, e2) -> e1.getName().compareTo(e2.getName()));
+
+
+===============================================================================================================================================================================
+Shallow Copy vs Deep Copy:
+===============================================================================================================================================================================
 
 
 

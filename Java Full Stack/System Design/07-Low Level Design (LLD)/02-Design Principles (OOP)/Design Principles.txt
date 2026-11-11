@@ -1,0 +1,307 @@
+
+Design Principles (The "Why"): These are foundational rules of thumb that encourage clean, maintainable, and scalable code. They are theory-based rather than code-based. 
+
+
+
+
+=================================================================================================================================================================================
+SOLID:
+=================================================================================================================================================================================
+
+- focused on reducing coupling and increasing flexibility
+
+------------------------------------------------------------
+Single Responsibility Principle
+------------------------------------------------------------
+
+- A class should have one responsibility and therefore one reason to change.
+- This principle is about modifying the existing functionality for a requirement to change
+
+
+Bad Design: Order Service handles several different responsibilities
+
+class OrderService {
+
+    void createOrder() {
+        // Create order
+    }
+
+    void saveOrder() {
+        // Persist order in database
+    }
+
+    void sendEmail() {
+        // Send confirmation email
+    }
+
+    void generateInvoice() {
+        // Generate invoice
+    }
+}
+
+
+Good Design: Each class has a focused responsibility
+
+class OrderService {
+    void createOrder() {
+        // Order business logic
+        orderRepository.save();
+        emailService.sendConfirmation();
+        invoiceService.generate();
+    }
+}
+
+class OrderRepository {
+    void save() {
+        // Database persistence
+    }
+}
+
+class EmailService {
+    void sendConfirmation() {
+        // Email communication
+    }
+}
+
+class InvoiceService {
+    void generate() {
+        // Invoice generation
+    }
+}
+
+
+- SRP doesn't mean every class must contain only one method. It means its methods should belong to one cohesive responsibility.
+- In real production spring boot applications, responsibilities are separated as Controller, Service, Repository, Database
+
+
+------------------------------------------------------------
+Open/Closed Principle:
+------------------------------------------------------------
+
+- Software entities should be open for extension, but closed for modification. 
+- You should add new functionality by adding new code, not by rewriting old, tested code.
+
+
+Bad: Using if-else blocks inside a method to handle new payment types.
+
+class PaymentService {
+
+    void pay(String type, double amount) {
+
+        if (type.equals("CARD")) {
+    	    // Card payment logic
+	} else if (type.equals("UPI")) {
+    	    // UPI payment logic
+	}
+    }
+}
+
+
+Good: Define a common contract and implement individual payment methods.
+
+
+// Open for extension via implementation
+interface PaymentProcessor {
+    void pay(double amount);
+}
+
+class CardPayment implements PaymentProcessor {
+    public void pay(double amount) {
+        // Card payment logic
+    }
+}
+
+class UpiPayment implements PaymentProcessor {
+    public void pay(double amount) {
+        // UPI payment logic
+    }
+}
+
+// Closed for modification
+class PaymentService {
+
+    private final PaymentProcessor processor;
+
+    PaymentService(PaymentProcessor processor) {
+        this.processor = processor;
+    }
+
+    void processPayment(double amount) {
+        processor.pay(amount);
+    }
+}
+
+
+- Now if we want to introduce NetBankingPayment, we create another implementation; The existing payment implementations and PaymentService don't need modification
+
+
+class NetBankingPayment implements PaymentProcessor {
+    public void pay(double amount) {
+        // Net banking logic
+    }
+}
+
+
+- But now who creates and supplies the object? There are two common approaches:
+	- Factory pattern
+	- Spring Dependency Injection
+
+
+
+Spring Dependency Injection with a strategy registry:
+
+- Each implementation is registered as a Spring bean
+
+
+@Component("CARD")
+class CardPayment implements PaymentProcessor {
+    public void pay(double amount) {
+        // Card payment
+    }
+}
+
+@Component("UPI")
+class UpiPayment implements PaymentProcessor {
+    public void pay(double amount) {
+        // UPI payment
+    }
+}
+
+
+@Service
+class PaymentService {
+
+    private final Map<String, PaymentProcessor> processors;
+
+    PaymentService(Map<String, PaymentProcessor> processors) {
+        this.processors = processors;
+    }
+
+    void processPayment(String type, double amount) {
+        PaymentProcessor processor = processors.get(type);
+
+        if (processor == null) {
+            throw new IllegalArgumentException("Unsupported payment type");
+        }
+
+        processor.pay(amount);
+    }
+}
+
+
+- Now, when we add NetBankingPayment as another Spring bean, Spring automatically includes it in the map.
+
+
+
+------------------------------------------------------------
+Liskov Substitution Principle
+------------------------------------------------------------
+
+- Derived classes must be completely substitutable for their base classes. A subclass should never break the functionality or expectations of the parent class.
+
+
+Bad: A Ostrich class extending Bird, but throwing an exception in the fly() method because ostriches cannot fly.
+Good: Separate behaviors so you do not force improper inheritances.
+
+interface Bird {
+    void eat();
+}
+
+interface FlyingBird extends Bird {
+    void fly();
+}
+
+class Sparrow implements FlyingBird {
+    public void eat() { /* eat seeds */ }
+    public void fly() { /* fly high */ }
+}
+
+class Ostrich implements Bird {
+    public void eat() { /* eat insects */ }
+}
+
+
+------------------------------------------------------------
+Interface Segregation Principle
+------------------------------------------------------------
+
+- Clients should not be forced to depend on interfaces they do not use. It is better to have many small, specific interfaces than one massive, generic one
+
+
+Bad: A Worker interface with work() and cook() methods, forcing a Robot class to implement cook().
+Good: Split the interface into smaller pieces.
+
+
+interface Workable {
+    void work();
+}
+
+interface Cookable {
+    void cook();
+}
+
+// Robot only implements what it needs
+class Robot implements Workable {
+    public void work() { /* assembling parts */ }
+}
+
+class Human implements Workable, Cookable {
+    public void work() { /* office work */ }
+    public void cook() { /* making lunch */ }
+}
+
+
+------------------------------------------------------------
+Dependency Inversion Principle
+------------------------------------------------------------
+
+- High-level modules should not depend on low-level modules. Both should depend on abstractions. Do not hardcode tight dependencies between classes.
+
+
+
+Bad: A Car class directly instantiating a specific V8Engine class inside its constructor.
+Good: Pass an interface into the constructor (Dependency Injection).
+
+
+interface Engine {
+    void start();
+}
+
+class V8Engine implements Engine {
+    public void start() { /* Vroom */ }
+}
+
+class Car {
+    private Engine engine;
+
+    // Car depends on the Abstraction (Engine), not the concrete class
+    public Car(Engine engine) {
+        this.engine = engine;
+    }
+
+    public void drive() {
+        engine.start();
+    }
+}
+
+
+================================================================================================================================================================================= 
+DRY (Don’t Repeat Yourself)
+=================================================================================================================================================================================
+
+- Aims to reduce repetition of information to avoid maintenance issues.
+
+
+
+=================================================================================================================================================================================
+YAGNI: 
+=================================================================================================================================================================================
+
+
+
+
+=================================================================================================================================================================================
+KISS (Keep It Simple, Stupid)
+=================================================================================================================================================================================
+
+- Encourages making code as simple as possible to ensure it remains understandable.

@@ -15,8 +15,10 @@ Rate limiting
 ------------------------------------------------------------
 Algorithms:
 
-- Token Bucket
+- Fixed window
 - Sliding Window
+- leaky bucket
+- Token Bucket
 
 ------------------------------------------------------------
 reverse proxys
