@@ -1293,8 +1293,9 @@ Functional Interfaces
 - From java.util.function
 
 
-
+------------------------------------------------------------
 Built-in Functional Interfaces:
+------------------------------------------------------------
 
 Predicate<T>
 	Purpose: Takes one input and returns a boolean. Used for filtering/testing.
@@ -1339,8 +1340,9 @@ BinaryOperator<T>
 
 
 
-
+------------------------------------------------------------
 Primitive-specialized functional interfaces:
+------------------------------------------------------------
 
 - Java also provides specialized interfaces to avoid unnecessary boxing and unboxing.
 - This is useful when extracting primitive values, particularly in streams, without converting them to wrapper objects unnecessarily.
@@ -1363,8 +1365,9 @@ ToIntFunction<Employee> salaryExtractor = Employee::getSalary;
 
 
 
-
+------------------------------------------------------------
 Default methods and composition: 
+------------------------------------------------------------
 
 - Functional interfaces have useful default methods that let you combine behavior.
 
@@ -1398,8 +1401,9 @@ System.out.println(normalize.apply(" java ")); // JAVA
 
 
 
-
+------------------------------------------------------------
 Method references:
+------------------------------------------------------------
 
 - Method references are a shorter way to express certain lambdas.
 
@@ -1428,9 +1432,65 @@ employees.sort((e1, e2) -> e1.getName().compareTo(e2.getName()));
 
 
 ===============================================================================================================================================================================
-Shallow Copy vs Deep Copy:
+Enums:
 ===============================================================================================================================================================================
 
+- An enum (enumeration) represents a fixed set of predefined constants.
+- 
+
+enum OrderStatus {
+    PLACED,
+    CONFIRMED,
+    SHIPPED,
+    DELIVERED,
+    CANCELLED
+}
+
+OrderStatus status = OrderStatus.PLACED;
+
+
+
+------------------------------------------------------------
+How enums work internally:
+------------------------------------------------------------
+
+- Java enums are special classes, conceptually similar to:
+
+
+final class OrderStatus extends Enum<OrderStatus> {
+
+    public static final OrderStatus PLACED = new OrderStatus("PLACED", 0);
+
+    public static final OrderStatus CONFIRMED = new OrderStatus("CONFIRMED", 1);
+
+    public static final OrderStatus SHIPPED = new OrderStatus("SHIPPED", 2);
+
+    public static final OrderStatus DELIVERED = new OrderStatus("DELIVERED", 1);
+
+    public static final OrderStatus CANCELLED = new OrderStatus("CANCELLED", 2);
+
+    private OrderStatus(String name, int ordinal) {
+        super(name, ordinal);
+    }
+}
+
+
+- Every enum constant is a public static final instance.
+- An enum implicitly extends java.lang.Enum.
+- An enum cannot extend another class.
+- You cannot instantiate an enum using new.
+- Enum constructors cannot be public or protected.
+- Enums can implement interfaces.
+
+
+------------------------------------------------------------
+Methods:
+------------------------------------------------------------
+
+- values(): Returns all enum constants in declaration order.
+- valueOf(): Converts an exact string name into an enum constant.
+- name(): Returns the declared constant name.
+- ordinal(): returns its zero-based declaration position.
 
 
 ===============================================================================================================================================================================
@@ -1447,12 +1507,6 @@ I/O Streams:
 
 ===============================================================================================================================================================================
 RegEx:
-===============================================================================================================================================================================
-
-
-
-===============================================================================================================================================================================
-Enums:
 ===============================================================================================================================================================================
 
 
