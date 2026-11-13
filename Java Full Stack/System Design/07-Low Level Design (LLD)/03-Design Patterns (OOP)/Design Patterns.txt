@@ -8,9 +8,30 @@ Creational: Focus on object creation
 
 
 ============================================================
-Singleton
+Singleton:***
 ============================================================
 
+- Ensures a class has only one instance and provides a shared access point to it.
+
+
+public class AppConfig {
+
+    private static final AppConfig INSTANCE = new AppConfig();
+
+    private AppConfig() {}
+
+    public static AppConfig getInstance() {
+        return INSTANCE;
+    }
+}
+
+
+Client Code:
+
+AppConfig a1 = AppConfig.getInstance();
+AppConfig a2 = AppConfig.getInstance();
+			
+System.out.println(a1==a2); //true
 
 
 ============================================================
@@ -19,10 +40,22 @@ Factory:*********
 
 - Encapsulate object creation and decide which implementation to instantiate.
 
-Best Used For: Simple objects where the creation logic depends on conditions or input.
-
 Key Benefit: Decouples the client from concrete classes, making it easy to add new types without breaking existing code. 
 
+
+class PaymentFactory {
+
+    public static PaymentProcessor create(String type) {
+        return switch (type) {
+            case "CARD" -> new CardProcessor();
+            case "UPI" -> new UpiProcessor();
+            default -> throw new IllegalArgumentException("Unsupported payment");
+        };
+    }
+}
+
+
+Best Used For: Simple objects where the creation logic depends on conditions or input.
 
 
 ============================================================
@@ -37,9 +70,17 @@ Builder:*********
 
 - The Builder Pattern constructs complex objects step-by-step, particularly when there are many optional parameters. 
 
-Best Used For: Objects with many configurations (e.g., an HTTP request, a custom pizza, or a complex UI widget).
-
 Key Benefit: Improves readability and ensures the object is always in a consistent state before it is returned
+
+
+User user = User.builder()
+        .name("Prasad")
+        .email("user@example.com")
+        .age(28)
+        .build();
+
+
+Best Used For: Objects with many configurations (e.g., an HTTP request, a custom pizza, or a complex UI widget).
 
 
 ============================================================
@@ -82,7 +123,7 @@ Fly Weight
 
 
 ============================================================
-Facade
+Facade***
 ============================================================
 
 
@@ -118,7 +159,7 @@ Mediator
 
 
 ============================================================
-Chain of Responsibility
+Chain of Responsibility***
 ============================================================
 
 

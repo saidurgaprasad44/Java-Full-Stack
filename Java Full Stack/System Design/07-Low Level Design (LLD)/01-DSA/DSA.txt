@@ -71,11 +71,11 @@ Map<String, BigDecimal>
 Nested Structures:
 
 Customer
-└── List<Order>
-       └── List<OrderItem>
-             ├── Product
-             ├── quantity
-             └── unitPrice
+  └── List<Order>
+         └── List<OrderItem>
+                ├── Product
+                ├── quantity
+                └── unitPrice
 
 - Extract all products across all orders
 - Find customers who have placed qualifying orders

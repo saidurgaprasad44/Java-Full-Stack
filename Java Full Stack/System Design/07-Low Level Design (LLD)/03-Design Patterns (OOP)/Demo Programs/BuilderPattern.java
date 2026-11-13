@@ -3,7 +3,10 @@ package javaPrograms;
 public class BuilderPattern {
 
 	public static void main(String[] args) {
-		Employe e = new Employe.Builder(101, "sai").build();
+		Employe e = Employe.builder(101, "sai") //mandatory fields
+				.salary(908983) //optional
+				.department("developer") //optional
+				.build();
 		
 		System.out.println(e);
 	}
@@ -25,6 +28,12 @@ class Employe {
 		this.name = builder.name;
 		this.department = builder.department;
 		this.salary = builder.salary;
+    }
+    
+    public static Builder builder(int id, String name) {
+    	
+		return new Builder(id, name);
+    	
     }
     
     @Override

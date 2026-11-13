@@ -872,13 +872,13 @@ Type Conversions:
 Type casting:
 ------------------------------------------------------------
 
-	Primitive Casting:
-		Widening(Implicit):
-		Narrowing(Explicit):
+Primitive Casting:
+	Widening(Implicit):
+	Narrowing(Explicit):
 
-	Object Casting:
-		Up-casting:
-		Down-casting:
+Object Casting:
+	Up-casting:
+	Down-casting:
 
 
 ------------------------------------------------------------
@@ -922,52 +922,126 @@ Boxing/Unboxing:
 Exception handling:
 ===============================================================================================================================================================================
 
-In Java, all error and exception types are organized under a single root class, java.lang.Throwable. This root branches into two main categories: Error and Exception
+- When an exception is triggered (manually or automatically), it creates and throws a new exception object, which contains:	
+	Class Name: e.getClass().getName()
+	The Detail Message: e.getMessage()
+	The Where: e.printStackTrace()
 
-Error/Exception Class Hierarchy:
+- The thrown exception has to be caught and handled using:
+	- try{}: Defines the "danger zone" where you have code that might trigger an exception.
+	- catch(){}: The "safety net" that intercepts a specific exception object and executes your Plan B logic.
+	- finally{}: The "guaranteed cleanup" block that runs whether an exception happened or not, usually to close files or database connections.
 
-java.lang.Throwable: The base class for all objects that can be thrown or caught.
-	java.lang.Error: Represents serious, unrecoverable system-level issues. Applications are not expected to handle these.
-	java.lang.Exception: Represents conditions that a program should typically handle or catch.
-		java.lang.RuntimeException: A special subclass of Exception that serves as the root for all "unchecked" exceptions.
-		Other subclasses: All other subclasses of Exception are "checked" exceptions
+- If no matching catch exists, the exception propagates after finally.
+- finally may not execute in cases such as JVM termination using System.exit() or process termination.
+- In multiple catch block exception handling, always place more specific exception types before their parent types.
+- If an exception occurs inside try, and finally itself throws another exception and the try block exception is not caught and handled, the finally exception replaces the original try exception
+ 
+
+------------------------------------------------------------
+Exception Hierarchy:
+------------------------------------------------------------
+
+- All Java exceptions and errors derive from Throwable
 
 
+java.lang.Throwable                              The base class for all objects that can be thrown or caught.
+   |
+   ├── java.lang.Error                          Represents serious, unrecoverable system-level issues. Applications are not expected to handle these.
+   |
+   └── java.lang.Exception                      Represents conditions that a program should typically handle or catch.
+            |
+            ├── java.lang.RuntimeException      A special subclass for all "unchecked" exceptions.
+            |
+            └── Other subclasses                All other subclasses of Exception are "checked" exceptions
+
+
+------------------------------------------------------------
 Checked vs Unchecked Exceptions: 
-- Checked exceptions are checked before compilation, while unchecked exceptions are checked at runtime. 
-- Checked Exceptions are for caller to fix before proceeding
-- Unchecked Exceptions are meant to be business rules, caught at runtime
+------------------------------------------------------------
+
+Checked Exception:
+
+- Checked Exceptions are checked at compile time. 
+- These exceptions are external conditions that the caller may need to respond to.
+- The compiler forces you to either handle them using try-catch or declare them using throws to propagate it to the caller.
+- Typical response: Handle, retry, fallback, or propagate.
 
 
+Unchecked Exception:
 
-Category 	In Developer Control?	Can be handled?		Caught By	Best Action				Example
------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Error		❌ No			❌ No			Runtime		Fix system or hardware			OutOfMemoryError, StackOverflowError
-Checked		⚠️ Partially		✅ Yes (Mandatory)	Compiler	Implement a Plan B			IOException, SQLException
-Unchecked	✅ Yes			✅ Yes (Optional)	Runtime		Fix the bug in logic or handle it	NullPointerException, ArithmeticException
+- Unchecked exceptions are checked at runtime
+- unchecked exceptions often represent programming mistakes or business-rule violations
+- These are not mandatory to handle
+- Typical response: Fix the defect, validate input, reject the operation, or handle at an appropriate application boundary.
 
 
+Category        Can be handled?      Checked By	    Best Action				 Example
+-----------------------------------------------------------------------------------------------------------------------------
+Checked         ✅ Yes (Mandatory)   Compiler	    Implement a Plan B                   IOException, SQLException, ClassNotFoundException
+Unchecked       ✅ Yes (Optional)    Runtime        Fix the bug in logic or handle it	 NullPointerException, ArithmeticException, IndexOutOfBoundsException
+Error           ❌ No                Runtime        Fix system or hardware               OutOfMemoryError, StackOverflowError
 
-When an exception is triggered (manually or automatically), it creates and throws a new exception object, which contains:
+
+------------------------------------------------------------
+throw vs throws:
+------------------------------------------------------------
+
+throw:
+
+- Manually triggers exception and throws Exception object
+- Use it when you want to explicitly throw an exception (built-in standard or custom exceptions).	
+
+
+public static void withdraw(double amount) throws InsufficientFundsException {
+    if (amount > balance) {
+
+        double missing = amount - balance;
+        throw new InsufficientFundsException(missing); //Throwing custom exception
+    }
+    balance -= amount;
+    System.out.println("Withdrawal successful!");
+}
+
+
+throws (declaring):
+
+- It is a warning to the caller saying, "Hey, this method is dangerous. You must handle the error yourself using a try-catch."
+- throws is mandatory for Checked Exceptions if it is not handled
+- Unchecked exceptions can propagate without declaration.
 	
-Class Name - e.getClass().getName()
-The Detail Message - e.getMessage()
-The Where - e.printStackTrace()
 
-Now, we need to catch and handle the thrown exception using:
-
-try{} - Defines the "danger zone" where you have code that might trigger an exception.
-catch(){} - The "safety net" that intercepts a specific exception object and executes your Plan B logic.
-finally{} - The "guaranteed cleanup" block that runs whether an exception happened or not, usually to close files or database connections.
+public void readFile() throws IOException {
+    FileReader reader = new FileReader("data.txt");
+}
 
 
-throw - manually triggers exception and throws Exception object, use it when there is no way an exception is triggered but you still want to throw and for custom exceptions.	
-throws - it is a warning to the caller of the method saying, "Hey, this method is dangerous. You must handle the error yourself using a try-catch." (throws is mandatory for Checked Exceptions; for unchecked exceptions, handling is not mandatory)
-	
+------------------------------------------------------------
+Exception Propagation:
+------------------------------------------------------------
+
+- Suppose method A calls B, and B calls C.
 
 
+public void methodA() {
+    methodB();
+}
 
-Creating Custom exception example:
+public void methodB() {
+    methodC();
+}
+
+public void methodC() {
+    throw new IllegalArgumentException("Failure");
+}
+
+
+- If A doesn't catch the exception, it continues propagating up the call stack until a matching handler is found.
+- If none is found, it reaches the thread's uncaught exception handler.
+
+------------------------------------------------------------
+Custom Exceptions:
+------------------------------------------------------------
 
 //Creating custom checked exception by extending the class from Exception class
 //if you want to create a custom unchecked exception, extend the class from RuntimeException
@@ -981,28 +1055,122 @@ class InsufficientFundsException extends Exception {
 }
 
 public class CustomException {
+
     private static double balance = 500.00;
+
     // throws is mandatory since it is a custom checked exception
     public static void withdraw(double amount) throws InsufficientFundsException {
+
         if (amount > balance) {
+
             double missing = amount - balance;
             // Throwing our custom exception with specific data
             throw new InsufficientFundsException(missing);
         }
+
         balance -= amount;
         System.out.println("Withdrawal successful!");
     }
 
     public static void main(String[] args) {
+
         // handling the custom checked exception using try-catch
         try {
             withdraw(750.00); 
-        } catch (InsufficientFundsException e) {
+        } 
+        catch (InsufficientFundsException e) {
+
             // This will print the custom message we built in the constructor
             System.out.println(e); 
         }
     }
 }
+
+
+------------------------------------------------------------
+Exception wrapping
+------------------------------------------------------------
+
+- Sometimes you catch a low-level exception and throw a higher-level exception while preserving the original cause.
+
+
+try {
+    repository.save(order);
+}
+catch (SQLException e) {
+    throw new OrderPersistenceException(
+        "Unable to save order", e
+    );
+}
+
+
+- The second constructor argument preserves the cause.
+- This is useful when translating infrastructure exceptions into application-level exceptions without losing debugging information.
+
+
+------------------------------------------------------------
+try-with-resources
+------------------------------------------------------------
+
+- This is especially important for I/O, JDBC, and resource management.
+
+
+
+Traditional approach:
+
+BufferedReader reader = null;
+
+try {
+    reader = new BufferedReader(new FileReader("data.txt"));
+    System.out.println(reader.readLine());
+}
+catch (IOException e) {
+    e.printStackTrace();
+}
+finally {
+    if (reader != null) {
+        try {
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+
+
+Better approach:
+
+try (BufferedReader reader =
+         new BufferedReader(new FileReader("data.txt"))) {
+
+    System.out.println(reader.readLine());
+
+}
+catch (IOException e) {
+    // Handle failure
+}
+
+
+- Java automatically closes resources implementing AutoCloseable when the try block exits, including when an exception occurs.
+- If the main operation throws an exception and closing the resource also throws one, the close exception is recorded as a suppressed exception rather than replacing the original exception. You can inspect these using getSuppressed().
+
+
+------------------------------------------------------------
+Best Practices
+------------------------------------------------------------
+
+- Don't swallow exceptions with empty catch blocks.
+- Don't catch Exception everywhere without a reason.
+- Preserve the original exception cause when wrapping.
+- Don't use exceptions for normal control flow.
+- Avoid logging the same exception at every layer.
+- Use meaningful custom exceptions for domain failures.
+- Use try-with-resources for resource cleanup.
+- Don't catch Error or Throwable casually.
+- Avoid throwing exceptions from finally
+- Restore the interrupt flag when you cannot propagate InterruptedException
+- In Spring Boot, centralize HTTP exception mapping with @RestControllerAdvice and @ExceptionHandler where appropriate.
 
 
 ===============================================================================================================================================================================
@@ -1024,7 +1192,6 @@ Local class		Class declared inside a method or block
 Anonymous class		Class without a name, declared and instantiated together
 
 
-
 ------------------------------------------------------------
 Static Nested Class
 ------------------------------------------------------------
@@ -1034,6 +1201,7 @@ Static Nested Class
 - It cannot directly access non-static instance members of Employee because it doesn't have an enclosing Employee instance.
 - It can access those instance members if it receives an Employee object.
 
+
 ------------------------------------------------------------
 Inner Class (Non-static nested class)
 ------------------------------------------------------------
@@ -1041,6 +1209,7 @@ Inner Class (Non-static nested class)
 - It is associated with a particular enclosing Employee object.
 - It can directly access both static and non-static members of Employee, including private members.
 - It implicitly holds a reference to its enclosing Employee instance.
+
 
 ------------------------------------------------------------
 Local Class
@@ -1052,12 +1221,12 @@ Local Class
 Anonymous Class:
 ------------------------------------------------------------
 
-Anonymous Class from another class: 
+Anonymous Class extending another class: 
 
 - A class without a name that is instantiated extending another class by overriding any/all of its concrete methods in a single expression. 
 - It simultaneously extends the class, overrides the desired methods and creates the object.
 
-Anonymous Class from an Interface: 
+Anonymous Class implementing an Interface: 
 
 - A class without a name that is instantiated implementing an interface by defining all the abstract methods in a single expression.
 - It simultaneously implements the interface, provides the concrete logic for the abstract methods and creates the object.

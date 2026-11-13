@@ -1,6 +1,6 @@
 package javaPrograms;
 
-public class School {
+public class AdapterPattern {
 
 	public static void main(String[] args) {
 		AssignmentWork aw = new AssignmentWork();
