@@ -1,8 +1,7 @@
 
-Design Principles (The "Why"): These are foundational rules of thumb that encourage clean, maintainable, and scalable code. They are theory-based rather than code-based. 
+Design Principles (The "Why"): 
 
-
-
+- These are foundational rules of thumb that encourage clean, maintainable, and scalable code. They are theory-based rather than code-based. 
 
 =================================================================================================================================================================================
 SOLID:
@@ -10,15 +9,19 @@ SOLID:
 
 - focused on reducing coupling and increasing flexibility
 
-------------------------------------------------------------
+========================================================================================================================
 Single Responsibility Principle
-------------------------------------------------------------
+========================================================================================================================
 
 - A class should have one responsibility and therefore one reason to change.
 - This principle is about modifying the existing functionality for a requirement to change
 
+------------------------------------------------------------
+Bad Design: 
+------------------------------------------------------------
 
-Bad Design: Order Service handles several different responsibilities
+- Order Service handles several different responsibilities
+
 
 class OrderService {
 
@@ -39,8 +42,12 @@ class OrderService {
     }
 }
 
+------------------------------------------------------------
+Good Design: 
+------------------------------------------------------------
 
-Good Design: Each class has a focused responsibility
+- Each class has a focused responsibility
+
 
 class OrderService {
     void createOrder() {
@@ -74,15 +81,19 @@ class InvoiceService {
 - In real production spring boot applications, responsibilities are separated as Controller, Service, Repository, Database
 
 
-------------------------------------------------------------
+========================================================================================================================
 Open/Closed Principle:
-------------------------------------------------------------
+========================================================================================================================
 
 - Software entities should be open for extension, but closed for modification. 
 - You should add new functionality by adding new code, not by rewriting old, tested code.
 
 
-Bad: Using if-else blocks inside a method to handle new payment types.
+------------------------------------------------------------
+Bad Design: 
+------------------------------------------------------------
+
+- Using if-else blocks inside a method to handle new payment types.
 
 class PaymentService {
 
@@ -97,7 +108,11 @@ class PaymentService {
 }
 
 
-Good: Define a common contract and implement individual payment methods.
+------------------------------------------------------------
+Good Design: 
+------------------------------------------------------------
+
+- Define a common contract and implement individual payment methods.
 
 
 // Open for extension via implementation
@@ -133,15 +148,6 @@ class PaymentService {
 
 
 - Now if we want to introduce NetBankingPayment, we create another implementation; The existing payment implementations and PaymentService don't need modification
-
-
-class NetBankingPayment implements PaymentProcessor {
-    public void pay(double amount) {
-        // Net banking logic
-    }
-}
-
-
 - But now who creates and supplies the object? There are two common approaches:
 	- Factory pattern
 	- Spring Dependency Injection
@@ -151,6 +157,7 @@ class NetBankingPayment implements PaymentProcessor {
 Spring Dependency Injection with a strategy registry:
 
 - Each implementation is registered as a Spring bean
+
 
 
 @Component("CARD")
@@ -166,7 +173,6 @@ class UpiPayment implements PaymentProcessor {
         // UPI payment
     }
 }
-
 
 @Service
 class PaymentService {
@@ -193,15 +199,55 @@ class PaymentService {
 
 
 
-------------------------------------------------------------
+========================================================================================================================
 Liskov Substitution Principle
+========================================================================================================================
+
+- A subtype should be able to behave as a valid replacement for its parent type. 
+- A subtype should never break the functionality or expectations of the parent type, it should honor the contract that parent type promises
+
+
+------------------------------------------------------------
+Bad Example 1: 
 ------------------------------------------------------------
 
-- Derived classes must be completely substitutable for their base classes. A subclass should never break the functionality or expectations of the parent class.
+- Penguin class has an unsupported functionality (i.e. fly()) overridden from Bird class
+
+class Bird {
+    void fly() {
+        System.out.println("Bird is flying");
+    }
+}
+
+class Sparrow extends Bird {
+    @Override
+    void fly() {
+        System.out.println("Sparrow is flying");
+    }
+}
+
+class Penguin extends Bird {
+    @Override
+    void fly() {
+        throw new UnsupportedOperationException("Penguins cannot fly");
+    }
+}
 
 
-Bad: A Ostrich class extending Bird, but throwing an exception in the fly() method because ostriches cannot fly.
-Good: Separate behaviors so you do not force improper inheritances.
+
+Client Code:
+
+void makeBirdFly(Bird bird) { //We can pass either implementation
+    bird.fly();
+}
+
+makeBirdFly(new Sparrow()); // Works
+makeBirdFly(new Penguin()); // Throws exception
+
+
+------------------------------------------------------------
+Fix:
+------------------------------------------------------------
 
 interface Bird {
     void eat();
@@ -212,55 +258,269 @@ interface FlyingBird extends Bird {
 }
 
 class Sparrow implements FlyingBird {
-    public void eat() { /* eat seeds */ }
-    public void fly() { /* fly high */ }
+
+    public void eat() {
+        System.out.println("Sparrow eating");
+    }
+
+    public void fly() {
+        System.out.println("Sparrow flying");
+    }
 }
 
-class Ostrich implements Bird {
-    public void eat() { /* eat insects */ }
+class Penguin implements Bird {
+
+    public void eat() {
+        System.out.println("Penguin eating");
+    }
 }
+
+
+
+Client Code:
+
+void makeBirdFly(FlyingBird bird) {
+    bird.fly();
+}
+
+
+- LSP is not simply about avoiding exceptions or ensuring methods exist.
+- A subtype should not introduce unexpected behaviour that violates the parent's contract.
 
 
 ------------------------------------------------------------
+Example 2:
+------------------------------------------------------------
+
+- Suppose a parent method accepts any positive number:
+
+class Payment {
+
+    void process(double amount) {
+
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Amount must be greater than zero");
+        }
+
+        System.out.println("Payment processed: " + amount);
+    }
+}
+
+
+- Its contract is:
+	- Amount must be greater than zero.
+	- Any positive amount is accepted.
+
+
+class PremiumPayment extends Payment {
+
+    @Override
+    void process(double amount) {
+
+        if (amount < 1000) {
+            throw new IllegalArgumentException(
+                "Minimum payment amount is 1000"
+            );
+        }
+
+        System.out.println("Premium payment processed: " + amount);
+    }
+}
+
+
+
+Client Code:
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        Payment payment = new Payment();
+        payment.process(500);
+
+        Payment premiumPayment = new PremiumPayment();
+        premiumPayment.process(500);
+    }
+}
+
+
+- The subclass only accepts amounts above ₹1,000, it has strengthened the precondition. 
+- A caller that previously passed ₹500 successfully will now fail.
+
+
+------------------------------------------------------------
+Example 3:
+------------------------------------------------------------
+
+             NotificationService
+                     |
+             NotificationProvider
+                     |
+          +----------+----------+
+          |          |          |
+         Email      SMS        Push
+
+
+interface NotificationProvider {
+    void send(Notification notification);
+}
+
+
+- For example, an SMS implementation shouldn't silently discard messages that exceed a particular length if the contract promises successful delivery for valid notifications of any supported length. 
+- It should define and consistently enforce the contract's constraints.
+- This becomes important when using Spring DI and polymorphism: the injected implementation should work without the consumer needing implementation-specific workarounds.
+
+========================================================================================================================
 Interface Segregation Principle
-------------------------------------------------------------
+========================================================================================================================
 
-- Clients should not be forced to depend on interfaces they do not use. It is better to have many small, specific interfaces than one massive, generic one
-
-
-Bad: A Worker interface with work() and cook() methods, forcing a Robot class to implement cook().
-Good: Split the interface into smaller pieces.
-
-
-interface Workable {
-    void work();
-}
-
-interface Cookable {
-    void cook();
-}
-
-// Robot only implements what it needs
-class Robot implements Workable {
-    public void work() { /* assembling parts */ }
-}
-
-class Human implements Workable, Cookable {
-    public void work() { /* office work */ }
-    public void cook() { /* making lunch */ }
-}
+- Clients should not be forced to depend on interfaces they do not use. 
+- It is better to have many small, specific interfaces than one massive, generic one
 
 
 ------------------------------------------------------------
+Bad Design:
+------------------------------------------------------------
+
+- A NotificationService interface with multiple notification methods, forcing notification provider classes to implement unnecessary methods.
+
+
+interface NotificationService {
+
+    void sendEmail(String message);
+    void sendSms(String message);
+    void sendPushNotification(String message);
+}
+
+class EmailNotification implements NotificationService {
+
+    public void sendEmail(String message) {
+        System.out.println("Sending email");
+    }
+
+    public void sendSms(String message) {  //unnecessary dependency
+        throw new UnsupportedOperationException();
+    }
+
+    public void sendPushNotification(String message) {  //unnecessary dependency
+        throw new UnsupportedOperationException();
+    }
+}
+
+
+- Similarly, other implementations must implement other notification methods, even though they don't support them.
+
+
+------------------------------------------------------------
+Good Design: 
+------------------------------------------------------------
+
+- Split the interface into smaller pieces.
+
+
+interface EmailSender {
+    void sendEmail(String message);
+}
+
+interface SmsSender {
+    void sendSms(String message);
+}
+
+interface PushNotificationSender {
+    void sendPushNotification(String message);
+}
+
+
+- Now each implementation only implements what it supports.
+
+class EmailNotification implements EmailSender {
+
+    public void sendEmail(String message) {
+        System.out.println("Sending email");
+    }
+}
+
+class SmsNotification implements SmsSender {
+
+    public void sendSms(String message) {
+        System.out.println("Sending SMS");
+    }
+}
+
+
+- A provider that supports multiple capabilities can implement multiple interfaces
+
+class MultiChannelNotification implements EmailSender, SmsSender {
+
+    public void sendEmail(String message) {
+        System.out.println("Sending email");
+    }
+
+    public void sendSms(String message) {
+        System.out.println("Sending SMS");
+    }
+}
+
+
+Client Code:
+
+class EmailService {
+
+    private final EmailSender emailSender;
+
+    EmailService(EmailSender emailSender) {
+        this.emailSender = emailSender;
+    }
+
+    void notifyUser(String message) {
+        emailSender.sendEmail(message);
+    }
+}
+
+
+========================================================================================================================
 Dependency Inversion Principle
+========================================================================================================================
+
+
+- High-level modules should not depend on low-level modules. Both should depend on abstractions. 
+- Do not hardcode tight dependencies between classes.
+- In simple terms, business logic should depend on interfaces/contracts rather than concrete implementation classes.
+
+
+------------------------------------------------------------
+Bad Design: 
 ------------------------------------------------------------
 
-- High-level modules should not depend on low-level modules. Both should depend on abstractions. Do not hardcode tight dependencies between classes.
+- A Car class directly instantiating a specific V8Engine class inside its constructor.
 
 
+class V8Engine implements Engine {
+    public void start() { /* Vroom */ }
+}
 
-Bad: A Car class directly instantiating a specific V8Engine class inside its constructor.
-Good: Pass an interface into the constructor (Dependency Injection).
+class Car {
+    
+    private V8Engine v8Engine = new V8Engine();
+
+    public void drive() {
+        v8Engine.start();
+    }
+}
+
+
+Here:
+
+- Car is a high-level module because it contains business logic.
+- V8Engine is a lower-level module because it handles a technical detail.
+- Car is tightly coupled to the concrete V8Engine.
+
+
+------------------------------------------------------------
+Good Design: 
+------------------------------------------------------------
+
+- Pass an interface into the constructor (Dependency Injection).
 
 
 interface Engine {

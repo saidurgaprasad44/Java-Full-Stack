@@ -314,9 +314,10 @@ Modifiers:
 
 - In Java, these keywords define the scope and behavior of Classes, Variables and Methods.
 
-------------------------------------------------------------
+
+========================================================================================================================
 Access Modifiers (Scope):
-------------------------------------------------------------
+========================================================================================================================
 
 - These control who can "see" or use the class or variable or method:
 
@@ -329,34 +330,89 @@ Default (no keyword) 	Accessible by classes in the same package	Accessible only 
 private			NA						Accessible only within the same class.
 
 
-------------------------------------------------------------
+========================================================================================================================
 Non-Access Modifiers (Behavior):
-------------------------------------------------------------
+========================================================================================================================
 
 These define specific properties or logic constraints:
 
-1. static:
-Variables: The variable belongs to the class itself, not instances. All objects share the same copy.
-Methods: Can be called without creating an object of the class (e.g., Math.sqrt()).
+------------------------------------------------------------
+static:
+------------------------------------------------------------
 
-2. final:
+static Variables: 
+
+- The static variable belongs to the class itself, not instances. 
+- All objects share the same copy.
+
+
+
+Static Methods: 
+
+- Can be called without creating an object of the class (e.g., Math.sqrt()).
+- Use static methods when the operation:
+	- Does not depend on individual object state.
+	- Performs a general operation using its parameters.
+	- Belongs logically to the class rather than a particular instance.
+- A static method cannot directly access instance variables or instance methods.
+
+class Employee {
+
+    int id = 101;
+    static int count = 10;
+
+    static void display() {
+
+        System.out.println(count); // Allowed
+        // System.out.println(id); // Compilation error
+    }
+}
+
+- However, you can access instance members through an explicitly supplied object:
+
+static void display(Employee employee) {
+    System.out.println(employee.id);
+}
+
+
+
+Static Classes:
+
+- Java does not allow a top-level class to be declared static. Only nested classes can be static.
+
+------------------------------------------------------------
+final:
+------------------------------------------------------------
+
 Variables: Once assigned, the value cannot change (a constant).
 Methods: Cannot be overridden by a subclass.
 Classes: Cannot be inherited (extended).
 
-3. abstract:
+------------------------------------------------------------
+abstract:
+------------------------------------------------------------
+
 Methods: Has no body (logic). It acts as a requirement that subclasses must implement.
 Classes: Cannot be instantiated (you can't do new MyClass()). It only exists to be a parent for other classes.
 
-4. void: no return
+------------------------------------------------------------
+void: 
+------------------------------------------------------------
 
-5. synchronized & volatile:
+void methods return nothing
+
+------------------------------------------------------------
+synchronized & volatile:
+------------------------------------------------------------
+
 synchronized: Ensures a method can only be accessed by one thread at a time (prevents data corruption).
 volatile: Ensures that changes to a variable are always read directly from main memory, not a thread's local cache.
 
-6. default:
-Methods: Allowed developers to add method implementations inside interfaces using the default keyword without breaking existing implementing classes.
+------------------------------------------------------------
+default:
+------------------------------------------------------------
 
+Methods: Allowed developers to add method implementations inside interfaces using the default keyword without breaking existing implementing classes.
 
 
 ===============================================================================================================================================================================
@@ -950,8 +1006,47 @@ public class CustomException {
 
 
 ===============================================================================================================================================================================
-Anonymous Class, Functional Interface & Lambda Expression:
+Nested Class, Functional Interface & Lambda Expressions:
 ===============================================================================================================================================================================
+
+========================================================================================================================
+Nested Class:
+========================================================================================================================
+
+- Defining a class inside another class
+
+
+Type			Description
+------------------------------------------------------------------
+Static nested class	Declared using static inside another class
+Inner class		Non-static class inside another class
+Local class		Class declared inside a method or block
+Anonymous class		Class without a name, declared and instantiated together
+
+
+
+------------------------------------------------------------
+Static Nested Class
+------------------------------------------------------------
+
+- It belongs to the enclosing class, rather than a particular Employee object.
+- It can directly access private static members of Employee.
+- It cannot directly access non-static instance members of Employee because it doesn't have an enclosing Employee instance.
+- It can access those instance members if it receives an Employee object.
+
+------------------------------------------------------------
+Inner Class (Non-static nested class)
+------------------------------------------------------------
+
+- It is associated with a particular enclosing Employee object.
+- It can directly access both static and non-static members of Employee, including private members.
+- It implicitly holds a reference to its enclosing Employee instance.
+
+------------------------------------------------------------
+Local Class
+------------------------------------------------------------
+
+
 
 ------------------------------------------------------------
 Anonymous Class:
@@ -959,13 +1054,13 @@ Anonymous Class:
 
 Anonymous Class from another class: 
 
-- A class without a name that is instantiated extending another class by overriding any number of its concrete methods in a single expression. 
-- It simultaneously creates the object and overrides the desired methods.
+- A class without a name that is instantiated extending another class by overriding any/all of its concrete methods in a single expression. 
+- It simultaneously extends the class, overrides the desired methods and creates the object.
 
 Anonymous Class from an Interface: 
 
 - A class without a name that is instantiated implementing an interface by defining all the abstract methods in a single expression.
-- It simultaneously creates the object and provides the concrete logic for the abstract methods.
+- It simultaneously implements the interface, provides the concrete logic for the abstract methods and creates the object.
 
 
 Implementation Example: 
@@ -993,12 +1088,12 @@ myButton.onLongPress();
 myButton.onLongPress();
 
 
-------------------------------------------------------------
+========================================================================================================================
 Lambda Expression (Java8+): 
-------------------------------------------------------------
+========================================================================================================================
 
 - An anonymous function that is defined and instantiated implementing a Functional Interface by defining its single abstract method in a highly concise, single expression.
-Key Feature: It simultaneously creates the object and provides the concrete logic for the abstract methods.
+- It simultaneously creates the object and provides the concrete logic for the abstract methods.
 
 
 Implementation Examples: 
@@ -1022,8 +1117,15 @@ System.out.println(r.run(10, 20));
 
 
 
+========================================================================================================================
+Functional Interfaces
+========================================================================================================================
 
-- Key built-in Functional Interfaces java.util.function
+- From java.util.function
+
+
+
+Built-in Functional Interfaces:
 
 Predicate<T>
 	Purpose: Takes one input and returns a boolean. Used for filtering/testing.
