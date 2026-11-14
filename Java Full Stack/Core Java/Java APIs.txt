@@ -3,7 +3,7 @@
 ===============================================================================================================================================================================
 - Collections (List, Set, Map, Queue) 
 - String / StringBuilder /StringBuffer
-- Object                      ------ shallow copy vs deep copy
+- Object                      ------ shallow copy vs deep copy, clone(), toString(), equals()
 - Exceptions 
 - equals() / hashCode() 
 - Optional                    ------

@@ -120,17 +120,18 @@ Primitive Data Types (Values):
 ------------------------------------------------------------
 
 - These are predefined by the language and store actual values directly in memory (typically on the stack). 
+- A bit is a binary value 0 or 1.
 
 Type 	Size	Default (Fields)	Range / Purpose
 ----------------------------------------------------------------------------------------------
+boolean	~1-bit	false			true or false only.
 byte	8-bit	0			-128 to 127; used for memory-efficient arrays.
 short	16-bit	0			-32,768 to 32,767.
 int	32-bit	0			-2.1B to 2.1B; standard choice for integers.
 long	64-bit	0L			Use for values exceeding int range. Requires L suffix.
 float	32-bit	0.0f			~7 decimal digits precision. Requires f suffix.
 double	64-bit	0.0d			~15 decimal digits; default for decimal literals.
-char	16-bit	'\u0000'		Single Unicode character (unsigned: 0 to 65,535).
-boolean	~1-bit	false			true or false only.
+char	16-bit	'\u0000'		Single Unicode character, UTF-16 Code unit (unsigned: 0 to 65,535).
 
 - Primitives do not have methods; use Wrapper Classes (e.g., Integer) for object-based operations.
 - Primitives cannot be null.
@@ -216,6 +217,19 @@ switch (variable) {
 }
 
 
+------------------------------------------------------------
+Modern Java switch (Java 14+):
+------------------------------------------------------------
+
+String message = switch (status) {
+    case "placed" -> "Order received";
+    case "confirmed" -> "Preparing order";
+    case "shipped" -> "Order dispatched";
+    case "delivered" -> "Order completed";
+    case "cancelled" -> "Order cancelled";
+};
+
+ 
 ===============================================================================================================================================================================
 Loops:
 ===============================================================================================================================================================================
@@ -344,6 +358,11 @@ static Variables:
 
 - The static variable belongs to the class itself, not instances. 
 - All objects share the same copy.
+- Often used to maintain the state among the objects like: 
+	- Counting the number of created objects.
+	- Defining application-wide constants.
+	- Maintaining shared configuration or metadata.
+	- Maintaining shared counters or caches (with appropriate concurrency controls).
 
 
 
@@ -354,6 +373,7 @@ Static Methods:
 	- Does not depend on individual object state.
 	- Performs a general operation using its parameters.
 	- Belongs logically to the class rather than a particular instance.
+
 - A static method cannot directly access instance variables or instance methods.
 
 class Employee {
@@ -1098,9 +1118,7 @@ try {
     repository.save(order);
 }
 catch (SQLException e) {
-    throw new OrderPersistenceException(
-        "Unable to save order", e
-    );
+    throw new OrderPersistenceException("Unable to save order", e);   // caught SQLException (low-level) and threw OrderPersistenceException (high-level)
 }
 
 
@@ -1141,8 +1159,7 @@ finally {
 
 Better approach:
 
-try (BufferedReader reader =
-         new BufferedReader(new FileReader("data.txt"))) {
+try (BufferedReader reader = new BufferedReader(new FileReader("data.txt"))) {
 
     System.out.println(reader.readLine());
 
@@ -1436,7 +1453,7 @@ Enums:
 ===============================================================================================================================================================================
 
 - An enum (enumeration) represents a fixed set of predefined constants.
-- 
+
 
 enum OrderStatus {
     PLACED,
@@ -1445,6 +1462,9 @@ enum OrderStatus {
     DELIVERED,
     CANCELLED
 }
+
+
+Usage:
 
 OrderStatus status = OrderStatus.PLACED;
 
@@ -1475,11 +1495,10 @@ final class OrderStatus extends Enum<OrderStatus> {
 }
 
 
-- Every enum constant is a public static final instance.
+- Each constant is a public static final instance of the enum class.
 - An enum implicitly extends java.lang.Enum.
 - An enum cannot extend another class.
-- You cannot instantiate an enum using new.
-- Enum constructors cannot be public or protected.
+- You cannot instantiate an enum using new, so the constructor is private.
 - Enums can implement interfaces.
 
 
@@ -1487,22 +1506,259 @@ final class OrderStatus extends Enum<OrderStatus> {
 Methods:
 ------------------------------------------------------------
 
-- values(): Returns all enum constants in declaration order.
+- values(): Returns an array of all enum constants in declaration order.
 - valueOf(): Converts an exact string name into an enum constant.
 - name(): Returns the declared constant name.
 - ordinal(): returns its zero-based declaration position.
 
 
-===============================================================================================================================================================================
-File handling & Serialization:
-===============================================================================================================================================================================
+------------------------------------------------------------
+Enums with fields, constructors & methods
+------------------------------------------------------------
+
+- Enums can contain state and behaviour, just like normal classes.
+- Enum constructors are invoked once per constant during class initialization.
+- Fields can be used to associate additional data with each constant.
+- Fields are typically private final to make enum constants effectively immutable.
 
 
-	
+public enum OrderStatus {
+
+    PLACED("Order placed", false),
+    CONFIRMED("Order confirmed", false),
+    SHIPPED("Order shipped", false),
+    DELIVERED("Order delivered", true),
+    CANCELLED("Order cancelled", true);
+
+    private final String description;
+    private final boolean terminal;
+
+    OrderStatus(String description, boolean terminal) {
+        this.description = description;
+        this.terminal = terminal;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public boolean isTerminal() {
+        return terminal;
+    }
+}
+
+
+Usage:
+
+OrderStatus status = OrderStatus.DELIVERED;
+
+System.out.println(status.getDescription());
+System.out.println(status.isTerminal());
+
+
+------------------------------------------------------------
+Enums with abstract methods
+------------------------------------------------------------
+
+- Individual enum constants can implement different behaviour.
+- Useful for a small, fixed set of behaviours tightly associated with the enum.
+
+
+enum PaymentType {
+
+    CARD {
+        @Override
+        public void process() {
+            System.out.println("Processing card payment");
+        }
+    },
+
+    UPI {
+        @Override
+        public void process() {
+            System.out.println("Processing UPI payment");
+        }
+    },
+
+    public abstract void process();
+}
+
+
+Usage:
+
+PaymentType type = PaymentType.UPI;
+type.process();
+
+
+- Each constant provides its own implementation of process().
+
+
+------------------------------------------------------------
+Enum in switch statements
+------------------------------------------------------------
+
+- Java works naturally with switch.
+
+OrderStatus status = OrderStatus.SHIPPED;
+
+switch (status) {
+    case PLACED:
+        System.out.println("Order received");
+        break;
+
+    case CONFIRMED:
+        System.out.println("Preparing order");
+        break;
+
+    case SHIPPED:
+        System.out.println("Order dispatched");
+        break;
+
+    case DELIVERED:
+        System.out.println("Order completed");
+        break;
+
+    case CANCELLED:
+        System.out.println("Order cancelled");
+        break;
+}
+
+		(or)
+
+
+String message = switch (status) {
+    case PLACED -> "Order received";
+    case CONFIRMED -> "Preparing order";
+    case SHIPPED -> "Order dispatched";
+    case DELIVERED -> "Order completed";
+    case CANCELLED -> "Order cancelled";
+};
+
+
+------------------------------------------------------------
+EnumMap and EnumSet
+------------------------------------------------------------
+
+- These are specialized collections designed specifically for enums.
+
+
+EnumMap:
+
+- Efficient representation for enum keys.
+- Array-based internal storage indexed by enum ordinal.
+- Predictable iteration in enum declaration order.
+- Usually more memory-efficient than a general-purpose HashMap for enum keys.
+
+Map<OrderStatus, String> messages = new EnumMap<>(OrderStatus.class);
+
+messages.put(OrderStatus.PLACED, "Received");
+messages.put(OrderStatus.SHIPPED, "On the way");
+messages.put(OrderStatus.DELIVERED, "Completed");
+
+
+EnumSet:
+
+- Internally, EnumSet uses bit-vector representations where possible, making membership operations highly efficient.
+
+EnumSet<OrderStatus> activeStatuses =
+        EnumSet.of(
+            OrderStatus.PLACED,
+            OrderStatus.CONFIRMED,
+            OrderStatus.SHIPPED
+        );
+
+
+Note:
+
+- Suppose you persist:
+
+@Enumerated(EnumType.STRING)
+private OrderStatus status;
+
+- Prefer EnumType.STRING over the default ordinal representation.
+	- ORDINAL stores the numeric position.
+	- STRING stores the enum constant name.
+
+
 ===============================================================================================================================================================================
 I/O Streams:
 ===============================================================================================================================================================================
 
+    numbers/files/images/video/audio - Binary digits (0s and 1s) - Bytes
+                                   ^
+                                   |
+                                   v
+                           Raw data in Bytes
+       
+
+
+
+                               Text data
+                                   |
+                                   v
+                            Character Decoding
+                                   |
+                                   v
+                               Java Bytes
+                                   |
+                                   v
+                                Encoding
+                                   |
+                                   v
+                               Text data
+
+
+
+Java I/O Streams:
+
+Byte Streams (Binary data): best for primitive numeric data types and digital data
+Character Streams (requires encoding/decoding):
+
+
+
+FileInputStream
+FileOutputStream
+BufferedReader
+BufferedWriter
+
+
+
+
+===============================================================================================================================================================================
+File handling
+===============================================================================================================================================================================
+
+Java Files:
+
+- FileWriter/FileReader/Scanner: easiest choice for basic text.
+- BufferedWriter/BufferedReader: better for large text files, because it is faster and supports handy features.
+- FileOutputStream/FileInputStream: best for binary data (images, audio, PDFs)
+
+
+Create
+Write
+Read
+Delete
+
+
+===============================================================================================================================================================================
+Serialization
+===============================================================================================================================================================================
+
+Serialization & Deserialization: 
+
+- Converting an object's state into a byte stream is Serialization.
+- Reconstructing an object from that byte stream is Deserialization.
+- It is useful to:
+	- Store the object in a file
+	- Transfer it over a network
+	- Persist object in a db
+	- Cache it
+	- Reconstruct it later
+
+- In Java, byte streams are primarily represented by:
+	- InputStream – reads bytes.
+	- OutputStream – writes bytes.
 
 
 ===============================================================================================================================================================================
@@ -1520,6 +1776,7 @@ Annotations:
 ===============================================================================================================================================================================
 Closures:
 ===============================================================================================================================================================================
+
 
 
 ===============================================================================================================================================================================
