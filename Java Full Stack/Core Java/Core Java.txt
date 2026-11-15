@@ -450,9 +450,9 @@ Object: A basic unit of OOP and a real-world entity that is an instance of a cla
 
 The Four Pillars of OOP:
 
-------------------------------------------------------------
+========================================================================================================================
 1. Encapsulation: 
-------------------------------------------------------------
+========================================================================================================================
 
 - Encapsulation is the practice of bundling an object's data (state) and the methods that operate on that data within a class, while controlling access to its internal state.
 - Simply declaring fields as private and providing public getters and setters for every field doesn't automatically achieve good encapsulation.
@@ -478,9 +478,9 @@ public class BankAccount {
 }
 
 
-------------------------------------------------------------
+========================================================================================================================
 2. Abstraction: 
-------------------------------------------------------------
+========================================================================================================================
 
 - Hides complex implementation details showing only the essential features to the caller. 
 - It defines a simplified contract that allows different implementations to be used interchangeably without changing the caller's interaction with them.
@@ -529,9 +529,9 @@ public class OrderService {
 	- Spring Dependency Injection
 
 
-------------------------------------------------------------
+========================================================================================================================
 3. Inheritance: 
-------------------------------------------------------------
+========================================================================================================================
 
 - A mechanism that allows a class to acquire the properties and behaviors of another class (code reusability) by establishing an "is-a" relationship. 
 - Beyond what it inherits, the child class can also define its own new properties and behaviors. 
@@ -546,8 +546,9 @@ Types of inheritance:
 - Multiple class inheritance: Java avoids the complexity of multiple class inheritance by allowing a class to extend only one class, while implementing multiple interfaces.
 
 
-
+------------------------------------------------------------
 Method Overriding:
+------------------------------------------------------------
 
 - A subclass can provide its own implementation of an inherited instance method.
 - If a subclass declares a field or static method with the same name/signature as one in its superclass, the subclass declaration hides the superclass member even though it exists.
@@ -561,8 +562,9 @@ Overriding rules:
 - Checked exceptions cannot be broadened beyond what the overridden method permits.
 
 
-
+------------------------------------------------------------
 Static vs Dynamic Binding:
+------------------------------------------------------------
 
 Static Binding: Java determines the member to access or implementation to execute at compile time, primarily using the reference type.
 Dynamic Binding: Java determines which implementation to execute at runtime based on the actual object's type.
@@ -579,8 +581,9 @@ Final instance methods		Yes		No			No			Static
 Constructors			No		No			No			Constructor chaining
 
 
-
+------------------------------------------------------------
 Constructor Chaining:
+------------------------------------------------------------
 
 - Constructors aren't inherited, but a subclass constructor must initialize its superclass portion.
 - super() invokes the immediate superclass constructor.
@@ -604,7 +607,9 @@ super:
 - If a subclass has a variable with the same name as a parent class variable, super.variableName accesses the superclass's variable.
 
 
+------------------------------------------------------------
 Example:
+------------------------------------------------------------
 
 class Animal {
 
@@ -733,10 +738,40 @@ Static Classification: Class Mammalia
 Static Classification: Species Canis lupus familiaris
 
 
+------------------------------------------------------------
+Covariant Return Type:
+------------------------------------------------------------
 
-------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+========================================================================================================================
 4. Polymorphism: 
-------------------------------------------------------------
+========================================================================================================================
 
 - Polymorphism allows a single action to behave differently depending on the object it is acting upon
 
@@ -754,9 +789,9 @@ vehicle.start(); // Car's implementation
 - The reference type decides the scope (Vehicle), while the object type decides the implementation (car)
 
 
-------------------------------------------------------------
+========================================================================================================================
 Relationships:
-------------------------------------------------------------
+========================================================================================================================
 
 IS-A Relationship (Inheritance): 
 
@@ -1681,64 +1716,94 @@ private OrderStatus status;
 
 
 ===============================================================================================================================================================================
-I/O Streams:
+I/O Streams & File Handling:
 ===============================================================================================================================================================================
 
-    numbers/files/images/video/audio - Binary digits (0s and 1s) - Bytes
-                                   ^
-                                   |
-                                   v
-                           Raw data in Bytes
-       
 
-
-
-                               Text data
-                                   |
-                                   v
-                            Character Decoding
-                                   |
-                                   v
-                               Java Bytes
-                                   |
-                                   v
-                                Encoding
-                                   |
-                                   v
-                               Text data
-
-
-
+========================================================================================================================
 Java I/O Streams:
+========================================================================================================================
 
-Byte Streams (Binary data): best for primitive numeric data types and digital data
-Character Streams (requires encoding/decoding):
+- A stream is an abstraction for reading or writing data sequentially between a source and a destination.
+- Reading means decoding the encoded binary data into bytes streams or char streams or data specific format
+- Writing means encoding data into binary data using data specific format
+- All digital data is ultimately represented as binary data (0s and 1s), grouped into bytes.
+- Java reads that data by decoding it either:
+	- directly into byte streams
+	- or into java character streams if its text data
 
 
+                   text/pdfs/images/video/audio - Binary digits (0s and 1s)
+                                   |
+                                   |Read/Decode 
+                                   v
+                            Java representation - bytes/chars
+                                   |
+                                   |Write/Encode
+                                   v
+                   text/pdfs/images/video/audio - Binary digits (0s and 1s)
+
+
+------------------------------------------------------------
+Byte Streams (Binary data): 
+------------------------------------------------------------
+
+- Byte streams return raw bytes
+- Best for primitive numeric data types and digital data files like pdfs, images, audio, video etc.
+- For byte streams java uses InputStream and OutputStream classes 
+
+Examples:
 
 FileInputStream
 FileOutputStream
-BufferedReader
+BufferedInputStream
+BufferedOutputStream
+ByteArrayInputStream
+
+
+------------------------------------------------------------
+Character Streams (requires encoding/decoding):
+------------------------------------------------------------
+
+- Character streams encode/decode the data using UTF-8 format
+- Best for text data
+- For Character streams java uses Reader and Writer classes
+
+Examples:
+
+FileReader/Scanner
+FileWriter - 
+BufferedReader - convenient character line reading
 BufferedWriter
 
 
 
-
-===============================================================================================================================================================================
+========================================================================================================================
 File handling
-===============================================================================================================================================================================
+========================================================================================================================
 
+- In Java, files can be accessed and perform certain actions on them using multiple methods available
+
+------------------------------------------------------------
 Java Files:
+------------------------------------------------------------
 
 - FileWriter/FileReader/Scanner: easiest choice for basic text.
 - BufferedWriter/BufferedReader: better for large text files, because it is faster and supports handy features.
 - FileOutputStream/FileInputStream: best for binary data (images, audio, PDFs)
 
 
-Create
-Write
-Read
-Delete
+------------------------------------------------------------
+Data Specific File Handling 
+------------------------------------------------------------
+
+- Java can also read files by decoding them applying data specific rules (format) like image rgb pixel decoding, audio samples etc.
+- Java uses different types of objects and libraries to interpret those specific formats like BufferedImage, etc
+
+
+Example:
+
+BufferedImage image = ImageIO.read(new File("photo.jpg"));
 
 
 ===============================================================================================================================================================================
@@ -1747,7 +1812,7 @@ Serialization
 
 Serialization & Deserialization: 
 
-- Converting an object's state into a byte stream is Serialization.
+- Converting a Java object's state into a byte stream is Serialization.
 - Reconstructing an object from that byte stream is Deserialization.
 - It is useful to:
 	- Store the object in a file
@@ -1755,10 +1820,6 @@ Serialization & Deserialization:
 	- Persist object in a db
 	- Cache it
 	- Reconstruct it later
-
-- In Java, byte streams are primarily represented by:
-	- InputStream – reads bytes.
-	- OutputStream – writes bytes.
 
 
 ===============================================================================================================================================================================
