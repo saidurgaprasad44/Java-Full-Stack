@@ -138,6 +138,18 @@ char	16-bit	'\u0000'		Single Unicode character, UTF-16 Code unit (unsigned: 0 to
 - You cannot use primitives in collections (e.g., List<int> is invalid; use List<Integer>)
 
 
+Characters & Strings Representation in Java:
+
+- ASCII: ASCII is an older character encoding standard defining only 128 values, from 0 through 127. It includes English letters, digits, punctuation and control characters. 
+- Unicode: Unicode defines a universal set of characters and assigns each character a unique number called a code point. Examples: A - U+0041, 😀 - U+1F600.
+- UTF-16: A 16-bit unit encoding scheme used by Java's char and String representation.
+
+Note:
+
+- ASCII directly gives an int number from 0 to 128, so converting an int to bytes doesn't require encoding format
+- Unicode gives code points like U+0041, which requires encoding schemes like UTF-8, UTF-16 etc
+
+
 ------------------------------------------------------------
 Non-Primitive Data Types (Reference):
 ------------------------------------------------------------
@@ -1725,32 +1737,63 @@ Java I/O Streams:
 ========================================================================================================================
 
 - A stream is an abstraction for reading or writing data sequentially between a source and a destination.
-- Reading means decoding the encoded binary data into bytes streams or char streams or data specific format
-- Writing means encoding data into binary data using data specific format
 - All digital data is ultimately represented as binary data (0s and 1s), grouped into bytes.
-- Java reads that data by decoding it either:
-	- directly into byte streams
-	- or into java character streams if its text data
+- Reading means retrieving data from a source and making it available to the Java application.
+- Writing means transferring data from a Java application to a destination.
 
 
-                   text/pdfs/images/video/audio - Binary digits (0s and 1s)
-                                   |
-                                   |Read/Decode 
-                                   v
-                            Java representation - bytes/chars
-                                   |
-                                   |Write/Encode
-                                   v
-                   text/pdfs/images/video/audio - Binary digits (0s and 1s)
+
+              Real-world digital data
+         Text / PDF / Image / Audio / Video
+              Binary representation
+                 (Bits and bytes)
+                         |
+                         | Reading
+                         v
+                 Java application
+                         |
+          +--------------+--------------+
+          |              |              |
+          v              v              v
+       byte[]         String /        Format-specific
+       raw bytes      characters      Java objects
+          |           (decoded)       (decoded)
+          |              |              |
+          +--------------+--------------+
+                         |
+                         | Processing
+                         |
+          +--------------+--------------+
+          |              |              |
+          v              v              v
+       Raw bytes      Character       Format-specific
+       written        encoding        encoding
+                     (e.g. UTF-8)       |
+          |              |              |
+          +--------------+--------------+
+                         |
+                         v
+              Binary representation
+                 (Bits and bytes)
+              File / Network / Storage
+
 
 
 ------------------------------------------------------------
-Byte Streams (Binary data): 
+Byte Streams (Raw Binary Data): 
 ------------------------------------------------------------
 
-- Byte streams return raw bytes
-- Best for primitive numeric data types and digital data files like pdfs, images, audio, video etc.
-- For byte streams java uses InputStream and OutputStream classes 
+- Byte streams work with raw bytes (8-bit units) without interpreting them as characters or any specific data format.
+- Suitable for handling binary files such as PDFs, images, audio, video, ZIP files, etc.
+- Can also be used for text files when raw byte-level processing is required.
+- Also useful for transferring or processing primitive numeric data in binary form, although data-specific streams such as DataInputStream and DataOutputStream provide convenient methods for reading and writing primitive values.
+
+
+Java provides:
+
+InputStream – base class for reading bytes.
+OutputStream – base class for writing bytes.
+
 
 Examples:
 
@@ -1759,23 +1802,43 @@ FileOutputStream
 BufferedInputStream
 BufferedOutputStream
 ByteArrayInputStream
-
+ByteArrayOutputStream
+DataInputStream
+DataOutputStream
 
 ------------------------------------------------------------
-Character Streams (requires encoding/decoding):
+ Character Streams (Text Data)
 ------------------------------------------------------------
 
-- Character streams encode/decode the data using UTF-8 format
-- Best for text data
-- For Character streams java uses Reader and Writer classes
+- Character streams are designed for reading and writing text as characters rather than exposing raw bytes directly.
+- They decode bytes into characters while reading and encode characters into bytes while writing.
+- Character encoding determines how characters are represented as bytes. UTF-8 is a commonly used encoding, but Java also supports other character encodings.
+- Suitable for text files containing characters, words, sentences, etc.
+
+
+Java provides:
+
+Reader – base class for reading characters.
+Writer – base class for writing characters.
+
 
 Examples:
 
-FileReader/Scanner
-FileWriter - 
-BufferedReader - convenient character line reading
-BufferedWriter
+FileReader – reads text from a file.
+FileWriter – writes text to a file.
+BufferedReader – provides buffered character reading and convenient line-reading using readLine().
+BufferedWriter – provides buffered character writing.
+InputStreamReader – converts bytes from an input stream into characters using a specified charset.
+OutputStreamWriter – converts characters into bytes using a specified charset.
 
+
+- Scanner is a text-scanning utility, not a character stream class. It can read text from different sources, including files and input streams.
+- BufferedReader and BufferedWriter improve I/O efficiency by buffering data and also provide convenient operations.
+
+
+
+They use a character encoding. UTF-8 is a popular choice, but not the only one.
+Whenever encoding matters, explicitly specify the charset rather than relying on the platform default.
 
 
 ========================================================================================================================
@@ -1785,20 +1848,32 @@ File handling
 - In Java, files can be accessed and perform certain actions on them using multiple methods available
 
 ------------------------------------------------------------
-Java Files:
+Java File Handling Classes:
 ------------------------------------------------------------
 
-- FileWriter/FileReader/Scanner: easiest choice for basic text.
-- BufferedWriter/BufferedReader: better for large text files, because it is faster and supports handy features.
-- FileOutputStream/FileInputStream: best for binary data (images, audio, PDFs)
+
+Class / API				Purpose
+
+FileReader / FileWriter			Basic character-based file reading and writing
+BufferedReader / BufferedWriter		Buffered text reading and writing; useful for larger text files
+FileInputStream / FileOutputStream	Reading and writing raw bytes; suitable for binary files
+Scanner					Reading and parsing text into tokens and values
+Files (java.nio.file)			Modern file operations such as reading, writing, copying, moving and deleting files
+Path					Represents a file or directory path
+File					Represents a file or directory path and provides basic file-system operations
 
 
 ------------------------------------------------------------
-Data Specific File Handling 
+Format-Specific File Handling
 ------------------------------------------------------------
 
-- Java can also read files by decoding them applying data specific rules (format) like image rgb pixel decoding, audio samples etc.
-- Java uses different types of objects and libraries to interpret those specific formats like BufferedImage, etc
+- Java can also read and write files by interpreting or generating their contents according to format-specific rules.
+- For example:
+	- Images contain pixel information, color data and format-specific metadata/compression.
+	- Audio files contain encoded audio samples and related metadata.
+	- Video files contain encoded video frames, audio streams and timing information.
+
+- Java uses appropriate APIs and libraries to decode or encode these formats into application-friendly representations.
 
 
 Example:
@@ -1814,12 +1889,56 @@ Serialization & Deserialization:
 
 - Converting a Java object's state into a byte stream is Serialization.
 - Reconstructing an object from that byte stream is Deserialization.
-- It is useful to:
-	- Store the object in a file
-	- Transfer it over a network
-	- Persist object in a db
-	- Cache it
-	- Reconstruct it later
+- It is useful for:
+
+	- Storing object data in a file.
+	- Transferring object data over a network.
+	- Persisting serialized data in a database (for example, in a binary/BLOB column).
+	- Caching object data.
+	- Reconstructing objects later.
+
+
+------------------------------------------------------------
+Java's Built-in Serialization:
+------------------------------------------------------------
+
+- Java's built-in object serialization uses Serializable and object streams (ObjectOutputStream & ObjectInputStream).
+- It converts the object's state into a Java-specific binary representation.
+
+
+Java Object
+    |
+    | ObjectOutputStream
+    v
+Java serialized binary representation
+    |
+    v
+File / Network
+
+
+
+------------------------------------------------------------
+JSON/XML serialization:
+------------------------------------------------------------
+
+- External library like Jackson can perform object-to-JSON serialization.
+- UTF-8 performs character-to-byte encoding.
+
+
+Java Object
+    |
+    | JSON serialization (e.g. Jackson)
+    v
+JSON String
+    |
+    | UTF-8 encoding
+    v
+Byte Array
+    |
+    | FileOutputStream
+    v
+JSON File
+
 
 
 ===============================================================================================================================================================================

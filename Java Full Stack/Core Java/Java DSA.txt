@@ -105,12 +105,6 @@ Update character	setCharAt(), setLength()			setCharAt() replaces one character; 
 Capacity management	ensureCapacity(), trimToSize()			ensureCapacity() can reduce repeated buffer resizing; trimToSize() attempts to reduce unused capacity.
 
 
-- ASCII value: ASCII is an older character encoding standard defining 128 values, from 0 through 127. It includes English letters, digits, punctuation and control characters. 
-- UTF-16 code unit: A 16-bit unit used by Java's char and String representation. Java does not use ASCII
-- Unicode code point: A number identifying a Unicode character, such as A or 😀.
-- Visible character: What a user perceives as one character on screen. It may consist of multiple Unicode code points.
-
-
 
 ============================================================
 char & char[]
