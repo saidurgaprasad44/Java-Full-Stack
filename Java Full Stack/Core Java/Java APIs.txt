@@ -1,15 +1,13 @@
 ===============================================================================================================================================================================
 ***
 ===============================================================================================================================================================================
+
 - Collections (List, Set, Map, Queue) 
 - String / StringBuilder /StringBuffer
-- Object                      ------ shallow copy vs deep copy, clone(), toString(), equals()
 - Exceptions 
-- equals() / hashCode() 
-- Optional                    ------
 - Functional interfaces 
 - Streams / Collectors 
-- java.time                   ------
+
 - Thread 
 - Runnable 
 - ExecutorService 
@@ -17,12 +15,124 @@
 - CompletableFuture 
 - ConcurrentHashMap 
 - ThreadLocal 
+
 - Serialization APIs 
 - Object serialization 
-- HttpClient                  ------
 - Path / Files 
-- Reflection 
+
 - JDBC 
+
+========================================================================================================================
+Object                
+========================================================================================================================
+
+equals():
+
+hashCode():
+
+toString():
+
+- Java automatically calls toString() when an object is passed to System.out.println() or concatenated with a string.
+
+getClass():
+
+clone():
+
+wait():
+
+notify():
+
+notifyAll():
+
+
+========================================================================================================================
+Optional
+========================================================================================================================
+
+
+
+========================================================================================================================
+java.time
+========================================================================================================================
+
+
+
+========================================================================================================================
+HttpClient              
+========================================================================================================================
+
+
+
+========================================================================================================================
+Reflection 
+========================================================================================================================
+
+- Reflection is the capability to inspect and interact with classes, methods, constructors, fields, and interfaces at runtime, without necessarily knowing their details at compile time.
+
+
+Class		Purpose
+
+Class		Represents class metadata
+Method		Represents a method
+Field		Represents a field
+Constructor	Represents a constructor
+Modifier	Examines access modifiers such as private, public, static
+
+
+Example:
+
+class Employee {
+
+    private int id = 101;
+    private String name = "John";
+
+    public void display() {
+        System.out.println("Employee: " + name);
+    }
+
+    public void greet() {
+        System.out.println("Hello!");
+    }
+}
+
+
+Step 1: Get class information:
+
+Class<?> clazz = Employee.class;
+
+
+
+Step 2: Inspect methods:
+
+Method[] methods = clazz.getDeclaredMethods();
+
+for (Method method : methods) {
+    System.out.println(method.getName());
+}
+
+
+
+Step 3: Invoke a method dynamically:
+
+Employee emp = new Employee();
+Method method = clazz.getDeclaredMethod("greet");
+method.invoke(emp);
+
+
+
+Step 4: Inspect and access private fields:
+
+Field field = clazz.getDeclaredField("name");
+field.setAccessible(true);
+System.out.println(field.get(emp));
+
+
+
+
+Reflection in Spring Boot:
+
+- Spring performs framework-level operations using reflections like discovering classes annotated with @Controller, methods annotated with @GetMapping etc
+
 
 ===============================================================================================================================================================================
 **

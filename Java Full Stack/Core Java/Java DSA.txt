@@ -384,7 +384,8 @@ class Employee{
 hashCode():
 
 - hashCode() returns an integer to determine where an object should be stored.
-- If hashCode() isn't overridden in custom classes, the default implementation from Object guarantees a distinct integer for every single unique object instance created in memory, regardless of whether their internal fields hold identical data.
+- If hashCode() isn't overridden in custom classes, the default implementation from Object generates an integer for every single object instance created in memory, regardless of whether their internal fields hold identical data.
+- That doesn't mean that the hash values of two different objects are always different, it could be same.
 - Override hashCode() in custom classes to use hash based collections like HashMap, HashSet etc.,
 
 

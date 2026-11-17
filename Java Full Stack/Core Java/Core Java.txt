@@ -428,6 +428,12 @@ Methods: Has no body (logic). It acts as a requirement that subclasses must impl
 Classes: Cannot be instantiated (you can't do new MyClass()). It only exists to be a parent for other classes.
 
 ------------------------------------------------------------
+transient:
+------------------------------------------------------------
+
+Variables: The transient field is skipped during default serialization and receives its default value during deserialization.
+
+------------------------------------------------------------
 void: 
 ------------------------------------------------------------
 
@@ -1897,6 +1903,19 @@ Serialization & Deserialization:
 	- Caching object data.
 	- Reconstructing objects later.
 
+- Static fields are not serialized
+- In modern backend applications, alternatives are often preferred:
+
+
+Format             Common use
+------------------------------------------------------
+JSON               REST APIs and general data exchange
+Protocol Buffers   Efficient structured service communication
+Avro               Schema-based data exchange and Kafka ecosystems
+MessagePack	   Compact binary serialization
+
+- Kafka commonly uses JSON, Avro, or Protobuf serializers rather than native Java object serialization.
+
 
 ------------------------------------------------------------
 Java's Built-in Serialization:
@@ -1938,6 +1957,15 @@ Byte Array
     | FileOutputStream
     v
 JSON File
+
+
+------------------------------------------------------------
+serialVersionUID
+------------------------------------------------------------
+
+------------------------------------------------------------
+Object graph serialization
+------------------------------------------------------------
 
 
 
