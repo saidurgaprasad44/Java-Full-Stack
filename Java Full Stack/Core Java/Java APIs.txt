@@ -7,7 +7,6 @@
 - Exceptions 
 - Functional interfaces 
 - Streams / Collectors 
-
 - Thread 
 - Runnable 
 - ExecutorService 
@@ -15,11 +14,9 @@
 - CompletableFuture 
 - ConcurrentHashMap 
 - ThreadLocal 
-
 - Serialization APIs 
 - Object serialization 
 - Path / Files 
-
 - JDBC 
 
 ========================================================================================================================
@@ -49,6 +46,35 @@ notifyAll():
 Optional
 ========================================================================================================================
 
+- Optional<T> was introduced in Java 8 to represent a value that may or may not be present.
+- Its primary purpose is to make absence explicit in method contracts, rather than making callers guess whether a method might return null.
+
+
+Creating Optional Objects:
+
+Optional<String> a = Optional.of("Java"); //Creates Optional containing a non-null value; throws NPE if null
+Optional<String> b = Optional.empty(); //Creates an empty Optional
+Optional<String> c = Optional.ofNullable(value); //Creates an empty Optional if value is null
+
+
+Checking & Retrieving Values:
+
+- isPresent()
+- isEmpty()
+- get()
+
+if (userOptional.isPresent()) {
+    User user = userOptional.get();
+}
+
+
+ifPresent() & ifPresentOrElse():
+
+
+orElse() & orElseGet():
+
+
+
 
 
 ========================================================================================================================
@@ -71,7 +97,7 @@ Reflection
 
 
 Class		Purpose
-
+-----------------------------------------
 Class		Represents class metadata
 Method		Represents a method
 Field		Represents a field
