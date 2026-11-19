@@ -408,7 +408,17 @@ static void display(Employee employee) {
 
 
 
-Static Classes:
+static block:
+
+- Runs only once when the class is first loaded by the class loader
+
+static{
+	//code
+}
+
+
+
+static Classes:
 
 - Java does not allow a top-level class to be declared static. Only nested classes can be static.
 
@@ -416,9 +426,20 @@ Static Classes:
 final:
 ------------------------------------------------------------
 
-Variables: Once assigned, the value cannot change (a constant).
-Methods: Cannot be overridden by a subclass.
-Classes: Cannot be inherited (extended).
+Variables: 
+
+- For primitive types (like int or double), the actual value cannot change
+- For object references (like a List or custom class), you cannot point the variable to a new object, though you can still modify the internal data inside that existing object.
+- The instance final fields must be initialized before the object finishes being created.
+- Static final Fields must be initialized either at declaration or inside a static initialization block; By convention, they are written in ALL_CAPS_WITH_UNDERSCORES
+
+Methods: 
+
+- Cannot be overridden by a subclass.
+
+Classes: 
+
+- Cannot be inherited (extended).
 
 ------------------------------------------------------------
 abstract:
@@ -453,16 +474,46 @@ default:
 Methods: Allowed developers to add method implementations inside interfaces using the default keyword without breaking existing implementing classes.
 
 
+
 ===============================================================================================================================================================================
 Object-Oriented Programming:
 ===============================================================================================================================================================================
 
-------------------------------------------------------------
+
+
+========================================================================================================================
 Class & Object:
-------------------------------------------------------------
+========================================================================================================================
 
 Class: A user-defined blueprint or template from which objects are created. It defines the state and behavior common to all objects of that type.
 Object: A basic unit of OOP and a real-world entity that is an instance of a class. It has a state (attributes) and behavior (methods).
+
+
+------------------------------------------------------------
+How an Object is created?
+------------------------------------------------------------
+
+- Instance initializer block:
+
+- Constructor
+
+- Class loader
+
+- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1360,12 +1411,14 @@ System.out.println(r.run(10, 20));
 Functional Interfaces
 ========================================================================================================================
 
-- From java.util.function
+- Interfaces with only one abstract method, but can have any number of default or static methods
 
 
 ------------------------------------------------------------
 Built-in Functional Interfaces:
 ------------------------------------------------------------
+
+- From java.util.function
 
 Predicate<T>
 	Purpose: Takes one input and returns a boolean. Used for filtering/testing.
@@ -1408,6 +1461,12 @@ BinaryOperator<T>
 	Purpose: Combining same-type values and produces a result of same-type.
 	Method: T apply(T,T);
 
+
+- From java.lang
+
+Runnable
+	Purpose: empty action
+	Method: void run();
 
 
 ------------------------------------------------------------

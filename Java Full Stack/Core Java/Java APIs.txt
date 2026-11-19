@@ -48,16 +48,19 @@ Optional
 
 - Optional<T> was introduced in Java 8 to represent a value that may or may not be present.
 - Its primary purpose is to make absence explicit in method contracts, rather than making callers guess whether a method might return null.
+- It can also transform optional objects.
 
-
+------------------------------------------------------------
 Creating Optional Objects:
+------------------------------------------------------------
 
 Optional<String> a = Optional.of("Java"); //Creates Optional containing a non-null value; throws NPE if null
 Optional<String> b = Optional.empty(); //Creates an empty Optional
 Optional<String> c = Optional.ofNullable(value); //Creates an empty Optional if value is null
 
-
+------------------------------------------------------------
 Checking & Retrieving Values:
+------------------------------------------------------------
 
 - isPresent()
 - isEmpty()
@@ -67,15 +70,133 @@ if (userOptional.isPresent()) {
     User user = userOptional.get();
 }
 
-
+------------------------------------------------------------
 ifPresent() & ifPresentOrElse():
+------------------------------------------------------------
+
+ifPresent(consumer):
+
+- Execute logic only when a value exists:
+
+userOptional.ifPresent(user ->
+    System.out.println(user.getName())
+);
 
 
-orElse() & orElseGet():
+ifPresentOrElse(consumer, runnable):
+
+- Handle both cases:
+
+userOptional.ifPresentOrElse(
+    user -> System.out.println(user.getName()),
+    () -> System.out.println("User not found")
+);
+
+------------------------------------------------------------
+orElse() & thisObj.orElseGet():
+------------------------------------------------------------
+
+- Both provide another object as a fallback when Optional is empty, but their evaluation behaviour differs.
+- The difference is eager vs lazy evaluation.
 
 
+orElse(other):
+
+String name = optionalName.orElse(getDefaultName());  // provides String not Optional<String>
 
 
+orElseGet(supplier):
+
+String name = optionalName.orElseGet(() -> getDefaultName());  //Supplier overloading
+
+
+- Here, the method executes only when Optional is empty:
+- This matters when the fallback involves expensive operations like:
+	- Database calls
+	- Expensive computations
+	- Object creation
+	- External service calls
+
+------------------------------------------------------------
+orElseThrow():
+------------------------------------------------------------
+
+- Useful when absence represents an error:
+
+User user = userRepository.findById(id)
+    .orElseThrow(() ->
+        new UserNotFoundException("User not found: " + id)
+    );
+
+- The supplier overload has been available since Java 8. The no-argument orElseThrow() was introduced in Java 10 and throws NoSuchElementException when empty.
+
+------------------------------------------------------------
+map() & flatMap():
+------------------------------------------------------------
+
+- These are particularly useful when working with nested objects and streams of optional results.
+
+map(function): Transform the contained value
+
+- Suppose User has a getEmail() method.
+
+Optional<User> userOptional = userRepository.findById(id);
+Optional<String> email = userOptional
+	.map(User::getEmail);
+
+
+flatMap(): Transform into another Optional without nesting
+
+- Suppose your methods already return Optional:
+
+class User {
+    Optional<Address> getAddress() {
+        // ...
+    }
+}
+
+class Address {
+    String getCity() {
+        // ...
+    }
+}
+
+- With map: Optional<Optional<Address>> result = userOptional.map(User::getAddress);
+- With flatMap Optional<Address> address = userOptional.flatMap(User::getAddress);
+
+------------------------------------------------------------
+filter():
+------------------------------------------------------------
+
+- Retains the value only if it satisfies a condition.
+
+Optional<User> activeUser = userOptional
+    .filter(User::isActive);
+
+- If the user is inactive, the result becomes empty.
+
+------------------------------------------------------------
+or()
+------------------------------------------------------------
+
+- Provides another Optional as a fallback:
+
+Optional<User> user = primaryRepository.findById(id)
+    .or(() -> backupRepository.findById(id));  //provides Optional<User> not User
+
+
+------------------------------------------------------------
+stream()
+------------------------------------------------------------
+
+- Convert an Optional into a stream containing either zero or one elements.
+- This is useful when a collection operation produces Optional results and you want to discard missing values.
+
+List<String> emails = userIds.stream()
+    .map(userRepository::findById) // produces Optional<User>
+    .flatMap(Optional::stream) // stream() in Optional
+    .map(User::getEmail) // the user may have multiple emails
+    .toList();
 
 ========================================================================================================================
 java.time
@@ -122,13 +243,16 @@ class Employee {
 }
 
 
+------------------------------------------------------------
 Step 1: Get class information:
+------------------------------------------------------------
 
 Class<?> clazz = Employee.class;
 
 
-
+------------------------------------------------------------
 Step 2: Inspect methods:
+------------------------------------------------------------
 
 Method[] methods = clazz.getDeclaredMethods();
 
@@ -137,16 +261,18 @@ for (Method method : methods) {
 }
 
 
-
+------------------------------------------------------------
 Step 3: Invoke a method dynamically:
+------------------------------------------------------------
 
 Employee emp = new Employee();
 Method method = clazz.getDeclaredMethod("greet");
 method.invoke(emp);
 
 
-
+------------------------------------------------------------
 Step 4: Inspect and access private fields:
+------------------------------------------------------------
 
 Field field = clazz.getDeclaredField("name");
 field.setAccessible(true);
@@ -154,8 +280,9 @@ System.out.println(field.get(emp));
 
 
 
-
+------------------------------------------------------------
 Reflection in Spring Boot:
+------------------------------------------------------------
 
 - Spring performs framework-level operations using reflections like discovering classes annotated with @Controller, methods annotated with @GetMapping etc
 
