@@ -1,0 +1,157 @@
+===============================================================================================================================================================================
+										Multithreading:
+===============================================================================================================================================================================
+
+Topic			What you should understand
+----------------------------------------------------------------------------------
+Thread and Runnable	Creating and executing threads
+Thread lifecycle	New, Runnable, Blocked, Waiting, Timed Waiting, Terminated
+Synchronization		Controlling concurrent access to shared data
+Race conditions		Unexpected results due to concurrent execution
+Deadlocks		Threads waiting indefinitely for each other
+volatile		Visibility of changes across threads
+synchronized		Mutual exclusion and memory visibility
+Locks			ReentrantLock and explicit locking
+ExecutorService		Managing thread pools
+Callable and Future	Executing tasks and obtaining results
+CompletableFuture	Asynchronous task execution and composition
+Concurrent collections	ConcurrentHashMap, BlockingQueue, etc.
+ThreadLocal		
+Virtual Threads
+atomic variables
+
+
+Race-condition:
+
+mutable
+shared
+visibility
+non-atomic modifying operations
+synchronization
+
+Deadlock:
+
+
+
+===============================================================================================================================================================================
+Thread fundamentals
+===============================================================================================================================================================================
+
+Topic			What you should understand
+Thread fundamentals	Process vs thread, concurrency vs parallelism, why multithreading is needed
+Thread and Runnable	Creating, starting, and executing threads; start() vs run()
+Callable and Future	Returning results from tasks and handling exceptions
+Thread lifecycle	New, Runnable, Blocked, Waiting, Timed Waiting, Terminated
+Thread interruption	interrupt(), isInterrupted(), InterruptedException, cooperative cancellation
+
+========================================================================================================================
+Thread Fundamentals:
+========================================================================================================================
+
+------------------------------------------------------------
+Process vs Thread:
+------------------------------------------------------------
+
+- Process: An executing instance of a program.
+- Thread: An independent execution path of a task/http request within a process.
+
+------------------------------------------------------------
+Single-threaded vs Multi-threaded Execution:
+------------------------------------------------------------
+
+Single-threaded: Multiple tasks are processed sequentially; Task B cannot start being executed until A completes.
+Multi-threaded: Multiple tasks are processed concurrently/parallelly; Task B may start without A being complete.
+
+------------------------------------------------------------
+Concurrency vs Parallelism:
+------------------------------------------------------------
+
+- Concurrency: Multiple tasks make progress during overlapping periods by context-switching (CPU time sharing). They don't necessarily execute at exactly the same instant.
+
+CPU  [A][B][C][D]
+Time ----------->
+
+- Parallelism: Multiple tasks actually execute at the same instant, typically using multiple CPU cores. 
+
+Core 1 [Task A]
+Core 2 [Task B]
+ Time  ------->
+
+------------------------------------------------------------
+Why multithreading matters in Java backend applications?
+------------------------------------------------------------
+
+- Consider a typical Spring Boot request:
+
+HTTP Request
+     |
+Controller
+     |
+Service
+     |
+Repository
+     |
+Database
+
+- In a traditional synchronous Servlet application, even though embedded tomcat provides mutliple worker threads, the request-processing thread generally waits for the database response.
+- While other requests can be processed by other threads while that first thread is waiting.
+
+===============================================================================================================================================================================
+Phase 2 — Concurrency problems and thread safety
+Topic			What you should understand
+Shared state		Local variables, instance variables, static variables, object sharing
+Race conditions		How concurrent execution causes unpredictable results
+Critical sections	Identifying code that accesses shared mutable state
+Thread safety		What makes an object thread-safe; statelessness and immutability
+Synchronization		Why concurrent access needs coordination
+synchronized		Intrinsic locks, mutual exclusion, visibility, reentrancy
+volatile		Visibility, ordering guarantees, and why it doesn't make compound operations atomic
+Java Memory Model (JMM)	Visibility, atomicity, ordering, happens-before relationship, safe publication
+
+
+Phase 3 — Advanced synchronization mechanisms
+Topic				What you should understand
+wait(), notify(), notifyAll()	Inter-thread communication and monitor coordination
+Explicit locks			Lock, ReentrantLock, tryLock(), fairness, lock release
+Conditions			Condition, await(), signal(), signalAll()
+Atomic variables		AtomicInteger, AtomicLong, AtomicReference, CAS
+Deadlocks			Conditions, prevention, detection, and troubleshooting
+Other concurrency problems	Starvation, livelock, contention
+
+
+Phase 4 — Thread pools and task management
+Topic			What you should understand
+Executor framework	Executor, ExecutorService, ScheduledExecutorService
+Thread pools		Core pool size, maximum pool size, queue capacity, worker threads
+Task rejection		Rejection policies and handling overload
+Future			Result retrieval, cancellation, timeout, exception handling
+Executor lifecycle	shutdown(), shutdownNow(), awaitTermination()
+Fork/Join framework	Work stealing, ForkJoinPool, parallel task execution
+
+
+Phase 5 — Asynchronous programming
+Topic				What you should understand
+CompletableFuture fundamentals	supplyAsync(), runAsync(), execution
+Composition			thenApply(), thenAccept(), thenRun()
+Combining tasks			thenCompose(), thenCombine(), allOf(), anyOf()
+Error handling			exceptionally(), handle(), whenComplete()
+Execution control		Default vs custom executors, blocking operations, timeouts
+
+
+Phase 6 — Concurrent utilities and collections
+Topic			What you should understand
+ConcurrentHashMap	Internal behavior, concurrent reads/writes, atomic operations
+BlockingQueue		Producer-consumer pattern
+CopyOnWriteArrayList	Read-heavy workloads and copy-on-write behavior
+Concurrent collections	ConcurrentLinkedQueue, concurrent sets, etc.
+Synchronizers		CountDownLatch, CyclicBarrier, Semaphore, Phaser
+
+
+Phase 7 — Advanced Java concurrency and production concepts
+Topic				What you should understand
+ThreadLocal			Thread-specific values, thread pool reuse, cleanup
+Thread safety patterns		Immutability, confinement, safe publication
+Virtual threads (Java 21)	Platform vs virtual threads, scalability, pinning, appropriate use cases
+Parallel streams		Parallel execution, ForkJoinPool, common pool considerations
+Thread debugging		Thread dumps, deadlock detection, blocked threads, pool exhaustion
+Production concurrency		Request processing, database connection pools, external API calls, resource limits

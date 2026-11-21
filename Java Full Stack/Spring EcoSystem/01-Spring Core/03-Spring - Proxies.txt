@@ -952,8 +952,236 @@ Relationship Between AOP and Proxies:
 - Without a Proxy, Spring AOP cannot intercept method calls.
 
 =============================================================================================================================================================================
-Transaction Management using @Transactional in Spring:
+@Transactional:
 =============================================================================================================================================================================
 
 
 we will continue this after hibernate/jpa and transaction management
+
+
+=============================================================================================================================================================================
+@Async:
+=============================================================================================================================================================================
+
+- Used to execute a method asynchronously in a separate thread, allowing the calling thread to continue without waiting for that method to complete.
+- It is Spring's abstraction over Java's concurrency mechanisms, such as Executor and thread pools.
+
+------------------------------------------------------------
+Use Case:
+------------------------------------------------------------
+
+- When a customer places an order, application needs to:
+
+1. Save the order in the database (100 ms).
+2. Send an email confirmation (1,000 ms).
+3. Generate an invoice (800 ms).
+4. Send a notification (500 ms).
+
+- Without @Async, the request-processing thread is occupied until all four operations finish and takes approximately 2,400 ms.
+- With @Async, we can execute some of these operations asynchronously.
+
+------------------------------------------------------------
+Implementation:
+------------------------------------------------------------
+ 
+- First, enable asynchronous execution in Spring.
+
+@SpringBootApplication
+@EnableAsync
+public class Application {
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+
+- Now create a service
+
+@Service
+public class NotificationService {
+
+    @Async
+    public void sendEmail() {
+
+        System.out.println(
+            "Email thread: " +
+            Thread.currentThread().getName()
+        );
+
+        // Simulate email processing
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        System.out.println("Email sent");
+    }
+}
+
+- Call it from another service:
+
+@Service
+public class OrderService {
+
+    private final NotificationService notificationService;
+
+    public OrderService(NotificationService notificationService) {
+        this.notificationService = notificationService;
+    }
+
+    public void placeOrder() {
+
+        System.out.println(
+            "Order thread: " +
+            Thread.currentThread().getName()
+        );
+
+        // Save order
+        System.out.println("Order saved");
+
+        // Asynchronous execution
+        notificationService.sendEmail();
+
+        System.out.println("Order processing completed");
+    }
+}
+
+
+Possible output:
+
+Order thread: http-nio-8080-exec-1
+Order saved
+Order processing completed
+Email thread: task-1
+Email sent
+
+------------------------------------------------------------
+How does @Async work internally?:
+------------------------------------------------------------
+
+- Spring does not create a new thread every time it encounters @Async
+- Spring generally uses a TaskExecutor (thread-pool-based executor) to manage asynchronous tasks
+
+1. Spring AOP proxy:
+
+- When Spring detects @Async, it creates an asynchronous interceptor around the bean (proxy).
+
+2. TaskExecutor:
+
+- The executor manages a pool of threads.
+
+Thread Pool
+ ├── Worker-1
+ ├── Worker-2
+ ├── Worker-3
+ ├── Worker-4
+ └── Worker-5
+
+- If more tasks arrive than the number of worker threads, they may be queued
+
+3. Worker thread:
+
+- The worker thread picks up the submitted task and executes the actual method body.
+
+
+------------------------------------------------------------
+Configuring a custom thread pool
+------------------------------------------------------------
+
+@Configuration
+@EnableAsync
+public class AsyncConfig {
+
+    @Bean(name = "taskExecutor")
+    public Executor taskExecutor() {
+
+        ThreadPoolTaskExecutor executor =
+                new ThreadPoolTaskExecutor();
+
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(100);
+
+        executor.setThreadNamePrefix("async-");
+
+        executor.initialize();
+
+        return executor;
+    }
+}
+
+
+Configuration		Meaning
+---------------------------------------------------------
+Core pool size = 5	Maintains five core worker threads
+Max pool size = 10	Can grow to ten worker threads
+Queue capacity = 100	Can hold 100 waiting tasks
+
+-If all ten workers are busy and the queue is full, the task is rejected according to the configured rejection policy.
+
+
+Using a named executor:
+
+@Async("taskExecutor")
+public void sendEmail() {
+    // Email processing
+}
+
+
+------------------------------------------------------------
+Return a result:
+------------------------------------------------------------
+
+- Spring supports Future and CompletableFuture.
+
+@Service
+public class ReportService {
+
+    @Async("taskExecutor")
+    public CompletableFuture<String> generateReport() {
+
+        System.out.println(
+            Thread.currentThread().getName()
+        );
+
+        // Simulate report generation
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        }
+
+        return CompletableFuture.completedFuture(
+            "Report generated successfully"
+        );
+    }
+}
+
+
+- Calling service:
+
+@Service
+public class OrderService {
+
+    private final ReportService reportService;
+
+    public OrderService(ReportService reportService) {
+        this.reportService = reportService;
+    }
+
+    public void process() {
+
+        CompletableFuture<String> future =
+                reportService.generateReport();
+
+        System.out.println("Continuing other work");
+
+        future.thenAccept(result ->
+            System.out.println(result)
+        );
+    }
+}
+
+=============================================================================================================================================================================

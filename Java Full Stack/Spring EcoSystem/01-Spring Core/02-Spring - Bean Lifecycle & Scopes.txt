@@ -540,10 +540,94 @@ paymentService.processPayment();
 
 Only then does the actual business logic execute.
 
+
+=============================================================================================================================================================================
+Constructor Injection vs Setter Injection vs Field Injection:
 =============================================================================================================================================================================
 
+Factor			Constructor				Setter			Field
+-------------------------------------------------------------------------------------------------------------
+Mandatory dependencies	Excellent				Not enforced		Not enforced
+Optional dependencies	Possible, but can become cumbersome	Good			Possible
+Immutability		Supports final				No			No
+Unit testing		Easy					Easy			More difficult
+Explicit dependencies	Yes					Partially		No
+Circular dependencies	Generally problematic			Can sometimes resolve	Can sometimes resolve
+
+=============================================================================================================================================================================
+Circular Dependency:
+=============================================================================================================================================================================
+
+- A circular dependency occurs when two or more Spring beans depend on each other, directly or indirectly, creating a dependency cycle.
+- Consider two services:
+
+@Service
+public class OrderService {
+
+    @Autowired
+    private PaymentService paymentService;
+
+}
+
+@Service
+public class PaymentService {
+
+    @Autowired
+    private OrderService orderService;
+
+}
+
+Here:
+- OrderService needs PaymentService.
+- PaymentService needs OrderService.
 
 
+------------------------------------------------------------
+BeanCurrentlyInCreationException
+------------------------------------------------------------
+
+- With Constructor injection, both the beans require each other as dependencies and cannot complete the dependency resolution
+- Result: BeanCurrentlyInCreationException
+
+------------------------------------------------------------
+Early Singleton Exposure:
+------------------------------------------------------------
+
+ - Unlike constructor injection, setter and field injection allow Spring to instantiate an object before injecting all its dependencies.
+
+Step 1: Spring starts creating OrderService
+- Instantiates the OrderService object.
+- The object exists, but its dependencies haven't been injected yet.
+
+Step 2: Spring tries to inject PaymentService
+- It starts creating PaymentService.
+- Instantiates the PaymentService object.
+
+Step 3: Spring tries to inject OrderService into PaymentService
+- It discovers that OrderService is already being created.
+- Rather than starting its creation again, Spring can expose an early reference to the partially initialized OrderService object.
+
+Step 4: Spring completes PaymentService
+- Injects the early OrderService reference.
+- Completes PaymentService initialization.
+
+Step 5: Spring completes OrderService
+- Injects the now-available PaymentService.
+- Completes OrderService initialization.
+
+------------------------------------------------------------
+Approaches to resolve Circular Dependencies:
+------------------------------------------------------------
+
+Approach			When useful
+-----------------------------------------------------------------
+Redesign responsibilities	Best long-term solution
+Extract a third service		When both services share common responsibilities
+@Lazy injection			When deferred resolution is genuinely appropriate
+Setter injection		When a legitimate dependency cycle must be supported
+Event-driven communication	When one service needs to notify another without tight coupling
+
+=============================================================================================================================================================================
 
 
 

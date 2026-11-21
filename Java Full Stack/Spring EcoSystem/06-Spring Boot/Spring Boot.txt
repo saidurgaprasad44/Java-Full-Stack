@@ -4,7 +4,22 @@
 =======================================================================================================================================================================
 =======================================================================================================================================================================
 
+Spring boot Features:
 
+- Starters
+- Version Management
+- Auto-Configuration (Conditional, Customizable & Opiniated)
+- Externalized Configuration - application properties, environment variables, JVM system properties, command-Line arguments etc
+- Profiles
+- Actuator
+- Secret Vault
+
+How Spring Boot Auto-configures:
+
+- Application Configuration
+- Dependencies
+- Existing beans
+- Application properties
 
 =======================================================================================================================================================================
 Spring Boot Fundamentals
@@ -373,8 +388,7 @@ How Auto-Configuration Makes Decisions
 
 - Boot does not blindly configure everything.
 - Auto-configuration uses conditions to determine whether a configuration should be applied.
-
-Common factors include:
+- Common factors include:
 
     Is a required class available?
     Is a particular bean already defined?
@@ -396,27 +410,117 @@ Example:
 Conditional Configuration
 ------------------------------------------------------------
 
-- Spring Boot uses conditional configuration extensively.
 - Conditions allow Boot to apply configuration only when specific requirements are satisfied.
+- Spring Boot uses conditional configuration extensively.
 
-Common conditional annotations include:
 
-    @ConditionalOnClass
-    @ConditionalOnMissingBean
-    @ConditionalOnBean
-    @ConditionalOnProperty
-    @ConditionalOnMissingClass
+@ConditionalOnClass
 
-Examples:
+- This condition is satisfied when a particular class is present on the application's classpath.
 
-    @ConditionalOnClass
-        → Configure when a particular class exists
+Example: Suppose your application optionally supports Redis.
 
-    @ConditionalOnMissingBean
-        → Configure when a particular bean does not already exist
+- If the Redis library is available, you want Spring to configure Redis-related beans. Otherwise, you don't want those beans to be created. 
 
-    @ConditionalOnProperty
-        → Configure when a property has the required value
+@Configuration
+@ConditionalOnClass(name = "org.springframework.data.redis.core.RedisTemplate")
+public class RedisConfiguration {
+
+    @Bean
+    public RedisService redisService() {
+        return new RedisService();
+    }
+}
+
+
+@ConditionalOnMissingClass
+
+- The condition is satisfied when the specified class is NOT available on the classpath.
+
+Example: Suppose your application has an optional third-party payment SDK.
+
+- If that SDK isn't available, you want to configure a fallback payment implementation.
+
+@Configuration
+@ConditionalOnMissingClass(
+    "com.payment.sdk.PaymentClient"
+)
+public class FallbackPaymentConfiguration {
+
+    @Bean
+    public PaymentService paymentService() {
+        return new DefaultPaymentService();
+    }
+}
+
+
+@ConditionalOnBean
+
+- This condition is satisfied when a specified bean is already registered in the Spring application context.
+
+Example: Suppose you have a PaymentGateway bean. 
+
+- You want to create a PaymentAuditService only when that gateway bean is available.
+
+@Configuration
+public class PaymentConfiguration {
+
+    @Bean
+    public PaymentGateway paymentGateway() {
+        return new StripePaymentGateway();
+    }
+
+    @Bean
+    @ConditionalOnBean(PaymentGateway.class)
+    public PaymentAuditService paymentAuditService() {
+        return new PaymentAuditService();
+    }
+}
+
+
+@ConditionalOnMissingBean
+
+- This condition is satisfied when a specified bean does NOT already exist in the application context.
+
+Example: Imagine you're developing a reusable Spring Boot library that provides a default PaymentService.
+
+- However, you want application developers to be able to provide their own implementation.
+
+@Configuration
+public class PaymentAutoConfiguration {
+
+    @Bean
+    @ConditionalOnMissingBean(PaymentService.class)
+    public PaymentService paymentService() {
+        return new DefaultPaymentService();
+    }
+}
+
+
+@ConditionalOnProperty
+
+- This condition checks whether a particular configuration property exists and/or has a specified value.
+-It is particularly useful for feature toggles and optional integrations.
+
+Example: Suppose you want to enable email notifications only when a configuration property is enabled.
+
+application.properties:
+
+app.notification.enabled=true
+
+@Configuration
+@ConditionalOnProperty(
+    prefix = "app.notification",
+    name = "enabled",
+    havingValue = "true"
+)
+public class NotificationConfiguration {
+
+    @Bean
+    public NotificationService notificationService() {
+        return new EmailNotificationService();
+    }
+}
 
 
 ------------------------------------------------------------
@@ -783,6 +887,18 @@ Example:
 
 
 ------------------------------------------------------------
+@PropertySource — manually importing properties files
+------------------------------------------------------------
+
+- Unlike Spring Boot's automatic loading of application.properties, this annotation allows you to explicitly register another properties file.
+
+@Configuration
+@PropertySource("classpath:payment.properties")
+public class PaymentConfig {
+}
+
+
+------------------------------------------------------------
 Property Precedence
 ------------------------------------------------------------
 
@@ -869,7 +985,7 @@ Example:
 Activating a Profile
 ------------------------------------------------------------
 
-- A profile can be activated through configuration.
+- A profile can be activated through application.properties or other external properties.
 
 Example:
 

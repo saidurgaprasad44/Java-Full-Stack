@@ -279,12 +279,11 @@ field.setAccessible(true);
 System.out.println(field.get(emp));
 
 
-
 ------------------------------------------------------------
 Reflection in Spring Boot:
 ------------------------------------------------------------
 
-- Spring performs framework-level operations using reflections like discovering classes annotated with @Controller, methods annotated with @GetMapping etc
+- Spring performs framework-level operations using reflections like field injection, discovering classes annotated with @Controller, methods annotated with @GetMapping etc
 
 
 ===============================================================================================================================================================================
