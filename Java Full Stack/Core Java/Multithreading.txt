@@ -21,15 +21,8 @@ Virtual Threads
 atomic variables
 
 
-Race-condition:
 
-mutable
-shared
-visibility
-non-atomic modifying operations
-synchronization
 
-Deadlock:
 
 
 
@@ -52,7 +45,7 @@ Thread Fundamentals:
 Process vs Thread:
 ------------------------------------------------------------
 
-- Process: An executing instance of a program.
+- Process: An executing instance of a program like chrome, java application etc.
 - Thread: An independent execution path of a task/http request within a process.
 
 ------------------------------------------------------------
@@ -68,7 +61,7 @@ Concurrency vs Parallelism:
 
 - Concurrency: Multiple tasks make progress during overlapping periods by context-switching (CPU time sharing). They don't necessarily execute at exactly the same instant.
 
-CPU  [A][B][C][D]
+CPU  [A][B][A][B]
 Time ----------->
 
 - Parallelism: Multiple tasks actually execute at the same instant, typically using multiple CPU cores. 
@@ -93,11 +86,319 @@ Repository
      |
 Database
 
-- In a traditional synchronous Servlet application, even though embedded tomcat provides mutliple worker threads, the request-processing thread generally waits for the database response.
-- While other requests can be processed by other threads while that first thread is waiting.
+- In a traditional synchronous Servlet application, even though embedded tomcat provides multiple worker threads, the request-processing thread generally waits for the database response.
+- While the first thread is waiting, other requests can be processed by other tomcat threads
+- With Asynchronous processing, the request-processing threads submits the task to an ExecutorService or Spring Async Excecutor (@Async) and returns to its Tomcat thread pool
+- The Executor thread now may remain blocked
+
+
+========================================================================================================================
+Thread & Runnable
+========================================================================================================================
+
+------------------------------------------------------------
+Task vs Thread
+------------------------------------------------------------
+
+- A task represents the work that needs to be performed.
+- A thread represents the execution path that performs that work.
+- Java provides Runnable to represent a task and Thread to represent a thread of execution.
+
+------------------------------------------------------------
+Creating a thread using the Thread class
+------------------------------------------------------------
+
+- The simplest way is to extend the Thread class.
+
+
+class MyThread extends Thread {
+
+    @Override
+    public void run() {
+        System.out.println("Task is executing");
+    }
+}
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        MyThread thread = new MyThread();
+        thread.start();
+    }
+}
+
+
+Execution flow:
+
+- new MyThread() creates a Java Thread object.
+- thread.start() asks the JVM to start a new thread of execution.
+- The new thread executes the run() method.
+- The main() thread and newly created thread can now execute concurrently.
+
+
+        Main Thread
+             |
+             |start()
+             |---------New Thread
+             |             |
+             |             |
+             V             V
+
+
+- start() does not directly execute your task on the main thread. It starts a separate thread.
+
+------------------------------------------------------------
+Creating a task using Runnable
+------------------------------------------------------------
+
+- Instead of extending Thread, Java provides the Runnable functional interface.
+
+
+class MyTask implements Runnable {
+
+    @Override
+    public void run() {
+        System.out.println("Task is executing");
+    }
+}
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        MyTask task = new MyTask();
+        Thread thread = new Thread(task);
+        thread.start();
+    }
+}
+
+
+- Or we can also use a lambda because Runnable is a functional interface:
+
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        Thread thread = new Thread(() -> {
+            System.out.println("Task is executing");
+        });
+
+        thread.start();
+    }
+}
+
+
+------------------------------------------------------------
+start() vs run():
+------------------------------------------------------------
+
+start()					run()
+--------------------------------------------------------------------------------
+Starts a new thread of execution	Executes as an ordinary method call
+JVM schedules the new thread		Current thread executes the method
+Creates concurrent execution		No new thread is created
+A thread can be started only once	run() can be called like a normal method
+
+
+------------------------------------------------------------
+Thread Creation & Execution Mechanisms:
+------------------------------------------------------------
+
+- Threads can be created and executed using:
+	- A manually created Thread.
+	- An ExecutorService.
+	- A thread pool.
+	- Other execution mechanisms.
+
+- Thread creation is expensive
+- Why?
+	- Every platform thread consumes resources.
+	- Thread creation and termination have overhead.
+	- Too many threads cause scheduling and context-switching overhead.
+	- Excessive concurrency can overwhelm databases and external services.
+
+- Creating a new Java thread for every request manually has overhead, that is why production applications use an ExecutorService or a thread pool.
+
+
+========================================================================================================================
+Callable & Future
+========================================================================================================================
+
+- Runnable task cannot directly return a result to the code that submitted it.
+- We need a mechanism to execute a task asynchronously and retrieve its result.
+
+------------------------------------------------------------
+Callable<V>
+------------------------------------------------------------
+
+- Callable<V> is a functional interface that represents a task that returns a result.
+
+
+@FunctionalInterface
+public interface Callable<V> {
+    V call() throws Exception;
+}
+
+
+- Callable can declare checked exceptions while Runnable cannot.
+
+
+Callable<Integer> task = () -> {
+    int total = 100 + 200;
+    return total;
+};
+
+
+------------------------------------------------------------
+Future<V>
+------------------------------------------------------------
+
+- Future<V> represents the result of an asynchronous computation.
+- It is like a reference to a result that may not be available yet.
+
+
+import java.util.concurrent.*;
+
+public class Main {
+
+    public static void main(String[] args)throws Exception {
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        Callable<Integer> task = () -> {
+
+            System.out.println("Executing: " + Thread.currentThread().getName());
+            Thread.sleep(2000);
+            return 100 + 200;
+        };
+
+        Future<Integer> future = executor.submit(task); //worker thread starts executing
+
+        System.out.println("Task submitted");
+
+        // Retrieve the result
+        Integer result = future.get(); //current thread blocked until result retrieved
+
+        System.out.println("Result: " + result);
+
+        executor.shutdown();
+    }
+}
+
+
+Possible Output:
+
+Task submitted
+Executing: pool-1-thread-1
+Result: 300
+
+
+Execution flow:
+
+- The task is submitted to the executor.
+- The executor schedules it for execution.
+- The executor returns a Future object.
+- The worker thread executes the Callable task.
+- The main thread does not have to wait for the task to complete at this point.
+- get() is a blocking operation; So although the task was submitted asynchronously, calling get() immediately can make the calling thread wait until the result becomes available.
+
+
+        Main Thread
+             |
+             V
+ExecutorService.submit(task)
+             |----------- Worker Thread
+             |                  |
+             V                  |
+        Future.get()            |
+             #                  |
+             #blocked           |
+             #                  V
+             |<------------------
+             | 300
+             V
+
+
+Important Future methods:
+
+Method			Purpose
+-----------------------------------------------------------------
+get()			Retrieves result; blocks until completion
+get(timeout, unit)	Waits only for the specified duration
+isDone()		Checks whether task has completed
+isCancelled()		Checks whether task was cancelled
+cancel(true)		Attempts cancellation and may interrupt the executing thread
+cancel(false)		Attempts cancellation without interrupting the executing thread
+
+
+------------------------------------------------------------
+submit() vs execute()
+------------------------------------------------------------
+
+- Both belong to the Executor framework.
+
+
+executor.execute(runnable);
+Future<?> future = executor.submit(runnable);
+
+
+execute()				submit()
+--------------------------------------------------------------------
+Executes a Runnable task		Accepts Runnable or Callable
+Returns void				Returns Future
+No Future to retrieve result		Can retrieve result or completion status
+No Future-based exception retrieval	Task exceptions can be retrieved through Future
+
+
+------------------------------------------------------------
+Exception Handling
+------------------------------------------------------------
+
+- If the exception occurs inside the worker thread, it doesn't directly propagate through the submit() call.
+- Instead, the task completes exceptionally, and the exception is exposed when retrieving the result:
+
+
+try {
+    Integer result = future.get();
+
+} catch (ExecutionException e) {
+
+    System.out.println(
+        "Task failed: " + e.getCause()
+    );
+}
+
+
+
+Note:
+
+- Don't assume that Future automatically makes the entire HTTP request asynchronous. 
+- If a Spring MVC controller calls get() and waits, its Tomcat request thread remains occupied.
+
+
+========================================================================================================================
+Thread lifecycle
+========================================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ===============================================================================================================================================================================
 Phase 2 — Concurrency problems and thread safety
+===============================================================================================================================================================================
+
 Topic			What you should understand
 Shared state		Local variables, instance variables, static variables, object sharing
 Race conditions		How concurrent execution causes unpredictable results
@@ -109,7 +410,26 @@ volatile		Visibility, ordering guarantees, and why it doesn't make compound oper
 Java Memory Model (JMM)	Visibility, atomicity, ordering, happens-before relationship, safe publication
 
 
+Problems with Multithreads:
+
+- Race-conditions
+- Lost Updates
+- Dead Locks
+
+
+Race-condition causes:
+
+- mutable
+- shared
+- visibility
+- non-atomic modifying operations
+
+Solutions:
+
+===============================================================================================================================================================================
 Phase 3 — Advanced synchronization mechanisms
+===============================================================================================================================================================================
+
 Topic				What you should understand
 wait(), notify(), notifyAll()	Inter-thread communication and monitor coordination
 Explicit locks			Lock, ReentrantLock, tryLock(), fairness, lock release
@@ -119,7 +439,10 @@ Deadlocks			Conditions, prevention, detection, and troubleshooting
 Other concurrency problems	Starvation, livelock, contention
 
 
+===============================================================================================================================================================================
 Phase 4 — Thread pools and task management
+===============================================================================================================================================================================
+
 Topic			What you should understand
 Executor framework	Executor, ExecutorService, ScheduledExecutorService
 Thread pools		Core pool size, maximum pool size, queue capacity, worker threads
@@ -129,7 +452,10 @@ Executor lifecycle	shutdown(), shutdownNow(), awaitTermination()
 Fork/Join framework	Work stealing, ForkJoinPool, parallel task execution
 
 
+===============================================================================================================================================================================
 Phase 5 — Asynchronous programming
+===============================================================================================================================================================================
+
 Topic				What you should understand
 CompletableFuture fundamentals	supplyAsync(), runAsync(), execution
 Composition			thenApply(), thenAccept(), thenRun()
@@ -138,7 +464,20 @@ Error handling			exceptionally(), handle(), whenComplete()
 Execution control		Default vs custom executors, blocking operations, timeouts
 
 
+Why CompletableFuture?:
+
+Execute all three concurrently.
+Combine their results.
+Execute another task when all three finish.
+Handle exceptions centrally.
+Avoid blocking while waiting for each result.
+
+
+
+===============================================================================================================================================================================
 Phase 6 — Concurrent utilities and collections
+===============================================================================================================================================================================
+
 Topic			What you should understand
 ConcurrentHashMap	Internal behavior, concurrent reads/writes, atomic operations
 BlockingQueue		Producer-consumer pattern
@@ -146,8 +485,10 @@ CopyOnWriteArrayList	Read-heavy workloads and copy-on-write behavior
 Concurrent collections	ConcurrentLinkedQueue, concurrent sets, etc.
 Synchronizers		CountDownLatch, CyclicBarrier, Semaphore, Phaser
 
-
+===============================================================================================================================================================================
 Phase 7 — Advanced Java concurrency and production concepts
+===============================================================================================================================================================================
+
 Topic				What you should understand
 ThreadLocal			Thread-specific values, thread pool reuse, cleanup
 Thread safety patterns		Immutability, confinement, safe publication

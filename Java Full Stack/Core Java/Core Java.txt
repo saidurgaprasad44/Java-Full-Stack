@@ -473,6 +473,32 @@ default:
 
 Methods: Allowed developers to add method implementations inside interfaces using the default keyword without breaking existing implementing classes.
 
+------------------------------------------------------------
+Sealed (Java 17+):
+------------------------------------------------------------
+
+- Restricts which other classes can extend it
+- The superclass must list every direct subclass using the permits keyword
+- Every permitted subclass must explicitly declare how it handles further inheritance by using one of three modifiers:
+	final: stops any further subclassing.
+	sealed: restricts further subclassing to a new permits list.
+	non-sealed: removes the restriction and allows any unknown class to extend it.
+
+
+// Only Circle, Square, and Triangle can extend Shape
+public sealed class Shape permits Circle, Square, Triangle {
+    // Shared fields and methods
+}
+
+// 1. final: Cannot be extended any further
+public final class Circle extends Shape { }
+
+// 2. sealed: Continues controlled inheritance with its own permits clause
+public sealed class Square extends Shape permits FilledSquare { }
+public final class FilledSquare extends Square { }
+
+// 3. non-sealed: Reopens inheritance so any class can extend it
+public non-sealed class Triangle extends Shape { }
 
 
 ===============================================================================================================================================================================
@@ -1342,6 +1368,9 @@ Local Class
 Anonymous Class:
 ------------------------------------------------------------
 
+- Anonymous class is a class that extends/implements another class/interface
+
+
 Anonymous Class extending another class: 
 
 - A class without a name that is instantiated extending another class by overriding any/all of its concrete methods in a single expression. 
@@ -1393,17 +1422,17 @@ Implementation Examples:
 
 1. Abstract method with no input and returns a result:
 
-Runnable r = () -> "Hello world"; //If the body has one expression, braces and return are optional, it will auto return the value
-r.run();
+Nothing n = () -> "Hello world"; //If the body has one expression, braces and return are optional, it will auto return the value
+n.run();
 
 
 2. Abstract method with input(s), multiple statements and returns a result:
 
-Runnable r = (a, b) -> {
+Nothing n = (a, b) -> {
 	System.out.print("The sum is: ");
 	return a+b;
 };
-System.out.println(r.run(10, 20));
+System.out.println(n.run(10, 20));
 
 
 
