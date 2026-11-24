@@ -10,11 +10,7 @@ Architecture
 =======================================================================================================================================================================
 
 - Spring Data JPA is a Spring Data module that provides repository abstractions for JPA-based persistence.
-- It reduces the amount of boilerplate code required to perform common database operations.
-- Spring Data JPA works with a JPA provider such as Hibernate.
-- It does not replace JPA or Hibernate.
 
-Architecture:
 
     Application
          |
@@ -33,8 +29,9 @@ Architecture:
          v
     Database
 
-- Spring Data JPA primarily adds an abstraction between application code and the JPA EntityManager.
-- JPA and Hibernate continue to handle persistence behavior.
+
+- Spring Data JPA uses JPA rather than defining its own ORM specification.
+- Hibernate can be used underneath Spring Data JPA as the JPA provider.
 
 
     JPA
@@ -61,72 +58,10 @@ Architecture:
       +--> Repository query support
       +--> Pagination and sorting
 
-- Spring Data JPA uses JPA rather than defining its own ORM specification.
-- Hibernate can be used underneath Spring Data JPA as the JPA provider.
 
 
-------------------------------------------------------------
-Repository Abstraction
-------------------------------------------------------------
-
-- A repository represents the persistence operations required for an entity.
-- Instead of directly writing an implementation class containing EntityManager operations, an application can define a repository interface.
-
-Example:
-
-    public interface UserRepository
-            extends JpaRepository<User, Long> {
-    }
-
-- No implementation class is required for basic CRUD operations.
-- Spring Data JPA creates the repository implementation at runtime.
-
-Conceptually:
-
-    UserService
-         |
-         v
-    UserRepository
-         |
-         v
-    Spring Data JPA
-         |
-         v
-    EntityManager
-         |
-         v
-    Hibernate
-         |
-         v
-    Database
-
-
-------------------------------------------------------------
-EntityManager
-------------------------------------------------------------
-
-- Spring Data JPA repositories ultimately operate through JPA infrastructure.
-- The repository abstraction does not eliminate the EntityManager.
-- Spring Data JPA internally uses the EntityManager to perform JPA operations.
-
-Example:
-
-    userRepository.findById(10L);
-
-Conceptually:
-
-    Repository
-        |
-        v
-    EntityManager
-        |
-        v
-    Hibernate
-        |
-        v
-    Database
-
-- Application code usually does not need to directly call EntityManager for standard repository operations.
+- No implementation class is required for basic CRUD operations; Spring Data JPA creates the repository implementation at runtime.
+- It internally uses the EntityManager to perform JPA operations.
 - EntityManager can still be used directly when repository abstractions are insufficient.
 
 
@@ -135,42 +70,11 @@ Repositories
 =======================================================================================================================================================================
 
 ------------------------------------------------------------
-Repository Interfaces
+Repository Interfaces Hierarchy
 ------------------------------------------------------------
 
-- A repository interface defines the persistence operations available to application code.
-- Spring Data JPA generates the implementation at runtime.
 
-Example:
-
-    public interface UserRepository
-            extends JpaRepository<User, Long> {
-    }
-
-- User is the entity type.
-- Long is the entity's identifier type.
-
-Conceptually:
-
-    UserRepository
-          |
-          v
-    Runtime Repository Proxy
-          |
-          v
-    EntityManager
-          |
-          v
-    JPA / Hibernate
-
-
-------------------------------------------------------------
-Repository Hierarchy
-------------------------------------------------------------
-
-Conceptually:
-
-    Repository → Repository marker
+    Repository → Repository marker interface
         |
         v
     CrudRepository → CRUD operations
@@ -181,77 +85,8 @@ Conceptually:
         v
     JpaRepository → JPA-oriented repository functionality
 
+
 - The exact inherited structure can vary across Spring Data versions.
-- The important distinction is the increasing level of repository functionality.
-
-
-------------------------------------------------------------
-Repository
-------------------------------------------------------------
-
-- Repository<T, ID> is the most basic Spring Data repository marker interface.
-- It primarily identifies the interface as a repository.
-- It does not provide CRUD methods by itself.
-
-Example:
-
-    public interface UserRepository
-            extends Repository<User, Long> {
-    }
-
-
-------------------------------------------------------------
-CrudRepository
-------------------------------------------------------------
-
-- CrudRepository provides basic CRUD operations.
-
-Common operations include:
-
-    save()
-    saveAll()
-    findById()
-    findAll()
-    existsById()
-    count()
-    deleteById()
-    delete()
-    deleteAll()
-
-Example:
-
-    public interface UserRepository
-            extends CrudRepository<User, Long> {
-    }
-
-
-------------------------------------------------------------
-PagingAndSortingRepository
-------------------------------------------------------------
-
-- PagingAndSortingRepository adds paging and sorting operations to repository functionality.
-- It provides methods for retrieving data using Pageable and Sort.
-
-Example:
-
-    public interface UserRepository
-            extends PagingAndSortingRepository<User, Long> {
-    }
-
-
-------------------------------------------------------------
-JpaRepository
-------------------------------------------------------------
-
-- JpaRepository is a JPA-specific repository interface.
-- It builds on Spring Data repository abstractions and provides JPA-oriented functionality.
-
-Example:
-
-    public interface UserRepository
-            extends JpaRepository<User, Long> {
-    }
-
 - JpaRepository is commonly used when the application is specifically based on JPA.
 
 
@@ -262,48 +97,15 @@ Creating a Repository
 Example:
 
     @Repository
-    public interface UserRepository
-            extends JpaRepository<User, Long> {
+    public interface UserRepository extends JpaRepository<User, Long> {
     }
 
 - Spring Data repository interfaces generally do not require @Repository when they are discovered through @EnableJpaRepositories.
 - The repository infrastructure creates the required runtime proxy.
+- Therefore, this is sufficient:
 
-Therefore, this is sufficient:
-
-    public interface UserRepository
-            extends JpaRepository<User, Long> {
+    public interface UserRepository extends JpaRepository<User, Long> {
     }
-
-
-------------------------------------------------------------
-Repository Proxy
-------------------------------------------------------------
-
-- The interface itself contains no implementation of methods such as findById().
-- Spring Data JPA creates a proxy/implementation at runtime.
-
-Example:
-
-    userRepository.findById(10L);
-
-Conceptually:
-
-    UserRepository interface
-             |
-             v
-    Spring-generated proxy
-             |
-             v
-    JPA EntityManager
-             |
-             v
-    Hibernate
-             |
-             v
-    Database
-
-- This is why an application can call repository methods without implementing them manually.
 
 
 =======================================================================================================================================================================
@@ -324,13 +126,7 @@ Example:
     userRepository.save(user);
 
 - Spring Data JPA determines whether the entity should be treated as new or existing.
-- The underlying operation ultimately uses JPA persistence mechanisms.
-- The exact SQL operation is determined by the entity state and JPA provider behavior.
-
-Important:
-
-- save() should not be interpreted simply as "always INSERT".
-- Depending on the entity state, it can result in insert or update behavior.
+- save() does not always mean "INSERT"; Depending on the entity state, it can result in insert or update behavior.
 
 
 ------------------------------------------------------------
@@ -356,8 +152,7 @@ findById()
 
 Example:
 
-    Optional<User> user =
-        userRepository.findById(10L);
+    Optional<User> user = userRepository.findById(10L);
 
 - The return type is Optional<T>.
 
@@ -378,8 +173,7 @@ findAll()
 
 Example:
 
-    List<User> users =
-        userRepository.findAll();
+    List<User> users = userRepository.findAll();
 
 - For large datasets, retrieving everything may be inappropriate.
 - Pagination should be considered when the result can become large.
@@ -393,8 +187,7 @@ existsById()
 
 Example:
 
-    boolean exists =
-        userRepository.existsById(10L);
+    boolean exists = userRepository.existsById(10L);
 
 
 ------------------------------------------------------------
@@ -405,8 +198,7 @@ count()
 
 Example:
 
-    long count =
-        userRepository.count();
+    long count = userRepository.count();
 
 
 ------------------------------------------------------------

@@ -6,14 +6,13 @@
 
 Goal:
 
-To separate Cross-Cutting Concerns (Logging, Transactions, Security, Caching, etc.) from the Business Logic without modifying the Business Class.
+- To separate Cross-Cutting Concerns (Logging, Transactions, Security, Caching, etc.) from the Business Logic without modifying the Business Class.
 
 =============================================================================================================================================================================
 Why Proxies:
 =============================================================================================================================================================================
 
-Imagine we are building an Online Payment System.
-Initially, our service looks like this:
+- Imagine we are building an Online Payment System.
 
 
 public class PaymentService {
@@ -25,55 +24,48 @@ public class PaymentService {
 }
 
 
-Initially, the class contains only the business logic.
-As the application grows, new requirements are introduced.
+- Initially, the class contains only the business logic.
+- As the application grows, new requirements are introduced.
 
 For example:
 
-Logging
-Transaction Management
-Security Checks
-Performance Monitoring
-Caching
-Retry Mechanism
-Exception Handling
-Audit Logging
+- Logging
+- Transaction Management
+- Security Checks
+- Performance Monitoring
+- Caching
+- Retry Mechanism
+- Exception Handling
+- Audit Logging
 
-Without Proxies, all these concerns are added directly into the business method.
+- Without Proxies, all these concerns are added directly into the business method.
 
 
 Example:
 
-public void processPayment() {
+public class PaymentService {
 
-    logStart();
-    securityCheck();
-    startTransaction();
-    repository.savePayment();
-    commitTransaction();
-    logEnd();
+    public void processPayment() {
 
+        logStart();
+        securityCheck();
+        startTransaction();
+        repository.savePayment();
+        commitTransaction();
+        logEnd();
+    }
 }
 
 
-Cross-Cutting Concerns are functionalities that are required by multiple classes but are NOT part of the actual business logic.
+- Cross-Cutting Concerns are functionalities that are required by multiple classes but are NOT part of the actual business logic.
+- Every Service require same concerns.
 
-Examples:
+------------------------------------------------------------
+Without Proxy: 
+------------------------------------------------------------
 
-- PaymentService
-- OrderService
-- InvoiceService
-- RefundService
+Client -> PaymentService
 
-Every service requires:
-
-- Logging
-- Transactions
-- Security
-
-
-
-Without Proxy: Client -> PaymentService
 
 Problems:
 
@@ -83,23 +75,26 @@ Problems:
 - Violates the Single Responsibility Principle (SRP).
 
 ------------------------------------------------------------
+With Proxies:
+------------------------------------------------------------
 
-- Instead of writing them in every class, Spring allows us to separate them using Proxies.
+ Client -> Proxy -> PaymentService
+
+
 - A Proxy is an object that stands between the Client and the Real Object.
 - Instead of directly calling the actual object, the client communicates with the Proxy.
 - The Proxy can perform additional work before and after invoking the actual business method.
 
 
-With Proxies: Client -> Proxy -> PaymentService
+Advantages:
 
 - Separates Cross-Cutting Concerns from Business Logic.
 - Keeps Business Classes clean and maintainable.
 - Eliminates duplicate code.
 - Follows the Single Responsibility Principle (SRP).
 - Allows Spring to add framework features without modifying the Business Class.
+- The Proxy decides what should happen before & after Business logic:
 
-
-The Proxy decides what should happen:
 
 Before Business Method: Logging, Security, Start Transaction
 	↓
@@ -108,37 +103,22 @@ Business Method
 After Business Method: Commit Transaction, Logging, Performance Monitoring
 
 
-=============================================================================================================================================================================
+Important Note:
+
+- The Proxy intercepts only external method calls that pass through the IoC Container.
+- If one method inside the bean directly calls another method of the same bean (Self Invocation), the call bypasses the Proxy and the additional framework logic is not executed.
+
+------------------------------------------------------------
 BeanPostProcessors vs Proxies:
-=============================================================================================================================================================================
-
-BeanPostProcessors and Proxies work at different stages of a Spring Application.
-
 ------------------------------------------------------------
-BeanPostProcessors
 
-* BeanPostProcessors execute during the Bean Lifecycle (Application Startup).
-* They are responsible for preparing, initializing, inspecting, modifying or enhancing the bean before it is stored inside the IoC Container.
-* During the BeanPostProcessor (After Initialization) phase, Spring may create a Proxy instead of storing the original bean.
-* Once the bean is fully prepared, Spring stores the original bean or the Proxy inside the IoC Container.
-
-------------------------------------------------------------
-Proxies
-
-* Proxies execute during Runtime (Application Execution).
-* They are created during the Bean Lifecycle but are used only after the application has started.
-* Every time another object invokes a proxied bean through the IoC Container, the method call first reaches the Proxy.
-* The Proxy executes additional framework logic before and after invoking the actual business method.
-
-------------------------------------------------------------
-Relationship Between BeanPostProcessors and Proxies
-
-* BeanPostProcessors create the Proxy during the Bean Lifecycle.
-* The Proxy is then stored inside the IoC Container instead of the original bean.
-* During Runtime, every external method invocation reaches the Proxy first, which then delegates the call to the actual bean.
+- BeanPostProcessors create the Proxy during the Bean Lifecycle.
+- The Proxy is then stored inside the IoC Container instead of the original bean.
+- During Runtime, every external method invocation reaches the Proxy first, which then delegates the call to the actual bean.
 
 
 Application Startup:
+
 
 Instantiate Bean
 ↓
@@ -156,33 +136,12 @@ Proxy Created (If Required)
 ↓
 Bean Ready (Original Bean or Proxy)
 
-------------------------------------------------------------
-
-Application Runtime:
-
-
-Client
-↓
-Proxy
-↓
-Business Method
-↓
-Return Result
-
-
-Important Note:
-
-- The Proxy intercepts only external method calls that pass through the IoC Container.
-- If one method inside the bean directly calls another method of the same bean (Self Invocation), the call bypasses the Proxy and the additional framework logic is not executed.
 
 =============================================================================================================================================================================
 Static Proxy:
 =============================================================================================================================================================================
 
-Goal: To separate Cross-Cutting Concerns (Logging, Transactions, Security, Caching, etc.) from the Business Logic without modifying the Business Class.
-
-
-Consider the following PaymentService:
+- Consider the following PaymentService:
 
 
 public class PaymentService {
@@ -194,12 +153,7 @@ public class PaymentService {
 
 
 - Now suppose a new requirement is introduced "We need to log every payment request."
-- One approach is to modify the PaymentService. Although this works, the business class is now responsible for both: Business Logic and Logging
-- As more requirements are added (Transactions, Security, Caching, etc.), the business class becomes cluttered.
-- Instead of modifying the business class, we create another class called a Proxy.
-- The Proxy performs the additional work and then delegates the request to the real object.
 
-------------------------------------------------------------
 
 Business Interface:
 
@@ -225,8 +179,12 @@ Proxy Class:
 
 public class PaymentServiceProxy implements PaymentService {
 
-    private PaymentServiceImpl service = new PaymentServiceImpl();
+    private PaymentServiceImpl service;
     
+    public PaymentServiceProxy(PaymentServiceImpl service) {
+        this.service = service;
+    }
+
     @Override
     public void processPayment() {
 
@@ -249,7 +207,6 @@ public class Main {
     }
 }
 
-------------------------------------------------------------
 
 Client
 ↓
@@ -263,28 +220,19 @@ Logging After
 ↓
 Return
 
-------------------------------------------------------------
 
-Notice that the Client never directly communicates with the PaymentService. It always communicates with the Proxy.
-
-This way:
-
-- Business Logic remains clean and Cross-Cutting Concerns are separated.
-- Existing Business Class does not need modification.
-- Follows the Single Responsibility Principle (SRP).
-
-This is called a static proxy.
-Because, the proxy class is manually written by the developer at compile time.
-And, before the application even runs, the compiler already knows about it.
-
-Now, suppose we have the following services:
+- Notice that the Client never directly communicates with the PaymentService. It always communicates with the Proxy.
+- This way Business Logic remains clean and Cross-Cutting Concerns are separated.
+- It follows the Single Responsibility Principle (SRP).
+- This is called a static proxy. Because, the proxy class is manually written by the developer at compile time and before the application even runs, the compiler already knows about it.
+- Now, suppose we have the following services:
 
 * PaymentService
 * OrderService
 * RefundService
 * NotificationService
 
-Each service now requires its own Proxy.
+- Each service now requires its own Proxy.
 
 
 PaymentService
@@ -313,29 +261,22 @@ NotificationServiceProxy
 Problems:
 
 * Large amount of duplicate code.
-* One Proxy class is required for every Business Class.
-* Difficult to maintain.
 * Every new service requires writing another Proxy manually.
 
-This problem led to the introduction of Dynamic Proxies.
+- This problem led to the introduction of Dynamic Proxies.
 
 =============================================================================================================================================================================
 JDK Dynamic Proxy:
 =============================================================================================================================================================================
 
-Goal: To eliminate the need to manually create a separate Proxy class for every Business Class.
-
 - With Static Proxies, every Business Class requires its own Proxy.
-- Although the business classes are different, the Proxy logic is almost identical.
-- The only thing that changes is the target object.
-- Instead of manually creating a Proxy class, Java can generate the Proxy automatically during Runtime.
-
-The developer only provides:
+- Instead of manually creating Proxy class for every business class, Java can generate the Proxy automatically during Runtime.
+- The developer only provides:
 
 * The Target Object.
 * The additional logic to execute before and after every method invocation.
 
-Java generates the Proxy class automatically.
+- Java generates the Proxy class automatically.
 
 
 Client
@@ -348,7 +289,9 @@ Target Object
 - Java introduces an interface called: InvocationHandler
 - Instead of writing a complete Proxy class, we implement only one method:
 
-	public Object invoke(Object proxy, Method method, Object[] args);
+
+public Object invoke(Object proxy, Method method, Object[] args);
+
 
 - This method is executed whenever any method on the Proxy is called.
 - Inside this method, we can write:
@@ -360,7 +303,7 @@ Target Object
 
 - Then invoke the actual business method.
 
-------------------------------------------------------------
+
 
 Business Interface:
 
@@ -413,14 +356,13 @@ PaymentService proxy =
         (PaymentService) Proxy.newProxyInstance(
                 service.getClass().getClassLoader(),	// To tell Java which class loader to be loaded
                 service.getClass().getInterfaces(),	// To tell Java which interface should be implementing
-                new LoggingHandler(service));		// For the method body
+                new LoggingHandler(service)             // For the method body
+        );		
 
 proxy.processPayment();
 
-------------------------------------------------------------
 
-Notice:
-We never created PaymentServiceProxy. Java generated it automatically.
+- Notice we never created PaymentServiceProxy. Java generated it automatically.
 
 
 Client
@@ -440,7 +382,7 @@ Logging After
 Return
 
 
-Now, this proxy can be used with any service class PaymentService, OrderService, RefundService,...
+- Now, this proxy can be used with any service class PaymentService, OrderService, RefundService,...
 
 
 Problems:
@@ -448,16 +390,11 @@ Problems:
 * JDK Dynamic Proxies can create Proxies only for Interfaces.
 * If the Business Class does not implement an Interface, Java cannot generate a JDK Dynamic Proxy.
 
-This limitation led to the introduction of CGLIB Proxies, which can create Proxies for concrete classes.
+- This limitation led to the introduction of CGLIB Proxies, which can create Proxies for concrete classes.
 
 =============================================================================================================================================================================
 CGLIB Dynamic Proxy:
 =============================================================================================================================================================================
-
-Goal: To create Dynamic Proxies for Concrete Classes that do not implement an Interface.
-
-------------------------------------------------------------
-Why was CGLIB introduced?
 
 - JDK Dynamic Proxies can create Proxies only for Interfaces.
 - Now consider the following class:
@@ -475,11 +412,6 @@ public class PaymentService {
 
 
 - Since there is no Interface, JDK Dynamic Proxy cannot create a Proxy.
-
-------------------------------------------------------------
-Solution - CGLIB Proxy
-
-
 - Instead of implementing an Interface, CGLIB generates a Subclass of the Target Class during Runtime.
 
 Example:
@@ -492,7 +424,7 @@ PaymentService$$EnhancerByCGLIB
 - The generated subclass overrides the methods of the original class.
 - It executes additional logic before and after calling the original method.
 
-------------------------------------------------------------
+
 
 Business Class:
 
@@ -534,8 +466,9 @@ PaymentService proxy = (PaymentService) enhancer.create();
 
 proxy.processPayment();
 
-------------------------------------------------------------
-Execution Flow
+
+
+Execution Flow:
 
 
 Client
@@ -553,7 +486,7 @@ Return
 
 - Instead of calling another object, the generated subclass invokes the original implementation using super.processPayment();
 
-------------------------------------------------------------
+
 Advantages:
 
 * Works with Concrete Classes.
@@ -561,7 +494,7 @@ Advantages:
 * Eliminates the need for manually writing Proxy classes.
 * Generates Proxies automatically during Runtime.
 
-------------------------------------------------------------
+
 Limitations:
 
 * Cannot Proxy final classes.
@@ -593,9 +526,6 @@ Target Class -> Generated Subclass -> Original Methods
 =============================================================================================================================================================================
 How Spring Creates Proxies
 =============================================================================================================================================================================
-
-Goal: To understand how Spring automatically creates Proxies for Beans during the Bean Lifecycle.
-
 
 - When a Spring Bean is created, Spring does not immediately store it inside the IoC Container.
 - Instead, the Bean passes through several phases of the Bean Lifecycle.
@@ -637,9 +567,11 @@ If NO  → Keep Original Bean
 Store the Bean (or Proxy) inside the IoC Container
 
 
-Note: * Spring creates Proxies during the BeanPostProcessor After Initialization phase.
+Note: 
 
-------------------------------------------------------------
+- Spring creates Proxies during the BeanPostProcessor After Initialization phase.
+
+
 Example:
 
 
@@ -690,7 +622,7 @@ Notice:
 Step 1 - Spring Creates the Bean
 
 
-Spring instantiates:
+- Spring instantiates:
 
 PaymentService paymentService = new PaymentService();
 
@@ -700,22 +632,21 @@ PaymentService paymentService = new PaymentService();
 Step 2 - Dependency Injection
 
 
-Spring injects all required dependencies:
+- Spring injects all required dependencies:
 
 
 @Autowired
 private PaymentRepository repository;
 
 
-The Bean is now fully initialized.
+- The Bean is now fully initialized.
 
 ------------------------------------------------------------
 Step 3 - BeanPostProcessor After Initialization
 
 
-During the After Initialization phase, Spring executes several internal BeanPostProcessors.
-
-One of them checks:
+- During the After Initialization phase, Spring executes several internal BeanPostProcessors.
+- One of them checks:
 
 * Does this Bean have @Transactional?
 * Does this Bean have @Async?
@@ -841,8 +772,8 @@ Important Terminologies:
 
 Aspect
 
-* An Aspect is a module that contains Cross-Cutting Logic.
-* It consists of one or more Advices and the Pointcuts that determine where those Advices should execute.
+- An Aspect is a module that contains Cross-Cutting Logic.
+- It consists of one or more Advices and the Pointcuts that determine where those Advices should execute.
 
 Example:
 
@@ -855,7 +786,7 @@ SecurityAspect
 
 Advice
 
-* Advice is the actual code that should execute at a particular point during a method invocation.
+- Advice is the actual code that should execute at a particular point during a method invocation.
 
 Types of Advice:
 
@@ -887,8 +818,8 @@ Rollback Transaction
 
 Join Point
 
-* A Join Point represents a method execution where Spring AOP can apply additional logic.
-* In Spring AOP, every intercepted method execution is a Join Point.
+- A Join Point represents a method execution where Spring AOP can apply additional logic.
+- In Spring AOP, every intercepted method execution is a Join Point.
 
 Example:
 
@@ -897,17 +828,17 @@ refund()
 placeOrder()
 
 
-Each method execution is a Join Point.
+- Each method execution is a Join Point.
 
 ---
 
 Pointcut
 
-* A Pointcut determines which Join Points should execute a particular Advice.
+- A Pointcut determines which Join Points should execute a particular Advice.
 
 Example:
 
-Instead of applying Logging to every method, apply it only to:
+- Instead of applying Logging to every method, apply it only to:
 
 PaymentService.*
 OrderService.*
@@ -951,12 +882,139 @@ Relationship Between AOP and Proxies:
 
 - Without a Proxy, Spring AOP cannot intercept method calls.
 
+
+
+
 =============================================================================================================================================================================
 @Transactional:
 =============================================================================================================================================================================
 
+- It manages database transactions declaratively, allowing Spring to handle transaction boundaries, commit, rollback, and transaction propagation.
 
-we will continue this after hibernate/jpa and transaction management
+
+------------------------------------------------------------
+Implementation:
+------------------------------------------------------------
+
+
+@Service
+public class OrderService {
+
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private InventoryRepository inventoryRepository;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Transactional
+    public void placeOrder(Order order) {
+
+        orderRepository.save(order);
+
+        inventoryRepository.reduceStock(
+            order.getProductId(),
+            order.getQuantity()
+        );
+
+        paymentRepository.save(
+            createPayment(order)
+        );
+    }
+}
+
+
+- If the method placeOrder() completes successfully, Spring commits the transaction.
+- If an applicable exception occurs, Spring rolls back the transaction.
+
+
+------------------------------------------------------------
+How does @Transactional work internally?
+------------------------------------------------------------
+
+- Spring uses AOP (Aspect-Oriented Programming) and proxies to implement declarative transaction management.
+
+
+Controller
+- Calls OrderService.placeOrder()
+      |
+      V
+Spring AOP Proxy
+Transaction Interceptor
+- Checks transaction attributes.
+- Checks propagation settings.
+- Starts or joins a transaction.
+      |
+      V
+Actual OrderService method
+- Executes business logic and repository calls    
+      |
+      V
+Transaction completion
+- Commit if successful
+- Rollback if applicable failure
+
+
+
+- Some important internal components:
+
+Component			Responsibility
+------------------------------------------------------------------
+@Transactional			Declares transaction configuration
+TransactionInterceptor		Intercepts method invocation
+TransactionAttributeSource	Reads transaction metadata
+PlatformTransactionManager	Manages transaction lifecycle
+DataSourceTransactionManager	Manages JDBC transactions
+JpaTransactionManager		Manages JPA transactions
+
+
+------------------------------------------------------------
+Rollback rules
+------------------------------------------------------------
+
+- By default, Spring rolls back for: RuntimeException, Error
+- Spring does NOT roll back by default for checked exceptions.
+
+
+Example:
+
+@Transactional
+public void createOrder() throws IOException {
+
+    orderRepository.save(new Order());
+    throw new IOException("File processing failed");
+}
+
+
+- The transaction is committed by default, despite the IOException.
+- To change this:
+
+
+@Transactional(rollbackFor = Exception.class)
+
+
+- can also specify:
+
+
+@Transactional(
+    rollbackFor = IOException.class,
+    noRollbackFor = IllegalArgumentException.class
+)
+
+
+------------------------------------------------------------
+Transaction propagation
+------------------------------------------------------------
+
+
+
+
+
+
+
+
 
 
 =============================================================================================================================================================================
@@ -1096,8 +1154,7 @@ public class AsyncConfig {
     @Bean(name = "taskExecutor")
     public Executor taskExecutor() {
 
-        ThreadPoolTaskExecutor executor =
-                new ThreadPoolTaskExecutor();
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
         executor.setCorePoolSize(5);
         executor.setMaxPoolSize(10);
