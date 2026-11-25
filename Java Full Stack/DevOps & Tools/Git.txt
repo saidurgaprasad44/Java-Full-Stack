@@ -23,6 +23,17 @@ Git Initialize:
 git init		: used to initialize a new Git repository
 
 ==============================================================================================================================================================
+Branching:
+==============================================================================================================================================================
+
+git branch 			: Lists all local branches. (The current branch is highlighted with an asterisk).
+git branch <branch-name> 	: Creates a new branch at your current commit.
+git checkout <branch-name> 	: Switches from your current branch to the specified one.
+git checkout -b <branch-name> 	: Shortcut to create a new branch and switch to it immediately.
+git merge <branch-name> 	: Merges the specified branch into your current branch (e.g., if you are on main, run git merge feature-login to bring those changes in).
+git branch -d <branch-name> 	: Deletes a branch (only if it has been merged). Use -D to force delete unmerged work.
+
+==============================================================================================================================================================
 Staging and tracking:
 ==============================================================================================================================================================
 The Staging Area (the Index) is a middle ground between your actual project folder and the Git repository.
@@ -93,17 +104,6 @@ Pull:
 git fetch 				: Downloads all new data from the remote repository but does not merge it into your local work. It’s a "safe" way to see what others have done before you commit to merging.
 git pull origin <branch> 		: Combines git fetch and git merge in one step. It downloads the remote data and instantly tries to update your current local branch.
 git pull --rebase origin <branch> 	: Fetches the remote changes and then re-applies your local commits on top of them. This avoids "merge commits" and keeps the history linear and clean.
-
-==============================================================================================================================================================
-Branching:
-==============================================================================================================================================================
-
-git branch 			: Lists all local branches. (The current branch is highlighted with an asterisk).
-git branch <branch-name> 	: Creates a new branch at your current commit.
-git checkout <branch-name> 	: Switches from your current branch to the specified one.
-git checkout -b <branch-name> 	: Shortcut to create a new branch and switch to it immediately.
-git merge <branch-name> 	: Merges the specified branch into your current branch (e.g., if you are on main, run git merge feature-login to bring those changes in).
-git branch -d <branch-name> 	: Deletes a branch (only if it has been merged). Use -D to force delete unmerged work.
 
 ==============================================================================================================================================================
 Stashing (The "Save for Later" shelf):
