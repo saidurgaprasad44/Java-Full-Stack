@@ -109,8 +109,11 @@ Example:
 
 
 =======================================================================================================================================================================
-CRUD Operations
+Standard Repository Methods
 =======================================================================================================================================================================
+
+- Under the hood, Spring Data JPA abstracts Hibernate's implementation for JPA specifications
+- So, any operation in Spring will eventually persist, merge, remove, detach, or find the object/entity behind the scenes
 
 ------------------------------------------------------------
 save()
@@ -129,6 +132,19 @@ Example:
 - save() does not always mean "INSERT"; Depending on the entity state, it can result in insert or update behavior.
 
 
+Example Implementation of save() in UserRepository:
+
+@Transactional
+public <S extends T> S save(S entity) {
+
+    if (entityInformation.isNew(entity)) {
+        entityManager.persist(entity);
+        return entity;
+    } else {
+        return entityManager.merge(entity);
+    }
+}
+ 
 ------------------------------------------------------------
 saveAll()
 ------------------------------------------------------------
@@ -148,7 +164,7 @@ Example:
 findById()
 ------------------------------------------------------------
 
-- findById() retrieves an entity by its identifier.
+- findById() retrieves an entity by its identifier and manages it in Hibernates Persistence Context.
 
 Example:
 
@@ -269,21 +285,32 @@ Example:
 
 
 =======================================================================================================================================================================
-Query Methods
+Method-Name Query Derivation
 =======================================================================================================================================================================
 
+- Spring Data JPA can derive a query from a repository method name declared explicitly in repository interfaces.
+
 ------------------------------------------------------------
-Query Method Derivation
+Derived From Properties:
 ------------------------------------------------------------
 
-- Spring Data JPA can derive a query from a repository method name.
-- The method name describes the required query conditions.
+- The property names in method names must correspond to entity properties.
+
 
 Example:
 
+
+@Repository
+public interface UserRepo extends JpaRepository<User, Integer> {
+
     List<User> findByName(String name);
 
-- Spring Data JPA interprets the method name and creates the corresponding query.
+    User findByEmail(String email);
+
+    List<User> findByRole(String role);
+
+}
+
 
 Conceptually:
 
@@ -294,21 +321,6 @@ Conceptually:
           |
           v
     Database
-
-
-------------------------------------------------------------
-Basic Property Queries
-------------------------------------------------------------
-
-Example:
-
-    User findByEmail(String email);
-
-    List<User> findByName(String name);
-
-    List<User> findByRole(String role);
-
-- The property names must correspond to entity properties.
 
 
 ------------------------------------------------------------
@@ -344,30 +356,9 @@ Logical Conditions
 
 Example:
 
-    List<User> findByNameAndAge(
-        String name,
-        int age
-    );
+    List<User> findByNameAndAge(String name, int age);
 
-Conceptually:
-
-    name = ?
-    AND
-    age = ?
-
-
-Example:
-
-    List<User> findByNameOrEmail(
-        String name,
-        String email
-    );
-
-Conceptually:
-
-    name = ?
-    OR
-    email = ?
+    List<User> findByNameOrEmail(String name, String email);
 
 
 ------------------------------------------------------------
@@ -378,13 +369,9 @@ Ordering
 
 Example:
 
-    List<User> findByRoleOrderByNameAsc(
-        String role
-    );
+    List<User> findByRoleOrderByNameAsc(String role);
 
-    List<User> findByRoleOrderByAgeDesc(
-        String role
-    );
+    List<User> findByRoleOrderByAgeDesc(String role);
 
 
 ------------------------------------------------------------
@@ -407,7 +394,7 @@ Example:
       v
     name
 
-then the method can query using Department.name.
+- Then the method can query using Department.name.
 
 
 ------------------------------------------------------------
@@ -468,32 +455,22 @@ Example:
 Custom Queries
 =======================================================================================================================================================================
 
-------------------------------------------------------------
-@Query
-------------------------------------------------------------
-
+- If the method-name query derivations are not sufficient, custom queries can be written using both JPQL and native query.
 - @Query allows a query to be explicitly defined on a repository method.
-- By default, the query is interpreted as JPQL.
-
-Example:
-
-    @Query(
-        "SELECT u FROM User u WHERE u.email = :email"
-    )
-    User findByEmail(
-        @Param("email") String email
-    );
-
-- This provides more control than method-name query derivation.
 
 
 ------------------------------------------------------------
 JPQL with @Query
 ------------------------------------------------------------
 
+- By default, the query is interpreted as JPQL.
 - JPQL operates on JPA entities and their attributes rather than directly on database tables and columns.
 
 Example:
+
+
+@Repository
+public interface UserRepo extends JpaRepository<User, Integer> {
 
     @Query(
         "SELECT u FROM User u WHERE u.age > :age"
@@ -501,10 +478,11 @@ Example:
     List<User> findUsersOlderThan(
         @Param("age") int age
     );
+}
+
 
 - User refers to the entity.
 - age refers to an entity attribute.
-
 - Hibernate translates the JPQL into database-specific SQL.
 
 
@@ -516,12 +494,19 @@ Named Parameters
 
 Example:
 
+
+
+@Repository
+public interface UserRepo extends JpaRepository<User, Integer> {
+
     @Query(
         "SELECT u FROM User u WHERE u.name = :name"
     )
     User findByName(
         @Param("name") String name
     );
+}
+
 
 - :name is the JPQL parameter.
 - @Param("name") connects it to the Java method parameter.
@@ -535,13 +520,18 @@ Positional Parameters
 
 Example:
 
+
+@Repository
+public interface UserRepo extends JpaRepository<User, Integer> {
+
     @Query(
         "SELECT u FROM User u WHERE u.name = ?1"
     )
     User findByName(String name);
+}
+
 
 - ?1 refers to the first method parameter.
-
 - Named parameters are generally easier to understand when queries contain multiple parameters.
 
 
@@ -553,11 +543,17 @@ Native SQL Queries
 
 Example:
 
+
+@Repository
+public interface UserRepo extends JpaRepository<User, Integer> {
+
     @Query(
         value = "SELECT * FROM users WHERE email = ?1",
         nativeQuery = true
     )
     User findByEmail(String email);
+}
+
 
 - Native queries operate against database tables and columns.
 - JPQL operates against JPA entities and attributes.
@@ -579,6 +575,10 @@ Difference:
 
 Example:
 
+
+@Repository
+public interface UserRepo extends JpaRepository<User, Integer> {
+
     @Modifying
     @Query(
         "UPDATE User u SET u.active = false " +
@@ -587,6 +587,8 @@ Example:
     int deactivateUser(
         @Param("id") Long id
     );
+}
+
 
 - Such operations should normally execute within a transaction.
 - The return value commonly represents the number of affected rows/entities.
@@ -607,6 +609,165 @@ Modifying Queries and Persistence Context
 - This can be useful when managed entities may otherwise contain stale state.
 
 
+
+=======================================================================================================================================================================
+Repository & JPA Integration
+=======================================================================================================================================================================
+
+- Spring Data JPA repositories ultimately interact with JPA through the EntityManager.
+- The repository abstraction hides most direct EntityManager interaction from application code.
+
+
+------------------------------------------------------------
+When to Use EntityManager Directly
+------------------------------------------------------------
+
+- Spring Data JPA does not prevent direct EntityManager usage.
+- Direct EntityManager access can be useful when:
+  - a query is highly customized
+  - complex persistence operations are required
+  - JPA APIs provide functionality not exposed conveniently by a repository
+  - custom repository behavior is required
+
+Example:
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+
+------------------------------------------------------------
+Repository & Persistence Context
+------------------------------------------------------------
+
+- Entities returned from repository operations are still JPA entities.
+- Their lifecycle and persistence-context behavior remain governed by JPA/Hibernate.
+
+Example:
+
+    User user = userRepository.findById(10L).orElseThrow();
+    user.setName("Sai");
+
+- If the entity is managed within an active persistence context and transaction, normal JPA/Hibernate dirty checking applies.
+
+
+
+=======================================================================================================================================================================
+Custom Repository Implementation
+=======================================================================================================================================================================
+
+- Derived query methods are convenient for straightforward queries.
+- @Query provides more control for explicit queries.
+- Some requirements may still need custom repository logic.
+
+Examples:
+
+- complex dynamic query construction
+- custom EntityManager operations
+- specialized database interaction
+- application-specific persistence behavior
+
+
+------------------------------------------------------------
+Custom Repository Interface
+------------------------------------------------------------
+
+- A repository can be composed from a standard Spring Data repository and a custom repository interface.
+
+Example:
+
+    public interface UserRepositoryCustom {
+
+        List<User> findUsersUsingCustomLogic();
+    }
+
+
+    public interface UserRepository extends JpaRepository<User, Long>, UserRepositoryCustom {
+    }
+
+- The standard repository functionality and custom functionality can therefore coexist.
+
+
+------------------------------------------------------------
+Custom Repository Implementation
+------------------------------------------------------------
+
+- The custom interface can have an implementation containing the specialized persistence logic.
+
+Example:
+
+    public class UserRepositoryCustomImpl implements UserRepositoryCustom {
+
+        @PersistenceContext
+        private EntityManager entityManager;
+
+        @Override
+        public List<User> findUsersUsingCustomLogic() {
+
+            // custom JPA logic
+
+            return ...;
+        }
+    }
+
+- This allows direct use of EntityManager when the standard repository abstraction is insufficient.
+
+
+
+=======================================================================================================================================================================
+Query Features
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+@EntityGraph
+------------------------------------------------------------
+
+- @EntityGraph can specify which related entities should be fetched as part of a repository query.
+- It is useful when controlling fetching behavior without rewriting the entire query.
+
+Example:
+
+    @EntityGraph(attributePaths = {"orders"})
+    Optional<User> findById(Long id);
+
+- This is particularly useful when dealing with relationships and avoiding unnecessary lazy-loading queries.
+
+
+------------------------------------------------------------
+@Lock
+------------------------------------------------------------
+
+- @Lock specifies a JPA lock mode for a repository query.
+
+Example:
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT u FROM User u WHERE u.id = :id")
+    User findForUpdate(@Param("id") Long id);
+
+- The actual locking semantics are provided by JPA and the underlying database.
+
+
+------------------------------------------------------------
+Query Hints
+------------------------------------------------------------
+
+- Query hints allow provider-specific or JPA query configuration to be supplied to repository queries.
+- Spring Data JPA provides @QueryHints for this purpose.
+
+Example:
+
+    @QueryHints({
+        @QueryHint(
+            name = "org.hibernate.readOnly",
+            value = "true"
+        )
+    })
+    List<User> findAllUsers();
+
+- The available hints depend on the JPA provider and database.
+
+
+
 =======================================================================================================================================================================
 Pagination and Sorting
 =======================================================================================================================================================================
@@ -620,6 +781,7 @@ Why Pagination
   - memory
   - network bandwidth
   - application processing time
+
 - Pagination retrieves data in smaller portions.
 
 Example:
@@ -646,11 +808,9 @@ Pageable
 
 Example:
 
-    Pageable pageable =
-        PageRequest.of(0, 20);
+    Pageable pageable = PageRequest.of(0, 20);
 
-    Page<User> page =
-        userRepository.findAll(pageable);
+    Page<User> page = userRepository.findAll(pageable);
 
 
 ------------------------------------------------------------
@@ -661,8 +821,7 @@ PageRequest
 
 Example:
 
-    Pageable pageable =
-        PageRequest.of(0, 20);
+    Pageable pageable = PageRequest.of(0, 20);
 
 - Page numbers are zero-based.
 
@@ -680,10 +839,7 @@ Page
 
 Example:
 
-    Page<User> page =
-        userRepository.findAll(
-            PageRequest.of(0, 20)
-        );
+    Page<User> page = userRepository.findAll(PageRequest.of(0, 20));
 
 Useful information includes:
 
@@ -705,11 +861,9 @@ Slice
 
 Conceptually:
 
-    Page
-        → content + complete pagination metadata
+    Page → content + complete pagination metadata
 
-    Slice
-        → content + information about whether more data exists
+    Slice → content + information about whether more data exists
 
 
 ------------------------------------------------------------
@@ -720,16 +874,13 @@ Sort
 
 Example:
 
-    Sort sort =
-        Sort.by("name").ascending();
+    Sort sort = Sort.by("name").ascending();
 
-    List<User> users =
-        userRepository.findAll(sort);
+    List<User> users = userRepository.findAll(sort);
 
 Descending:
 
-    Sort sort =
-        Sort.by("age").descending();
+    Sort sort = Sort.by("age").descending();
 
 
 ------------------------------------------------------------
@@ -738,21 +889,13 @@ Pagination with Query Methods
 
 Example:
 
-    Page<User> findByRole(
-        String role,
-        Pageable pageable
-    );
+    Page<User> findByRole(String role, Pageable pageable);
 
 Usage:
 
-    Pageable pageable =
-        PageRequest.of(0, 20);
+    Pageable pageable = PageRequest.of(0, 20);
 
-    Page<User> users =
-        userRepository.findByRole(
-            "admin",
-            pageable
-        );
+    Page<User> users = userRepository.findByRole("admin", pageable);
 
 
 ------------------------------------------------------------
@@ -778,69 +921,13 @@ Combining Pagination and Sorting
 
 Example:
 
-    Pageable pageable =
-        PageRequest.of(
-            0,
-            20,
-            Sort.by("name").ascending()
-        );
+    Pageable pageable = PageRequest.of(0, 20, Sort.by("name").ascending());
 
-    Page<User> users =
-        userRepository.findAll(pageable);
+    Page<User> users = userRepository.findAll(pageable);
 
 - Pageable can therefore represent both pagination and sorting requirements.
 
 
-=======================================================================================================================================================================
-PROJECTIONS
-=======================================================================================================================================================================
-
-[PLACEHOLDER — 
-
-- Projection concept
-- Entity result vs projection result
-- Interface-based projections
-- Closed projections
-- Open projections
-- DTO/class-based projections
-- Constructor expressions
-- Projection with query methods
-- Projection with @Query
-- Nested projections
-- When projections are useful
-
-- Detailed notes to be added separately.
-
-
-
-
-]
-
-=======================================================================================================================================================================
-SPECIFICATIONS
-=======================================================================================================================================================================
-
-[PLACEHOLDER — 
-
-- Specification concept
-- Dynamic queries
-- JpaSpecificationExecutor
-- Specification<T>
-- Predicate creation
-- Combining specifications
-- AND
-- OR
-- Dynamic filtering
-- Specification with Pageable
-- Specification with Sort
-
-- Detailed notes to be added separately.
-
-
-
-
-
-]
 
 =======================================================================================================================================================================
 Transactions
@@ -929,6 +1016,81 @@ Example:
 - It should not be interpreted as an absolute guarantee that every write operation is technically impossible.
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=======================================================================================================================================================================
+PROJECTIONS
+=======================================================================================================================================================================
+
+[PLACEHOLDER — 
+
+- Projection concept
+- Entity result vs projection result
+- Interface-based projections
+- Closed projections
+- Open projections
+- DTO/class-based projections
+- Constructor expressions
+- Projection with query methods
+- Projection with @Query
+- Nested projections
+- When projections are useful
+
+- Detailed notes to be added separately.
+
+
+
+
+]
+
+=======================================================================================================================================================================
+SPECIFICATIONS
+=======================================================================================================================================================================
+
+[PLACEHOLDER — 
+
+- Specification concept
+- Dynamic queries
+- JpaSpecificationExecutor
+- Specification<T>
+- Predicate creation
+- Combining specifications
+- AND
+- OR
+- Dynamic filtering
+- Specification with Pageable
+- Specification with Sort
+
+- Detailed notes to be added separately.
+
+
+
+
+
+]
+
+
 =======================================================================================================================================================================
 AUDITING
 =======================================================================================================================================================================
@@ -953,195 +1115,7 @@ AUDITING
 
 ]
 
-=======================================================================================================================================================================
-Repository and JPA Integration
-=======================================================================================================================================================================
 
-------------------------------------------------------------
-Repository to EntityManager
-------------------------------------------------------------
-
-- Spring Data JPA repositories ultimately interact with JPA through the EntityManager.
-
-Example:
-
-    userRepository.findById(10L);
-
-Conceptually:
-
-    UserRepository
-          |
-          v
-    Spring Data JPA
-          |
-          v
-    EntityManager
-          |
-          v
-    Hibernate
-          |
-          v
-    Database
-
-- The repository abstraction hides most direct EntityManager interaction from application code.
-
-
-------------------------------------------------------------
-When to Use EntityManager Directly
-------------------------------------------------------------
-
-- Spring Data JPA does not prevent direct EntityManager usage.
-- Direct EntityManager access can be useful when:
-  - a query is highly customized
-  - complex persistence operations are required
-  - JPA APIs provide functionality not exposed conveniently by a repository
-  - custom repository behavior is required
-
-Example:
-
-    @PersistenceContext
-    private EntityManager entityManager;
-
-
-------------------------------------------------------------
-Repository and Persistence Context
-------------------------------------------------------------
-
-- Entities returned from repository operations are still JPA entities.
-- Their lifecycle and persistence-context behavior remain governed by JPA/Hibernate.
-- Spring Data JPA does not introduce a separate persistence context.
-
-Example:
-
-    User user =
-        userRepository.findById(10L)
-                      .orElseThrow();
-
-    user.setName("Sai");
-
-- If the entity is managed within an active persistence context and transaction, normal JPA/Hibernate dirty checking applies.
-
-
-=======================================================================================================================================================================
-Custom Repository Behavior
-=======================================================================================================================================================================
-
-------------------------------------------------------------
-When Repository Methods Are Not Enough
-------------------------------------------------------------
-
-- Derived query methods are convenient for straightforward queries.
-- @Query provides more control for explicit queries.
-- Some requirements may still need custom repository logic.
-
-Examples:
-
-- complex dynamic query construction
-- custom EntityManager operations
-- specialized database interaction
-- application-specific persistence behavior
-
-
-------------------------------------------------------------
-Custom Repository Interface
-------------------------------------------------------------
-
-- A repository can be composed from a standard Spring Data repository and a custom repository interface.
-
-Example:
-
-    public interface UserRepositoryCustom {
-
-        List<User> findUsersUsingCustomLogic();
-    }
-
-
-    public interface UserRepository
-            extends JpaRepository<User, Long>,
-                    UserRepositoryCustom {
-    }
-
-- The standard repository functionality and custom functionality can therefore coexist.
-
-
-------------------------------------------------------------
-Custom Repository Implementation
-------------------------------------------------------------
-
-- The custom interface can have an implementation containing the specialized persistence logic.
-
-Example:
-
-    public class UserRepositoryCustomImpl
-            implements UserRepositoryCustom {
-
-        @PersistenceContext
-        private EntityManager entityManager;
-
-        @Override
-        public List<User> findUsersUsingCustomLogic() {
-
-            // custom JPA logic
-
-            return ...;
-        }
-    }
-
-- This allows direct use of EntityManager when the standard repository abstraction is insufficient.
-
-
-=======================================================================================================================================================================
-Query Features
-=======================================================================================================================================================================
-
-------------------------------------------------------------
-@EntityGraph
-------------------------------------------------------------
-
-- @EntityGraph can specify which related entities should be fetched as part of a repository query.
-- It is useful when controlling fetching behavior without rewriting the entire query.
-
-Example:
-
-    @EntityGraph(attributePaths = {"orders"})
-    Optional<User> findById(Long id);
-
-- This is particularly useful when dealing with relationships and avoiding unnecessary lazy-loading queries.
-
-
-------------------------------------------------------------
-@Lock
-------------------------------------------------------------
-
-- @Lock specifies a JPA lock mode for a repository query.
-
-Example:
-
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT u FROM User u WHERE u.id = :id")
-    User findForUpdate(@Param("id") Long id);
-
-- The actual locking semantics are provided by JPA and the underlying database.
-
-
-------------------------------------------------------------
-Query Hints
-------------------------------------------------------------
-
-- Query hints allow provider-specific or JPA query configuration to be supplied to repository queries.
-- Spring Data JPA provides @QueryHints for this purpose.
-
-Example:
-
-    @QueryHints({
-        @QueryHint(
-            name = "org.hibernate.readOnly",
-            value = "true"
-        )
-    })
-    List<User> findAllUsers();
-
-- The available hints depend on the JPA provider and database.
 
 
 =======================================================================================================================================================================
@@ -1230,156 +1204,6 @@ Flush Behavior
 - flush() should generally be used when synchronization with the database is actually required.
 - Transaction commit and flush remain separate JPA concepts.
 
-
-=======================================================================================================================================================================
-Spring Data JPA and Existing JPA/Hibernate Features
-=======================================================================================================================================================================
-
-------------------------------------------------------------
-Entity Mapping
-------------------------------------------------------------
-
-- Entity mappings continue to use JPA annotations.
-
-Example:
-
-    @Entity
-    public class User {
-
-        @Id
-        private Long id;
-    }
-
-- Spring Data JPA does not redefine entity mapping.
-
-
-------------------------------------------------------------
-Relationships
-------------------------------------------------------------
-
-- Relationships remain JPA relationships.
-
-Examples:
-
-    @OneToMany
-    @ManyToOne
-    @ManyToMany
-    @OneToOne
-
-- Fetch type, cascading, ownership, and relationship behavior remain JPA/Hibernate concepts.
-
-
-------------------------------------------------------------
-Entity Lifecycle
-------------------------------------------------------------
-
-- Entity lifecycle states remain:
-
-    Transient
-    Managed
-    Detached
-    Removed
-
-- Spring Data JPA repositories operate within this existing JPA lifecycle model.
-
-
-------------------------------------------------------------
-Persistence Context
-------------------------------------------------------------
-
-- The persistence context remains a JPA concept.
-- Hibernate remains responsible for implementing the underlying behavior.
-- Spring integrates the persistence context with transaction management.
-
-
-------------------------------------------------------------
-JPQL
-------------------------------------------------------------
-
-- JPQL remains the JPA query language.
-- Spring Data JPA provides additional ways to define queries, including:
-  - derived query methods
-  - @Query
-  - specifications
-  - projections
-
-- @Query can use JPQL or native SQL depending on configuration.
-
-
-------------------------------------------------------------
-Locking
-------------------------------------------------------------
-
-- Optimistic and pessimistic locking remain JPA/Hibernate/database concepts.
-- Spring Data JPA can expose locking through repository methods such as @Lock.
-
-
-------------------------------------------------------------
-Caching
-------------------------------------------------------------
-
-- First-level and second-level caching remain JPA/Hibernate concepts.
-- Spring Data JPA does not introduce a separate persistence cache mechanism.
-- Repository operations interact with the same JPA persistence infrastructure.
-
-
-=======================================================================================================================================================================
-Spring Data JPA Repository Design
-=======================================================================================================================================================================
-
-------------------------------------------------------------
-Service and Repository Responsibilities
-------------------------------------------------------------
-
-- Repository:
-  - persistence-focused operations
-  - queries
-  - retrieval
-  - saving/deleting entities
-
-- Service:
-  - business logic
-  - business transaction boundaries
-  - coordination of multiple repositories
-
-Example:
-
-    @Service
-    public class OrderService {
-
-        @Transactional
-        public void placeOrder(Order order) {
-
-            orderRepository.save(order);
-
-            inventoryRepository.updateStock(...);
-
-            paymentRepository.save(...);
-        }
-    }
-
-- The repository should generally not become the place where business workflows are implemented.
-
-
-------------------------------------------------------------
-Repository Interface Design
-------------------------------------------------------------
-
-- Repository interfaces should expose operations that are meaningful for the application's persistence needs.
-
-Example:
-
-    public interface UserRepository
-            extends JpaRepository<User, Long> {
-
-        Optional<User> findByEmail(String email);
-
-        boolean existsByEmail(String email);
-    }
-
-- The repository now provides both:
-  - standard CRUD operations inherited from JpaRepository
-  - application-specific query methods
 
 
 =======================================================================================================================================================================

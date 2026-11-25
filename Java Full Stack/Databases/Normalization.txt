@@ -1,0 +1,91 @@
+Primary Key: A non null unique column to identify each row
+Candidate Key: 
+Composite Primary Key: Multiple non null unique columns to identify the rows
+Foreign Key: Primary key of another table to maintain the relationship
+
+=======================================================================================================================================================================
+First Normal Form (1NF)
+=======================================================================================================================================================================
+
+- Every column must contain atomic (indivisible) values. 
+- No multiple values in a single cell or repeating groups.
+
+
+Before 1NF:
+
+Student_ID	Name	Subjects
+--------------------------------
+1		John	Java, SQL
+2		Mike	Python, Java
+
+
+After 1NF:
+
+Student_ID	Name	Subject
+-------------------------------
+1		John	Java
+1		John	SQL
+2		Mike	Python
+2		Mike	Java
+
+
+=======================================================================================================================================================================
+Second Normal Form (2NF)
+=======================================================================================================================================================================
+
+- Must satisfy 1NF.
+- No partial dependency: every non-key attribute must depend on the entire candidate key, not just part of a composite candidate key.
+
+
+- Consider a table with composite primary key (student_id, course_id).
+
+student_id	course_id	student_name	course_name
+-----------------------------------------------------------
+1		101		John		Java
+1		102		John		SQL
+
+
+- Here:
+	- student_name depends only on student_id.
+	- course_name depends only on course_id.
+
+- Neither depends on the entire composite key.
+
+Solution: Split into separate tables:
+- Student(student_id, student_name)
+- Course(course_id, course_name)
+- Enrollment(student_id, course_id)
+
+=======================================================================================================================================================================
+Third Normal Form (3NF)
+=======================================================================================================================================================================
+
+- Must satisfy 2NF.
+- No transitive dependency of non-key attributes on a candidate key.
+
+
+employee_id	employee_name	department_id	department_name
+---------------------------------------------------------------
+1		John		10		Engineering
+2		Mike		10		Engineering
+
+
+Dependencies:
+- employee_id → department_id
+- department_id → department_name
+
+Therefore:
+- employee_id → department_name through department_id.
+
+Solution: Split into:
+- Employee(employee_id, employee_name, department_id)
+- Department(department_id, department_name)	
+
+
+=======================================================================================================================================================================
+Boyce-Codd Normal Form (BCNF)
+=======================================================================================================================================================================
+
+- For every non-trivial functional dependency X → Y, X must be a superkey.
+- every determinant must be a candidate key or superkey.
+

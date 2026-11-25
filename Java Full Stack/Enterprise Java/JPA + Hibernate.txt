@@ -568,7 +568,9 @@ managed by Persistence Context
 BASIC CRUD OPERATIONS
 =======================================================================================================================================================================
 
+------------------------------------------------------------
 PERSISTING AN ENTITY
+------------------------------------------------------------
 
 persist()
 
@@ -607,6 +609,7 @@ employee
 
 ------------------------------------------------------------
 FINDING AN ENTITY
+------------------------------------------------------------
 
 find()
 
@@ -648,7 +651,8 @@ e1 == e2
 - Result: true
 
 ------------------------------------------------------------
-UPDATEING A MANAGED ENTITY
+UPDATING A MANAGED ENTITY
+------------------------------------------------------------
 
 - JPA does not have an em.update(entity) operation.
 - An entity that is already managed does not need to be explicitly updated.
@@ -689,6 +693,7 @@ WHERE id = 1;
 
 ------------------------------------------------------------
 REMOVING AN ENTITY
+------------------------------------------------------------
 
 remove()
 
@@ -741,6 +746,7 @@ ENTITY STATES & LIFECYCLE
 
 ------------------------------------------------------------
 TRANSIENT STATE
+------------------------------------------------------------
 
 - An object is transient when it has been created but is not associated with a Persistence Context.
 
@@ -762,6 +768,7 @@ Transient
 
 ------------------------------------------------------------
 MANAGED STATE
+------------------------------------------------------------
 
 - An entity is managed when it is associated with a Persistence Context.
 - Hibernate tracks the entity.
@@ -791,6 +798,7 @@ Managed entity
 
 ------------------------------------------------------------
 DETACHED STATE
+------------------------------------------------------------
 
 - A detached entity was previously managed but is no longer associated with the Persistence Context.
 
@@ -810,6 +818,7 @@ Example:
 
 ------------------------------------------------------------
 REMOVED STATE
+------------------------------------------------------------
 
 - A removed entity is a managed entity that has been marked for deletion.
 
@@ -823,6 +832,7 @@ Example:
 
 ------------------------------------------------------------
 ENTITY LIFECYCLE
+------------------------------------------------------------
 
 Transient
 ↓ persist()
@@ -893,6 +903,7 @@ WHERE id = 1;
 
 ------------------------------------------------------------
 WHY DIRTY CHECKING WORKS
+------------------------------------------------------------
 
 - When Hibernate manages an entity, it maintains enough information to determine whether its persistent state has changed.
 - Hibernate can compare the current managed state with the state it previously knew.
@@ -923,12 +934,25 @@ MERGE
 
 merge()
 
-- merge() is used when we have an entity whose state needs to be incorporated into a Persistence Context.
-- It is commonly used with detached entities.
-- Can also be used with transient entities.
+- merge() is used to copy the state of the supplied object (detached/transient) onto a managed/newly created entity in a Persistence Context.
 - merge() does not make the supplied object managed.
-- It copies the state of the supplied object onto a managed/newly created entity.
-- merge() returns the managed entity.
+- It returns the managed entity.
+
+------------------------------------------------------------
+MERGE A DETACHED ENTITY
+------------------------------------------------------------
+
+- If a detached entity is merged, it will create a new object in JVM and persists it in Persistence Context.
+
+Database:
+
+employee
++----+------+--------+
+| id | name | salary |
++----+------+--------+
+| 1  | Sai  | 60000  |
++----+------+--------+
+
 
 Example:
 
@@ -964,12 +988,11 @@ salary = 70000
 
 detachedEmployee == managedEmployee
 
-- Normally:
-
-false
+Result: false
 
 ------------------------------------------------------------
-MERGE WHEN A MANAGED ENTITY ALREADY EXISTS
+MERGE A DETACHED ENTITY WHEN A MANAGED ENTITY ALREADY EXISTS
+------------------------------------------------------------
 
 - If an entity with the same identity is already managed in the Persistence Context, merge() copies the detached state onto that existing managed entity.
 
@@ -992,7 +1015,7 @@ Example:
 
   Employee managedEmployee = em.find(Employee.class, 1L);
 
-  Employee mergedEmployee = em.merge(detachedEmployee);
+  Employee mergedEmployee = em.merge(detachedEmployee); //does not create another object in JVM
 
 
 Before merge():
@@ -1024,19 +1047,17 @@ Therefore:
 
 managedEmployee == mergedEmployee
 
-- Result:
-
-true
+Result: true
 
 - Hibernate does not need to create another managed object for that identity.
 
 ------------------------------------------------------------
-MERGE WITH A TRANSIENT ENTITY
+MERGE A TRANSIENT ENTITY
+------------------------------------------------------------
 
 - merge() can also receive a transient entity.
-- In this situation, JPA can create a new managed entity based on the supplied state.
-- The original object remains transient.
-- The returned object is the managed instance.
+- In this situation, JPA creates a new managed entity based.
+
 
 Example:
 
@@ -1098,6 +1119,7 @@ WHERE id = 1;
 
 ------------------------------------------------------------
 AUTOMATIC FLUSH
+------------------------------------------------------------
 
 - We do not normally have to call flush() manually every time.
 - JPA/Hibernate can automatically flush at appropriate points.
@@ -1112,6 +1134,7 @@ Example:
 
 ------------------------------------------------------------
 CLEAR
+------------------------------------------------------------
 
 clear()
 
@@ -1139,6 +1162,7 @@ empty
 
 ------------------------------------------------------------
 REFRESH
+------------------------------------------------------------
 
 refresh()
 
@@ -1221,6 +1245,7 @@ Example:
 	}
 ------------------------------------------------------------
 FLUSH VS COMMIT
+------------------------------------------------------------
 
 flush()
 
@@ -1258,41 +1283,52 @@ RELATIONSHIPS
 @ManyToOne
 @ManyToMany
 
-- Relationships can also be:
+- Relationships can be:
 
   - Unidirectional
   - Bidirectional
 
-- In a relational database, relationships are commonly represented using foreign keys or join tables.
-- In JPA, relationships allow Java objects to navigate between associated entities.
+------------------------------------------------------------
+OWNING SIDE vs INVERSE SIDE
+------------------------------------------------------------
+
+OWNING SIDE
+
+- The owning side is the side that controls the JPA relationship mapping with the Database.
+- The owning side is typically the entity containing the foreign-key mapping.
+- In JPA, though @JoinColumn is optional, it is used to represent the owning side of the relationship
+
+
+INVERSE SIDE
+
+- mappedBy tells Hibernate that this collection is the inverse representation of the same relationship and don't use it for mapping the database rows while synchronizing the changes.
+- It is used only for associating Java Objects, not database rows
+- Inverse Side enables the bidirectional relationship, making it possible to navigate from Department to List<Employee>
+- Inverse side is represented with mappedBy = "<owning_side_field_name>"
 
 ------------------------------------------------------------
-PARENT AND CHILD
+UNIDIRECTIONAL vs BIDIRECTIONAL RELATIONSHIP
+------------------------------------------------------------
 
-- "Parent" and "child" are conceptual terms.
-- They usually describe ownership/dependency between entities.
-- They are not determined simply by @OneToMany or @ManyToOne.
+UNIDIRECTIONAL:
 
-Example:
+- Only one entity has a reference to the other entity.
+- If the application only needs Employee → Department navigation, there is no need to add the reverse relationship.
 
-Department
-↓
-Employees
 
-- A Department can conceptually be treated as the parent.
-- Employees can be treated as children of that Department.
-- However, JPA ownership and parent/child dependency are separate concepts.
-- The owning side is about which side controls the database relationship mapping.
-- Parent/child is about the business/data model.
+BIDIRECTIONAL:
+
+- Both entities have references to each other.
+- Bidirectional mapping is useful when the application needs navigation in both directions.
+- It is not mandatory simply because the database relationship exists.
 
 =======================================================================================================================================================================
 MANY-TO-ONE & ONE-TO-MANY
 =======================================================================================================================================================================
 
-MANY-TO-ONE
-
+- Consider Employee and Department Entities
 - Many Employee entities can belong to one Department.
-- The foreign key is normally stored in the Employee table.
+- The foreign key is normally stored in the Employee table, so Employee is the owning side
 
 Database:
 
@@ -1313,172 +1349,31 @@ employee
 | 3  | Arun | 50000  | 20            |
 +----+------+--------+---------------+
 
-Entity:
+Employee:
 
   @ManyToOne
-  @JoinColumn(name = "department_id")
+  @JoinColumn(name = "department_id")  // the database column name
   private Department department;
+
+Department:
+
+  @OneToMany(mappedBy = "department")  // field name in Employee class
+  private List<Employee> employees;
+
 
 - Multiple Employees can reference the same Department.
 - Employee is on the many side.
 - Department is on the one side.
-
-------------------------------------------------------------
-ONE-TO-MANY
-
-- One Department can have many Employees.
-
-Department:
-
-  @OneToMany(mappedBy = "department")
-  private List<Employee> employees;
-
-Employee:
-
-  @ManyToOne
-  @JoinColumn(name = "department_id")
-  private Department department;
-
-- The Employee side owns the relationship.
-- Department.employees is the inverse side.
 - mappedBy = "department" points to Employee.department.
 
-------------------------------------------------------------
-OWNING SIDE
-
-- The owning side is the side that controls the JPA relationship mapping with the Database.
-- In a typical Many-to-One relationship, the owning side is the entity containing the foreign-key mapping.
-
-Example:
-
-  @ManyToOne
-  @JoinColumn(name = "department_id")
-  private Department department;
-
-- This field controls employee.department_id.
-
-INVERSE SIDE
-
-- mappedBy tells Hibernate that this collection is the inverse representation of the same relationship and don't use it for mapping the database rows while synchronizing the changes.
-- It does not independently control employee.department_id.
-
-Example:
-
-  @OneToMany(mappedBy = "department")
-  private List<Employee> employees;
-
-- This field is used only for associating Java Objects, not database rows
-
-------------------------------------------------------------
-WHY THE INVERSE SIDE ALONE IS NOT ENOUGH
-
-Example:
-
-department.getEmployees().add(employee);
-
-- This changes the Java collection.
-- It tells the Java object graph:
-
-Department
-↓
-contains Employee
-
-- But the owning relationship is still:
-
-employee.department
-
-- If employee.department is still null, Hibernate has no owning-side change telling it that employee.department_id should become 10.
-- Therefore, bidirectional relationship maintenance commonly does:
-
-  employee.setDepartment(department);
-  department.getEmployees().add(employee);
-
-- The first operation updates the owning side.
-- The second keeps the inverse Java collection synchronized.
-
-------------------------------------------------------------
-UNIDIRECTIONAL RELATIONSHIP
-
-- Only one entity has a reference to the other entity.
-
-Example:
-
-Employee:
-
-@ManyToOne
-@JoinColumn(name = "department_id")
-private Department department;
-
-- Department has no employees collection.
-
-Employee
-↓
-Department
-
-- This is perfectly valid.
-- If the application only needs Employee → Department navigation, there is no need to add the reverse relationship.
-
-------------------------------------------------------------
-BIDIRECTIONAL RELATIONSHIP
-
-- Both entities have references to each other.
-
-Employee:
-
-  @ManyToOne
-  @JoinColumn(name = "department_id")
-  private Department department;
-
-Department:
-
-  @OneToMany(mappedBy = "department")
-  private List<Employee> employees;
-
-Employee
-↓
-Department
-
-Department
-↓
-Employees
-
-- Bidirectional mapping is useful when the application needs navigation in both directions.
-- It is not mandatory simply because the database relationship exists.
-
-------------------------------------------------------------
-JOINCOLUMN
-
-- @JoinColumn specifies the database column used for the relationship.
-
-Example:
-
-  @ManyToOne
-  @JoinColumn(name = "department_id")
-  private Department department;
-
-Database:
-
-employee
-+----+------+---------------+
-| id | name | department_id |
-+----+------+---------------+
-| 1  | Sai  | 10            |
-+----+------+---------------+
-
-department
-+----+-------------+
-| id | name        |
-+----+-------------+
-| 10 | Engineering |
-+----+-------------+
-
-- employee.department_id references department.id.
 
 =======================================================================================================================================================================
 ONE-TO-ONE
 =======================================================================================================================================================================
 
 - One entity is associated with one other entity.
+- One User has exactly one Profile and vice versa.
+- User entity is used as owning side for database mapping.
 
 Example:
 
@@ -1489,18 +1384,18 @@ Profile
 Database:
 
 user
-+----+--------+
-| id | name   |
-+----+--------+
-| 1  | Sai    |
-+----+--------+
++----+--------+-----------+
+| id | name   |profile_id |
++----+--------+-----------+
+| 1  | Sai    |    10     |
++----+--------+-----------+
 
 profile
-+----+---------+-----------+
-| id | user_id | address   |
-+----+---------+-----------+
-| 10 | 1       | Hyderabad |
-+----+---------+-----------+
++----+-----------+
+| id | address   |
++----+-----------+
+| 10 | Hyderabad |
++----+-----------+
 
 Example:
 
@@ -1566,7 +1461,9 @@ Example:
 LAZY/EAGER LOADING & PROXIES
 =======================================================================================================================================================================
 
+------------------------------------------------------------
 LAZY LOADING
+------------------------------------------------------------
 
 - Lazy loading means an associated entity/collection is not necessarily loaded when the owning entity is initially loaded.
 - Hibernate can represent the association using a proxy or another lazy-loading mechanism.
@@ -1603,6 +1500,7 @@ Department loaded
 
 ------------------------------------------------------------
 EAGER LOADING
+------------------------------------------------------------
 
 - Eager loading means the association is expected to be available when the entity is loaded.
 - EAGER does not necessarily mean Hibernate must use one SQL JOIN.
@@ -1619,6 +1517,7 @@ JPA defaults:
 
 ------------------------------------------------------------
 PROXIES
+------------------------------------------------------------
 
 - Hibernate can use proxy objects for lazy loading.
 - A proxy represents an entity/association whose complete data has not yet been initialized.
@@ -1640,6 +1539,7 @@ SQL query
 
 ------------------------------------------------------------
 LAZYINITIALIZATIONEXCEPTION
+------------------------------------------------------------
 
 - A lazy association generally needs an active Persistence Context when Hibernate has to initialize it.
 - If the Persistence Context has already been closed, Hibernate may be unable to load the association.
@@ -1685,6 +1585,7 @@ CascadeType.ALL
 
 ------------------------------------------------------------
 CASCADE DIRECTION
+------------------------------------------------------------
 
 Example:
 
@@ -1774,6 +1675,7 @@ Example:
 
 ------------------------------------------------------------
 JPQL PARAMETERS
+------------------------------------------------------------
 
 Example:
 
@@ -1790,6 +1692,7 @@ Example:
 
 ------------------------------------------------------------
 JPQL RELATIONSHIP NAVIGATION
+------------------------------------------------------------
 
 - JPQL can navigate entity relationships.
 
@@ -1805,6 +1708,7 @@ Example:
 
 ------------------------------------------------------------
 JOIN
+------------------------------------------------------------
 
 - JPQL JOIN can be used to join an entity with its associated entity.
 - The joined entity can then be used for filtering or other query logic.
@@ -1894,6 +1798,7 @@ Conceptually:
 
 ------------------------------------------------------------
 N+1 SOLUTION #1: JOIN FETCH
+------------------------------------------------------------
 
 - JOIN FETCH tells JPA/Hibernate to fetch the associated entity as part of the query result.
 
@@ -1916,6 +1821,7 @@ department
 
 ------------------------------------------------------------
 N+1 SOLUTION #2: ENTITY GRAPH
+------------------------------------------------------------
 
 - An Entity Graph is a JPA mechanism for defining which attributes/relationships should be fetched for a particular operation.
 - It separates the fetch plan from the JPQL query itself.
@@ -1941,6 +1847,7 @@ Attributes/relationships to fetch
 
 ------------------------------------------------------------
 JOIN FETCH VS ENTITY GRAPH
+------------------------------------------------------------
 
 JOIN FETCH
 
@@ -2045,6 +1952,7 @@ AND version = 3
 
 ------------------------------------------------------------
 PESSIMISTIC LOCKING
+------------------------------------------------------------
 
 - Pessimistic locking requests a database lock while the transaction is working with the data.
 - JPA provides standard pessimistic lock modes.
@@ -2074,6 +1982,7 @@ Example:
 
 ------------------------------------------------------------
 BUS SEAT EXAMPLE
+------------------------------------------------------------
 
 - Suppose two users try to book the same seat.
 
@@ -2132,6 +2041,7 @@ Conflict detected
 
 ------------------------------------------------------------
 OPTIMISTIC VS PESSIMISTIC
+------------------------------------------------------------
 
 Optimistic:
 
@@ -2164,6 +2074,7 @@ CACHING
 
 ------------------------------------------------------------
 LEVEL 1 CACHE
+------------------------------------------------------------
 
 - The Persistence Context acts as Hibernate's first-level cache.
 - It is enabled by default.
@@ -2197,6 +2108,7 @@ Employee id = 1
 
 ------------------------------------------------------------
 LEVEL 2 CACHE
+------------------------------------------------------------
 
 - L2 cache is an optional Hibernate cache.
 - It is associated with the SessionFactory/EntityManagerFactory rather than one Persistence Context.
@@ -2233,6 +2145,7 @@ L2
 
 ------------------------------------------------------------
 QUERY CACHE
+------------------------------------------------------------
 
 - Hibernate's query cache stores information about query results.
 - It is different from the L1 and L2 entity caches.
@@ -2260,6 +2173,7 @@ Employee entity data
 
 ------------------------------------------------------------
 CACHE LEVELS
+------------------------------------------------------------
 
 L1 Cache
 
@@ -2294,6 +2208,7 @@ PAGINATION
 
 ------------------------------------------------------------
 OFFSET PAGINATION
+------------------------------------------------------------
 
 - Offset pagination uses:
 
@@ -2350,6 +2265,7 @@ Implementation:
 
 ------------------------------------------------------------
 CURSOR / KEYSET PAGINATION
+------------------------------------------------------------
 
 - Cursor pagination uses a cursor representing the position from which the next page should be retrieved.
 - Keyset pagination commonly uses an ordered column such as id.
@@ -2408,6 +2324,7 @@ Implementation:
 ]
 ------------------------------------------------------------
 OFFSET VS CURSOR
+------------------------------------------------------------
 
 Offset:
 
