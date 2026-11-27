@@ -22,16 +22,27 @@ DCL		Permissions		GRANT, REVOKE
 
 Order of Execution:
 
-SELECT dept, AVG(salary) AS avg_sal
+SELECT department_name, AVG(salary) AS avg_sal
 FROM employee e
 JOIN department d
-ON e.dept_id = d.id
+ON e.department_id = d.department_id
 WHERE salary > 50000
-GROUP BY dept
+GROUP BY department_name
+HAVING COUNT(*) >= 2
+ORDER BY avg_sal DESC
+OFFSET 2
+LIMIT 10;
+
+FROM employee e
+LEFT JOIN department d
+ON e.dept_id = d.id
+WHERE salary > 70000
+GROUP BY e.department_id
 HAVING COUNT(*) >= 2
 ORDER BY avg_sal DESC
 OFFSET 
 LIMIT 10;
+
 
 From -> Join On -> Where -> Group By -> Having -> Select columns -> Order By -> OFFSET -> LIMIT
 
@@ -111,18 +122,24 @@ Returns:
 - Unmatched records from the right table.
 
 ------------------------------------------------------------
-CROSS JOIN
-------------------------------------------------------------
-
-- Result = (Table A rows count)5 × (Table B rows count)4 = 20 records.
-- Useful when generating combinations, such as products and available sizes.
-
-------------------------------------------------------------
 SELF JOIN
 ------------------------------------------------------------
 
 - A table joins with itself.
 - Use Left join
+
+------------------------------------------------------------
+ON AND
+------------------------------------------------------------
+
+
+
+------------------------------------------------------------
+CROSS JOIN
+------------------------------------------------------------
+
+- Result = (Table A rows count)5 × (Table B rows count)4 = 20 records.
+- Useful when generating combinations, such as products and available sizes.
 
 ------------------------------------------------------------
 UNION & UNION ALL
@@ -136,15 +153,69 @@ UNION & UNION ALL
 Subqueries:
 ------------------------------------------------------------
 
-Single-row subquery - <, >, =, !=, IS, NOT IS
-Multi-row subquery - IN
-Multi-column subquery - IN
-EXISTS & NOT EXISTS
-Correlated vs Non-Correlated Subquery 
+Where can subqueries be used in a query:
+
+- In SELECT clause (Scalar Subquery)
+- In FROM / JOIN clauses (Derived Table)
+- In WHERE clause
+- In HAVING clause
+
+
+Single-row subquery: 
+
+- A subquery that generates a result of single row, single column 
+- In WHERE & HAVING clauses, it must be used with <, >, =, !=, IS, NOT IS
+
+
+Multi-row subquery:
+
+- A subquery that generates a result of multiple rows, single column
+- In WHERE & HAVING clauses, it is used with IN / NOT IN operators
+
+
+Multi-column subquery:
+
+- Subqueries that generate a result with multiple columns is compared with:
+	- '=' if there is only one row
+	- IN / NOT IN if there are multiple rows
+
+
+EXISTS & NOT EXISTS:
+
+
+
+
+Correlated Subquery:
+
+SELECT e.*
+FROM employee e
+WHERE e.salary = (
+    SELECT MAX(e2.salary)
+    FROM employee e2
+    WHERE e2.department_id = e.department_id
+);
+
 
 ===================================================================================================================================================================
 3. Aggregations and SQL problems
 ===================================================================================================================================================================
+
+------------------------------------------------------------
+Conditional Aggregation:
+------------------------------------------------------------
+
+Find the number of employees earning above and below 70,000 in each department.
+
+SELECT
+    department_id,
+    COUNT(CASE WHEN salary > 70000 THEN 1 END) AS high_salary_count,
+    COUNT(CASE WHEN salary <= 70000 THEN 1 END) AS low_salary_count
+FROM employee
+GROUP BY department_id;
+
+------------------------------------------------------------
+Ranks
+------------------------------------------------------------
 
 
 ===================================================================================================================================================================

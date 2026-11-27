@@ -958,65 +958,6 @@ Transaction completion
 
 
 
-- Some important internal components:
-
-Component			Responsibility
-------------------------------------------------------------------
-@Transactional			Declares transaction configuration
-TransactionInterceptor		Intercepts method invocation
-TransactionAttributeSource	Reads transaction metadata
-PlatformTransactionManager	Manages transaction lifecycle
-DataSourceTransactionManager	Manages JDBC transactions
-JpaTransactionManager		Manages JPA transactions
-
-
-------------------------------------------------------------
-Rollback rules
-------------------------------------------------------------
-
-- By default, Spring rolls back for: RuntimeException, Error
-- Spring does NOT roll back by default for checked exceptions.
-
-
-Example:
-
-@Transactional
-public void createOrder() throws IOException {
-
-    orderRepository.save(new Order());
-    throw new IOException("File processing failed");
-}
-
-
-- The transaction is committed by default, despite the IOException.
-- To change this:
-
-
-@Transactional(rollbackFor = Exception.class)
-
-
-- can also specify:
-
-
-@Transactional(
-    rollbackFor = IOException.class,
-    noRollbackFor = IllegalArgumentException.class
-)
-
-
-------------------------------------------------------------
-Transaction propagation
-------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
 =============================================================================================================================================================================
 @Async:
 =============================================================================================================================================================================

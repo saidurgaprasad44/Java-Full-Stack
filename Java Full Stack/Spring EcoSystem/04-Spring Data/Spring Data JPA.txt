@@ -285,7 +285,7 @@ Example:
 
 
 =======================================================================================================================================================================
-Method-Name Query Derivation
+Query Methods:
 =======================================================================================================================================================================
 
 - Spring Data JPA can derive a query from a repository method name declared explicitly in repository interfaces.
@@ -502,9 +502,7 @@ public interface UserRepo extends JpaRepository<User, Integer> {
     @Query(
         "SELECT u FROM User u WHERE u.name = :name"
     )
-    User findByName(
-        @Param("name") String name
-    );
+    User findByName(@Param("name") String name);
 }
 
 
@@ -604,35 +602,11 @@ Modifying Queries and Persistence Context
 
 - @Modifying provides options such as:
 
-    clearAutomatically = true
+    @Modifying(clearAutomatically = true)
 
 - This can be useful when managed entities may otherwise contain stale state.
 
 
-
-=======================================================================================================================================================================
-Repository & JPA Integration
-=======================================================================================================================================================================
-
-- Spring Data JPA repositories ultimately interact with JPA through the EntityManager.
-- The repository abstraction hides most direct EntityManager interaction from application code.
-
-
-------------------------------------------------------------
-When to Use EntityManager Directly
-------------------------------------------------------------
-
-- Spring Data JPA does not prevent direct EntityManager usage.
-- Direct EntityManager access can be useful when:
-  - a query is highly customized
-  - complex persistence operations are required
-  - JPA APIs provide functionality not exposed conveniently by a repository
-  - custom repository behavior is required
-
-Example:
-
-    @PersistenceContext
-    private EntityManager entityManager;
 
 
 ------------------------------------------------------------
@@ -723,13 +697,80 @@ Query Features
 
 - @EntityGraph can specify which related entities should be fetched as part of a repository query.
 - It is useful when controlling fetching behavior without rewriting the entire query.
+- This is particularly useful when dealing with relationships and avoiding unnecessary lazy-loading queries.
+
 
 Example:
 
-    @EntityGraph(attributePaths = {"orders"})
-    Optional<User> findById(Long id);
+@Repository
+public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
-- This is particularly useful when dealing with relationships and avoiding unnecessary lazy-loading queries.
+    @EntityGraph(attributePaths = {"employees"})  //attribute/collection name in Department entity
+    List<Department> findAll();
+}
+
+
+Service Method:
+
+List<Department> departments = departmentRepository.findAll(); //fetches employees along with departments
+
+
+
+Named Entity Graph:
+
+@Entity
+@NamedEntityGraph(
+    name = "Department.withEmployees",
+    attributeNodes = {
+        @NamedAttributeNode("employees")
+    }
+)
+public class Department {
+
+    @Id
+    private Long id;
+
+    private String name;
+
+    @OneToMany(mappedBy = "department",
+               fetch = FetchType.LAZY)
+    private List<Employee> employees;
+}
+
+
+Repository:
+
+@Repository
+public interface DepartmentRepository
+        extends JpaRepository<Department, Long> {
+
+    @EntityGraph(
+        value = "Department.withEmployees",
+        type = EntityGraph.EntityGraphType.FETCH
+    )
+    List<Department> findAll();
+}
+
+
+
+Fetching Nested Relationships:
+
+Order
+  |
+  | ManyToOne
+  |
+Customer
+  |
+  | ManyToOne
+  |
+Address
+
+
+@EntityGraph(attributePaths = {
+    "customer",
+    "customer.address"
+})
+Optional<Order> findById(Long id);
 
 
 ------------------------------------------------------------
@@ -745,6 +786,7 @@ Example:
     User findForUpdate(@Param("id") Long id);
 
 - The actual locking semantics are provided by JPA and the underlying database.
+- For optimistic lock use @Version
 
 
 ------------------------------------------------------------
@@ -758,7 +800,7 @@ Example:
 
     @QueryHints({
         @QueryHint(
-            name = "org.hibernate.readOnly",
+            name = "org.hibernate.readOnly",		// Reduces Hibernate entity dirty-checking overhead
             value = "true"
         )
     })
@@ -772,15 +814,6 @@ Example:
 Pagination and Sorting
 =======================================================================================================================================================================
 
-------------------------------------------------------------
-Why Pagination
-------------------------------------------------------------
-
-- Returning every record from a large table can consume significant:
-  - database resources
-  - memory
-  - network bandwidth
-  - application processing time
 
 - Pagination retrieves data in smaller portions.
 
@@ -797,51 +830,24 @@ Conceptually:
        +--> Page 2 → 20 users
 
 
-------------------------------------------------------------
-Pageable
-------------------------------------------------------------
 
 - Pageable represents pagination information such as:
   - page number
   - page size
   - sorting
 
+- Page numbers are zero-based, meaning 1st page starts from Page number 0.
+- Spring Data JPA automatically applies pagination to the query
+- It generally executes a separate count query to calculate total elements.
+
+
 Example:
 
     Pageable pageable = PageRequest.of(0, 20);
-
     Page<User> page = userRepository.findAll(pageable);
 
 
-------------------------------------------------------------
-PageRequest
-------------------------------------------------------------
-
-- PageRequest is a common implementation of Pageable.
-
-Example:
-
-    Pageable pageable = PageRequest.of(0, 20);
-
-- Page numbers are zero-based.
-
-    Page 0
-    Page 1
-    Page 2
-    ...
-
-
-------------------------------------------------------------
-Page
-------------------------------------------------------------
-
-- Page<T> represents a page of results along with pagination metadata.
-
-Example:
-
-    Page<User> page = userRepository.findAll(PageRequest.of(0, 20));
-
-Useful information includes:
+- Useful information in Page:
 
     page.getContent()
     page.getNumber()
@@ -850,6 +856,35 @@ Useful information includes:
     page.getTotalPages()
     page.hasNext()
     page.hasPrevious()
+
+
+------------------------------------------------------------
+Pagination with Query Methods
+------------------------------------------------------------
+
+Example:
+
+    Page<User> findByRole(String role, Pageable pageable);
+
+Usage:
+
+    Pageable pageable = PageRequest.of(0, 20);
+    Page<User> users = userRepository.findByRole("admin", pageable);
+
+
+------------------------------------------------------------
+Pagination with @Query
+------------------------------------------------------------
+
+Example:
+
+    @Query(
+        "SELECT u FROM User u WHERE u.role = :role"
+    )
+    Page<User> findUsersByRole(@Param("role") String role, Pageable pageable);
+
+
+- Spring Data JPA applies the pagination information to the query.
 
 
 ------------------------------------------------------------
@@ -875,7 +910,6 @@ Sort
 Example:
 
     Sort sort = Sort.by("name").ascending();
-
     List<User> users = userRepository.findAll(sort);
 
 Descending:
@@ -884,80 +918,62 @@ Descending:
 
 
 ------------------------------------------------------------
-Pagination with Query Methods
-------------------------------------------------------------
-
-Example:
-
-    Page<User> findByRole(String role, Pageable pageable);
-
-Usage:
-
-    Pageable pageable = PageRequest.of(0, 20);
-
-    Page<User> users = userRepository.findByRole("admin", pageable);
-
-
-------------------------------------------------------------
-Pagination with @Query
-------------------------------------------------------------
-
-Example:
-
-    @Query(
-        "SELECT u FROM User u WHERE u.role = :role"
-    )
-    Page<User> findUsersByRole(
-        @Param("role") String role,
-        Pageable pageable
-    );
-
-- Spring Data JPA applies the pagination information to the query.
-
-
-------------------------------------------------------------
 Combining Pagination and Sorting
 ------------------------------------------------------------
 
 Example:
 
-    Pageable pageable = PageRequest.of(0, 20, Sort.by("name").ascending());
+Request:
 
-    Page<User> users = userRepository.findAll(pageable);
+    GET /users?role=ADMIN&page=0&size=10&sortBy=name&direction=ASC
+
+
+Controller:
+
+    @GetMapping
+    public Page<User> findUsersByRole(
+            @RequestParam String role,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "ASC") String direction) {
+
+        return userService.findUsersByRole(role, page, size, sortBy, direction);
+
+
+Service:
+
+    public Page<User> findUsersByRole(
+            String role,
+            int page,
+            int size,
+            String sortBy,
+            String direction) {
+
+        Sort sort = direction.equalsIgnoreCase("DESC")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return userRepository.findByRole(role, pageable);
+    }
+
+
+Repository:
+
+    @Repository
+    public interface UserRepository extends JpaRepository<User, Long> {
+
+        Page<User> findByRole(String role, Pageable pageable);
+    }
+
 
 - Pageable can therefore represent both pagination and sorting requirements.
-
 
 
 =======================================================================================================================================================================
 Transactions
 =======================================================================================================================================================================
-
-------------------------------------------------------------
-Repository Operations and Transactions
-------------------------------------------------------------
-
-- Repository methods participate in Spring's transaction management.
-- Transaction boundaries are normally defined at the service layer.
-
-Example:
-
-    @Service
-    public class UserService {
-
-        @Transactional
-        public void createUser(User user) {
-            userRepository.save(user);
-        }
-    }
-
-- The repository performs the persistence operation.
-- The service defines the business transaction boundary.
-
-
-------------------------------------------------------------
-@Transactional
-------------------------------------------------------------
 
 - @Transactional defines a Spring-managed transaction boundary.
 
@@ -967,13 +983,22 @@ Example:
     public void transferMoney() {
 
         accountRepository.debit(...);
-
         accountRepository.credit(...);
     }
 
 - Both operations participate in the same transaction.
 - If the transaction succeeds, changes can be committed together.
 - If the transaction is rolled back, the transaction's database changes are rolled back according to the transaction configuration.
+- Some important internal components:
+
+Component			Responsibility
+------------------------------------------------------------------
+@Transactional			Declares transaction configuration
+TransactionInterceptor		Intercepts method invocation
+TransactionAttributeSource	Reads transaction metadata
+PlatformTransactionManager	Manages transaction lifecycle
+DataSourceTransactionManager	Manages JDBC transactions
+JpaTransactionManager		Manages JPA transactions
 
 
 ------------------------------------------------------------
@@ -985,13 +1010,14 @@ Repository Transaction Semantics
 
 Example:
 
+Service Layer:
+
     @Transactional
     public void createOrder(Order order) {
 
         orderRepository.save(order);
 
         inventoryRepository.updateStock(...);
-
         paymentRepository.recordPayment(...);
     }
 
@@ -1023,17 +1049,76 @@ Example:
 
 
 
+------------------------------------------------------------
+Rollback rules
+------------------------------------------------------------
+
+- By default, Spring rolls back for: RuntimeException, Error
+- Spring does NOT roll back by default for checked exceptions.
+
+
+Example:
+
+@Transactional
+public void createOrder() throws IOException {
+
+    orderRepository.save(new Order());
+    throw new IOException("File processing failed");
+}
+
+
+- The transaction is committed by default, despite the IOException.
+- To change this:
+
+
+@Transactional(rollbackFor = Exception.class)
+
+
+- can also specify:
+
+
+@Transactional(
+    rollbackFor = IOException.class,
+    noRollbackFor = IllegalArgumentException.class
+)
+
+
+------------------------------------------------------------
+Transaction Propagation
+------------------------------------------------------------
+
+
+Propagation	Behavior
+---------------------------------------------------------------
+REQUIRED	Join existing transaction; otherwise create one
+REQUIRES_NEW	Always create a new transaction; suspend existing one
+SUPPORTS	Join existing transaction if available; otherwise execute without one
+NOT_SUPPORTED	Suspend existing transaction and execute without one
+MANDATORY	Must have an existing transaction; otherwise exception
+NEVER		Must not have an existing transaction; otherwise exception
+NESTED		Execute within a nested transaction, typically using savepoints
+
+
+
+
+------------------------------------------------------------
+Transaction Isolation Levels
+------------------------------------------------------------
 
 
 
 
 
+------------------------------------------------------------
+Important Attributes
+------------------------------------------------------------
 
 
 
 
-
-
+------------------------------------------------------------
+Production Pitfalls
+------------------------------------------------------------
 
 
 
