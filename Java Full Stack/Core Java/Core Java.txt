@@ -474,7 +474,7 @@ default:
 Methods: Allowed developers to add method implementations inside interfaces using the default keyword without breaking existing implementing classes.
 
 ------------------------------------------------------------
-Sealed (Java 17+):
+sealed (Java 17+):
 ------------------------------------------------------------
 
 - Restricts which other classes can extend it

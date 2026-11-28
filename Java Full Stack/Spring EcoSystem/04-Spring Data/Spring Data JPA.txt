@@ -975,38 +975,10 @@ Repository:
 Transactions
 =======================================================================================================================================================================
 
-- @Transactional defines a Spring-managed transaction boundary.
-
-Example:
-
-    @Transactional
-    public void transferMoney() {
-
-        accountRepository.debit(...);
-        accountRepository.credit(...);
-    }
-
-- Both operations participate in the same transaction.
-- If the transaction succeeds, changes can be committed together.
-- If the transaction is rolled back, the transaction's database changes are rolled back according to the transaction configuration.
-- Some important internal components:
-
-Component			Responsibility
-------------------------------------------------------------------
-@Transactional			Declares transaction configuration
-TransactionInterceptor		Intercepts method invocation
-TransactionAttributeSource	Reads transaction metadata
-PlatformTransactionManager	Manages transaction lifecycle
-DataSourceTransactionManager	Manages JDBC transactions
-JpaTransactionManager		Manages JPA transactions
-
-
-------------------------------------------------------------
-Repository Transaction Semantics
-------------------------------------------------------------
-
 - Spring Data JPA provides transactional behavior for repository operations.
 - However, application-level business operations involving multiple repository calls should generally have a transaction boundary at the service layer.
+- @Transactional defines a Spring-managed transaction boundary.
+
 
 Example:
 
@@ -1021,14 +993,56 @@ Service Layer:
         paymentRepository.recordPayment(...);
     }
 
-- This ensures the related operations participate in the same transaction.
 
+- This ensures the related operations participate in the same transaction.
+- If the transaction succeeds, changes can be committed together.
+- If the transaction is rolled back, the transaction's database changes are rolled back according to the transaction configuration.
+
+------------------------------------------------------------
+Important internal components:
+------------------------------------------------------------
+
+Component			Responsibility
+-------------------------------------------------------------
+@Transactional			Declares transaction configuration
+TransactionInterceptor		Intercepts method invocation
+TransactionAttributeSource	Reads transaction metadata
+PlatformTransactionManager	Manages transaction lifecycle
+DataSourceTransactionManager	Manages JDBC transactions
+JpaTransactionManager		Manages JPA transactions
+
+
+------------------------------------------------------------
+Important Attributes
+------------------------------------------------------------
+
+
+Attribute	Purpose
+-------------------------------------
+readOnly	Declares a read-only transaction hint
+rollbackFor	Exceptions that trigger rollback
+noRollbackFor	Exceptions that should not trigger rollback
+propagation	Transaction participation behavior
+isolation	Isolation level
+timeout		Transaction timeout in seconds
+
+
+Example:
+
+@Transactional(
+    propagation = Propagation.REQUIRED,
+    isolation = Isolation.READ_COMMITTED,
+    timeout = 30,
+    readOnly = true,
+    rollbackFor = Exception.class
+)
 
 ------------------------------------------------------------
 readOnly
 ------------------------------------------------------------
 
-- @Transactional(readOnly = true) can be used to indicate that a transaction is intended for read operations.
+- readOnly = true can be used to indicate that a transaction is intended for read operations.
+- With Hibernate, this can allow optimizations such as reduced dirty checking.
 
 Example:
 
@@ -1038,15 +1052,8 @@ Example:
                 .orElseThrow();
     }
 
-- readOnly is primarily a transaction-level hint.
-- It should not be interpreted as an absolute guarantee that every write operation is technically impossible.
-
-
-
-
-
-
-
+- But readOnly = true is not a universal guarantee that database writes are impossible.
+- readOnly = true is primarily a transaction-level hint.
 
 
 ------------------------------------------------------------
@@ -1068,13 +1075,13 @@ public void createOrder() throws IOException {
 
 
 - The transaction is committed by default, despite the IOException.
-- To change this:
+- To change this, you can specify:
 
 
 @Transactional(rollbackFor = Exception.class)
 
 
-- can also specify:
+- You can also specify:
 
 
 @Transactional(
@@ -1087,10 +1094,13 @@ public void createOrder() throws IOException {
 Transaction Propagation
 ------------------------------------------------------------
 
+- Propagation determines what happens when a transactional method calls another transactional method.
+- Usually talks about the propagation from a service method to another service method
+
 
 Propagation	Behavior
 ---------------------------------------------------------------
-REQUIRED	Join existing transaction; otherwise create one
+REQUIRED	Join existing transaction if one exists; otherwise create a new one
 REQUIRES_NEW	Always create a new transaction; suspend existing one
 SUPPORTS	Join existing transaction if available; otherwise execute without one
 NOT_SUPPORTED	Suspend existing transaction and execute without one
@@ -1099,30 +1109,181 @@ NEVER		Must not have an existing transaction; otherwise exception
 NESTED		Execute within a nested transaction, typically using savepoints
 
 
+REQUIRED (default):
+
+- Both methods participate in the same transaction.
+
+@Transactional
+public void methodA() {
+    methodB();
+}
+
+@Transactional(propagation = Propagation.REQUIRED)
+public void methodB() {
+    // Database operation
+}
+
+- If methodB() fails with an applicable exception and the exception propagates, the entire transaction rolls back.
+
+
+
+REQUIRES_NEW:
+
+- Both methods participate in different transactions
+
+@Transactional
+public void methodA() {
+    orderRepository.save(order);
+    auditService.recordActivity();
+}
+
+@Transactional(propagation = Propagation.REQUIRES_NEW)
+public void recordActivity() {
+    auditRepository.save(audit);
+}
 
 
 ------------------------------------------------------------
 Transaction Isolation Levels
 ------------------------------------------------------------
 
+- Isolation levels define how much one database transaction is isolated from the changes made by other concurrent transactions.
+
+
+Three important concurrency problems:
+
+1. Dirty read: 
+
+- A dirty read happens when one transaction reads data modified by another transaction that has not yet committed.
+
+Example:
+
+- Initially, employee salary = ₹50,000.
+
+Step	Transaction T1			Transaction T2
+--------------------------------------------------------------
+1	Updates salary to ₹70,000	
+2					Reads salary = ₹70,000
+3	Rolls back	
+4					Has already used ₹70,000
+
+Problem: T2 read a value that was never actually committed.
 
 
 
+2. Non-repeatable read:
 
-------------------------------------------------------------
-Important Attributes
-------------------------------------------------------------
+- A non-repeatable read happens when the same transaction reads the same row twice but gets different values because another transaction updated and committed that row in between.
+
+Example:
+
+- Initially, salary = ₹50,000.
+
+Step	Transaction T1			Transaction T2
+--------------------------------------------------------------
+1	Reads salary = ₹50,000	
+2					Updates salary to ₹70,000
+3					Commits
+4	Reads salary = ₹70,000
+
+Problem: T1 gets different results for the same row within the same transaction.
 
 
 
+3. Phantom read:
+
+- A phantom read happens when a transaction executes the same query twice and gets a different set of rows.
+- Because another transaction inserted or deleted rows matching the query condition.
+
+Example:
+
+- Suppose T1 executes:
+
+SELECT *
+FROM employee
+WHERE department_id = 10;
+
+- Initially, it returns 5 employees.
+- Meanwhile, T2 inserts another employee into department 10 and commits.
+- T1 executes the same query again and now gets 6 employees.
+
+Problem: A new matching row appeared in the result set.
+
+
+
+- Spring supports four standard isolation levels:
+
+Isolation		Prevents
+-------------------------------------
+READ_UNCOMMITTED	Lowest level, No dirty-read prevention guarantee
+READ_COMMITTED		Dirty reads (Common production case)
+REPEATABLE_READ		Dirty and non-repeatable reads
+SERIALIZABLE		Dirty, non-repeatable and phantom reads
+
+Example:
+
+@Transactional(isolation = Isolation.READ_COMMITTED)
+public Employee getEmployee(Long id) {
+    return employeeRepository.findById(id)
+            .orElseThrow();
+}
+
+
+- Spring by default uses @Transactional(isolation = Isolation.DEFAULT) - The database's configured default isolation level.
+
+
+How does isolation work with Spring transaction propagation?
+
+- REQUIRED joining an existing transaction inherits its transaction characteristics.
+- REQUIRES_NEW creates an independent transaction and can use its own isolation level.
+
+
+Note: 
+
+- Isolation levels alone are not a substitute for implementing the correct concurrency-control strategy.
+- Example: With stock = 1, two users attempt to purchase simultaneously, the setting @Transactional(isolation = Isolation.REPEATABLE_READ) doesn't prevent both users from purchasing.
+- Solutions are Optimistic, Pessimistic locks, Atomic conditional update etc.
 
 ------------------------------------------------------------
 Production Pitfalls
 ------------------------------------------------------------
 
+Self-invocation problem: 
+
+- Put the transactional method in a separate Spring-managed service and invoke it through that bean.
 
 
+Private methods:
 
+@Transactional
+private void saveOrder() {
+}
+
+- In standard Spring proxy-based transaction management, private methods cannot be intercepted as transactional entry points.
+- Prefer public methods called through the Spring proxy.
+
+
+Catching exceptions:
+
+@Transactional
+public void processOrder() {
+    try {
+        orderRepository.save(order);
+        throw new RuntimeException();
+    } catch (Exception e) {
+        log.error("Error occurred", e);
+    }
+}
+
+- Here the exception is swallowed. Spring sees normal method completion and may commit the transaction.
+- A further complication: the transaction could already have been marked rollback-only by an inner transactional operation. 
+- In that case, commit may result in UnexpectedRollbackException.
+- Solution: Rethrow the exception or explicitly mark the transaction rollback-only when appropriate.
+
+
+Long-running transactions: 
+
+- Keep database transactions short. Avoid network calls inside long-running database transactions whenever possible.
 
 =======================================================================================================================================================================
 PROJECTIONS
@@ -1265,7 +1426,6 @@ Example requirement:
 
 - Loading a large entity with many relationships may be unnecessary.
 - Projection is therefore useful for read-oriented queries.
-
 - Detailed projection mechanisms are covered separately.
 
 
@@ -1300,6 +1460,8 @@ Configuration
 
 Final setup:
 
+
+
     Spring ApplicationContext
              |
              v
@@ -1308,13 +1470,15 @@ Final setup:
              v
     EntityManagerFactory
              |
-        +----+----+----------------+
-        |         |                |
-        v         v                v
-     Entities  Hibernate       JPA properties
+        +----+----+------------+
+        |         |            |
+        v         v            v
+     Entities  Hibernate  JPA properties
                  |
                  v
              Database
+
+
 
     EntityManagerFactory
              |
@@ -1323,6 +1487,8 @@ Final setup:
              |
              v
        @Transactional
+
+
 
     @EnableJpaRepositories
              |
@@ -1334,7 +1500,6 @@ Final setup:
 Spring Application Context
 ------------------------------------------------------------
 
-- Spring's ApplicationContext is the container that creates and manages the application's Spring beans.
 - JPA infrastructure is registered as Spring beans in ApplicationContext so that it can participate in dependency injection and lifecycle management.
 
 Example:
@@ -1375,29 +1540,12 @@ Example:
         return dataSource;
     }
 
-Configuration purpose:
-
-    Driver
-        → Which JDBC driver to use
-
-    URL
-        → Which database to connect to
-
-    Username / Password
-        → Database credentials
-
-    DataSource
-        → Provides database connections
-
 
 ------------------------------------------------------------
 EntityManagerFactory
 ------------------------------------------------------------
 
-- EntityManagerFactory is the main JPA infrastructure object.
-- It creates EntityManagers used by the application to perform persistence operations.
-- In Spring, it is created and managed as part of the Spring configuration.
-
+- In Spring, EntityManagerFactory is created and managed as part of the Spring configuration.
 - A common Spring configuration mechanism is:
 
     LocalContainerEntityManagerFactoryBean
@@ -1432,7 +1580,6 @@ Example:
     emf.setPersistenceUnitName("myPU");
 
 - The name is simply the name of the persistence unit.
-
 - The important difference is:
 
     Without Spring:
@@ -1564,14 +1711,10 @@ The previous pieces come together here:
         emf.setPersistenceUnitName("myPU");
 
         // JPA entity packages
-        emf.setPackagesToScan(
-                "com.example.entity"
-        );
+        emf.setPackagesToScan("com.example.entity");
 
         // JPA provider
-        emf.setJpaVendorAdapter(
-                new HibernateJpaVendorAdapter()
-        );
+        emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
         // Hibernate/JPA properties
         Properties properties = new Properties();
@@ -1602,16 +1745,6 @@ Example:
     }
 
 - The transaction manager receives the EntityManagerFactory that was configured above.
-
-Relationship:
-
-    EntityManagerFactory
-             |
-             v
-    JpaTransactionManager
-             |
-             v
-    Spring Transactions
 
 
 ------------------------------------------------------------
@@ -1670,9 +1803,13 @@ Flow:
 
 Example:
 
+    @Configuration
+    @EnableTransactionManagement
     @EnableJpaRepositories(
         basePackages = "com.example.repository"
     )
+    public class JpaConfig {
+    }
 
 Suppose:
 
@@ -1718,14 +1855,11 @@ A simplified complete configuration without Spring Boot:
         @Bean
         public DataSource dataSource() {
 
-            DriverManagerDataSource dataSource =
-                    new DriverManagerDataSource();
+            DriverManagerDataSource dataSource = new DriverManagerDataSource();
 
-            dataSource.setDriverClassName(
-                    "com.mysql.cj.jdbc.Driver");
+            dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
 
-            dataSource.setUrl(
-                    "jdbc:mysql://localhost:3306/app");
+            dataSource.setUrl("jdbc:mysql://localhost:3306/app");
 
             dataSource.setUsername("root");
             dataSource.setPassword("password");
@@ -1735,27 +1869,19 @@ A simplified complete configuration without Spring Boot:
 
 
         @Bean
-        public LocalContainerEntityManagerFactoryBean
-                entityManagerFactory(
-                    DataSource dataSource) {
+        public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
 
-            LocalContainerEntityManagerFactoryBean emf =
-                    new LocalContainerEntityManagerFactoryBean();
+            LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
 
             emf.setDataSource(dataSource);
 
             emf.setPersistenceUnitName("myPU");
 
-            emf.setPackagesToScan(
-                    "com.example.entity"
-            );
+            emf.setPackagesToScan("com.example.entity");
 
-            emf.setJpaVendorAdapter(
-                    new HibernateJpaVendorAdapter()
-            );
+            emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
-            Properties properties =
-                    new Properties();
+            Properties properties = new Properties();
 
             properties.setProperty(
                     "hibernate.dialect",
@@ -1774,9 +1900,7 @@ A simplified complete configuration without Spring Boot:
 
 
         @Bean
-        public PlatformTransactionManager
-                transactionManager(
-                    EntityManagerFactory emf) {
+        public PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
 
             return new JpaTransactionManager(emf);
         }

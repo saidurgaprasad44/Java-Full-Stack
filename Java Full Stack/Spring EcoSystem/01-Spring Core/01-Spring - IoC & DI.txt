@@ -409,6 +409,7 @@ Autowiring:
 
 
 	- Note: Both autowire "byName" and "byType" perform setter-based injection, while "constructor" performs constructor injection.
+
 ------------------------------------------------------------
 
 Plugging and Unplugging:
@@ -618,7 +619,6 @@ public class UserService {
     public UserService(@Qualifier("oracleDatabase") Database database) {
         this.database = database;
     }
-
 }
 
 - @Autowired is not needed on constructor, when there is only one constructor.
@@ -676,7 +676,8 @@ Spring 3.x (Java Configuration)
 
 Goal: Replace XML with Java Configuration.
 
-Spring 3.x introduced Java-based configuration as an alternative to XML. Bean discovery can still happen through @ComponentScan, while @Bean methods are used to register beans that you define manually (often third-party classes). In real-world Spring applications, it's very common to use both together
+- Spring 3.x introduced Java-based configuration as an alternative to XML. Bean discovery can still happen through @ComponentScan, while @Bean methods are used to register beans that you define manually (often third-party classes). In real-world Spring applications, it's very common to use both together
+- Specially used for defining beans of third-party classes
 
 
 Application starts
@@ -685,7 +686,7 @@ ApplicationContext
 ↓
 Reads @Configuration class
 ↓
-Processes @Bean methods (Specially used for defining beans of third-party classes)
+Processes @Bean methods
 ↓
 Creates BeanDefinitions
 ↓
@@ -767,7 +768,8 @@ Dependency Injection:
 - When one @Bean method calls another (for example, repository() calling database()), Spring returns the already managed singleton bean instead of creating a new object.
 - Types: Constructor Injection (recommended) and Setter Injection.
 
-- Constructor Injection: The dependency is explicitly passed through the constructor.
+
+Constructor Injection: The dependency is explicitly passed through the constructor.
 
 Example:
 
@@ -776,7 +778,8 @@ public UserRepository repository() {
     return new UserRepository(database());
 }
 
-- Setter Injection: The dependency is explicitly passed through the setter method.
+
+Setter Injection: The dependency is explicitly passed through the setter method.
 
 Example:
 

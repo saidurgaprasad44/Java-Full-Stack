@@ -5,7 +5,6 @@
 =======================================================================================================================================================================
 
 - Spring Boot simplifies the setup of a Spring Data JPA application by automatically configuring the infrastructure required to connect the application to a database and use JPA repositories.
-
 - The main components involved are:
 
     DataSource
@@ -85,22 +84,107 @@ Example:
   - Creates the application environment.
   - Creates the ApplicationContext.
   - Performs component scanning.
-  - Applies DataSource auto-configuration.
-  - Applies JPA/Hibernate auto-configuration.
-  - Configures repository infrastructure.
-  - Configures transaction management.
+  - Applies Spring Boot Data JPA auto-configuration.
   - Creates the required beans.
 
 - The result is a Spring ApplicationContext containing the database and persistence infrastructure required by the application.
 
 
 =======================================================================================================================================================================
-DataSource Auto-Configuration
+Spring Boot Data JPA Auto-Configuration Flow
 =======================================================================================================================================================================
 
 ------------------------------------------------------------
-DataSource Auto-Configuration
+Complete Configuration Flow
 ------------------------------------------------------------
+
+- A typical Boot Data JPA application starts approximately as follows:
+
+    @SpringBootApplication
+            |
+            v
+    SpringApplication.run()
+            |
+            v
+    ApplicationContext
+            |
+            v
+    Component Scanning
+            |
+            +-----------------------------+
+            |                             |
+            v                             v
+    DataSource Auto-Config        Data JPA Auto-Config
+            |                             |
+            v                             v
+       DataSource                 EntityManagerFactory
+            |                             |
+            +-------------+---------------+
+                          |
+                          v
+                JpaTransactionManager
+                          |
+                          v
+             Repository Auto-Configuration
+                          |
+                          v
+                  Repository Proxies
+                          |
+                          v
+                    Application
+
+
+------------------------------------------------------------
+DataSource
+------------------------------------------------------------
+
+- The DataSource represents the database connection infrastructure.
+- Boot creates it using the configured database properties and available JDBC infrastructure.
+
+
+------------------------------------------------------------
+EntityManagerFactory
+------------------------------------------------------------
+
+- Boot uses the DataSource and JPA/Hibernate configuration to create the EntityManagerFactory.
+- Hibernate is normally the JPA provider.
+
+
+------------------------------------------------------------
+TransactionManager
+------------------------------------------------------------
+
+- Boot configures JpaTransactionManager using the JPA persistence infrastructure.
+- It enables Spring's transaction abstraction to work with JPA.
+
+
+------------------------------------------------------------
+Repository Infrastructure
+------------------------------------------------------------
+
+- Boot configures Spring Data JPA repository infrastructure.
+- Repository interfaces are discovered and corresponding proxy implementations are created.
+
+
+------------------------------------------------------------
+ApplicationContext Integration
+------------------------------------------------------------
+
+- The resulting ApplicationContext contains infrastructure such as:
+
+    DataSource
+    EntityManagerFactory
+    JpaTransactionManager
+    Repository proxies
+    Application services
+    Other application beans
+
+- These components are managed together by Spring's IoC container.
+
+
+=======================================================================================================================================================================
+DataSource Auto-Configuration
+=======================================================================================================================================================================
 
 - Spring Boot automatically configures a DataSource when the required JDBC/database dependencies and configuration are available.
 - The DataSource becomes the application's entry point for obtaining database connections.
@@ -184,7 +268,7 @@ DataSource Auto-Configuration Conditions
 
 
 =======================================================================================================================================================================
-JPA and Hibernate Auto-Configuration
+JPA / Hibernate Auto-Configuration
 =======================================================================================================================================================================
 
 ------------------------------------------------------------
@@ -322,7 +406,71 @@ Examples:
 
 
 =======================================================================================================================================================================
-Spring Data JPA Repository Auto-Configuration
+Transaction Management Auto-Configuration
+=======================================================================================================================================================================
+
+------------------------------------------------------------
+JpaTransactionManager Auto-Configuration
+------------------------------------------------------------
+
+- Spring Boot automatically configures a JpaTransactionManager for a typical single-database JPA application.
+
+Conceptually:
+
+    EntityManagerFactory
+            |
+            v
+    JpaTransactionManager
+            |
+            v
+       Transactions
+
+
+------------------------------------------------------------
+@EnableTransactionManagement
+------------------------------------------------------------
+
+- @EnableTransactionManagement enables Spring's annotation-driven transaction management.
+- In a typical Spring Boot application, transaction management is auto-configured, so explicit @EnableTransactionManagement is generally unnecessary.
+- The application can therefore directly use @Transactional.
+
+
+------------------------------------------------------------
+@Transactional
+------------------------------------------------------------
+
+Example:
+
+    @Service
+    public class UserService {
+
+        @Transactional
+        public void createUser(User user) {
+
+            userRepository.save(user);
+        }
+    }
+
+- Boot provides the transaction infrastructure required for @Transactional to work in the normal JPA setup.
+- The actual transaction semantics belong to Spring's transaction management and JPA, not to Spring Boot.
+
+
+------------------------------------------------------------
+Transaction Manager Customization
+------------------------------------------------------------
+
+- If an application requires a different transaction configuration, the transaction manager can be explicitly configured.
+- This is particularly relevant when an application contains:
+  - Multiple DataSources
+  - Multiple persistence units
+  - Multiple transaction managers
+  - Non-standard transaction requirements
+
+- A custom transaction manager can cause the relevant Boot auto-configuration to back off where applicable.
+
+
+=======================================================================================================================================================================
+Spring JPA Repository Auto-Configuration
 =======================================================================================================================================================================
 
 ------------------------------------------------------------
@@ -334,8 +482,7 @@ Repository Detection
 
 Example:
 
-    public interface UserRepository
-            extends JpaRepository<User, Long> {
+    public interface UserRepository extends JpaRepository<User, Long> {
     }
 
 - No manual repository bean implementation is required.
@@ -428,73 +575,6 @@ Example:
 
 
 =======================================================================================================================================================================
-Transaction Management Auto-Configuration
-=======================================================================================================================================================================
-
-------------------------------------------------------------
-JpaTransactionManager Auto-Configuration
-------------------------------------------------------------
-
-- Spring Boot automatically configures a JpaTransactionManager for a typical single-database JPA application.
-
-Conceptually:
-
-    EntityManagerFactory
-            |
-            v
-    JpaTransactionManager
-            |
-            v
-       Transactions
-
-
-------------------------------------------------------------
-@EnableTransactionManagement
-------------------------------------------------------------
-
-- @EnableTransactionManagement enables Spring's annotation-driven transaction management.
-
-- In a typical Spring Boot application, transaction management is auto-configured, so explicit @EnableTransactionManagement is generally unnecessary.
-
-- The application can therefore directly use @Transactional.
-
-
-------------------------------------------------------------
-@Transactional
-------------------------------------------------------------
-
-Example:
-
-    @Service
-    public class UserService {
-
-        @Transactional
-        public void createUser(User user) {
-
-            userRepository.save(user);
-        }
-    }
-
-- Boot provides the transaction infrastructure required for @Transactional to work in the normal JPA setup.
-- The actual transaction semantics belong to Spring's transaction management and JPA, not to Spring Boot.
-
-
-------------------------------------------------------------
-Transaction Manager Customization
-------------------------------------------------------------
-
-- If an application requires a different transaction configuration, the transaction manager can be explicitly configured.
-
-- This is particularly relevant when an application contains:
-  - Multiple DataSources
-  - Multiple persistence units
-  - Multiple transaction managers
-  - Non-standard transaction requirements
-
-- A custom transaction manager can cause the relevant Boot auto-configuration to back off where applicable.
-
-
-=======================================================================================================================================================================
 Database Initialization
 =======================================================================================================================================================================
 
@@ -558,7 +638,6 @@ Initialization Ordering
 
 - Database initialization can involve both Hibernate schema generation and SQL scripts.
 - Their interaction must be configured appropriately when both mechanisms are used.
-
 - A common development setup may use Hibernate to create the schema and data.sql to populate initial data.
 
 
@@ -568,7 +647,6 @@ Development vs Production
 
 - Automatic schema modification is convenient during development.
 - Production databases are generally managed using controlled database migration tools rather than allowing Hibernate to modify the production schema automatically.
-
 - Therefore, settings such as:
 
     spring.jpa.hibernate.ddl-auto=update
@@ -654,21 +732,6 @@ Common Configuration Categories
 
     spring.jpa.properties.*
         → Provider-specific properties
-
-
-------------------------------------------------------------
-Development vs Production Configuration
-------------------------------------------------------------
-
-- Configuration can be externalized using the normal Spring Boot configuration mechanism.
-
-Example:
-
-    application.properties
-    application-dev.properties
-    application-prod.properties
-
-- This allows database configuration to change between environments without changing application code.
 
 
 =======================================================================================================================================================================
@@ -863,97 +926,6 @@ Example:
 - This allows Boot's default scanning behavior to cover the application without additional package configuration.
 
 
-=======================================================================================================================================================================
-Spring Boot Data JPA Auto-Configuration Flow
-=======================================================================================================================================================================
-
-------------------------------------------------------------
-Complete Configuration Flow
-------------------------------------------------------------
-
-A typical Boot Data JPA application starts approximately as follows:
-
-    @SpringBootApplication
-            |
-            v
-    SpringApplication.run()
-            |
-            v
-    ApplicationContext
-            |
-            v
-    Component Scanning
-            |
-            +-----------------------------+
-            |                             |
-            v                             v
-    DataSource Auto-Config        Data JPA Auto-Config
-            |                             |
-            v                             v
-       DataSource                 EntityManagerFactory
-            |                             |
-            +-------------+---------------+
-                          |
-                          v
-                JpaTransactionManager
-                          |
-                          v
-             Repository Auto-Configuration
-                          |
-                          v
-                  Repository Proxies
-                          |
-                          v
-                    Application
-
-
-------------------------------------------------------------
-DataSource
-------------------------------------------------------------
-
-- The DataSource represents the database connection infrastructure.
-- Boot creates it using the configured database properties and available JDBC infrastructure.
-
-
-------------------------------------------------------------
-EntityManagerFactory
-------------------------------------------------------------
-
-- Boot uses the DataSource and JPA/Hibernate configuration to create the EntityManagerFactory.
-- Hibernate is normally the JPA provider.
-
-
-------------------------------------------------------------
-TransactionManager
-------------------------------------------------------------
-
-- Boot configures JpaTransactionManager using the JPA persistence infrastructure.
-- It enables Spring's transaction abstraction to work with JPA.
-
-
-------------------------------------------------------------
-Repository Infrastructure
-------------------------------------------------------------
-
-- Boot configures Spring Data JPA repository infrastructure.
-- Repository interfaces are discovered and corresponding proxy implementations are created.
-
-
-------------------------------------------------------------
-ApplicationContext Integration
-------------------------------------------------------------
-
-The resulting ApplicationContext contains infrastructure such as:
-
-    DataSource
-    EntityManagerFactory
-    JpaTransactionManager
-    Repository proxies
-    Application services
-    Other application beans
-
-- These components are managed together by Spring's IoC container.
-
 
 =======================================================================================================================================================================
 Production Configuration
@@ -979,12 +951,11 @@ Profile-Specific Database Configuration
 
 Example:
 
-    application-dev.properties
+application-dev.properties
 
     spring.datasource.url=jdbc:postgresql://localhost:5432/devdb
 
-
-    application-prod.properties
+application-prod.properties
 
     spring.datasource.url=jdbc:postgresql://prod-server:5432/proddb
 
@@ -1002,7 +973,11 @@ Example:
 
     spring.datasource.hikari.maximum-pool-size=20
     spring.datasource.hikari.minimum-idle=5
+    spring.datasource.hikari.connection-timeout=30000
 
+Here:
+- 5 existing idle connections are assigned.
+- HikariCP creates additional connections as needed and the pool can grow up to 20 connections.
 - Pool settings should be chosen according to application workload and database capacity.
 
 
